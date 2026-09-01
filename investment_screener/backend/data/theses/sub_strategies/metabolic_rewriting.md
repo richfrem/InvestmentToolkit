@@ -1,10 +1,11 @@
-# Investment Thesis: Metabolic Reprogramming & Genetic Editing
+# Metabolic Reprogramming & Genetic Editing
 
 **Date**: 2026-07-05
 **Agent**: Stock Valuation Analyst / Portfolio Advisor
-**Status**: PROPOSED — LLY and CRSP both cleared `/evaluate-stock`. User decision (2026-07-05): hold both at WATCHLIST rather than initiating now — `targetWeight` set to 0 for both, freed 4.5% returned to PSU-U.TO (13.925%→18.425%). This sub-strategy evaluates entry over time rather than initiating immediately after a DCF pass clears. The biohealth pillar's 4.5% structural target remains registered for future deployment.
+**Status**: PROPOSED
+**Target Weight**: 4.5% (biohealth pillar)
 
-**Update 2026-07-05**: VERV (Verve Therapeutics) was removed from this sub-strategy. Eli Lilly completed its acquisition of Verve Therapeutics in July 2025 (tender offer closed at $10.50/share cash + up to $3.00/share CVR); the stock was delisted from Nasdaq and deregistered. `/evaluate-stock VERV` confirmed no financial data is fetchable — the ticker no longer exists as a tradeable equity. VERV's 15%-of-pillar (0.675% of portfolio) allocation was reallocated proportionally to LLY and CRSP per the original 65:20 split (now 76.5%/23.5% of pillar).
+> **Note**: LLY and CRSP both cleared `/evaluate-stock`. Held at WATCHLIST (targetWeight = 0%) evaluating entry over time.
 
 ---
 

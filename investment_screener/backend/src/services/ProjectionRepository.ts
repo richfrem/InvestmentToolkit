@@ -91,6 +91,7 @@ interface ProjectionVersionRow {
     analytics_log_json: string | null;
     raw_json: string | null;
     legacy_id: string | null;
+    source?: string | null;
 }
 
 interface ProjectionScenarioRow {

@@ -60,15 +60,19 @@ interface SubStrategySummary {
 
 // Helper to parse basic metadata from the markdown file
 function parseMetadata(content: string, filename: string): SubStrategySummary {
-    const titleMatch = content.match(/^# Investment Thesis Proposal:\s*(.+)$/m) || content.match(/^#\s*(.+)$/m);
-    const statusMatch = content.match(/\*\*Status\*\*:\s*(.+)$/m);
-    const dateMatch = content.match(/\*\*Date\*\*:\s*(.+)$/m);
+    const rawTitleMatch = content.match(/^#\s*(?:Investment Thesis(?:\s*Proposal)?:\s*)?(.+)$/m);
+    const statusMatch = content.match(/\*\*Status\*\*:\s*([A-Za-z0-9_]+)/m);
+    const dateMatch = content.match(/\*\*Date\*\*:\s*([0-9\-_]+(?:\s*\([^)]+\))?)/m);
     const weightMatch = content.match(/\*\*Target Weight\*\*:\s*(.+)$/m);
+
+    let rawTitle = rawTitleMatch ? rawTitleMatch[1].trim() : filename;
+    // Strip trailing underlines or decoration
+    rawTitle = rawTitle.replace(/[=]+$/, '').trim();
 
     return {
         id: filename.replace('.md', ''),
-        title: titleMatch ? titleMatch[1].trim() : filename,
-        status: statusMatch ? statusMatch[1].trim() : 'UNKNOWN',
+        title: rawTitle,
+        status: statusMatch ? statusMatch[1].trim().toUpperCase() : 'APPROVED',
         date: dateMatch ? dateMatch[1].trim() : '',
         targetWeight: weightMatch ? weightMatch[1].trim() : 'N/A'
     };

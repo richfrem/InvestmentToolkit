@@ -1,8 +1,9 @@
-# Investment Thesis Proposal: Photonics & Optical Interconnect Infrastructure
+# Photonics & Optical Interconnect Infrastructure
 
 **Date**: 2026-06-20 (updated 2026-06-21)
 **Agent**: Stock Valuation Analyst
-**Status**: APPROVED — ETF entry via FOTO (2.5%); individual names remain watchlist
+**Status**: APPROVED
+**Target Weight**: ~2.5% (photonics pillar)
 
 ---
 

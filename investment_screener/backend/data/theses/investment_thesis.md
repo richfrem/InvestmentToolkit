@@ -52,17 +52,19 @@ This strategy is built on a single macro conviction: **the 2020s will be defined
 
 *Detailed narratives, risk factors, and conviction frameworks for each pillar have been extracted to individual files to avoid duplication.*
 
-- **[SA / ASI Race](../../../investment_screener/backend/data/theses/sub_strategies/asi_race.md)** (Primary: Immediate Growth)
-- **[AI-Native Cybersecurity](../../../investment_screener/backend/data/theses/sub_strategies/cybersecurity.md)**
-- **[Ontological AI & Operating Systems](../../../investment_screener/backend/data/theses/sub_strategies/ontological_os.md)**
-- **[Sovereign Finance](../../../investment_screener/backend/data/theses/sub_strategies/sovereign_finance.md)** (Secondary: Strategic Maturity)
-- **[Quality SaaS — Oversold Leaders](../../../investment_screener/backend/data/theses/sub_strategies/quality_saas.md)**
-- **[Strategic Reserve](../../../investment_screener/backend/data/theses/sub_strategies/strategic_reserve.md)**
-- **[Space Data Centers & Defense](../../../investment_screener/backend/data/theses/sub_strategies/space_defense.md)** (Proposed)
-- **[Photonics & Optical Interconnect](../../../investment_screener/backend/data/theses/sub_strategies/photonics_optical.md)** (Proposed — Watchlist Only)
-- **[Quantum Computing](../../../investment_screener/backend/data/theses/sub_strategies/quantum_computing.md)** (Partial)
-- **[Robotics & Physical AI](../../../investment_screener/backend/data/theses/sub_strategies/robotics_automation.md)** (Approved — ETF Only)
-- **[Metabolic Reprogramming & Genetic Editing](../../../investment_screener/backend/data/theses/sub_strategies/metabolic_rewriting.md)** (Proposed — pending DCF)
+- **[SA / ASI Race](../../../investment_screener/backend/data/theses/sub_strategies/asi_race.md)** (Approved — Primary: Immediate Growth)
+- **[Critical Materials & Permanent Magnets](../../../investment_screener/backend/data/theses/sub_strategies/critical_materials_magnets.md)** (Approved — Core Onshoring)
+- **[AI Power Infrastructure](../../../investment_screener/backend/data/theses/sub_strategies/power_infrastructure.md)** (Approved — Core Infrastructure)
+- **[AI-Native Cybersecurity](../../../investment_screener/backend/data/theses/sub_strategies/cybersecurity.md)** (Approved — Core Security)
+- **[Ontological AI & Operating Systems](../../../investment_screener/backend/data/theses/sub_strategies/ontological_os.md)** (Approved — Enterprise Data OS)
+- **[Robotics & Physical AI Automation](../../../investment_screener/backend/data/theses/sub_strategies/robotics_automation.md)** (Approved — ETF Only)
+- **[Photonics & Optical Interconnect](../../../investment_screener/backend/data/theses/sub_strategies/photonics_optical.md)** (Approved — ETF Only)
+- **[Quantum Computing Infrastructure](../../../investment_screener/backend/data/theses/sub_strategies/quantum_computing.md)** (Approved — ETF Only)
+- **[Space Data Centers & Defense](../../../investment_screener/backend/data/theses/sub_strategies/space_defense.md)** (Proposed — Watchlist)
+- **[Metabolic Reprogramming & Genetic Editing](../../../investment_screener/backend/data/theses/sub_strategies/metabolic_rewriting.md)** (Proposed — Watchlist)
+- **[Quality SaaS — Oversold Leaders](../../../investment_screener/backend/data/theses/sub_strategies/quality_saas.md)** (Proposed — Watchlist)
+- **[Sovereign Finance](../../../investment_screener/backend/data/theses/sub_strategies/sovereign_finance.md)** (Proposed — Watchlist)
+- **[Strategic Reserve](../../../investment_screener/backend/data/theses/sub_strategies/strategic_reserve.md)** (Active Liquidity Reserve)
 
 Every holding in the portfolio maps to exactly one of these strategies. The skill assesses each sub-strategy as a unit — conviction intact, weakening, or broken.
 

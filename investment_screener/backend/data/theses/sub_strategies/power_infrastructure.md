@@ -1,8 +1,9 @@
-# Investment Thesis: AI Power Infrastructure
+# AI Power Infrastructure
 
 **Date**: 2026-06-21
 **Agent**: Portfolio Advisor
-**Status**: APPROVED — Core pillar (14.7% target)
+**Status**: APPROVED
+**Target Weight**: ~14.7% (power pillar)
 
 ---
 
