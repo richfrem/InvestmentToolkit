@@ -48,6 +48,7 @@ import Database from 'better-sqlite3';
 export interface ThesisHoldingView {
     ticker: string;
     name: string | null;
+    assetClass?: string | null;
     pillarId: string | null;
     subStrategyId: string | null;
     role: string | null;
@@ -294,21 +295,22 @@ export class InvestmentRepository {
     listThesisHoldings(): ThesisHoldingView[] {
         const rows = this.db
             .prepare(
-                `SELECT symbol, name, pillar_id, sub_strategy_id, lifecycle_status,
+                `SELECT symbol, name, asset_class, pillar_id, sub_strategy_id, lifecycle_status,
                         target_weight, thesis_for_inclusion, agent_rationale
                  FROM investment
                  WHERE target_weight IS NOT NULL
                  ORDER BY symbol`
             )
             .all() as Array<{
-                symbol: string; name: string | null; pillar_id: string | null;
-                sub_strategy_id: string | null; lifecycle_status: string | null;
-                target_weight: number | null; thesis_for_inclusion: string | null;
-                agent_rationale: string | null;
+                symbol: string; name: string | null; asset_class: string | null;
+                pillar_id: string | null; sub_strategy_id: string | null;
+                lifecycle_status: string | null; target_weight: number | null;
+                thesis_for_inclusion: string | null; agent_rationale: string | null;
             }>;
         return rows.map(r => ({
             ticker: r.symbol,
             name: r.name,
+            assetClass: r.asset_class,
             pillarId: r.pillar_id,
             subStrategyId: r.sub_strategy_id,
             role: r.lifecycle_status,
