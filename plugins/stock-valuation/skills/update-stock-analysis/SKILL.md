@@ -100,8 +100,31 @@ else:
 "
 ```
 - If output starts with `CACHED` → **STOP**. Report the cached fair value and action to the user. Offer to force-refresh if they explicitly ask.
-- If `NO_CACHE` → skip Step 0.5, continue to Step 1.
-- If `STALE` → continue to Step 0.5 (prior analysis review) before Step 1.
+- If `NO_CACHE` → continue to Step 0.1.
+- If `STALE` → continue to Step 0.1 before Step 0.5.
+
+---
+
+## Step 0.1: Holdings Verification & Lifecycle Anchor (Mandatory Single Source of Truth Check)
+> **Rule #15 & #21 Invariant**: Before setting any action, lifecycle status, or target weight, query `domain_model.sqlite` (via `portfolio_io.py`) to determine if the security is an active holding or an unheld candidate.
+
+```bash
+python3 -c "
+import sys
+from py_services.portfolio_io import load_portfolio_state, load_target_weights
+state = load_portfolio_state(None)
+shares = state.get('shares', {}).get('{TICKER}', 0)
+targets = load_target_weights()
+target_weight = targets.get('{TICKER}', 0)
+print(f'HOLDINGS_STATUS: shares={shares}, target_weight={target_weight}%')
+if shares > 0:
+    print('IS_HELD: TRUE -> Lifecycle: core/opportunistic, Actions permitted: MAINTAIN | ACCUMULATE | TRIM | EXIT')
+else:
+    print('IS_HELD: FALSE -> Lifecycle: watchlist, Actions permitted: WATCHLIST | INITIATE')
+"
+```
+* If `shares > 0`: Security is an active position. **Never classify as WATCHLIST.** Action enum MUST be chosen from `MAINTAIN | ACCUMULATE | TRIM | EXIT`.
+* If `shares == 0`: Security is not currently held. Action enum MUST be chosen from `WATCHLIST | INITIATE`.
 
 ---
 
