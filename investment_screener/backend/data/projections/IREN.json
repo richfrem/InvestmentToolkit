@@ -1,106 +1,98 @@
-{
-  "ticker": "IREN",
-  "id": "iren-val-2026-08-23",
-  "source": "AI_AGENT",
-  "schemaVersion": "1.2",
-  "version": 2,
-  "savedAt": "2026-08-23T19:15:00.000Z",
-  "updatedAt": "2026-08-23T19:15:00.000Z",
-  "name": "AI Guided Valuation — IREN — 2026-08-23",
-  "rationale": "IREN is transitioning from Bitcoin mining infrastructure into high-density enterprise AI Cloud hosting. With 5GW+ of secured grid interconnects in Texas/British Columbia and executive leadership from Oracle Cloud Infrastructure and Google Cloud, IREN is well positioned to capture enterprise AI clusters. Balanced 5-year DCF incorporates 50% Bull, 30% Base, and 20% Bear weights ahead of August 27 earnings.",
-  "snapshot": {
-    "price": 41.88,
-    "currency": "USD",
-    "exchange": "NASDAQ"
-  },
-  "dataPreferences": {
-    "growthBasis": "next",
-    "marginBasis": "ttm"
-  },
-  "scenarios": {
-    "bear": {
-      "weight": 0.20,
-      "growthRate": 15.0,
-      "netMargin": 5.0,
-      "exitPE": 10.0,
-      "qualityMultiplier": 1.0,
-      "shareChange": 5.0,
-      "scenarioPrice": 1.25
+[
+  {
+    "ticker": "IREN",
+    "id": "e9182941-4829-4829-b819-504829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T07:00:00.000Z",
+    "updatedAt": "2026-09-01T07:00:00.000Z",
+    "name": "IREN AI Datacenter Infrastructure Transition Valuation",
+    "rationale": "IREN Limited (IREN) is converting its 1.4GW+ power pipeline into AI GPU cloud datacenters. TTM revenue reached $501.0M. Accounting for share dilution (394.1M shares), 5-year DCF yields $29.03 (-17.8% vs $35.31 current at 9.14% WACC). Wall Street consensus of $78.19 reflects full megawatt monetization. Recommendation: MAINTAIN (Core Holding: 28.0 shares, 2.72% target weight). Maintain current position size, accumulate on pullbacks near $34.63, and execute partial trims above $44.00.",
+    "snapshot": {
+      "price": 35.31,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 394058648,
+      "revenue": 501023000,
+      "lastActualPS": 1.27
     },
-    "base": {
-      "weight": 0.30,
-      "growthRate": 48.0,
-      "netMargin": 20.0,
-      "exitPE": 22.0,
-      "qualityMultiplier": 1.0,
-      "shareChange": 2.0,
-      "scenarioPrice": 36.80
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
     },
-    "bull": {
-      "weight": 0.50,
-      "growthRate": 72.0,
-      "netMargin": 28.0,
-      "exitPE": 28.0,
-      "qualityMultiplier": 1.05,
-      "shareChange": 0.0,
-      "scenarioPrice": 119.50
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 15.0,
+        "netMargin": 12.0,
+        "exitPE": 14.0,
+        "qualityMultiplier": 0.85,
+        "shareChange": 3.5,
+        "rationale": "ATM share dilution and corporate overhead drag continue; bitcoin network difficulty spikes compress margin to 12% on $1.0B revenue.",
+        "moatScore": 2,
+        "managementScore": 3,
+        "year5Revenue": 1007.7,
+        "year5NetIncome": 120.9,
+        "year5EPS": 0.26,
+        "scenarioPrice": 1.99,
+        "risks": [
+          "ATM equity issuance diluting per-share earnings power",
+          "Bitcoin mining revenue volatility dragging down blended margins"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 35.0,
+        "netMargin": 24.0,
+        "exitPE": 22.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": 2.0,
+        "rationale": "Sweetwater and Childress multi-hundred MW GPU sites energize cleanly; AI cloud services revenue expands to $2.25B at 24% net margin.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 2246.6,
+        "year5NetIncome": 539.2,
+        "year5EPS": 1.24,
+        "scenarioPrice": 18.49,
+        "risks": [
+          "Substation and transformer supply lead times",
+          "Hyperscaler tenant leasing negotiation friction"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 55.0,
+        "netMargin": 32.0,
+        "exitPE": 30.0,
+        "qualityMultiplier": 1.15,
+        "shareChange": 1.0,
+        "rationale": "IREN transitions into a premier pure-play AI GPU Neocloud with 1.4GW+ energized power capacity; revenue reaches $4.48B at 32% margin.",
+        "moatScore": 4,
+        "managementScore": 5,
+        "year5Revenue": 4482.5,
+        "year5NetIncome": 1434.4,
+        "year5EPS": 3.46,
+        "scenarioPrice": 77.16,
+        "risks": [
+          "Power utility regulatory tariff changes in Texas ERCOT market",
+          "Cooling system retrofits required for next-generation 100kW+ GPU racks"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 9.14,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "IREN Limited (IREN) is converting its 1.4GW+ power pipeline into AI GPU cloud datacenters. TTM revenue reached $501.0M. Accounting for share dilution (394.1M shares), 5-year DCF yields $29.03 (-17.8% vs $35.31 current at 9.14% WACC). Wall Street consensus of $78.19 reflects full megawatt monetization. Recommendation: MAINTAIN (Core Holding: 28.0 shares, 2.72% target weight). Maintain current position size, accumulate on pullbacks near $34.63, and execute partial trims above $44.00.",
+      "fairValue": 29.03,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-09-01T07:00:00.000Z"
     }
-  },
-  "analyticsLog": {
-    "shareCountMethod": "shares_diluted (258.2M)",
-    "marginAnchor": "TTM (20.9% GAAP profit margin)",
-    "growthDerivation": "Blended consensus: +167% TTM / +140% FY26 / +48% 5-year normalized CAGR",
-    "sectorBenchmarkRow": "AI Infrastructure / High-Density Data Center Compute",
-    "dataQualityFlags": [
-      "Binary earnings report in 4 days (Aug 27, 2026)",
-      "High beta (4.3) with aggressive CapEx growth pipeline"
-    ],
-    "analystInputs": {
-      "y1RevEstimate": 722896290,
-      "y2RevEstimate": 2976592710,
-      "y1GrowthPct": 44.3,
-      "y2GrowthPct": 311.7,
-      "blendedConsensusPct": 178.0,
-      "analystTargetMean": 80.19,
-      "analystCount": 16
-    },
-    "historicalRevenue": [
-      59037000,
-      75509000,
-      187192000,
-      501023000
-    ],
-    "historicalNetMargins": [
-      -711.0,
-      -227.6,
-      -15.4,
-      17.4
-    ],
-    "historicalEPS": [
-      -10.25,
-      -3.14,
-      -0.29,
-      0.34
-    ],
-    "priorAnalysisReview": {
-      "priorModel": "Antigravity Gemini 3.5",
-      "priorDate": "2026-08-16",
-      "priorPrice": "38.27",
-      "priorFairValue": "32.19",
-      "priorAction": "HOLD",
-      "priceDelta": "+9.4%",
-      "assumptionAudit": "Re-calibrated with live $501M TTM baseline and balanced 50% AI Cloud bull scenario",
-      "modelQualityFlag": "Validated",
-      "thesisOutcome": "Confirmed Accumulate on Pullbacks",
-      "fundamentalChanges": "5GW grid capacity expansion and enterprise AI Cloud customer acquisition"
-    },
-    "confidenceBreakdown": "0.85/1.0 — High revenue growth (+167%) offset by 4-day binary earnings risk."
-  },
-  "aiThesis": {
-    "model": "Antigravity AI Guided Valuation Co-Pilot",
-    "rationale": "IREN is executing a disciplined capital expansion into next-generation AI Cloud computing. Trading at $41.88, the stock offers compelling upside to its probability-weighted fair value of $71.04 (+69.6% upside). Key support at $36.80 (Base case) provides an attractive margin of safety.",
-    "fairValue": 71.04,
-    "action": "ACCUMULATE",
-    "reviewedAt": "2026-08-23T19:15:00Z"
   }
-}
+]

@@ -1,5 +1,40 @@
 # IREN Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & Power Megawatt Monetization
+
+# IREN — IREN Limited
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: MAINTAIN | **Fair Value**: $29.03 vs $35.31 (-17.8%)
+
+### Executive Summary
+IREN Limited is transitioning its 1.4GW+ energized and pipeline power capacity across Texas and British Columbia (Sweetwater, Childress) into dedicated AI cloud GPU infrastructure. TTM revenue reached **$501.0M**. After correcting for basic share count dilution (394.1M shares vs stale broker metrics), our 5-year probability-weighted DCF yields **$29.03** (-17.8% vs $35.31 current at 9.14% WACC). Wall Street consensus stands at **$78.19** (16 analysts, Buy rating). Under Rule 9 standing decision anchor, position is **`MAINTAIN`**.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $35.31 |
+| Fair Value (DCF Floor) | **$29.03** (-17.8%) |
+| Wall Street Mean Target | **$78.19** (16 analysts, Buy) |
+| WACC | 9.14% |
+| TTM Revenue | $501.0M |
+| Basic Shares Outstanding | 394.1M |
+| Reverse DCF Implied CAGR | 53.7% (`BETWEEN_BASE_AND_BULL`) |
+| Strategy Pillar | `datainfra` (`ai-infrastructure`) |
+| Portfolio Position | 28.0 shares (2.72% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (25% weight)**: $1.99 PV (15% CAGR to $1.01B Y5, 12% net margin, 14x PE). ATM dilution overhead and bitcoin network difficulty drag.
+- **⚖️ Base (50% weight)**: $18.49 PV (35% CAGR to $2.25B Y5, 24% net margin, 22x PE). Sweetwater and Childress multi-hundred MW GPU sites energize cleanly.
+- **🚀 Bull (25% weight)**: $77.16 PV (55% CAGR to $4.48B Y5, 32% net margin, 30x PE). Full transition to premier 1.4GW+ AI Neocloud infrastructure provider.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`MAINTAIN`**
+- **Target Entry / Pullback Support**: $34.63 (Keltner Channel Lower Band)
+- **Trim Tier 1**: $44.00+
+- **Stop Loss / Breaker**: $28.00
+
+---
+
 ## 2026-07-02 — IREN research import (2026-07-02)
 
 # IREN Limited (IREN) — Deep-Dive Research Report

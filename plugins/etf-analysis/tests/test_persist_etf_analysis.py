@@ -140,3 +140,27 @@ def test_persist_new_etf_version_does_not_collide_with_existing_ai_agent_version
         assert etf_row["version"] == 4
     finally:
         conn.close()
+
+
+def test_persist_updates_investment_table_fields(tmp_path, monkeypatch):
+    """Verify persist_etf_analysis also synchronizes the investment table's
+    target_action, agent_rationale, and last_deep_analysis_at fields."""
+    _write_etf_versions_file(monkeypatch, tmp_path)
+    db_path = tmp_path / "test.sqlite"
+
+    etf_payload = dict(SAMPLE_ETF)
+    etf_payload["agentRationale"] = "ETF_ANALYSIS: INITIATE | alignment 72% | SpaceX exposure | analyzed 2026-07-19"
+    persist_etf_analysis.persist(etf_payload, dry_run=False, db_path=db_path)
+
+    conn = initialize_db(str(db_path))
+    try:
+        from domain_model.investment_repository import get_investment, resolve_investment
+        inv_id = resolve_investment(conn, "DXYZ", asset_class="ETF")
+        inv = get_investment(conn, inv_id)
+        assert inv is not None
+        assert inv["target_action"] == "INITIATE"
+        assert "SpaceX exposure" in (inv["agent_rationale"] or "")
+        assert inv["last_deep_analysis_at"] is not None
+    finally:
+        conn.close()
+

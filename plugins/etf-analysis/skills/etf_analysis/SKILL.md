@@ -118,22 +118,20 @@ python3 plugins/etf-analysis/skills/etf_analysis/scripts/persist_etf_analysis.py
 
 ---
 
-## Step 5 — Update agentRationale in target-portfolio.json
+## Step 5 — Verify Domain Model State & Research Timeline
 
-For each analyzed ticker present in `target-portfolio.json`, update `agentRationale` with:
-```
-ETF_ANALYSIS: {action} | {key metric} | {one-line thesis note} | analyzed {DATE}
-```
+1. **Automatic SQLite Persistence**: `persist_etf_analysis.py` automatically synchronizes:
+   - `data/etf_analysis/{TICKER}.json` (versioned history)
+   - `domain_model.sqlite` (`projection_version` table for Dashboard AI Thesis UI)
+   - `domain_model.sqlite` (`investment` table: `target_action`, `agent_rationale`, and `last_deep_analysis_at`)
 
-Examples:
-- DXYZ: `ETF_ANALYSIS: HOLD | premium 341% (HIGH risk) | Only public pre-IPO AI basket (SpaceX/Anthropic/OpenAI) | analyzed 2026-05-13`
-- KOID: `ETF_ANALYSIS: HOLD | alignment 68% | Humanoid robotics index; low NAV premium; CRDO/NXPI top holdings | analyzed 2026-05-13`
-- HUMN: `ETF_ANALYSIS: ACCUMULATE | alignment 74% | Roundhill humanoid; TSLA/NVDA/Korean robotics; higher premium than KOID | analyzed 2026-05-13`
+2. **Verify Holdings State**:
+   ```bash
+   python3 investment_screener/backend/py_services/portfolio_io.py --ticker {TICKER} --json
+   ```
 
-After updating `target-portfolio.json`, run the automated sync verification script to guarantee target weight, thesis, and projection integrity:
-```bash
-python3 investment_screener/backend/py_services/verify_thesis_sync.py
-```
+3. **Research Timeline**:
+   Prepend a dated ETF analysis memo to `investment_screener/backend/data/research/{TICKER}.timeline.md` (creating the file if it does not exist) to ensure all qualitative research and thematic changes are tracked consistently with individual equities.
 
 ---
 
@@ -144,3 +142,5 @@ python3 investment_screener/backend/py_services/verify_thesis_sync.py
 3. **Always check expense ratio drag** for thematic ETFs at the target weight
 4. **Flag overlap** with existing individual stock positions
 5. **DXYZ NAV estimate** must cite the source/method (private_stake_sum, last_known_filing, etc.)
+6. **Single Source of Truth**: All target actions and rationales are stored in `domain_model.sqlite` — never write to retired JSON files (e.g. `target-portfolio.json`).
+
