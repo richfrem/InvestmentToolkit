@@ -97,7 +97,33 @@ def test_stock_intake_persist_transactional_rollback_on_failure():
     assert after_row[0] == original_reason, f"Rollback failed! Reason was mutated to {after_row[0]}"
     assert after_row[1] == original_weight, f"Rollback failed! Weight was mutated to {after_row[1]}"
 
+def test_stock_intake_persist_foreign_key_validation_and_inheritance():
+    """Verify that invalid pillar/sub-strategy foreign keys do not cause crash,
+    and instead inherit valid existing database records or default gracefully.
+    """
+    repo_root = _BACKEND.parent
+    script = _BACKEND / "py_services" / "stock_intake_persist.py"
+    
+    payload = {
+        "symbol": "BE",
+        "pillar_id": "invalid_test_pillar_id_that_does_not_exist",
+        "sub_strategy_id": "invalid_test_sub_strategy_id_that_does_not_exist",
+        "agent_rationale": "Automated regression test for FK fallback"
+    }
+    
+    res = subprocess.run(
+        [sys.executable, str(script), "--payload", json.dumps(payload), "--json"],
+        capture_output=True,
+        text=True,
+        cwd=str(repo_root)
+    )
+    assert res.returncode == 0, f"FK validation test failed: {res.stderr}"
+    data = json.loads(res.stdout)
+    assert data["status"] == "success"
+    assert data["symbol"] == "BE"
+
 if __name__ == "__main__":
     test_stock_intake_persist_cli()
     test_stock_intake_persist_transactional_rollback_on_failure()
+    test_stock_intake_persist_foreign_key_validation_and_inheritance()
     print("test_stock_intake_persist tests PASSED")
