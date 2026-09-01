@@ -243,3 +243,77 @@ def replace_block(content: str, name: str, body: str) -> str:
     if count == 0:
         updated = content.rstrip() + f"\n\n{block}\n"
     return updated
+
+
+# ── CLI entrypoint ────────────────────────────────────────────────────────────
+
+def main() -> None:
+    import argparse
+    import json
+
+    parser = argparse.ArgumentParser(description="Query portfolio state and metadata.")
+    parser.add_argument("--ticker", "-t", type=str, help="Check holding status and target weight for a specific ticker.")
+    parser.add_argument("--pillars", action="store_true", help="List all strategy pillars and sub-strategies.")
+    parser.add_argument("--json", action="store_true", help="Output in JSON format.")
+    args = parser.parse_args()
+
+    if args.pillars:
+        from domain_model.pillar_repository import list_pillars, list_sub_strategies
+        from domain_model.db_client import initialize_db
+        conn = initialize_db(_DB_PATH)
+        try:
+            pillars = list_pillars(conn)
+            sub_strats = list_sub_strategies(conn)
+            data = {"pillars": pillars, "sub_strategies": sub_strats}
+            if args.json:
+                print(json.dumps(data, indent=2))
+            else:
+                print("Strategy Pillars:")
+                for p in pillars:
+                    print(f"  - {p['pillar_id']}: {p['name']} ({p.get('target_weight', 0)}%)")
+                print("\nSub-Strategies:")
+                for s in sub_strats:
+                    print(f"  - {s['sub_strategy_id']} (Pillar: {s['pillar_id']}): {s['name']}")
+        finally:
+            conn.close()
+        return
+
+    if args.ticker:
+        sym = normalize_ticker(args.ticker)
+        state = load_portfolio_state(Path(_DB_PATH))
+        shares = state.get("shares", {}).get(sym, 0.0)
+        price = state.get("prices", {}).get(sym, 0.0)
+        target_weights = load_target_weights()
+        target_weight = target_weights.get(sym, 0.0)
+        is_held = shares > 0
+        
+        info = {
+            "ticker": sym,
+            "shares": shares,
+            "price": price,
+            "market_value": round(shares * price, 2) if price else 0.0,
+            "target_weight": target_weight,
+            "is_held": is_held,
+            "lifecycle_status": "core" if is_held else "watchlist",
+            "permitted_actions": ["MAINTAIN", "ACCUMULATE", "TRIM", "EXIT"] if is_held else ["WATCHLIST", "INITIATE"],
+        }
+        if args.json:
+            print(json.dumps(info, indent=2))
+        else:
+            print(f"TICKER: {sym}")
+            print(f"HOLDING STATUS: {'HELD' if is_held else 'NOT HELD'} (shares={shares}, market_value=${info['market_value']:,.2f})")
+            print(f"TARGET WEIGHT: {target_weight}%")
+            print(f"LIFECYCLE STATUS: {info['lifecycle_status']}")
+            print(f"PERMITTED ACTIONS: {', '.join(info['permitted_actions'])}")
+        return
+
+    # Default: summary
+    state = load_portfolio_state(Path(_DB_PATH))
+    print(f"Portfolio Total USD: ${state.get('total_usd', 0.0):,.2f}")
+    print(f"Total Holdings: {len(state.get('shares', {}))}")
+    print(f"Cash USD: ${state.get('cash_usd', 0.0):,.2f}")
+
+
+if __name__ == "__main__":
+    main()
+

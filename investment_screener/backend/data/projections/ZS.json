@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "ZS",
+    "id": "e3052a5f-e25a-40a1-a75a-063a56247a11",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-08-31T22:34:00.000Z",
+    "updatedAt": "2026-08-31T22:34:00.000Z",
+    "name": "ZS AI Fundamental Valuation",
+    "rationale": "Zscaler (ZS) is the premier pure-play cloud security exchange platform (ZIA/ZPA/ZDX), processing >400 billion daily transactions. TTM revenue reached $2.67B (+25.4% YoY) with positive operating cash flow and rapid GAAP margin inflection. At $188.39, 5-year DCF yields a fair value of $261.23 (+38.7% upside at 10% discount rate). Reverse DCF indicates the market is pricing in an undemanding 18.61% 5-year CAGR (BETWEEN_BEAR_AND_BASE), providing an attractive margin of safety. Recommendation: ACCUMULATE (Core Holding). Target accumulation below $195.92, trim Tier 1 at $261.23.",
+    "snapshot": {
+      "price": 188.385,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 161709525,
+      "revenue": 2673115000,
+      "lastActualPS": 11.4
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": false,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 14,
+        "netMargin": 16,
+        "exitPE": 26,
+        "qualityMultiplier": 0.95,
+        "shareChange": 2.0,
+        "rationale": "Enterprise IT spending consolidation favors bundled security platforms (Palo Alto Networks Prisma, Microsoft Defender/Entra), slowing standalone SASE pipeline conversions. Revenue growth decelerates to 14% CAGR. Net margins expand modestly to 16% as stock-based compensation remains high. Multiple compresses to 26x.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 5146.9,
+        "year5NetIncome": 823.5,
+        "year5EPS": 4.61,
+        "scenarioPrice": 70.74,
+        "risks": [
+          "Microsoft and Palo Alto aggressive platform bundling with deep enterprise discounting",
+          "High stock-based compensation diluting GAAP operating leverage"
+        ]
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 21,
+        "netMargin": 23,
+        "exitPE": 34,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1.0,
+        "rationale": "Zero Trust Exchange remains gold standard for direct-to-cloud enterprise traffic with 115%+ net retention rate. Revenue grows at 21% CAGR to $6.9B by Year 5. GAAP operating leverage inflects strongly as scale benefits absorb sales/marketing overhead, achieving 23% net margin. Premium 34x exit multiple supported by high-quality recurring SaaS revenue and mission-critical moat.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 6933.4,
+        "year5NetIncome": 1594.7,
+        "year5EPS": 9.38,
+        "scenarioPrice": 207.99,
+        "risks": [
+          "Slower-than-expected conversion of legacy on-prem hardware firewalls to cloud SASE",
+          "Macroelongation of enterprise cybersecurity budget approval cycles"
+        ]
+      },
+      "bull": {
+        "weight": 0.3,
+        "growthRate": 28,
+        "netMargin": 28,
+        "exitPE": 42,
+        "qualityMultiplier": 1.15,
+        "shareChange": 0.0,
+        "rationale": "AI security expansion (Risk360, DSPM, AI-SPM, Copilot data protection) and Zero Trust Branch/Cloud workload protection accelerate growth to 28% CAGR ($9.2B by Year 5). Rapid GAAP operating margin expansion reaches 28% steady state with minimal dilution. Multiple commands 42x premium cybersecurity leader multiple.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 9184.8,
+        "year5NetIncome": 2571.7,
+        "year5EPS": 15.9,
+        "scenarioPrice": 476.95,
+        "risks": [
+          "Execution hurdles scaling new product modules beyond core ZIA/ZPA",
+          "Competitive pricing pressure in mid-market accounts"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Zscaler (ZS) is the premier pure-play cloud security exchange platform (ZIA/ZPA/ZDX), processing >400 billion daily transactions. TTM revenue reached $2.67B (+25.4% YoY) with positive operating cash flow and rapid GAAP margin inflection. At $188.39, 5-year DCF yields a fair value of $261.23 (+38.7% upside at 10% discount rate). Reverse DCF indicates the market is pricing in an undemanding 18.61% 5-year CAGR (BETWEEN_BEAR_AND_BASE), providing an attractive margin of safety. Recommendation: ACCUMULATE (Core Holding). Target accumulation below $195.92, trim Tier 1 at $261.23.",
+      "fairValue": 261.23,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-08-31T22:34:00.000Z"
+    }
+  }
+]

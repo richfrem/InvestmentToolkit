@@ -106,25 +106,18 @@ else:
 ---
 
 ## Step 0.1: Holdings Verification & Lifecycle Anchor (Mandatory Single Source of Truth Check)
-> **Rule #15 & #21 Invariant**: Before setting any action, lifecycle status, or target weight, query `domain_model.sqlite` (via `portfolio_io.py`) to determine if the security is an active holding or an unheld candidate.
+> **Rule #15 & #21 Invariant**: Before setting any action, lifecycle status, or target weight, query `domain_model.sqlite` via the canonical CLI `portfolio_io.py --ticker {TICKER}`. Never execute ad-hoc inline Python or raw SQL.
 
 ```bash
-python3 -c "
-import sys
-from py_services.portfolio_io import load_portfolio_state, load_target_weights
-state = load_portfolio_state(None)
-shares = state.get('shares', {}).get('{TICKER}', 0)
-targets = load_target_weights()
-target_weight = targets.get('{TICKER}', 0)
-print(f'HOLDINGS_STATUS: shares={shares}, target_weight={target_weight}%')
-if shares > 0:
-    print('IS_HELD: TRUE -> Lifecycle: core/opportunistic, Actions permitted: MAINTAIN | ACCUMULATE | TRIM | EXIT')
-else:
-    print('IS_HELD: FALSE -> Lifecycle: watchlist, Actions permitted: WATCHLIST | INITIATE')
-"
+python3 investment_screener/backend/py_services/portfolio_io.py --ticker {TICKER}
 ```
-* If `shares > 0`: Security is an active position. **Never classify as WATCHLIST.** Action enum MUST be chosen from `MAINTAIN | ACCUMULATE | TRIM | EXIT`.
-* If `shares == 0`: Security is not currently held. Action enum MUST be chosen from `WATCHLIST | INITIATE`.
+* If holding status is `HELD` (`shares > 0`): Security is an active position. **Never classify as WATCHLIST.** Action enum MUST be chosen from `MAINTAIN | ACCUMULATE | TRIM | EXIT`.
+* If holding status is `NOT HELD` (`shares == 0`): Security is not currently held. Action enum MUST be chosen from `WATCHLIST | INITIATE`.
+
+To verify valid foreign keys for `pillar_id` and `sub_strategy_id`:
+```bash
+python3 investment_screener/backend/py_services/portfolio_io.py --pillars
+```
 
 ---
 

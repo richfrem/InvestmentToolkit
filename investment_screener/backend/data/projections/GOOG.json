@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "GOOG",
+    "id": "2c94982a-4a2e-4cf0-9d82-823901456101",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-08-31T22:39:00.000Z",
+    "updatedAt": "2026-08-31T22:39:00.000Z",
+    "name": "GOOG AI Fundamental Valuation",
+    "rationale": "Alphabet Inc. (GOOG) is a premier core holding representing the AI Titans pillar. TTM revenue reached $402.8B (+24.2% YoY) with $132.2B in GAAP net income (32.8% net margin). 5-year DCF yields a fair value of $350.08 (+4.4% upside vs $335.41 market price at 10% discount rate). Reverse DCF indicates the market is pricing in a 17.67% 5-year CAGR, well aligned with Google Cloud/TPU scaling and Search AI Overviews. Recommendation: MAINTAIN (Core Holding: 5.0 shares). Accumulate on dips <$262.56, trim Tier 1 at $350.08.",
+    "snapshot": {
+      "price": 335.41,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 12114573785,
+      "revenue": 402836000000,
+      "lastActualPS": 10.18
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": false,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 8,
+        "netMargin": 26,
+        "exitPE": 18,
+        "qualityMultiplier": 0.95,
+        "shareChange": -1.0,
+        "rationale": "Antitrust remedies (DOJ search revenue sharing restrictions) and AI chatbot search deflection slow core Search ad revenue. Revenue grows at 8% CAGR to $592B by Year 5. Heavy AI capex (TPUs/datacenters) and depreciation compress net margin to 26%. Exit multiple contracts to 18x utility tech multiple.",
+        "moatScore": 4,
+        "managementScore": 3,
+        "year5Revenue": 591898.2,
+        "year5NetIncome": 153893.5,
+        "year5EPS": 13.36,
+        "scenarioPrice": 141.83,
+        "risks": [
+          "DOJ antitrust ruling forcing structural changes to default search agreements (Apple Safari)",
+          "Generative AI answer engines cannibalizing high-margin commercial search queries"
+        ]
+      },
+      "base": {
+        "weight": 0.55,
+        "growthRate": 13,
+        "netMargin": 30,
+        "exitPE": 24,
+        "qualityMultiplier": 1.05,
+        "shareChange": -2.0,
+        "rationale": "Google Cloud / Vertex AI (Gemini ecosystem) and YouTube subscription/ad monetization drive 13% 5-year CAGR to $742B. In-house custom silicon (TPU v6/v7) provides structural cost advantages over merchant GPU cloud competitors, sustaining a 30% net margin. Continuous share repurchases reduce diluted share count by 2%/yr. Exit P/E of 24x reflects wide-moat AI titan cash generator.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 742199.2,
+        "year5NetIncome": 222659.8,
+        "year5EPS": 20.33,
+        "scenarioPrice": 318.16,
+        "risks": [
+          "Slower cloud margin expansion if TPU hardware supply constraints persist",
+          "Macro advertising slowdown impacting digital ad pricing"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 18,
+        "netMargin": 34,
+        "exitPE": 28,
+        "qualityMultiplier": 1.15,
+        "shareChange": -2.5,
+        "rationale": "Gemini Ultra multi-modal platform commands enterprise AI leadership; Google Cloud operating margins expand to 25%+. AI Overviews expand total search queries and increase commercial intent ad conversion. Revenue grows at 18% CAGR to $921B. Massive free cash flow ($150B+/yr) funds aggressive share buybacks (-2.5%/yr) and 34% net margins. Premium multiple re-rates to 28x.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 921591.2,
+        "year5NetIncome": 313341.0,
+        "year5EPS": 29.36,
+        "scenarioPrice": 586.92,
+        "risks": [
+          "Intensified frontier model competition from OpenAI/Anthropic/Meta",
+          "Increased regulatory scrutiny over AI cloud bundling"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Alphabet Inc. (GOOG) is a premier core holding representing the AI Titans pillar. TTM revenue reached $402.8B (+24.2% YoY) with $132.2B in GAAP net income (32.8% net margin). 5-year DCF yields a fair value of $350.08 (+4.4% upside vs $335.41 market price at 10% discount rate). Reverse DCF indicates the market is pricing in a 17.67% 5-year CAGR, well aligned with Google Cloud/TPU scaling and Search AI Overviews. Recommendation: MAINTAIN (Core Holding: 5.0 shares). Accumulate on dips <$262.56, trim Tier 1 at $350.08.",
+      "fairValue": 350.08,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-08-31T22:39:00.000Z"
+    }
+  }
+]

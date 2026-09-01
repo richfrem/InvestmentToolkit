@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "NBIS",
+    "id": "7b823190-77a1-43ef-b209-913456101902",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-08-31T22:38:00.000Z",
+    "updatedAt": "2026-08-31T22:38:00.000Z",
+    "name": "NBIS AI Fundamental Valuation",
+    "rationale": "Nebius Group N.V. (NBIS) is emerging as the premier European sovereign AI neocloud, building hyperscale GPU clusters powered by an official NVIDIA partnership. TTM revenue surged +454% YoY to $529.8M as capacity came online. At $206.32, 5-year DCF yields a fair value of $262.62 (+27.3% upside at 10% discount rate). Reverse DCF indicates the market is pricing in a 79.1% 5-year CAGR, matching rapid datacenter megawatt expansion plans. Recommendation: ACCUMULATE (Core Holding: 9.0 shares). Target accumulation on dips below $196.97, trim Tier 1 at $262.62.",
+    "snapshot": {
+      "price": 206.32,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 220406311,
+      "revenue": 529800000,
+      "lastActualPS": 98.88
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": false,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 55,
+        "netMargin": 18,
+        "exitPE": 22,
+        "qualityMultiplier": 0.9,
+        "shareChange": 3.0,
+        "rationale": "Neocloud GPU rental commoditization accelerates as Tier-2 cloud capacity expands and hyperscalers restrict external workloads. Revenue reaches $4.7B by Year 5 (55% CAGR from $530M baseline). High power/datacenters lease costs and price competition limit net margin to 18%. Exit multiple contracts to 22x commodity infrastructure multiple.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 4739.9,
+        "year5NetIncome": 853.2,
+        "year5EPS": 3.34,
+        "scenarioPrice": 41.05,
+        "risks": [
+          "GPU rental price deflation across neocloud competitors (CoreWeave, Lambda Labs)",
+          "High ongoing capex diluting share count (3% annual dilution)"
+        ]
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 78,
+        "netMargin": 25,
+        "exitPE": 30,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1.5,
+        "rationale": "NVIDIA strategic alliance and full-stack software integration (Slurm orchestration, proprietary AI cloud stack, developer tools) secure high-margin enterprise AI training contracts. Revenue expands at 78% 5-year CAGR to $9.4B. Operating leverage drives 25% net margin. Premium 30x multiple reflects mission-critical European and sovereign AI compute leadership.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 9467.0,
+        "year5NetIncome": 2366.7,
+        "year5EPS": 9.97,
+        "scenarioPrice": 194.96,
+        "risks": [
+          "Execution delays in scaling European multi-hundred megawatt datacenter campuses",
+          "Power interconnection queues delaying cluster online dates"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 98,
+        "netMargin": 32,
+        "exitPE": 38,
+        "qualityMultiplier": 1.15,
+        "shareChange": 0.5,
+        "rationale": "Nebius becomes the undisputed sovereign AI cloud powerhouse for Europe and frontier AI labs. Hyper-scale GPU clusters expand revenue at 98% CAGR to $15.3B. Proprietary full-stack cloud software layer commands 32% net margin. Premium multiple commands 38x top-tier AI compute multiple.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 16122.7,
+        "year5NetIncome": 5159.3,
+        "year5EPS": 22.83,
+        "scenarioPrice": 619.51,
+        "risks": [
+          "Export controls or geopolitical regulatory friction across European operations",
+          "Next-generation ASIC architectures reducing demand for general-purpose GPU clusters"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Nebius Group N.V. (NBIS) is emerging as the premier European sovereign AI neocloud, building hyperscale GPU clusters powered by an official NVIDIA partnership. TTM revenue surged +454% YoY to $529.8M as capacity came online. At $206.32, 5-year DCF yields a fair value of $262.62 (+27.3% upside at 10% discount rate). Reverse DCF indicates the market is pricing in a 79.1% 5-year CAGR, matching rapid datacenter megawatt expansion plans. Recommendation: ACCUMULATE (Core Holding: 9.0 shares). Target accumulation on dips below $196.97, trim Tier 1 at $262.62.",
+      "fairValue": 262.62,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-08-31T22:38:00.000Z"
+    }
+  }
+]
