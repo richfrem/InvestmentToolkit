@@ -1,5 +1,40 @@
 # CRWV Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & GPU Neocloud Leadership
+
+# CRWV — CoreWeave, Inc.
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: ACCUMULATE | **Fair Value**: $249.87 vs $81.23 (+207.6%)
+
+### Executive Summary
+CoreWeave (CRWV) is the dominant pure-play AI GPU Neocloud, compounding revenue to **$5.13B** (+112.5% YoY) with exceptional 71.7% gross margins. Its vertical platform integration with Weights & Biases and proprietary Kubernetes orchestration creates substantial customer lock-in for frontier AI labs. Following a -32% pullback to $81.23, our 5-year DCF yields a fair value of **$249.87** (+207.6% upside at 8.16% WACC). With the market pricing in just 14.0% CAGR (Reverse DCF, below our 18.0% bear case), current prices represent extreme negative sentiment on asset-backed debt rather than operational reality.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $81.23 |
+| Fair Value (DCF) | **$249.87** (+207.6% upside) |
+| Wall Street Mean Target | **$144.46** (35 analysts, Buy) |
+| WACC | 8.16% |
+| TTM Revenue | $5.13B (+112.5% YoY) |
+| Diluted Shares | 458.9M |
+| Reverse DCF Implied CAGR | 14.0% (`BELOW_BEAR`) |
+| Strategy Pillar | `datainfra` (`ai-infrastructure`) |
+| Portfolio Position | 15.0 shares (4.04% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (30% weight)**: $23.22 PV (18% CAGR to $11.74B Y5, 10% net margin, 16x PE). Hyperscaler in-house GPU expansion and asset-backed debt service pressure.
+- **⚖️ Base (50% weight)**: $195.94 PV (36% CAGR to $23.87B Y5, 22% net margin, 26x PE). AI research labs scale on CoreWeave Cloud and W&B platform integration.
+- **🚀 Bull (20% weight)**: $724.69 PV (55% CAGR to $45.91B Y5, 28% net margin, 35x PE). Undisputed global Neocloud monopoly commanding premium software & compute margins.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`ACCUMULATE`**
+- **Target Entry / Pullback Support**: $75.44 (Bollinger Channel Lower Band)
+- **Trim Tier 1**: $150.00+
+- **Stop Loss / Breaker**: $68.00
+
+---
+
 ## 2026-05-02 — CRWV research import (2026-05-02)
 
 # CoreWeave, Inc. (CRWV) — Deep-Dive Research Report
