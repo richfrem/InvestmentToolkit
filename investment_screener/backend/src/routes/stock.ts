@@ -340,9 +340,20 @@ router.get('/stock/:ticker', async (req, res) => {
     console.log(`[API] Fetching data for ${cleanSym}${fresh ? ' (fresh)' : ''}...`);
     try {
         const data = await spawnPythonScript('fetch_financials.py', fresh ? [cleanSym, '--no-cache'] : [cleanSym]);
-        if (data.error) { res.status(400).json({ error: data.error }); return; }
+        if (data.error) {
+            const isNotFound = /Quote not found|possibly delisted|No data found|Insufficient financial data|404/i.test(data.error);
+            res.status(isNotFound ? 404 : 400).json({ error: isNotFound ? `Symbol ${cleanSym} not found` : data.error });
+            return;
+        }
         res.json(data);
-    } catch (error) {
+    } catch (error: any) {
+        const errorMsg = error?.message || '';
+        const isNotFound = /Quote not found|possibly delisted|No data found|Insufficient financial data|404/i.test(errorMsg);
+        if (isNotFound) {
+            console.warn(`[API] Symbol ${cleanSym} not found: ${errorMsg}`);
+            res.status(404).json({ error: `Symbol ${cleanSym} not found` });
+            return;
+        }
         console.error(`[API] Error fetching ${cleanSym}: `, error);
         res.status(500).json({ error: 'Failed to fetch financial data' });
     }

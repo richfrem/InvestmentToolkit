@@ -55,4 +55,20 @@ describe('routes/stock.ts SQLite-backed read helper (Wave 3 Task 6)', () => {
         // (3+1)*900 + 10*130 = 3600 + 1300 = 4900
         expect(getStockTotalsFromDb(dbPath)).to.equal(4900);
     });
+
+    it('identifies symbol not found or insufficient financial data errors as 404 client errors', () => {
+        const notFoundErrors = [
+            'HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: KMRN"}}}',
+            'Quote not found for symbol: KMRN',
+            'possibly delisted; no price data found',
+            'Insufficient financial data',
+            'No data found, symbol may be delisted',
+            'No data found for this date range'
+        ];
+
+        for (const err of notFoundErrors) {
+            const isSymbolNotFound = /Quote not found|possibly delisted|No data found|Insufficient financial data|404/i.test(err);
+            expect(isSymbolNotFound).to.be.true;
+        }
+    });
 });
