@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "PLTR",
+    "id": "e8192841-4829-4829-b819-104829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:53:00.000Z",
+    "updatedAt": "2026-09-01T06:53:00.000Z",
+    "name": "PLTR Enterprise AI Agent Operating System Valuation",
+    "rationale": "Palantir Technologies Inc. (PLTR) establishes enterprise ontology moat across defense and Global 2000 commercial sectors with AIP, Gotham, and Foundry. TTM revenue surged +92.8% YoY to $4.48B with elite 49.0% profit margins. At $182.29, our 5-year DCF yields a fair value of $178.93 (-1.8% variance at 9.35% WACC), perfectly matching market equilibrium. Reverse DCF indicates the market is pricing in a 44.1% CAGR. Recommendation: MAINTAIN (Core Holding: 5.2 shares, 2.77% target weight). Maintain current position size, accumulate on pullbacks near $160.81, and execute partial trims above $195.00.",
+    "snapshot": {
+      "price": 182.29,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 2300713329,
+      "revenue": 4475446000,
+      "lastActualPS": 97.88
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 20.0,
+        "netMargin": 30.0,
+        "exitPE": 35.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 1.5,
+        "rationale": "Enterprise AI agent competition from cloud incumbents slows commercial AIP conversion; net margin settles at 30% on $11.1B Y5 revenue.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 11136.3,
+        "year5NetIncome": 3340.9,
+        "year5EPS": 1.35,
+        "scenarioPrice": 28.67,
+        "risks": [
+          "Hyperscaler-native agent tooling commoditizing generic enterprise workflow automation",
+          "Government defense procurement budget deceleration"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 38.0,
+        "netMargin": 42.0,
+        "exitPE": 50.0,
+        "qualityMultiplier": 1.15,
+        "shareChange": 0.5,
+        "rationale": "AIP and Gotham/Foundry ontology moat scales across US/allied defense and Global 2000 enterprises; revenue expands to $22.4B with 42% net margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 22399.2,
+        "year5NetIncome": 9407.6,
+        "year5EPS": 3.99,
+        "scenarioPrice": 146.68,
+        "risks": [
+          "High valuation multiple leaving minimal margin for quarterly growth deceleration",
+          "Customer concentration across large US government agency contracts"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 52.0,
+        "netMargin": 48.0,
+        "exitPE": 65.0,
+        "qualityMultiplier": 1.25,
+        "shareChange": 0.0,
+        "rationale": "Palantir becomes the undisputed enterprise operating system for autonomous AI agents and sovereign defense; $36.4B revenue at 48% net margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 36312.3,
+        "year5NetIncome": 17429.9,
+        "year5EPS": 7.58,
+        "scenarioPrice": 393.70,
+        "risks": [
+          "Regulatory inquiries into public sector data sovereignty and private AI monopolization",
+          "Geopolitical escalations forcing rapid export control adjustments"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 9.35,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Palantir Technologies Inc. (PLTR) establishes enterprise ontology moat across defense and Global 2000 commercial sectors with AIP, Gotham, and Foundry. TTM revenue surged +92.8% YoY to $4.48B with elite 49.0% profit margins. At $182.29, our 5-year DCF yields a fair value of $178.93 (-1.8% variance at 9.35% WACC), perfectly matching market equilibrium. Reverse DCF indicates the market is pricing in a 44.1% CAGR. Recommendation: MAINTAIN (Core Holding: 5.2 shares, 2.77% target weight). Maintain current position size, accumulate on pullbacks near $160.81, and execute partial trims above $195.00.",
+      "fairValue": 178.93,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-09-01T06:53:00.000Z"
+    }
+  }
+]

@@ -1,5 +1,40 @@
 # PLTR Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & Enterprise Ontology Moat
+
+# PLTR — Palantir Technologies Inc.
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: MAINTAIN | **Fair Value**: $178.93 vs $182.29 (-1.8%)
+
+### Executive Summary
+Palantir Technologies has cemented its ontology platform (Gotham, Foundry, AIP) as the indispensable enterprise and sovereign defense standard for autonomous AI agents. TTM revenue surged **+92.8% YoY to $4.48B** with GAAP net profit margins expanding to an elite 49.0% (and 82%+ gross margins). At $182.29, our 5-year probability-weighted DCF yields **$178.93** (-1.8% variance at 9.35% WACC), perfectly matching market equilibrium. Reverse DCF confirms the market is pricing in a sustainable 44.1% CAGR. Standing decision is anchored at **`MAINTAIN`**.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $182.29 |
+| Fair Value (DCF) | **$178.93** (-1.8% variance) |
+| Wall Street Mean Target | **$191.68** (27 analysts, Buy) |
+| WACC | 9.35% |
+| TTM Revenue | $4.48B (+92.8% YoY) |
+| Diluted Shares | 2.30B |
+| Reverse DCF Implied CAGR | 44.1% (`BETWEEN_BASE_AND_BULL`) |
+| Strategy Pillar | `compute` (`ai-infrastructure`) |
+| Portfolio Position | 5.2 shares (2.77% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (25% weight)**: $28.67 PV (20% CAGR to $11.14B Y5, 30% net margin, 35x PE). Cloud provider native agent tooling competition and government procurement deceleration.
+- **⚖️ Base (50% weight)**: $146.68 PV (38% CAGR to $22.40B Y5, 42% net margin, 50x PE). AIP ontology lock-in scales across US/NATO defense and Global 2000 commercial enterprises.
+- **🚀 Bull (25% weight)**: $393.70 PV (52% CAGR to $36.31B Y5, 48% net margin, 65x PE). Palantir becomes the undisputed global operating system for autonomous agentic swarms.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`MAINTAIN`**
+- **Target Entry / Pullback Support**: $160.81 (Keltner Channel Lower Band)
+- **Trim Tier 1**: $195.00+ (Bollinger Upper Band resistance)
+- **Stop Loss / Breaker**: $145.00
+
+---
+
 ## 2026-07-02 — PLTR research import (2026-07-02)
 
 # PLTR — Palantir Technologies — Deep Dive (2026-07-02)
