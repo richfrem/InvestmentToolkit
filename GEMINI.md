@@ -1,6 +1,7 @@
 # GEMINI.md
 
 
+
 ## Overview
 High-end investment analysis suite: React 19 dashboard (port 5173), Node.js/Express backend (port 3001), Python yfinance bridge, TradingView CDP automation.
 
@@ -153,7 +154,6 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 | `plugins/tradingview/scripts/ta_sweep_batch.py` | TA sweep orchestrator |
 | `.agents/` | All skills/agents (Claude, Gemini, Copilot) |
 | `docs/superpowers/status/wave6-program-closure-report.md` | Domain Data Model v3.2 migration program closure report (final state, KPI rollup, retained-JSON rationale) |
-
 
 ## Gemini CLI Tool Mapping
 | Claude Code Tool | Gemini CLI Equivalent |
