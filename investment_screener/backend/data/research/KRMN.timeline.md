@@ -1,5 +1,17 @@
 # KRMN Research Timeline
 
+## 2026-08-21 — TA Sweep for KRMN
+
+Batch technical indicators for KRMN.
+
+## 2026-08-13 — TA Sweep for KRMN
+
+Batch technical indicators for KRMN.
+
+## 2026-07-23 — TA Sweep for KRMN
+
+Batch technical indicators for KRMN.
+
 ## 2026-05-31 — KRMN research import (2026-05-31)
 
 # Karman Holdings Inc. (KRMN) — Deep Dive Research Report
@@ -218,3 +230,7 @@ Confidence is moderate: the underlying product thesis is sound, the gross margin
 ## Discussion Log
 *(Appended during Q&A)*
 
+
+## 2026-05-31 — Prediction claim: KRMN dcf_fair_value (2026-05-31)
+
+Direction: bearish, horizon: 180 days.

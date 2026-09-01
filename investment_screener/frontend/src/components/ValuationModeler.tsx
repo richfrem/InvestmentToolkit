@@ -21,8 +21,8 @@ import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, Che
 import { type StockData, type Scenario, type Projection, type ValuationResult } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
-// import { HelpTrigger } from './HelpModal';
 import { computeScenario } from '../utils/valuationMath';
+import { getActionBadgeClass } from '../utils/actionColors';
 import { Sparkles, BrainCircuit, Loader2, FolderOpen } from 'lucide-react';
 import { AIAnalysisModal } from './AIAnalysisModal';
 import { AgentReminderModal } from './AgentReminderModal';
@@ -587,10 +587,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                         {activeCoachMetric ? `AI Coach: ${activeCoachMetric}` : 'AI Expert Thesis'}
                                         {aiResult?.action && (
-                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-tighter border ${aiResult.action === 'BUY' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                                                aiResult.action === 'SELL' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                                                    'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                                                }`}>
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(aiResult.action)}`}>
                                                 {aiResult.action}
                                             </span>
                                         )}
