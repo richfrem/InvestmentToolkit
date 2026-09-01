@@ -942,6 +942,12 @@
       "dst": "plugins/questrade/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": ".agent/rules",
+      "dst": ".agents/rules",
+      "strategy": "symlink",
+      "description": "Rules directory for agent IDE custom rules discovery"
     }
   ]
 }
