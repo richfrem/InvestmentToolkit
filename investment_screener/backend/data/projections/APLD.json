@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "APLD",
+    "id": "e72f9104-51bc-4889-a212-094721543890",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:37:00.000Z",
+    "updatedAt": "2026-09-01T06:37:00.000Z",
+    "name": "APLD AI HPC Infrastructure Valuation",
+    "rationale": "Applied Digital Corporation (APLD) is scaling purpose-built high-density AI/HPC data centers with locked grid interconnects across North Dakota and Texas. TTM revenue surged +406.6% YoY to $611.3M as massive anchor leases energized. At $24.59, our 5-year DCF yields a fair value of $35.76 (+45.4% upside at 9.72% WACC). Reverse DCF indicates the market is pricing in a 41.0% CAGR, below our 45.0% base case. Recommendation: ACCUMULATE (Core Holding: 32.0 shares, 2.7% target weight). Accumulate on pullbacks near $24.48, trim Tier 1 at $35.76.",
+    "snapshot": {
+      "price": 24.59,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 284303812,
+      "revenue": 611311000,
+      "lastActualPS": 11.44
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.30,
+        "growthRate": 25.0,
+        "netMargin": 8.0,
+        "exitPE": 15.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 2.5,
+        "rationale": "Capex financing dilution; slower hyperscaler conversion; data center energization delays limit Year 5 revenue to $1.87B.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 1865.6,
+        "year5NetIncome": 149.2,
+        "year5EPS": 0.46,
+        "scenarioPrice": 4.16,
+        "risks": [
+          "Delays in grid power interconnect approvals and utility energization timelines",
+          "Capex overruns driving ongoing equity dilution (2.5% annual share inflation)"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 45.0,
+        "netMargin": 16.0,
+        "exitPE": 22.0,
+        "qualityMultiplier": 1.0,
+        "shareChange": 1.5,
+        "rationale": "High-density AI cluster contracts scale to $3.9B revenue by Y5; achieving 16% net margin at scale with 22x exit multiple.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 3918.3,
+        "year5NetIncome": 626.9,
+        "year5EPS": 2.05,
+        "scenarioPrice": 28.32,
+        "risks": [
+          "Hyperscaler concentration risk across initial anchor tenants",
+          "Short-term margin compression during construction ramp phases"
+        ]
+      },
+      "bull": {
+        "weight": 0.20,
+        "growthRate": 65.0,
+        "netMargin": 22.0,
+        "exitPE": 28.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1.0,
+        "rationale": "Multi-gigawatt campus buildouts win major hyperscaler anchor leases; power interconnect moat commands premium cloud multiples.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 7476.2,
+        "year5NetIncome": 1644.8,
+        "year5EPS": 5.50,
+        "scenarioPrice": 101.77,
+        "risks": [
+          "Grid interconnection regulatory caps in regional power authorities",
+          "Supply chain bottlenecks on liquid cooling and transformer equipment"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 9.72,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Applied Digital Corporation (APLD) is scaling purpose-built high-density AI/HPC data centers with locked grid interconnects across North Dakota and Texas. TTM revenue surged +406.6% YoY to $611.3M as massive anchor leases energized. At $24.59, our 5-year DCF yields a fair value of $35.76 (+45.4% upside at 9.72% WACC). Reverse DCF indicates the market is pricing in a 41.0% CAGR, below our 45.0% base case. Recommendation: ACCUMULATE (Core Holding: 32.0 shares, 2.7% target weight). Accumulate on pullbacks near $24.48, trim Tier 1 at $35.76.",
+      "fairValue": 35.76,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:37:00.000Z"
+    }
+  }
+]
