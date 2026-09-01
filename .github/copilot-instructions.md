@@ -1,6 +1,8 @@
-# Copilot Instructions for InvestmentToolkit
+# Copilot Instructions for CLAUDE.md — InvestmentToolkit
 
 > Authoritative repository instructions for GitHub Copilot. Mirrors CLAUDE.md.
+
+
 
 ## Overview
 High-end investment analysis suite: React 19 dashboard (port 5173), Node.js/Express backend (port 3001), Python yfinance bridge, TradingView CDP automation.

@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "SNDK",
+    "id": "6a992688-6623-4ff0-b6a1-370129a08901",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 2,
+    "savedAt": "2026-08-31T22:18:00.000Z",
+    "updatedAt": "2026-08-31T22:18:00.000Z",
+    "name": "SNDK AI Fundamental Valuation",
+    "rationale": "Sandisk Corporation (SNDK) is a primary core holding in the Data Infra / Storage pillar. TTM revenue surged to $20.25B with GAAP net income of $11.43B (56.46% net margin). 5-year DCF yields a fair value of $1,720.21 (+9.8% upside vs $1,566.70 market price). Reverse DCF indicates the market is pricing in a 19.14% 5-year CAGR, well within achievable enterprise flash growth rates. Recommendation: MAINTAIN (Core Holding). Accumulate on dips <$1,290, trim Tier 1 at $1,720.21.",
+    "snapshot": {
+      "price": 1566.7,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 146419001,
+      "revenue": 20248000000,
+      "lastActualPS": 11.33
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": false,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 8,
+        "netMargin": 25,
+        "exitPE": 14,
+        "qualityMultiplier": 0.9,
+        "shareChange": 1.5,
+        "rationale": "Memory downcycle hits as hyperscalers pause capex and competitor NAND capacity floods market. Revenue growth decelerates sharply to 8% CAGR over 5 years. Severe ASP erosion compresses net margins to 25% (down from 56% peak). Multiple compresses to 14x trough hardware multiple. Quality multiplier 0.9 reflects cyclical vulnerability and commodity memory risk.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 29751.0,
+        "year5NetIncome": 7437.7,
+        "year5EPS": 47.15,
+        "scenarioPrice": 368.91,
+        "risks": [
+          "Aggressive NAND wafer fab expansion by competitors (Samsung, SK Hynix, Micron) creates severe supply glut",
+          "Enterprise AI SSD adoption peaks early, leading to inventory destocking"
+        ]
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 16,
+        "netMargin": 38,
+        "exitPE": 20,
+        "qualityMultiplier": 1.05,
+        "shareChange": 0.5,
+        "rationale": "AI datacenter high-capacity QLC SSD and PCIe Gen5 flash demand sustains solid 16% 5-year CAGR after initial +370% post-spinoff baseline ramp. Net margins normalize from hyper-peak 56% down to a highly profitable steady-state 38% as ASPs stabilize. Exit P/E of 20x reflects premium semiconductor storage franchise. Quality multiplier 1.05 reflects proprietary BiCS NAND architecture and long-term enterprise OEM design wins.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 42527.7,
+        "year5NetIncome": 16160.5,
+        "year5EPS": 107.65,
+        "scenarioPrice": 1403.73,
+        "risks": [
+          "Normalization of AI infrastructure memory intensity faster than expected",
+          "Cyclical ASP softening during mid-cycle transition"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 24,
+        "netMargin": 48,
+        "exitPE": 26,
+        "qualityMultiplier": 1.15,
+        "shareChange": -0.5,
+        "rationale": "Sustained high-density AI storage supercycle (64TB-128TB enterprise SSDs replacing HDDs in AI training & inference clusters). 24% revenue CAGR drives scale to $59B+ by Year 5. High-margin custom enterprise firmware and tight supply preserve 48% net margins. Multiple re-rates to 26x semiconductor growth multiple. Quality multiplier 1.15 reflects mission-critical datacenter lock-in and share repurchases.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 59359.5,
+        "year5NetIncome": 28492.6,
+        "year5EPS": 199.53,
+        "scenarioPrice": 3704.48,
+        "risks": [
+          "Alternative memory architectures (HBM, CXL memory pooling) cannibalize flash storage tier",
+          "Export controls on advanced high-layer 3D NAND equipment and components"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Sandisk Corporation (SNDK) is a primary core holding in the Data Infra / Storage pillar. TTM revenue surged to $20.25B with GAAP net income of $11.43B (56.46% net margin). 5-year DCF yields a fair value of $1,720.21 (+9.8% upside vs $1,566.70 market price). Reverse DCF indicates the market is pricing in a 19.14% 5-year CAGR, well within achievable enterprise flash growth rates. Recommendation: MAINTAIN (Core Holding). Accumulate on dips <$1,290, trim Tier 1 at $1,720.21.",
+      "fairValue": 1720.21,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-08-31T22:18:00.000Z"
+    }
+  }
+]
