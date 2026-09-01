@@ -1,5 +1,40 @@
 # CBRS Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & Wafer-Scale Engine (WSE-3) Monetization
+
+# CBRS — Cerebras Systems Inc.
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: ACCUMULATE | **Fair Value**: $237.56 vs $177.25 (+34.0%)
+
+### Executive Summary
+Cerebras Systems continues to establish the monolithic Wafer-Scale Engine (WSE-3) as the premier compute platform for real-time AI reasoning and agentic swarm workflows. Its 21 PB/s memory bandwidth enables 2,500+ tokens/sec throughput on frontier models, bypassing traditional GPU network bottlenecks. Backed by its $20B backlog with OpenAI and AWS Bedrock integration, TTM revenue expanded **+74.3% YoY to $510.0M**. Following a -43% YTD pullback to $177.25, the risk-reward profile is highly attractive, with intrinsic fair value at **$237.56** (+34.0% upside).
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $177.25 |
+| Fair Value (DCF) | **$237.56** (+34.0% upside) |
+| Wall Street Mean Target | **$291.64** (11 analysts, Strong Buy) |
+| WACC | 11.91% |
+| TTM Revenue | $510.0M (+74.3% YoY) |
+| Diluted Shares | 112.2M (model float anchor) |
+| Reverse DCF Implied CAGR | 53.8% (`BETWEEN_BEAR_AND_BASE`) |
+| Strategy Pillar | `compute` (`accelerated-compute`) |
+| Portfolio Position | 4.5 shares (2.74% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (30% weight)**: $17.09 PV (25% CAGR to $1.56B Y5, 12% net margin, 22x PE). G42/UAE concentration friction and warrant dilution.
+- **⚖️ Base (50% weight)**: $184.58 PV (55% CAGR to $4.56B Y5, 25% net margin, 32x PE). AWS Bedrock and OpenAI backlog scaling into multi-gigawatt enterprise inference clusters.
+- **🚀 Bull (20% weight)**: $700.70 PV (78% CAGR to $9.11B Y5, 34% net margin, 40x PE). WSE monolithic architecture becomes the universal benchmark for frontier reasoning swarms.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`ACCUMULATE`**
+- **Target Entry / Pullback Support**: $159.96 (Bollinger Channel Lower Band)
+- **Trim Tier 1**: $237.56 (DCF Fair Value)
+- **Stop Loss / Breaker**: $145.00
+
+---
+
 ## 2026-08-21 — TA Sweep for CBRS
 
 Batch technical indicators for CBRS.

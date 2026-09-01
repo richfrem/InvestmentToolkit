@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "CBRS",
+    "id": "a9182941-4829-4829-b819-104829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:48:00.000Z",
+    "updatedAt": "2026-09-01T06:48:00.000Z",
+    "name": "CBRS Wafer-Scale AI Inference Valuation",
+    "rationale": "Cerebras Systems Inc. (CBRS) produces the monolithic Wafer-Scale Engine (WSE-3), bypassing traditional board-level GPU communication limits with 21 PB/s memory bandwidth and 2,500+ tok/s throughput. TTM revenue reached $510.0M (+74.3% YoY). At $177.25, our 5-year DCF yields a fair value of $237.56 (+34.0% upside at 11.91% WACC). Reverse DCF indicates the market is pricing in a 53.8% CAGR, below our 55.0% base case. Recommendation: ACCUMULATE (Core Holding: 4.5 shares, 2.74% target weight). Accumulate on dips near $159.96, trim Tier 1 at $237.56.",
+    "snapshot": {
+      "price": 177.25,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 112247109,
+      "revenue": 509991000,
+      "lastActualPS": 82.57
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.30,
+        "growthRate": 25.0,
+        "netMargin": 12.0,
+        "exitPE": 22.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 3.0,
+        "rationale": "High customer concentration in G42/Middle East slows diversification; warrant dilution from OpenAI/AWS contracts limits per-share equity value.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 1556.4,
+        "year5NetIncome": 186.8,
+        "year5EPS": 1.44,
+        "scenarioPrice": 17.09,
+        "risks": [
+          "Delays in sovereign AI cloud deployments in non-US jurisdictions",
+          "Post-IPO lockup expiry selling pressure and warrant dilution"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 55.0,
+        "netMargin": 25.0,
+        "exitPE": 32.0,
+        "qualityMultiplier": 1.10,
+        "shareChange": 2.0,
+        "rationale": "Wafer-Scale Engine (WSE-3) captures massive inference market share across AWS Bedrock and OpenAI ($20B backlog); 21 PB/s memory bandwidth moat commands premium multiples.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 4562.7,
+        "year5NetIncome": 1140.7,
+        "year5EPS": 9.20,
+        "scenarioPrice": 184.58,
+        "risks": [
+          "TSMC monolithic wafer packaging capacity allocation bottlenecks",
+          "Enterprise switching costs to proprietary Cerebras software compiler"
+        ]
+      },
+      "bull": {
+        "weight": 0.20,
+        "growthRate": 78.0,
+        "netMargin": 34.0,
+        "exitPE": 40.0,
+        "qualityMultiplier": 1.20,
+        "shareChange": 1.5,
+        "rationale": "Cerebras becomes universal hardware benchmark for frontier reasoning & agentic swarm inference; multi-gigawatt sovereign AI supercomputer contracts scale globally.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 9113.0,
+        "year5NetIncome": 3098.4,
+        "year5EPS": 25.62,
+        "scenarioPrice": 700.70,
+        "risks": [
+          "Next-generation optical interconnect GPU architectures narrowing latency advantage",
+          "US export control restrictions on high-throughput AI wafer engines"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 11.91,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Cerebras Systems Inc. (CBRS) produces the monolithic Wafer-Scale Engine (WSE-3), bypassing traditional board-level GPU communication limits with 21 PB/s memory bandwidth and 2,500+ tok/s throughput. TTM revenue reached $510.0M (+74.3% YoY). At $177.25, our 5-year DCF yields a fair value of $237.56 (+34.0% upside at 11.91% WACC). Reverse DCF indicates the market is pricing in a 53.8% CAGR, below our 55.0% base case. Recommendation: ACCUMULATE (Core Holding: 4.5 shares, 2.74% target weight). Accumulate on dips near $159.96, trim Tier 1 at $237.56.",
+      "fairValue": 237.56,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:48:00.000Z"
+    }
+  }
+]
