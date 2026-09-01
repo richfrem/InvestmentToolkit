@@ -100,27 +100,27 @@ const COLUMNS: ColDef[] = [
     { id: 'change_ytd',     label: 'YTD %',      isChange: true, defaultOn: false, align: 'right', format: fmtPct },
     { id: 'change_1y',      label: '1Y %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
     { id: 'change_overall', label: 'Overall %',  isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'subStrategyId',  label: 'Strategy',   defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
     { id: 'sector',         label: 'Sector',     defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
     { id: 'shares',         label: 'Shares',     defaultOn: false, align: 'right', format: v => safeNum(v) != null ? safeNum(v)!.toLocaleString() : '—' },
     { id: 'book_price',     label: 'Avg Cost',   defaultOn: false, align: 'right', format: fmtPrice },
     { id: 'total_book',     label: 'Book Value', defaultOn: false, align: 'right', format: fmtDollar },
     { id: 'total_market',   label: 'Mkt Value',  defaultOn: false, align: 'right', format: fmtDollar },
     { id: 'qualityMultiplier', label: 'Quality', defaultOn: false, align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}x` : '—' },
-    { id: 'subStrategyId',  label: 'Strategy',   defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
     { id: 'lastAnalyzed',   label: 'Analyzed',   defaultOn: true,  align: 'right', format: v => v ? new Date(v as string).toLocaleDateString() : '—' },
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
-    symbol: 80, action: 185, fairValue: 95, currentPrice: 80, gainLoss: 85,
+    symbol: 80, action: 185, subStrategyId: 135, fairValue: 95, currentPrice: 80, gainLoss: 85,
     change_1d: 65, change_overall: 80, change_1w: 65, change_1m: 65, change_ytd: 65, change_1y: 65, sector: 115, shares: 60, book_price: 72, total_book: 80, total_market: 80, 
     upside: 85, ruleOf40: 70, growth: 80, model: 130, base: 80,
-    bear: 80, bull: 80, qualityMultiplier: 80, subStrategyId: 140, lastAnalyzed: 90,
+    bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90,
     currentPct: 90, recommendedPct: 85, rationale: 260,
 };
 
 // ─── Persistence ──────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'ai-screener-table-prefs-v3';
+const STORAGE_KEY = 'ai-screener-table-prefs-v4';
 
 interface TablePrefs {
     visible: string[];
@@ -902,6 +902,13 @@ export default function ScreenerTable() {
                                                 )}
                                             </div>
                                         );
+                                    } else if (col.id === 'subStrategyId') {
+                                        const strat = val as string | null;
+                                        cellContent = strat && strat !== '—' && strat !== 'other' ? (
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold tracking-tight text-indigo-300 border-indigo-500/30 bg-indigo-950/40">
+                                                {strat}
+                                            </span>
+                                        ) : <span className="text-slate-600 text-xs">—</span>;
                                     } else if (col.id === 'rationale') {
                                         const text = val as string | null;
                                         cellContent = text ? (
