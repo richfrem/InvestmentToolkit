@@ -1,5 +1,39 @@
 # BE Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & $20B Backlog Execution
+
+# BE — Bloom Energy Corporation
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: MAINTAIN | **Fair Value**: $191.34 vs $198.93 (-3.8%)
+
+### Executive Summary
+Bloom Energy has solidified its role as the critical behind-the-meter baseload power solution for hyperscalers bypassing 3-7 year utility grid interconnect backlogs. Backed by its $20B total contracted backlog (including multi-GW frame agreements with Oracle, Brookfield, and AEP), TTM revenue has reached **$2.02B** (+165.5% YoY) while gross margins expanded to 29.0%. With the stock pulling back to $198.93 (-31% from 3-month highs), current market valuation is closely aligned with fundamental intrinsic value ($191.34 fair value, -3.8% variance).
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $198.93 |
+| Fair Value (DCF) | **$191.34** (-3.8% variance) |
+| WACC | 10.61% |
+| TTM Revenue | $2.02B (+165.5% YoY) |
+| Diluted Shares | 294.5M |
+| Reverse DCF Implied CAGR | 60.7% (`BETWEEN_BASE_AND_BULL`) |
+| Strategy Pillar | `datainfra` (`ai-infrastructure`) |
+| Portfolio Position | 7.5 shares (4.61% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (25% weight)**: $21.80 PV (25% CAGR to $6.18B Y5, 10% net margin, 20x PE). Supply chain bottlenecks, natural gas pipeline friction.
+- **⚖️ Base (50% weight)**: $131.91 PV (48% CAGR to $14.37B Y5, 16% net margin, 28x PE). $20B backlog delivers on multi-GW datacenter deployments.
+- **🚀 Bull (25% weight)**: $479.75 PV (68% CAGR to $27.09B Y5, 22% net margin, 35x PE). Universal baseload standard across AI superclusters and green hydrogen.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`MAINTAIN`**
+- **Target Entry / Pullback Support**: $185.31 (Keltner Lower Band)
+- **Trim Tier 1**: $241.80 (Bollinger Upper Band)
+- **Stop Loss / Breaker**: $175.00
+
+---
+
 ## 2026-08-21 — TA Sweep for BE
 
 Batch technical indicators for BE.

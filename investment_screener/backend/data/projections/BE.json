@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "BE",
+    "id": "d9812401-412b-4781-a912-719284019273",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:43:00.000Z",
+    "updatedAt": "2026-09-01T06:43:00.000Z",
+    "name": "BE Solid Oxide Fuel Cell Valuation",
+    "rationale": "Bloom Energy Corporation (BE) is the premier manufacturer of solid oxide fuel cells (SOFCs) with 65% electrical efficiency and a $20B contracted backlog (Oracle, Brookfield, AEP). TTM revenue reached $2.02B with gross margins expanding to 29.0%. At $198.93, our 5-year DCF yields a fair value of $191.34 (-3.8% variance at 10.61% WACC), matching market equilibrium. Reverse DCF indicates the market is pricing in a 60.7% CAGR, reflecting massive datacenter power grid interconnect bypass demand. Recommendation: MAINTAIN (Core Holding: 7.5 shares, 4.61% target weight). Maintain current position size, accumulate only on technical pullbacks near Keltner lower support ($185.31), and take partial profits at Tier 1 resistance ($241.80).",
+    "snapshot": {
+      "price": 198.93,
+      "currency": "USD",
+      "exchange": "NYSE",
+      "shares": 294527346,
+      "revenue": 2023994000,
+      "lastActualPS": 28.95
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 25.0,
+        "netMargin": 10.0,
+        "exitPE": 20.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 2.0,
+        "rationale": "High manufacturing ramp costs and natural gas supply bottlenecks constrain margins to 10% on $6.18B Y5 revenue.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 6176.7,
+        "year5NetIncome": 617.7,
+        "year5EPS": 1.90,
+        "scenarioPrice": 21.80,
+        "risks": [
+          "Natural gas interconnection and pipeline capacity constraints",
+          "Competition from modular nuclear reactors and large-scale battery storage"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 48.0,
+        "netMargin": 16.0,
+        "exitPE": 28.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1.0,
+        "rationale": "$20B contracted backlog (Oracle, Brookfield, AEP) executes cleanly; 65% electrical efficiency commands premium pricing on $14.38B Y5 revenue.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 14372.0,
+        "year5NetIncome": 2299.5,
+        "year5EPS": 7.43,
+        "scenarioPrice": 131.91,
+        "risks": [
+          "Manufacturing supply chain bottlenecks in high-density solid oxide materials",
+          "Customer concentration across early enterprise AI datacenter commitments"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 68.0,
+        "netMargin": 22.0,
+        "exitPE": 35.0,
+        "qualityMultiplier": 1.15,
+        "shareChange": 0.5,
+        "rationale": "Bloom SOFC servers become universal baseload standard for gigawatt-scale AI campuses and green hydrogen generation; $27.1B revenue at 22% net margin.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 27086.7,
+        "year5NetIncome": 5959.1,
+        "year5EPS": 19.73,
+        "scenarioPrice": 479.75,
+        "risks": [
+          "Regulatory review of behind-the-meter emissions standards in California and Texas",
+          "Geopolitical trade restrictions on rare-earth inputs for solid oxide electrolytes"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 10.61,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Bloom Energy Corporation (BE) is the premier manufacturer of solid oxide fuel cells (SOFCs) with 65% electrical efficiency and a $20B contracted backlog (Oracle, Brookfield, AEP). TTM revenue reached $2.02B with gross margins expanding to 29.0%. At $198.93, our 5-year DCF yields a fair value of $191.34 (-3.8% variance at 10.61% WACC), matching market equilibrium. Reverse DCF indicates the market is pricing in a 60.7% CAGR, reflecting massive datacenter power grid interconnect bypass demand. Recommendation: MAINTAIN (Core Holding: 7.5 shares, 4.61% target weight). Maintain current position size, accumulate only on technical pullbacks near Keltner lower support ($185.31), and take partial profits at Tier 1 resistance ($241.80).",
+      "fairValue": 191.34,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-09-01T06:43:00.000Z"
+    }
+  }
+]
