@@ -47,18 +47,34 @@ def persist_intake_payload(payload: dict) -> dict:
         # Fetch existing investment record to safely inherit pillar/strategy if not supplied
         existing = get_investment(conn, canonical) or {}
 
-        # A. Update investment table fields
+        # A. Update investment table fields (supporting both snake_case and camelCase)
+        field_mapping = {
+            "lifecycle_status": ["lifecycle_status", "lifecycleStatus"],
+            "target_weight": ["target_weight", "targetWeight"],
+            "target_action": ["target_action", "targetAction"],
+            "standing_decision_type": ["standing_decision_type", "standingDecisionType"],
+            "standing_decision_reason": ["standing_decision_reason", "standingDecisionReason"],
+            "standing_decision_source": ["standing_decision_source", "standingDecisionSource"],
+            "standing_decision_review": ["standing_decision_review", "standingDecisionReview"],
+            "pillar_id": ["pillar_id", "pillarId"],
+            "sub_strategy_id": ["sub_strategy_id", "subStrategyId"],
+            "thesis_for_inclusion": ["thesis_for_inclusion", "thesisForInclusion"],
+            "agent_rationale": ["agent_rationale", "agentRationale"],
+            "is_watchlisted": ["is_watchlisted", "isWatchlisted"],
+            "sector": ["sector"],
+            "industry": ["industry"],
+            "last_deep_analysis_at": ["last_deep_analysis_at", "lastDeepAnalysisAt"]
+        }
         fields = {}
-        for key in [
-            "lifecycle_status", "target_weight", "target_action",
-            "standing_decision_type", "standing_decision_reason",
-            "standing_decision_source", "standing_decision_review",
-            "pillar_id", "sub_strategy_id", "thesis_for_inclusion",
-            "agent_rationale", "is_watchlisted", "sector", "industry",
-            "last_deep_analysis_at"
-        ]:
-            if key in payload and payload[key] is not None:
-                fields[key] = payload[key]
+        for db_col, keys in field_mapping.items():
+            for k in keys:
+                if k in payload and payload[k] is not None:
+                    val = payload[k]
+                    # Target weight sanity guard: if a non-zero decimal fraction is provided (e.g. 0.065), scale to percentage (6.50)
+                    if db_col == "target_weight" and isinstance(val, (int, float)) and 0 < val < 1.0:
+                        val = val * 100.0
+                    fields[db_col] = val
+                    break
 
         # Validate pillar_id / sub_strategy_id foreign keys against schema
         if "pillar_id" in fields or "sub_strategy_id" in fields:

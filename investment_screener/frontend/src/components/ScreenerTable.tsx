@@ -477,10 +477,10 @@ export default function ScreenerTable() {
             const isCash = row.symbol.includes('CASH') || row.assetClass === 'CASH' || row.symbol === 'USD_CASH';
             const act = (row.action ?? '').toUpperCase();
             if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act) && !isCash) actionable++;
-            // Core holdings are strictly stocks/funds currently held in accounts (currentPct > 0)
+            // Portfolio holdings include all active funded positions or active thesis targets
             const isFunded = (row.currentPct ?? 0) > 0;
             const isTarget = (row.recommendedPct ?? 0) > 0;
-            if (isFunded) holdings++;
+            if (isFunded || isTarget) holdings++;
             if (row.isWatched) watchlist++;
             
             // Only flag true portfolio holdings or active thesis targets that lack a valuation (exclude cash)
@@ -502,8 +502,10 @@ export default function ScreenerTable() {
             const act = (row.action ?? '').toUpperCase();
             if (!['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) return false;
         } else if (statusFilter === 'holdings') {
-            // Core holdings strictly require an active funded position (currentPct > 0)
-            if ((row.currentPct ?? 0) <= 0) return false;
+            // Portfolio holdings tab shows all active funded positions OR active thesis target allocations
+            const isFunded = (row.currentPct ?? 0) > 0;
+            const isTarget = (row.recommendedPct ?? 0) > 0;
+            if (!isFunded && !isTarget) return false;
         } else if (statusFilter === 'watchlist') {
             if (!row.isWatched) return false;
         } else if (statusFilter === 'gaps') {
