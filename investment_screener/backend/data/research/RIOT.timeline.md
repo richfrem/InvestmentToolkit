@@ -101,3 +101,39 @@ Analyst Y1 revenue of $658M (+1.6%) and Y2 $821M (+24.8%) implies mining revenue
 ## Discussion Log
 *No Q&A logged yet.*
 
+---
+
+## 2026-09-01 — Autonomous DCF Refresh & Power/BTC Fleet Valuation
+
+# RIOT — Riot Platforms, Inc.
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: MAINTAIN | **Fair Value**: $11.23 vs $18.03 (-37.7%)
+
+### Executive Summary
+Riot Platforms operates ~24 EH/s of Bitcoin mining capacity alongside 1+ GW of power interconnect infrastructure across Corsicana and Rockdale, Texas. While GAAP DCF yields a conservative operational floor of **$11.23**, digital asset equities trade as leveraged BTC NAV vehicles (21 Wall Street analysts maintain a **$32.40** mean target with Strong Buy consensus). As an active core position (36.0 shares, 2.27% target weight), the anchor recommendation is **`MAINTAIN`**.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $18.03 |
+| Fair Value (DCF Floor) | **$11.23** (-37.7%) |
+| Analyst Consensus (BTC NAV) | **$32.40** (Strong Buy) |
+| WACC | 12.30% |
+| TTM Revenue | $647.4M (+13.9% YoY) |
+| Diluted Shares | 375.3M |
+| Reverse DCF Implied CAGR | 49.8% (`PRICING_IN_MORE_THAN_BULL`) |
+| Strategy Pillar | `sovfin` (`sovereign-finance`) |
+| Portfolio Position | 36.0 shares (2.27% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (35% weight)**: $0.91 PV (10% CAGR to $1.04B Y5, 8% net margin, 10x PE). Difficulty surges, compressed margins, and ATM dilution.
+- **⚖️ Base (45% weight)**: $7.31 PV (25% CAGR to $1.98B Y5, 18% net margin, 16x PE). 1+ GW capacity reached with strong ERCOT power demand response revenue.
+- **🚀 Bull (20% weight)**: $38.10 PV (45% CAGR to $4.15B Y5, 28% net margin, 22x PE). Excess power interconnects pivoted to high-margin AI HPC hosting alongside BTC price expansion.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`MAINTAIN`**
+- **Target Entry / Pullback Support**: $17.39 (Keltner Lower Band)
+- **Trim Tier 1**: $25.00+ (Tactical trim into BTC rallies)
+- **Stop Loss / Breaker**: $15.50
+
+
