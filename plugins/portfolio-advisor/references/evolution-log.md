@@ -8,7 +8,33 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
-## 2026-07-18 — Weekly Review & Target Calibration
+## 2026-09-02 — Grok News Sweep Model-Intelligence Synthesis & Review Fixes (Tier 0/1 Evolution)
+
+**Trigger:** Enhancement to `/x-news-sweep` prompt generation to inject deep model intelligence (scenario risks, standing decision anchors, SA/DCF tension) into the Grok prompt with mandatory Phase 1.5 agent review.
+
+**Tier 0/1 Friction & Fixes Landed:**
+1. **`portfolio_io.py` Omission (`standing_decision_*`)**:
+   - *Friction:* `load_thesis_holdings()` omitted `standing_decision_reason` and `standing_decision_type` from the returned dict, rendering anchor thesis branches in `generate_grok_prompt.py` dead code.
+   - *Fix:* Extended `portfolio_io.py:load_thesis_holdings()` to extract both fields from the SQLite `investment` table.
+2. **Markdown Table Cell Sanitization & Token Bounding**:
+   - *Friction:* Raw scenario risks contained unbounded 200–300+ character strings, and inter-item join used `" | "` which created pipe-count mismatches (corrupting 26% of table rows).
+   - *Fix:* Added `_clean_markdown_text()` with safe character bounding and whitespace normalization; changed join separator to `"; "` to strictly preserve Markdown table columns. Added automated pipe-count validation.
+3. **Phase 1.5 Mandatory Protocol (`x-news-sweep/SKILL.md`)**:
+   - *Friction:* Prompt generation previously relied on static script output without live context review.
+   - *Fix:* Codified Phase 1.5 in `SKILL.md` requiring the AI Agent to inspect recent repository context (daily briefs, macro regime, earnings alerts) and directly synthesize surgical inquiries prior to Grok dispatch.
+4. **Upstream Rule Enforcement (`agent-plugins-skills` PR #489)**:
+   - *Friction:* Agent models treated the `PRE-COMPLETION GATE` as an end-of-session summary rather than an autonomous per-turn contract.
+   - *Fix:* Merged and synced PR #489 across `self-evolution-policy.md` and `graph-planning-superpowers-policy.md` to mandate proactive turn-by-turn gate emission.
+
+**Artifacts Updated:**
+- `plugins/portfolio-advisor/scripts/generate_grok_prompt.py`
+- `plugins/portfolio-advisor/assets/templates/daily_sweep.md.template`
+- `plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md`
+- `investment_screener/backend/py_services/portfolio_io.py`
+- `references/map-debt.md` (`DEBT-20260902-01`)
+- `.agent/rules/self-evolution-policy.md` & `.agent/rules/graph-planning-superpowers-policy.md`
+
+---
 
 **Macro Regime:** RISK-ON (score=2). VIX stable around 15-16, credit yields supportive. Semiconductor rotation and memory consolidation active. Hyperscaler capex remains structurally robust with nuclear and power agreements (Meta/Microsoft PPAs).
 **TA Sweep:** Full batch scan completed for holdings and watchlist. Key levels mapped for major movers (SNDK, PLTR, SPCX, SKHY).
