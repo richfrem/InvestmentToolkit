@@ -164,7 +164,7 @@ export default function ScreenerTable() {
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [sortCol, setSortCol] = useState<keyof ScreenerRow>('upside');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'actionable' | 'holdings' | 'watchlist' | 'gaps'>('holdings');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'actionable' | 'holdings' | 'watchlist' | 'portfolio_gaps' | 'watchlist_gaps'>('holdings');
 
     const dragRef = useRef<{ colId: string; startX: number; startWidth: number } | null>(null);
 
@@ -494,30 +494,40 @@ export default function ScreenerTable() {
         let actionable = 0;
         let holdings = 0;
         let watchlist = 0;
-        let gaps = 0;
+        let portfolioGaps = 0;
+        let watchlistGaps = 0;
 
         for (const row of rows) {
             const isCash = row.symbol.includes('CASH') || row.assetClass === 'CASH' || row.symbol === 'USD_CASH';
             const act = (row.action ?? '').toUpperCase();
             if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act) && !isCash) actionable++;
+            
             // Portfolio holdings include all active funded positions or active thesis targets
             const isFunded = (row.currentPct ?? 0) > 0;
             const isTarget = (row.recommendedPct ?? 0) > 0;
             if (isFunded || isTarget) holdings++;
             if (row.isWatched) watchlist++;
             
-            // Only flag true portfolio holdings or active thesis targets that lack a valuation (exclude cash)
+            // 1. Critical Portfolio Gaps: active funded/target positions lacking valuation (exclude cash)
             const isPortfolioScope = (isFunded || isTarget) && !isCash;
             if (isPortfolioScope && (row.rowKind === 'holding' || row.fairValue == null)) {
-                gaps++;
+                portfolioGaps++;
+            }
+
+            // 2. Watchlist Research Gaps: tracked non-portfolio tickers lacking valuation (exclude cash)
+            if (!isPortfolioScope && !isCash && (row.rowKind === 'holding' || row.fairValue == null)) {
+                watchlistGaps++;
             }
         }
 
-        return { all: rows.length, actionable, holdings, watchlist, gaps };
+        return { all: rows.length, actionable, holdings, watchlist, portfolioGaps, watchlistGaps };
     }, [rows]);
 
     const filteredRows = rows.filter(row => {
         const isCash = row.symbol.includes('CASH') || row.assetClass === 'CASH' || row.symbol === 'USD_CASH';
+        const isFunded = (row.currentPct ?? 0) > 0;
+        const isTarget = (row.recommendedPct ?? 0) > 0;
+        const isPortfolioScope = (isFunded || isTarget) && !isCash;
 
         // Status bar grouping filter
         if (statusFilter === 'actionable') {
@@ -526,17 +536,16 @@ export default function ScreenerTable() {
             if (!['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) return false;
         } else if (statusFilter === 'holdings') {
             // Portfolio holdings tab shows all active funded positions OR active thesis target allocations
-            const isFunded = (row.currentPct ?? 0) > 0;
-            const isTarget = (row.recommendedPct ?? 0) > 0;
             if (!isFunded && !isTarget) return false;
         } else if (statusFilter === 'watchlist') {
             if (!row.isWatched) return false;
-        } else if (statusFilter === 'gaps') {
+        } else if (statusFilter === 'portfolio_gaps') {
             if (isCash) return false;
-            const isFunded = (row.currentPct ?? 0) > 0;
-            const isTarget = (row.recommendedPct ?? 0) > 0;
-            const isPortfolioScope = (isFunded || isTarget) && !isCash;
             const isGap = isPortfolioScope && (row.rowKind === 'holding' || row.fairValue == null);
+            if (!isGap) return false;
+        } else if (statusFilter === 'watchlist_gaps') {
+            if (isCash) return false;
+            const isGap = !isPortfolioScope && (row.rowKind === 'holding' || row.fairValue == null);
             if (!isGap) return false;
         }
 
@@ -626,11 +635,20 @@ export default function ScreenerTable() {
                             <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'watchlist' ? 'bg-purple-800/80 text-white' : 'bg-slate-800 text-purple-400'}`}>{counts.watchlist}</span>
                         </button>
                         <button
-                            onClick={() => setStatusFilter('gaps')}
-                            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold transition-all ${statusFilter === 'gaps' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            onClick={() => setStatusFilter('portfolio_gaps')}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold transition-all ${statusFilter === 'portfolio_gaps' ? 'bg-rose-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            title="Active portfolio holdings or targets missing a valuation model"
                         >
-                            <span>🚨 Needs Analysis</span>
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'gaps' ? 'bg-amber-800/80 text-white' : 'bg-slate-800 text-amber-400'}`}>{counts.gaps}</span>
+                            <span>🚨 Portfolio Gaps</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'portfolio_gaps' ? 'bg-rose-800/80 text-white' : counts.portfolioGaps > 0 ? 'bg-rose-950 text-rose-400 border border-rose-800' : 'bg-slate-800 text-slate-400'}`}>{counts.portfolioGaps}</span>
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('watchlist_gaps')}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold transition-all ${statusFilter === 'watchlist_gaps' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            title="Watchlist candidates awaiting valuation analysis"
+                        >
+                            <span>🔬 Watchlist Needs Analysis</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'watchlist_gaps' ? 'bg-amber-800/80 text-white' : 'bg-slate-800 text-amber-400'}`}>{counts.watchlistGaps}</span>
                         </button>
                     </div>
                 </div>

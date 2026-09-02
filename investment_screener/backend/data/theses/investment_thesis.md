@@ -86,29 +86,23 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **NBIS** | ⚪ MAINTAIN | ACCUMULATE | 5.87% | 6.50% | +26.1% | Pure-play full-stack AI cloud infrastructure & sovereign AI compute — GPU clusters, proprietary cloud platform, and NVIDIA preferred partner scaling European AI compute capacity. |
-| **GOOG** | ⚪ MAINTAIN | MAINTAIN | 5.37% | 5.50% | +2.2% | Global leader in digital advertising, cloud AI infrastructure (Vertex AI / TPU), video (YouTube), and autonomous driving (Waymo). Foundational AI titan with unmatched cash flow. |
 | **TSM** | ⚪ MAINTAIN | ACCUMULATE | 3.94% | 3.85% | +57.4% | The foundry backbone of the AI compute stack. |
 | **STM** | ⚪ MAINTAIN | ACCUMULATE | 3.72% | 3.69% | +88.7% | STM |
 | **CBRS** | ⚪ MAINTAIN | ACCUMULATE | 2.52% | 2.74% | +32.9% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
+| **AMAT** | ⚪ MAINTAIN | ACCUMULATE | 2.17% | 2.24% | +17.7% | AMAT |
+| **ALAB** | 👁️ WATCHLIST | SELL | — | — | — | ALAB |
 | **AMD** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Hedge against NVDA dominance. |
-| **ANET** | 👁️ WATCHLIST | INITIATE | — | — | — | AI networking switching fabric. |
 | **ASML** | 👁️ WATCHLIST | SELL | — | — | — | Absolute monopoly on EUV lithography. |
 | **AVGO** | 👁️ WATCHLIST | INITIATE | — | — | — | Custom ASIC + networking moat. |
-| **CEG** | 👁️ WATCHLIST | TRIM | — | — | — | Largest US nuclear operator. |
 | **DRAM** | 👁️ WATCHLIST | HOLD | — | — | — | Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure — Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating. |
-| **EQIX** | 👁️ WATCHLIST | WATCHLIST | — | — | — | Digital Geneva. |
-| **EQT** | 👁️ WATCHLIST | TRIM | — | — | — | EXIT: Position closed. Not held. |
 | **INTC** | 🟢 INITIATE | HOLD | — | 2.00% | — | EXIT: Position closed 2026-06. Semis sector overextended — waiting for pullback before re-entry. Terafab JV (Intel + Tesla + SpaceX/xAI) thesis intact long-term but valuation stretched. |
-| **META** | 👁️ WATCHLIST | INITIATE | — | — | — | Social monopoly + AI ad flywheel. |
 | **NVDA** | 👁️ WATCHLIST | INITIATE | — | — | — | Highest-conviction BUY. Target increased to absorb freed capital from IREN, COHR, and EQT exits. |
-| **OKLO** | 👁️ WATCHLIST | SELL | — | — | — | Micro-nuclear reactor commercialization. Power pillar speculative play — same theme as BE and CEG. AI data center power demand requires diverse nuclear supply; OKLO's micro-reactor model targets co-location with data centers. |
-| **PSIX** | 👁️ WATCHLIST | BUY | — | — | — | AI power infrastructure. |
-| **TEAM** | 👁️ WATCHLIST | BUY | — | — | — | Human-agentic collaboration platform. |
-| **VRT** | 👁️ WATCHLIST | TRIM | — | — | — | Data center thermal management. |
-| **VST** | 👁️ WATCHLIST | ACCUMULATE | — | — | — | Nuclear + natgas power merchant. |
-| **WYFI** | 👁️ WATCHLIST | BUY | — | — | — | AI GPU cloud + HPC data center. |
-| **Subtotal** | | **21.42%** | **24.28%** | +2.86pp | |
+| **TSEM** | 👁️ WATCHLIST | SELL | — | — | — | TSEM |
+| **ARM** | 👁️ WATCHLIST | — | — | — | — | ARM |
+| **SNPS** | 👁️ WATCHLIST | — | — | — | — | SNPS |
+| **CDNS** | 👁️ WATCHLIST | — | — | — | — | CDNS |
+| **QCOM** | 👁️ WATCHLIST | — | — | — | — | QCOM |
+| **Subtotal** | | **12.35%** | **14.52%** | +2.17pp | |
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
@@ -117,20 +111,19 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.94% | 6.50% | +41.7% | Leading cloud-native Zero Trust SASE architecture (ZIA/ZPA) securing distributed enterprise cloud traffic, data protection (DSPM/AI-SPM), and AI workloads. Mission-critical enterprise cybersecurity infrastructure. |
 | **PANW** | ⚪ MAINTAIN | MAINTAIN | 2.92% | 2.68% | -30.3% | AI-native platform consolidation leader. |
 | **CRWD** | 👁️ WATCHLIST | EXIT | — | — | — | EXIT: DCF -66% downside. |
+| **NET** | 👁️ WATCHLIST | — | — | — | — | NET |
 | **Subtotal** | | **9.85%** | **9.18%** | -0.67pp | |
 
 ### Sub-Strategy 3 — Sovereign Finance
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **RIOT** | ⚪ MAINTAIN | MAINTAIN | 2.14% | 2.27% | -40.9% | RIOT |
-| **BTDR** | ⚪ MAINTAIN | ACCUMULATE | 2.00% | 2.14% | +217.8% | Proprietary Sealminer ASIC chip design. |
 | **COIN** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents. |
 | **CRCL** | 👁️ WATCHLIST | MAINTAIN | — | — | — | USDC issuer and stablecoin infrastructure for AI agents. |
 | **ETHA** | 👁️ WATCHLIST | HOLD | — | — | — | Ethereum as programmable settlement layer. |
 | **IBIT** | 👁️ WATCHLIST | HOLD | — | — | — | Bitcoin as sovereign reserve asset. |
 | **SOLZ** | 👁️ WATCHLIST | — | — | — | — | EXIT: Solana ETF. |
-| **Subtotal** | | **4.15%** | **4.41%** | +0.26pp | |
+| **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Sub-Strategy 4 — Quality SaaS Resilience
 
@@ -138,6 +131,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
 | **CRM** | 👁️ WATCHLIST | BUY | — | — | — | Agentforce AI platform. |
 | **NOW** | 👁️ WATCHLIST | BUY | — | — | — | AI workflow automation. |
+| **TEAM** | 👁️ WATCHLIST | BUY | — | — | — | Human-agentic collaboration platform. |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Sub-Strategy 5 — Applied AI / Frontier Bets
@@ -145,7 +139,6 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
 | **DXYZ** | 👁️ WATCHLIST | INITIATE | — | — | — | Only public vehicle for pre-IPO AI basket: SpaceX, Anthropic, OpenAI, xAI, Databricks. Scarcity premium play — not a value play. |
-| **POET** | 👁️ WATCHLIST | SELL | — | — | — | EXIT: POET Technologies. |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Sub-Strategy 6 — Metabolic Reprogramming & Genetic Editing
@@ -154,6 +147,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
 | **CRSP** | 👁️ WATCHLIST | WATCHLIST | — | — | — | In-vivo liver/epigenetic editing core of the sub-strategy. Lead asset CTX310 targets ANGPTL3 for permanent LDL/triglyceride reduction - a genetic alternative to continuous GLP-1 maintenance. $2.4B cash runway funds clinical readouts. Structural target 23.5% of the biohealth pillar (1.059% of total portfolio) once initiated; held at watchlist for now. Milestone gate: CTX310 Phase 1/2a cardiotoxicity and durability data. |
 | **LLY** | 👁️ WATCHLIST | HOLD | — | — | — | Core cash-flow aggregator for the Metabolic Reprogramming sub-strategy. GLP-1 franchise (Zepbound/Mounjaro) generates tech-like margins (>81% gross margin, Rule of 40 ~90%), funding M&A into gene-editing delivery vectors as a hedge against continuous-maintenance obsolescence. Structural target 76.5% of the biohealth pillar (3.441% of total portfolio) once initiated; held at watchlist for now. Accumulate on pullbacks; do not chase above ~50x forward P/E. |
+| **TEM** | 👁️ WATCHLIST | HOLD | — | — | — | TEM |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Strategic Reserve
@@ -168,36 +162,21 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **AAPL** | 👁️ WATCHLIST | HOLD | — | — | — | AAPL |
-| **ALAB** | 👁️ WATCHLIST | SELL | — | — | — | ALAB |
-| **AMZN** | 👁️ WATCHLIST | BUY | — | — | — | AMZN |
-| **BITF** | 👁️ WATCHLIST | SELL | — | — | — | BITF |
-| **BW** | 👁️ WATCHLIST | SELL | — | — | — | BW |
 | **CAKE** | 👁️ WATCHLIST | SELL | — | — | — | CAKE |
 | **CELH** | 👁️ WATCHLIST | SELL | — | — | — | CELH |
-| **CIFR** | 👁️ WATCHLIST | SELL | — | — | — | CIFR |
-| **HUT** | 👁️ WATCHLIST | SELL | — | — | — | HUT |
 | **KRC** | 👁️ WATCHLIST | SELL | — | — | — | KRC |
-| **LBRT** | 👁️ WATCHLIST | SELL | — | — | — | LBRT |
 | **NKE** | 👁️ WATCHLIST | HOLD | — | — | — | NKE |
 | **ORCL** | 👁️ WATCHLIST | BUY | — | — | — | ORCL |
-| **PUMP** | 👁️ WATCHLIST | SELL | — | — | — | PUMP |
-| **SEI** | 👁️ WATCHLIST | BUY | — | — | — | SEI |
-| **SYM** | 👁️ WATCHLIST | BUY | — | — | — | SYM |
-| **TEM** | 👁️ WATCHLIST | HOLD | — | — | — | TEM |
-| **TSEM** | 👁️ WATCHLIST | SELL | — | — | — | TSEM |
-| **TSLA** | 👁️ WATCHLIST | SELL | — | — | — | TSLA |
 | **DLR.U.TO** | 👁️ WATCHLIST | — | — | — | — | DLR.U.TO |
 | **DLR.TO** | 👁️ WATCHLIST | — | — | — | — | DLR.TO |
 | **T1E** | 👁️ WATCHLIST | — | — | — | — | T1E |
-| **HIVE** | 👁️ WATCHLIST | — | — | — | — | HIVE |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Portfolio Totals
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **47.69%** | **47.67%** | -0.02pp |
+| **All holdings** | **34.47%** | **33.50%** | -0.97pp |
 | *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
 <!-- AUTO_UPDATE_END: portfolio_blueprint -->
 
