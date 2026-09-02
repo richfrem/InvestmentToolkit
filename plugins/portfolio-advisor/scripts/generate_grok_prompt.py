@@ -87,17 +87,71 @@ def load_dcf(ticker: str, db_path: Path | None = None) -> dict:
         fv = latest.get("fair_value") or 0
         price = snapshot.get("price") or 0
         upside = round((fv - price) / price * 100, 1) if fv and price else None
+
+        # Load projection scenarios and key risks for deep model intelligence
+        scenarios_rows = conn.execute(
+            """
+            SELECT scenario_name, rationale, risks_json 
+            FROM projection_scenario 
+            WHERE projection_id = ?
+            ORDER BY CASE scenario_name WHEN 'bear' THEN 1 WHEN 'base' THEN 2 WHEN 'bull' THEN 3 ELSE 4 END;
+            """,
+            (latest["projection_id"],)
+        ).fetchall()
+
+        scenarios_info = {}
+        for s_name, s_rat, s_risks_raw in scenarios_rows:
+            risks_list = []
+            if s_risks_raw:
+                try:
+                    risks_list = json.loads(s_risks_raw)
+                except Exception:
+                    risks_list = [s_risks_raw]
+            scenarios_info[s_name] = {
+                "rationale": s_rat,
+                "risks": risks_list
+            }
+
         return {
             "action": latest.get("action", ""),
             "fairValue": fv,
             "price": price,
             "upside": upside,
             "savedAt": (latest.get("saved_at") or "")[:10],
+            "scenarios": scenarios_info
         }
     except Exception:
         return {}
     finally:
         conn.close()
+
+
+def derive_targeted_inquiry(ticker: str, holding: dict, dcf: dict) -> str:
+    """Generate a targeted, model-informed inquiry pressure point for Grok to investigate."""
+    inquiries = []
+    
+    # 1. Check for specific SA / DCF conflicts or agent rationale
+    rationale = holding.get("agentRationale", "")
+    if "DCF CONFLICT" in rationale or "SA/DCF" in rationale:
+        inquiries.append("SA/DCF conflict: probe smart money / LP updates vs margin sustainability")
+    elif holding.get("standingDecisionReason"):
+        inquiries.append(f"Anchor thesis: {holding['standingDecisionReason'][:75]}")
+
+    # 2. Extract Bear / Base case key risks from DCF scenarios
+    scenarios = dcf.get("scenarios", {})
+    bear_risks = scenarios.get("bear", {}).get("risks", [])
+    base_risks = scenarios.get("base", {}).get("risks", [])
+    
+    if bear_risks:
+        inquiries.append(f"Bear risk to probe: {bear_risks[0]}")
+    elif base_risks:
+        inquiries.append(f"Execution risk: {base_risks[0]}")
+    elif holding.get("thesisForInclusion"):
+        inquiries.append(f"Verify thesis: {holding['thesisForInclusion']}")
+    else:
+        inquiries.append("Verify customer concentration, contract execution & guidance shifts")
+
+    return " | ".join(inquiries)
 
 
 def _dcf_label(dcf: dict) -> str:
@@ -144,6 +198,8 @@ def build_prompt(date_str: str) -> str:
         role    = h.get("role", "watchlist")
         pillar  = h.get("pillarId", "")
 
+        targeted_inquiry = derive_targeted_inquiry(ticker, h, dcf)
+
         if "DCF CONFLICT" in h.get("agentRationale", "") or "SA/DCF" in h.get("agentRationale", ""):
             watch = "SA/DCF conflict — monitor for resolution"
         else:
@@ -158,6 +214,7 @@ def build_prompt(date_str: str) -> str:
             role=role,
             pillar=pillar,
             watch=watch,
+            targetedInquiry=targeted_inquiry,
             agentRationale=h.get("agentRationale", ""),
         )
 
@@ -194,8 +251,8 @@ For **every INITIATE target** below, provide 3–5 sentences: recent momentum, v
 
     # Active holdings table
     active_rows = [
-        "| Ticker | Actual% | Target% | Action | DCF Signal | Entry Price | Sizing context |",
-        "|--------|---------|---------|--------|------------|-------------|----------------|"
+        "| Ticker | Actual% | Target% | Action | DCF Signal | Entry Price | Sizing context | Targeted Inquiries & Key Thesis Vulnerabilities |",
+        "|--------|---------|---------|--------|------------|-------------|----------------|------------------------------------------------|"
     ]
     for r in active_held:
         dcf_label = _dcf_label(r["dcf"])
@@ -209,7 +266,7 @@ For **every INITIATE target** below, provide 3–5 sentences: recent momentum, v
         entry_label = f"${entry:,.0f}" if entry else "—"
         active_rows.append(
             f"| **{r['ticker']}** | {r['actual']:.1f}% | {r['target']:.1f}% "
-            f"| {_action_emoji(r['action'])} | {dcf_label} | {entry_label} | {sizing} |"
+            f"| {_action_emoji(r['action'])} | {dcf_label} | {entry_label} | {sizing} | {r['targetedInquiry']} |"
         )
     active_table = "\n".join(active_rows)
 
@@ -219,14 +276,14 @@ For **every INITIATE target** below, provide 3–5 sentences: recent momentum, v
         init_rows = [
             "## 🟢 INITIATE Targets (targeted but not yet purchased)",
             "",
-            "| Ticker | Target% | DCF Signal | Note |",
-            "|--------|---------|------------|------|"
+            "| Ticker | Target% | DCF Signal | Targeted Thesis Inquiries & Catalyst Gates |",
+            "|--------|---------|------------|--------------------------------------------|"
         ]
         for r in initiate_list:
             dcf_label = _dcf_label(r["dcf"])
             init_rows.append(
                 f"| **{r['ticker']}** | {r['target']:.1f}% | {dcf_label} "
-                f"| Deep dive required — initiate now or wait? |"
+                f"| {r['targetedInquiry']} |"
             )
         initiate_holdings_section = "\n".join(init_rows)
 
@@ -236,14 +293,14 @@ For **every INITIATE target** below, provide 3–5 sentences: recent momentum, v
         exit_rows = [
             "## 🔴 EXIT Positions (still held, target = 0%)",
             "",
-            "| Ticker | Actual% | DCF Signal | Reason |",
-            "|--------|---------|------------|--------|"
+            "| Ticker | Actual% | DCF Signal | Exit Reason & Reversal Watch |",
+            "|--------|---------|------------|------------------------------|"
         ]
         for r in exit_list:
             dcf_label = _dcf_label(r["dcf"])
             exit_rows.append(
                 f"| **{r['ticker']}** | {r['actual']:.1f}% | {dcf_label} "
-                f"| Flagged for exit — any positive reversal? |"
+                f"| Flagged for exit — {r['targetedInquiry']} |"
             )
         exit_holdings_section = "\n".join(exit_rows)
 

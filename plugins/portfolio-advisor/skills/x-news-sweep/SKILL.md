@@ -61,20 +61,33 @@ The prompt uses a **tiered deep dive** approach to keep output focused:
 python3 scripts/generate_grok_prompt.py --output /tmp/grok_sweep_prompt.md
 ```
 
-After generating, check if browser automation is available:
+---
+
+## Phase 1.5 — Agent Intelligence Review & Context Synthesis
+
+Before submitting the prompt to Grok (or dispatching browser automation), the AI Agent MUST review the generated prompt against the broader repository context:
+
+1. **Review Against Intelligence & Projections**:
+   - Check `investment_screener/backend/data/projections/` and `intelligence.sqlite` / `domain_model.sqlite`.
+   - Inspect recent macro regime alerts, upcoming binary earnings events, or technical flags (e.g. RSI extreme, volume bias).
+2. **Synthesize & Refine Targeted Probing Inquiries**:
+   - Verify that the **Targeted Inquiries & Key Thesis Vulnerabilities** column in `/tmp/grok_sweep_prompt.md` includes specific questions on high-priority holdings (e.g., specific hyperscaler cluster deliveries for `CRWV`, NRC licensing status for `OKLO`, power PPA terms for `CEG`/`VST`, or smart money / SA LP 13F changes for `BE`/`CORZ`).
+   - If material new context exists that is not yet reflected in the prompt table, directly edit `/tmp/grok_sweep_prompt.md` to tailor the questions before submission.
+
+After the review and refinement, check if browser automation is available:
 ```bash
 curl -s http://127.0.0.1:9223/json/version >/dev/null 2>&1 && echo "Chrome ready" || echo "Chrome not running"
 ```
 
 - **Chrome ready on port 9223**: run the full automation script above (Browser Automation Mode) — no user copy-paste needed
-- **Chrome not running**: say to the user:
+- **Chrome not running**: present the final, refined prompt or say to the user:
 
 ```
-✅ Grok prompt generated — {N} active holdings, {N} INITIATE targets, {N} EXIT positions.
+✅ Grok prompt generated & AI-enriched with targeted thesis inquiries — {N} active holdings, {N} INITIATE targets, {N} EXIT positions.
 
 Paste this into grok.com and send.
 Grok will return:
-  Part 1 — sweep table with [DD] flags for material news
+  Part 1 — sweep table with [DD] flags for material news & resolution of targeted inquiries
   Part 2 — deep dives for all INITIATE targets
   Part 3 — deep dives for [DD]-flagged active holdings
 
