@@ -67,7 +67,7 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-09-01 07:52 by TV sync · Portfolio total: $31,895 USD*
+*Auto-updated 2026-09-02 08:20 by TV sync · Portfolio total: $31,895 USD*
 
 **Active Positions**
 
@@ -81,7 +81,7 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 | **TSM** | 0 | 3.9% | 3.9% | +0.1pp | ⚪ MAINTAIN | — |
 | **STM** | 0 | 3.7% | 3.7% | +0.0pp | ⚪ MAINTAIN | ≤$49 |
 | **CORZ** | 0 | 3.5% | 3.8% | -0.3pp | ⚪ MAINTAIN | — |
-| **MU** | 0 | 3.5% | 3.5% | -0.1pp | ⚪ MAINTAIN | — |
+| **MU** | 0 | 3.5% | 3.6% | -0.1pp | ⚪ MAINTAIN | — |
 | **IREN** | 0 | 3.1% | 2.7% | +0.4pp | 🟡 TRIM | — |
 | **APLD** | 0 | 2.6% | 2.7% | -0.1pp | ⚪ MAINTAIN | — |
 | **CBRS** | 0 | 2.5% | 2.7% | -0.2pp | ⚪ MAINTAIN | — |
