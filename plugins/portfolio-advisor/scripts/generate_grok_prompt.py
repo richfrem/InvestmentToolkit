@@ -175,7 +175,7 @@ def derive_targeted_inquiry(ticker: str, holding: dict, dcf: dict) -> str:
     except Exception:
         inquiries = ["Verify customer concentration, contract execution & guidance shifts"]
 
-    return " | ".join(inquiries)
+    return "; ".join(inquiries)
 
 
 def _dcf_label(dcf: dict) -> str:
