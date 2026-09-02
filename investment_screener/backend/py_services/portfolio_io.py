@@ -174,6 +174,8 @@ def load_thesis_holdings(db_path: str | None = None) -> list[dict]:
                 "thesisForInclusion": row.get("thesis_for_inclusion") or "",
                 "role": row.get("lifecycle_status") or "watchlist",
                 "agentRationale": row.get("agent_rationale") or "",
+                "standingDecisionReason": row.get("standing_decision_reason") or "",
+                "standingDecisionType": row.get("standing_decision_type") or "",
                 "targetEntryPrice": target_entry,
             })
         return result

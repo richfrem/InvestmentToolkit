@@ -32,6 +32,7 @@ Please search X posts, earnings releases, SEC filings, and analyst notes for **m
 - **DO NOT group tickers** together.
 - **DO NOT write lazy placeholder text** (e.g., "Noise", "Neutral", "N/A").
 - **DO NOT write ultra-short fragments** (e.g. "Limited. Niche. Sector. WATCH"). Every row must have a full, descriptive analysis.
+- **ANSWER TARGETED THESIS INQUIRIES:** For each ticker, address the specific *Targeted Inquiries & Key Thesis Vulnerabilities* provided in the table below (e.g., customer concentration, debt service, specific contract execution, or regulatory approval timeline).
 - **REQUIRE QUANTITATIVE DETAILS:** Provide specific figures where applicable—such as contract values ($), power capacities (MW/GW for nuclear/utilities), computing hash rates (EH/s for miners), GPU counts (H100/H200/B200 orders), chip delivery timelines, or specific broker upgrades/downgrades with price targets.
 - **DETAILED CATALYSTS:** Explain *exactly* what the news or catalyst entails (e.g. Palantir AIP sovereign deploy, Constellation nuclear power purchase agreement size).
 - **IF A TICKER HAS NO SPECIFIC COMPANY NEWS**, you must analyze and explicitly write 2-3 sentences explaining the sector-level flows, industry rotation (e.g. AI capex sentiment, treasury yields, semiconductor rotation) that drove the price action for that ticker this week.
@@ -43,7 +44,7 @@ Return your response in **{{NUM_PARTS}} parts**:
 
 ### Part 1 — Sweep Table (every position)
 
-| Ticker | Current% | Target% | Key Catalyst/News (Provide 1-2 sentences of specific news, filings, or sector-relative movements. **NO PLACEHOLDERS**.) | Thesis Impact | Conviction (1–10) | Action | Target Change | Deep Dive? |
+| Ticker | Current% | Target% | Key Catalyst/News & Resolution of Targeted Inquiry (Address specific thesis pressure-points. **NO PLACEHOLDERS**.) | Thesis Impact | Conviction (1–10) | Action | Target Change | Deep Dive? |
 |--------|----------|---------|-------------------------------------------------------------------------------------------------------------------------|---------------|-------------------|--------|---------------|------------|
 
 **Conviction scale**: 1–3 = bearish / thesis challenged, 4–6 = neutral / hold, 7–10 = high conviction / add.

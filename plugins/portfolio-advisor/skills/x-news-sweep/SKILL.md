@@ -61,26 +61,30 @@ The prompt uses a **tiered deep dive** approach to keep output focused:
 python3 scripts/generate_grok_prompt.py --output /tmp/grok_sweep_prompt.md
 ```
 
-After generating, check if browser automation is available:
+## Phase 1.5 — Mandatory Model Intelligence Review & Context Modification
+
+> [!IMPORTANT]
+> **Mandatory Execution Step**: The AI Agent MUST NOT simply run `generate_grok_prompt.py` and output it as-is. In Phase 1.5, the Agent is **strictly required to perform a direct model-driven review and edit** on the generated prompt file before presenting it to the user or dispatching to browser automation.
+
+### Protocol Steps (Agent MUST execute every step):
+
+1. **Query Broader Repository Context**:
+   - Check `domain_model.sqlite` and `intelligence.sqlite` (or the latest `daily-briefs/` snapshot).
+   - Identify imminent binary catalysts (e.g. earnings in next 1–7 days), recent technical extremes (e.g. RSI < 30 or > 70, cooling momentum, volume bias), macro regime flags, and active standing decision anchors.
+2. **Directly Modify Prompt File with Surgical Inquiries**:
+   - Read `/tmp/grok_sweep_prompt.md` (or `temp/grok-prompts/daily_grok_prompt.md`).
+   - Use `replace_file_content` to replace the raw default strings in the **Targeted Inquiries & Key Thesis Vulnerabilities** column with rich, tailored inquiries incorporating the live repository context (e.g., flag imminent earnings with exact dates, mandate inquiries on specific deal terms, customer concentrations, or cluster delivery timelines).
+3. **Copy to Clipboard & Report Modifications**:
+   - Write the modified prompt back and copy to macOS clipboard (`pbcopy < path`).
+   - In the user turn, explicitly summarize the specific thesis inquiry enhancements made during Phase 1.5.
+
+After the review and direct file modification, check if browser automation is available:
 ```bash
 curl -s http://127.0.0.1:9223/json/version >/dev/null 2>&1 && echo "Chrome ready" || echo "Chrome not running"
 ```
 
 - **Chrome ready on port 9223**: run the full automation script above (Browser Automation Mode) — no user copy-paste needed
-- **Chrome not running**: say to the user:
-
-```
-✅ Grok prompt generated — {N} active holdings, {N} INITIATE targets, {N} EXIT positions.
-
-Paste this into grok.com and send.
-Grok will return:
-  Part 1 — sweep table with [DD] flags for material news
-  Part 2 — deep dives for all INITIATE targets
-  Part 3 — deep dives for [DD]-flagged active holdings
-
-Paste Grok's full response back here — I'll gate each recommendation
-against our DCF projections and the 8 hard gates before applying anything.
-```
+- **Chrome not running**: state the prompt location (`temp/grok-prompts/daily_grok_prompt.md`), list the specific inquiries synthesized in Phase 1.5, and provide instructions.
 
 ---
 
