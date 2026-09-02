@@ -126,30 +126,54 @@ def load_dcf(ticker: str, db_path: Path | None = None) -> dict:
         conn.close()
 
 
+def _clean_markdown_text(text: str, max_chars: int = 120) -> str:
+    """Normalize whitespace, sanitize markdown pipe characters, and truncate safely."""
+    if not text:
+        return ""
+    cleaned = " ".join(str(text).split()).replace("|", "/")
+    if len(cleaned) <= max_chars:
+        return cleaned
+    return cleaned[:max_chars - 1].rsplit(" ", 1)[0] + "…"
+
+
 def derive_targeted_inquiry(ticker: str, holding: dict, dcf: dict) -> str:
     """Generate a targeted, model-informed inquiry pressure point for Grok to investigate."""
     inquiries = []
-    
-    # 1. Check for specific SA / DCF conflicts or agent rationale
-    rationale = holding.get("agentRationale", "")
-    if "DCF CONFLICT" in rationale or "SA/DCF" in rationale:
-        inquiries.append("SA/DCF conflict: probe smart money / LP updates vs margin sustainability")
-    elif holding.get("standingDecisionReason"):
-        inquiries.append(f"Anchor thesis: {holding['standingDecisionReason'][:75]}")
+    try:
+        # 1. Check for specific SA / DCF conflicts or agent rationale
+        rationale = holding.get("agentRationale", "")
+        if "DCF CONFLICT" in rationale or "SA/DCF" in rationale:
+            inquiries.append("SA/DCF conflict: probe smart money / LP updates vs margin sustainability")
+        elif holding.get("standingDecisionReason"):
+            inquiries.append(f"Anchor thesis: {_clean_markdown_text(holding['standingDecisionReason'], 100)}")
 
-    # 2. Extract Bear / Base case key risks from DCF scenarios
-    scenarios = dcf.get("scenarios", {})
-    bear_risks = scenarios.get("bear", {}).get("risks", [])
-    base_risks = scenarios.get("base", {}).get("risks", [])
-    
-    if bear_risks:
-        inquiries.append(f"Bear risk to probe: {bear_risks[0]}")
-    elif base_risks:
-        inquiries.append(f"Execution risk: {base_risks[0]}")
-    elif holding.get("thesisForInclusion"):
-        inquiries.append(f"Verify thesis: {holding['thesisForInclusion']}")
-    else:
-        inquiries.append("Verify customer concentration, contract execution & guidance shifts")
+        # 2. Extract Bear / Base case key risks from DCF scenarios
+        scenarios = dcf.get("scenarios", {})
+        bear_risks = scenarios.get("bear", {}).get("risks", []) if isinstance(scenarios, dict) else []
+        base_risks = scenarios.get("base", {}).get("risks", []) if isinstance(scenarios, dict) else []
+
+        def _first_risk_str(risks) -> str | None:
+            if isinstance(risks, list) and risks:
+                first = risks[0]
+                if isinstance(first, str):
+                    return _clean_markdown_text(first, 120)
+                elif isinstance(first, dict):
+                    return _clean_markdown_text(first.get("risk") or first.get("description") or str(first), 120)
+            return None
+
+        bear_risk_first = _first_risk_str(bear_risks)
+        base_risk_first = _first_risk_str(base_risks)
+
+        if bear_risk_first:
+            inquiries.append(f"Bear risk to probe: {bear_risk_first}")
+        elif base_risk_first:
+            inquiries.append(f"Execution risk: {base_risk_first}")
+        elif holding.get("thesisForInclusion"):
+            inquiries.append(f"Verify thesis: {_clean_markdown_text(holding['thesisForInclusion'], 100)}")
+        else:
+            inquiries.append("Verify customer concentration, contract execution & guidance shifts")
+    except Exception:
+        inquiries = ["Verify customer concentration, contract execution & guidance shifts"]
 
     return " | ".join(inquiries)
 

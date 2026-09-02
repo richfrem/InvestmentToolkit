@@ -68,7 +68,7 @@ python3 scripts/generate_grok_prompt.py --output /tmp/grok_sweep_prompt.md
 Before submitting the prompt to Grok (or dispatching browser automation), the AI Agent MUST review the generated prompt against the broader repository context:
 
 1. **Review Against Intelligence & Projections**:
-   - Check `investment_screener/backend/data/projections/` and `intelligence.sqlite` / `domain_model.sqlite`.
+   - Check `investment_screener/backend/data/projections/` and `domain_model.sqlite`.
    - Inspect recent macro regime alerts, upcoming binary earnings events, or technical flags (e.g. RSI extreme, volume bias).
 2. **Synthesize & Refine Targeted Probing Inquiries**:
    - Verify that the **Targeted Inquiries & Key Thesis Vulnerabilities** column in `/tmp/grok_sweep_prompt.md` includes specific questions on high-priority holdings (e.g., specific hyperscaler cluster deliveries for `CRWV`, NRC licensing status for `OKLO`, power PPA terms for `CEG`/`VST`, or smart money / SA LP 13F changes for `BE`/`CORZ`).
