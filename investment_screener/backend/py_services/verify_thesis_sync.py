@@ -95,7 +95,7 @@ def _load_holdings_from_db(db_path: Path) -> list[dict]:
         }
         for inv in investments
         if inv.get("symbol")
-        and ((inv.get("target_weight") or 0) > 0 or inv.get("lifecycle_status"))
+        and ((inv.get("target_weight") or 0) > 0 or (inv.get("lifecycle_status") and inv.get("lifecycle_status") not in ("watchlist", "avoid", "exit")))
     ]
 
 

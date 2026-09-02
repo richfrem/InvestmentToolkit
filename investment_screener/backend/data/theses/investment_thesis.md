@@ -5,7 +5,7 @@
 | **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
 | **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-09-01 |
+| **Last Updated** | 2026-09-02 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
 | **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
 | **Portfolio Data** | Live — synced from Broker via app or `python3 investment_screener/backend/src/BrokerDataEngine.py` |
@@ -79,7 +79,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 ## IV. Portfolio Blueprint
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
-*Generated 2026-09-01 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
+*Generated 2026-09-02 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
 *Portfolio value: $31,895. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
@@ -101,6 +101,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **ARM** | 👁️ WATCHLIST | — | — | — | — | ARM |
 | **SNPS** | 👁️ WATCHLIST | — | — | — | — | SNPS |
 | **CDNS** | 👁️ WATCHLIST | — | — | — | — | CDNS |
+| **IBM** | 👁️ WATCHLIST | — | — | — | — | IBM |
 | **QCOM** | 👁️ WATCHLIST | — | — | — | — | QCOM |
 | **Subtotal** | | **12.35%** | **14.52%** | +2.17pp | |
 
@@ -111,6 +112,8 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.94% | 6.50% | +41.7% | Leading cloud-native Zero Trust SASE architecture (ZIA/ZPA) securing distributed enterprise cloud traffic, data protection (DSPM/AI-SPM), and AI workloads. Mission-critical enterprise cybersecurity infrastructure. |
 | **PANW** | ⚪ MAINTAIN | MAINTAIN | 2.92% | 2.68% | -30.3% | AI-native platform consolidation leader. |
 | **CRWD** | 👁️ WATCHLIST | EXIT | — | — | — | EXIT: DCF -66% downside. |
+| **FTNT** | 👁️ WATCHLIST | — | — | — | — | FTNT |
+| **DDOG** | 👁️ WATCHLIST | — | — | — | — | DDOG |
 | **NET** | 👁️ WATCHLIST | — | — | — | — | NET |
 | **Subtotal** | | **9.85%** | **9.18%** | -0.67pp | |
 
@@ -123,6 +126,9 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **ETHA** | 👁️ WATCHLIST | HOLD | — | — | — | Ethereum as programmable settlement layer. |
 | **IBIT** | 👁️ WATCHLIST | HOLD | — | — | — | Bitcoin as sovereign reserve asset. |
 | **SOLZ** | 👁️ WATCHLIST | — | — | — | — | EXIT: Solana ETF. |
+| **SOFI** | 👁️ WATCHLIST | — | — | — | — | SOFI |
+| **HOOD** | 👁️ WATCHLIST | — | — | — | — | HOOD |
+| **PYPL** | 👁️ WATCHLIST | — | — | — | — | PYPL |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Sub-Strategy 4 — Quality SaaS Resilience
@@ -132,13 +138,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **CRM** | 👁️ WATCHLIST | BUY | — | — | — | Agentforce AI platform. |
 | **NOW** | 👁️ WATCHLIST | BUY | — | — | — | AI workflow automation. |
 | **TEAM** | 👁️ WATCHLIST | BUY | — | — | — | Human-agentic collaboration platform. |
-| **Subtotal** | | **0.00%** | **0.00%** | — | |
-
-### Sub-Strategy 5 — Applied AI / Frontier Bets
-
-| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
-| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **DXYZ** | 👁️ WATCHLIST | INITIATE | — | — | — | Only public vehicle for pre-IPO AI basket: SpaceX, Anthropic, OpenAI, xAI, Databricks. Scarcity premium play — not a value play. |
+| **SHOP** | 👁️ WATCHLIST | — | — | — | — | SHOP |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Sub-Strategy 6 — Metabolic Reprogramming & Genetic Editing
@@ -167,16 +167,13 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **KRC** | 👁️ WATCHLIST | SELL | — | — | — | KRC |
 | **NKE** | 👁️ WATCHLIST | HOLD | — | — | — | NKE |
 | **ORCL** | 👁️ WATCHLIST | BUY | — | — | — | ORCL |
-| **DLR.U.TO** | 👁️ WATCHLIST | — | — | — | — | DLR.U.TO |
-| **DLR.TO** | 👁️ WATCHLIST | — | — | — | — | DLR.TO |
-| **T1E** | 👁️ WATCHLIST | — | — | — | — | T1E |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Portfolio Totals
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **34.47%** | **33.50%** | -0.97pp |
+| **All holdings** | **34.47%** | **33.51%** | -0.96pp |
 | *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
 <!-- AUTO_UPDATE_END: portfolio_blueprint -->
 
