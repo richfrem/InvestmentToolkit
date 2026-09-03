@@ -325,6 +325,12 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
             )
 
             earnings_info = extract_earnings_info(info) if sym != "USD_CASH" else None
+            # Analyst consensus target — used as fair value fallback in screener
+            # when no DCF projection exists for the ticker (watchlist-only tickers).
+            analyst_target_mean = (
+                info.get("targetMeanPrice") or info.get("targetMedianPrice")
+                if sym != "USD_CASH" else None
+            )
 
             stock_data = {
                 "symbol": sym,
@@ -332,6 +338,7 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                 "sector": sector,
                 "industry": industry,
                 "price": current_price,
+                "analyst_target_mean": analyst_target_mean,
                 "book_price": round(book_price, 4) if book_price else None,
                 "shares": shares,
                 "position_value": total_market,
