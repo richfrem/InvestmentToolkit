@@ -30,6 +30,24 @@ const ACTION_TEXT: Record<string, string> = {
 const FALLBACK_BADGE = 'text-slate-400 border-slate-600/40 bg-transparent';
 const FALLBACK_TEXT  = 'text-slate-400';
 
+// Action execution priority for executive portfolio sorting
+// Lower number = higher immediate attention/execution urgency
+export const ACTION_PRIORITY: Record<string, number> = {
+    EXIT:       1, // Critical: broken thesis or stop-loss trigger
+    INITIATE:   2, // High: new target allocation ready to deploy
+    ACCUMULATE: 3, // High: under-weight high-conviction buy
+    TRIM:       4, // Harvest: profit taking / over-weight trim
+    REVIEW:     5, // AI conflict / drift requires human review
+    MAINTAIN:   6, // Neutral: on-target allocation
+    HOLD:       7, // Neutral: patience / wait for catalyst
+    WATCHLIST:  8, // Passive: non-funded tracking
+};
+
+export function getActionPriority(action: string | null | undefined): number {
+    if (!action) return 99;
+    return ACTION_PRIORITY[action.toUpperCase()] ?? 50;
+}
+
 export function getActionBadgeClass(action: string): string {
     return ACTION_BADGE[action?.toUpperCase()] ?? FALLBACK_BADGE;
 }

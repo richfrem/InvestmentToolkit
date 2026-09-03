@@ -190,18 +190,52 @@ def check_account_mirror_drift(conn: sqlite3.Connection) -> Dict[str, Any]:
     }
 
 
+def check_target_weight_invariant(conn: sqlite3.Connection) -> Dict[str, Any]:
+    """
+    Assert: Sum(Target Weights across all active investments) == 100.0% (+/- 0.05%).
+    Never allow target allocations to drift above or below 100%.
+    """
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT symbol, target_weight
+        FROM investment
+        WHERE target_weight > 0
+    """)
+    rows = cursor.fetchall()
+    total_target = sum(float(r["target_weight"] or 0.0) for r in rows)
+    delta = total_target - 100.0
+    passed = abs(delta) <= 0.05
+    
+    if passed:
+        msg = f"Target weights strictly sum to 100.0% (actual: {total_target:.2f}%)"
+    elif delta > 0:
+        msg = f"Target allocation exceeds 100% by +{delta:.2f}% (total: {total_target:.2f}% across {len(rows)} positions)"
+    else:
+        msg = f"Target allocation under-allocated by {delta:.2f}% (total: {total_target:.2f}% across {len(rows)} positions)"
+        
+    return {
+        "check": "TARGET_WEIGHT_INVARIANT",
+        "passed": passed,
+        "total_target_pct": round(total_target, 4),
+        "delta_pct": round(delta, 4),
+        "positions_count": len(rows),
+        "message": msg
+    }
+
+
 def run_all_invariant_checks() -> Dict[str, Any]:
     conn = get_db_connection()
     cash_res = check_cash_invariant(conn)
     fx_res = check_fx_staleness(conn)
     mirror_res = check_account_mirror_drift(conn)
+    target_res = check_target_weight_invariant(conn)
     conn.close()
     
-    all_passed = cash_res["passed"] and fx_res["passed"] and mirror_res["passed"]
+    all_passed = cash_res["passed"] and fx_res["passed"] and mirror_res["passed"] and target_res["passed"]
     
     return {
         "status": "PASS" if all_passed else "WARNING",
-        "checks": [cash_res, fx_res, mirror_res]
+        "checks": [cash_res, target_res, fx_res, mirror_res]
     }
 
 
