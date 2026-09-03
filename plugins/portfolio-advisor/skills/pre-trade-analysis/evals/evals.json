@@ -1,0 +1,20 @@
+[
+  {
+    "id": "eval-1-initiate-flow",
+    "type": "positive",
+    "prompt": "Run pre-trade-analysis on VST. What price levels should I initiate at?",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-2-accumulate-flow",
+    "type": "positive",
+    "prompt": "Pre-trade-analysis for adding to my CRDO position",
+    "should_trigger": true
+  },
+  {
+    "id": "eval-3-negative-pure-screener",
+    "type": "negative",
+    "prompt": "Show me the heatmap of all my holdings",
+    "should_trigger": false
+  }
+]

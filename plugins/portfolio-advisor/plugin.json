@@ -108,6 +108,11 @@
             "name": "data_quality_audit",
             "path": "skills/data-quality-audit/SKILL.md",
             "trigger": "/data-quality-audit"
+        },
+        {
+            "name": "pre_trade_analysis",
+            "path": "skills/pre-trade-analysis/SKILL.md",
+            "trigger": "/pre-trade-analysis"
         }
     ],
     "agents": [
