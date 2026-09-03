@@ -80,22 +80,22 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
 *Generated 2026-09-02 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
-*Portfolio value: $31,895. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
+*Portfolio value: $31,820. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **TSM** | ⚪ MAINTAIN | ACCUMULATE | 3.94% | 3.85% | +57.4% | The foundry backbone of the AI compute stack. |
-| **STM** | ⚪ MAINTAIN | ACCUMULATE | 3.72% | 3.69% | +88.7% | STM |
-| **CBRS** | ⚪ MAINTAIN | ACCUMULATE | 2.52% | 2.74% | +32.9% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
-| **AMAT** | ⚪ MAINTAIN | ACCUMULATE | 2.17% | 2.24% | +17.7% | AMAT |
+| **TSM** | ⚪ MAINTAIN | ACCUMULATE | 3.92% | 3.78% | +58.6% | The foundry backbone of the AI compute stack. |
+| **STM** | ⚪ MAINTAIN | ACCUMULATE | 3.82% | 3.62% | +83.8% | STM |
+| **CBRS** | ⚪ MAINTAIN | ACCUMULATE | 2.61% | 2.69% | +28.7% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
+| **AMAT** | ⚪ MAINTAIN | ACCUMULATE | 2.07% | 2.20% | +24.0% | AMAT |
 | **ALAB** | 👁️ WATCHLIST | SELL | — | — | — | ALAB |
 | **AMD** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Hedge against NVDA dominance. |
 | **ASML** | 👁️ WATCHLIST | SELL | — | — | — | Absolute monopoly on EUV lithography. |
 | **AVGO** | 👁️ WATCHLIST | INITIATE | — | — | — | Custom ASIC + networking moat. |
 | **DRAM** | 👁️ WATCHLIST | HOLD | — | — | — | Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure — Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating. |
-| **INTC** | 🟢 INITIATE | HOLD | — | 2.00% | — | EXIT: Position closed 2026-06. Semis sector overextended — waiting for pullback before re-entry. Terafab JV (Intel + Tesla + SpaceX/xAI) thesis intact long-term but valuation stretched. |
+| **INTC** | 🟢 INITIATE | HOLD | — | 1.96% | — | EXIT: Position closed 2026-06. Semis sector overextended — waiting for pullback before re-entry. Terafab JV (Intel + Tesla + SpaceX/xAI) thesis intact long-term but valuation stretched. |
 | **NVDA** | 👁️ WATCHLIST | INITIATE | — | — | — | Highest-conviction BUY. Target increased to absorb freed capital from IREN, COHR, and EQT exits. |
 | **TSEM** | 👁️ WATCHLIST | SELL | — | — | — | TSEM |
 | **ARM** | 👁️ WATCHLIST | — | — | — | — | ARM |
@@ -103,19 +103,19 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **CDNS** | 👁️ WATCHLIST | — | — | — | — | CDNS |
 | **IBM** | 👁️ WATCHLIST | — | — | — | — | IBM |
 | **QCOM** | 👁️ WATCHLIST | — | — | — | — | QCOM |
-| **Subtotal** | | **12.35%** | **14.52%** | +2.17pp | |
+| **Subtotal** | | **12.42%** | **14.24%** | +1.82pp | |
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.94% | 6.50% | +41.7% | Leading cloud-native Zero Trust SASE architecture (ZIA/ZPA) securing distributed enterprise cloud traffic, data protection (DSPM/AI-SPM), and AI workloads. Mission-critical enterprise cybersecurity infrastructure. |
-| **PANW** | ⚪ MAINTAIN | MAINTAIN | 2.92% | 2.68% | -30.3% | AI-native platform consolidation leader. |
+| **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.51% | 6.37% | +51.2% | Leading cloud-native Zero Trust SASE architecture (ZIA/ZPA) securing distributed enterprise cloud traffic, data protection (DSPM/AI-SPM), and AI workloads. Mission-critical enterprise cybersecurity infrastructure. |
+| **PANW** | ⚪ MAINTAIN | MAINTAIN | 2.58% | 2.63% | -21.1% | AI-native platform consolidation leader. |
 | **CRWD** | 👁️ WATCHLIST | EXIT | — | — | — | EXIT: DCF -66% downside. |
 | **FTNT** | 👁️ WATCHLIST | — | — | — | — | FTNT |
 | **DDOG** | 👁️ WATCHLIST | — | — | — | — | DDOG |
 | **NET** | 👁️ WATCHLIST | — | — | — | — | NET |
-| **Subtotal** | | **9.85%** | **9.18%** | -0.67pp | |
+| **Subtotal** | | **9.09%** | **9.00%** | -0.09pp | |
 
 ### Sub-Strategy 3 — Sovereign Finance
 
@@ -154,9 +154,9 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CASH_USD** | 🟡 TRIM | — | 12.27% | 9.80% | — | CASH_USD |
+| **CASH_USD** | 🟡 TRIM | — | 12.65% | 9.61% | — | CASH_USD |
 | **PSU-U.TO** | 👁️ WATCHLIST | — | — | — | — | USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date). |
-| **Subtotal** | | **12.27%** | **9.80%** | -2.47pp | |
+| **Subtotal** | | **12.65%** | **9.61%** | -3.04pp | |
 
 ### Untracked / Thesis Pending
 
@@ -173,7 +173,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **34.47%** | **33.51%** | -0.96pp |
+| **All holdings** | **34.16%** | **32.85%** | -1.31pp |
 | *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
 <!-- AUTO_UPDATE_END: portfolio_blueprint -->
 

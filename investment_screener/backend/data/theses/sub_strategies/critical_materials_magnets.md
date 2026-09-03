@@ -62,13 +62,13 @@ Permanent magnets (specifically sintered NdFeB — Neodymium-Iron-Boron) are the
 ## 5. Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-09-02 08:20 by TV sync · Portfolio total: $31,895 USD*
+*Auto-updated 2026-09-02 19:41 by TV sync · Portfolio total: $31,820 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **SPCX** | 0 | 4.4% | 4.1% | +0.4pp | ⚪ MAINTAIN | — |
+| **SPCX** | 0 | 4.4% | 4.0% | +0.4pp | ⚪ MAINTAIN | — |
 
 **Pending Initiation**
 
@@ -77,5 +77,5 @@ Permanent magnets (specifically sintered NdFeB — Neodymium-Iron-Boron) are the
 | **MP** | — | — | 2.0% | — | 🟢 INITIATE | ≤$57 |
 | **CACI** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 4.4% · Target: 6.1% · Gap: -1.6pp**
+**Pillar total — Actual: 4.4% · Target: 5.9% · Gap: -1.5pp**
 <!-- AUTO_UPDATE_END: current_positions -->

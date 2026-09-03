@@ -136,13 +136,19 @@ OR upon thesis confirmation events:
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-09-02 08:20 by TV sync · Portfolio total: $31,895 USD*
+*Auto-updated 2026-09-02 19:41 by TV sync · Portfolio total: $31,820 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **FOTO** | 0 | 2.4% | 2.4% | +0.0pp | ⚪ MAINTAIN | — |
+| **FOTO** | 0 | 2.3% | 2.3% | -0.1pp | ⚪ MAINTAIN | — |
 
-**Pillar total — Actual: 2.4% · Target: 2.4% · Gap: +0.0pp**
+**Watchlist** *(target set, entry not yet triggered)*
+
+| Ticker | Target% | Action | Entry Price | Note |
+|--------|---------|--------|-------------|------|
+| CRDO | 2.0% | WATCHLIST | — | Silicon photonics PHY, active electrical cables (AEC). Direc |
+
+**Pillar total — Actual: 2.3% · Target: 4.3% · Gap: -2.0pp**
 <!-- AUTO_UPDATE_END: current_positions -->
