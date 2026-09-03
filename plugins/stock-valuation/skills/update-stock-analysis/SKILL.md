@@ -34,6 +34,13 @@ See `docs/architecture/skill-renames-2026-08-28.md` for the full mapping. Old tr
 - **Templates**: `assets/templates/projection_template.json` ← Official output schema
 - **Fallbacks**: `references/fallback-tree.md` ← Load on ANY step failure
 - **API Docs**: `references/api_reference.md`
+- **Canonical Scripts** (in `scripts/` via symlink from `plugins/stock-valuation/scripts/`):
+  - `persist_valuation.py` — Atomic multi-table SQLite persistence (`domain_model.sqlite` + `intelligence.sqlite` + TV price levels) with automated version increments
+  - `dcf_scenarios.py` — 5-year scenario DCF math calculator (bear/base/bull)
+  - `standardize_metrics.py` — Metrics standardization from raw yfinance data
+  - `validate_projection.py` — Schema validation & multi-lens gate check
+  - `comps_valuation.py` — Peer multiple valuation
+  - `reverse_dcf.py` — Market implied growth calculator
 
 ## ⚠️ Adversarial Objectivity Constraint
 > **L4 Pattern**: Adversarial Objectivity Constraint — anti-sycophancy enforcement.
@@ -403,24 +410,26 @@ Read this template, fill in the fields based on your analysis, and use the exact
 
 ## Step 6: Persist Projection JSON
 ```bash
-cat > temp/evaluations/{TICKER}_projection.json << 'EOF'
+cat > temp/evaluations/{TICKER}_valuation_payload.json << 'EOF'
 <JSON_PAYLOAD>
 EOF
 
-# Persist via REST API & Canonical Persistence Tool
-API_TOKEN=$(cat .runtime/api-token)
-curl -s -X POST http://localhost:3001/api/projections \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $API_TOKEN" \
-  -d @temp/evaluations/{TICKER}_projection.json
+# Canonical atomic persistence engine (domain_model.sqlite + intelligence.sqlite + TV levels)
+python3 plugins/stock-valuation/scripts/persist_valuation.py \
+  --file temp/evaluations/{TICKER}_valuation_payload.json \
+  --json
 
-# Update Domain Model & Price Level Tiers atomically (Comprehensive 5-Surface Sync)
-python3 investment_screener/backend/py_services/stock_intake_persist.py \
-  --file temp/evaluations/{TICKER}_intake_payload.json
+# Optional: Persist via REST API for Express backend runtime sync if backend running
+API_TOKEN=$(cat .runtime/api-token 2>/dev/null || echo "")
+if [ -n "$API_TOKEN" ]; then
+  curl -s -X POST http://localhost:3001/api/projections \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $API_TOKEN" \
+    -d @temp/evaluations/{TICKER}_projection.json
+fi
 ```
-- Success response: `{"success":true,"message":"Projection saved successfully"}`
-- If 409 conflict → increment `version` field and retry once
-- **Version continuity for updates**: If a prior projection exists (Step 0.5), reuse its `id` and set `version` = prior `version` + 1. This keeps the full version history queryable in the backend.
+- Success response: `{"status": "success", "symbol": "...", "version": N, ...}`
+- The script automatically checks existing versions in SQLite and assigns `MAX(version) + 1` atomically.
 - If any other failure → invoke **FB-03** from `references/fallback-tree.md`
 
 ## Step 7: Generate Deep-Dive Research Report
