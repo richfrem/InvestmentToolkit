@@ -2,7 +2,7 @@
 
 Both previously called cache_get/cache_set(ticker, "fundamentals") — whichever ran second for a
 given ticker silently overwrote the other's cache entry, defeating caching for any pipeline (e.g.
-a full /evaluate-stock pass) that needs both.
+a full /update-stock-analysis pass) that needs both.
 """
 import os
 import sys

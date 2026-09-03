@@ -13,7 +13,7 @@
     "id": "EVAL-002",
     "type": "positive",
     "category": "trigger",
-    "prompt": "/evaluate-stock NVDA",
+    "prompt": "/update-stock-analysis NVDA",
     "expected_trigger": "update_stock_analysis",
     "expected_not_trigger": [],
     "pass_condition": "Agent recognises slash command and begins stock valuation workflow",

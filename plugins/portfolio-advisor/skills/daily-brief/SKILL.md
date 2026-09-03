@@ -124,7 +124,7 @@ Once the brief is presented, ask the user which signals they want to act on:
 | "Accumulate [TICKER]" | Check `targetEntryPrice` in target-portfolio.json first; then `/place-order buy` |
 | "News context on [TICKER]" | `/x-news-sweep` |
 | "Re-evaluate thesis after this data" | `/strategic-review` |
-| "Update DCF for [TICKER]" | `/evaluate-stock [TICKER]` |
+| "Update DCF for [TICKER]" | `/update-stock-analysis [TICKER]` |
 | "Set entry price for [TICKER]" | `update_targets.py --set-entry TICKER=PRICE --write` |
 
 ---

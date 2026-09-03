@@ -17,4 +17,4 @@ This plugin operates in **Supercharged** mode: strategic analysis and drift clas
 | **Full** | Backend running + theses + portfolio loaded | Full health check → drift analysis → strategic dialogue → rebalance suggestions |
 | **Standalone** | Backend unavailable | Request user paste portfolio weights + thesis targets as JSON; complete drift calculation and strategic analysis manually; skip API calls |
 
-> **`~~valuation-source`**: If AI valuations from `stock-valuation` are unavailable per holding, note missing valuations and prompt user to run `/evaluate-stock {TICKER}` for each uncovered position.
+> **`~~valuation-source`**: If AI valuations from `stock-valuation` are unavailable per holding, note missing valuations and prompt user to run `/update-stock-analysis {TICKER}` for each uncovered position.

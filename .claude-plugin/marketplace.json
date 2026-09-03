@@ -8,7 +8,7 @@
     "plugins": [
         {
             "name": "stock-valuation",
-            "description": "AI-driven autonomous stock valuation and research engine. Skills: /evaluate-stock (Bear/Base/Bull DCF projections with analyticsLog), /research-stock (qualitative sweep with Class A/B/C/D change classification and decision gate before re-valuation), /forward-valuation-challenge (stress-test valuations against trailing financials), /valuation-math-validation (deterministic DCF math and spread checks).",
+            "description": "AI-driven autonomous stock valuation and research engine. Skills: /update-stock-analysis (Bear/Base/Bull DCF projections with analyticsLog), /research-stock (qualitative sweep with Class A/B/C/D change classification and decision gate before re-valuation), /forward-valuation-challenge (stress-test valuations against trailing financials), /valuation-math-validation (deterministic DCF math and spread checks).",
             "source": "./plugins/stock-valuation",
             "strict": true
         },

@@ -101,7 +101,7 @@ An adversarial suite that acts as a hedge fund auditor. It challenges your bull 
 
 An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Base/Bull DCF scenarios, and generates fair value recommendations.
 
-* **Skills**: `/evaluate-stock`, `/research-stock`, `/forward-valuation-challenge`, `/valuation-math-validation`
+* **Skills**: `/update-stock-analysis`, `/research-stock`, `/forward-valuation-challenge`, `/valuation-math-validation`
 
 ### 3. ETF Analysis (`plugins/etf-analysis`)
 

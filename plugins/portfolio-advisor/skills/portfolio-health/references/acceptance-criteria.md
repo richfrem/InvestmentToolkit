@@ -39,7 +39,7 @@
 
 ### AC-08: Missing Valuations Surfaced
 - **Condition**: Holdings present with `hasValuation: false`
-- **Pass**: Agent explicitly lists all unvalued tickers and recommends `/evaluate-stock {TICKER}` for each
+- **Pass**: Agent explicitly lists all unvalued tickers and recommends `/update-stock-analysis {TICKER}` for each
 - **Fail**: Missing valuations silently omitted from analysis
 
 ## Negative / Near-Miss Patterns to Reject

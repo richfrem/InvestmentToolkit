@@ -55,5 +55,5 @@ Procedural fallback sequences for brittle operations. Invoke immediately on fail
 | 1 | Flag holding with `⚠️ UNRESOLVED CONFLICT` in report |
 | 2 | Continue analysis of all other holdings |
 | 3 | Surface the unresolved conflict at the end of the report summary with timestamp |
-| 4 | Suggest: "Consider running a fresh `/evaluate-stock {TICKER}` to see if the recommendation has changed." |
+| 4 | Suggest: "Consider running a fresh `/update-stock-analysis {TICKER}` to see if the recommendation has changed." |
 | **NEVER** | Auto-resolve a strategic conflict without explicit user instruction |

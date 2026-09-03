@@ -15,9 +15,9 @@ This folder contains the architecture, design, and operational guides for the **
     *   Persists data via HTTP POST to `localhost:3001`.
 
 ### 2. The Workflow (Trigger)
-*   **Path**: `.agent/workflows/stock-and-portfolio-evaluation/evaluate-stock.md`
+*   **Path**: `.agent/workflows/stock-and-portfolio-evaluation/update-stock-analysis.md`
 *   **Purpose**: The "Router". It connects the user's slash command to the Skill.
-*   **Trigger**: `/evaluate-stock {TICKER}`
+*   **Trigger**: `/update-stock-analysis {TICKER}`
 
 ### 3. References
 *   `references/analysis_prompt.md`: The system prompt used for the financial analysis.
@@ -28,13 +28,13 @@ This folder contains the architecture, design, and operational guides for the **
 To invoke the agent, simply type the slash command in the chat:
 
 ```
-/evaluate-stock NVDA
+/update-stock-analysis NVDA
 ```
 
 or
 
 ```
-/evaluate-stock MSFT
+/update-stock-analysis MSFT
 ```
 
 ### What Happens Next?

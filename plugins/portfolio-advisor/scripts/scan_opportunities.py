@@ -596,7 +596,7 @@ def fmt_markdown(data: dict) -> str:
 
     stale = data.get("stale", [])
     if stale:
-        out.append(f"\n## ⚠️ Stale Analyses (>{STALE_DAYS} days) — Run /evaluate-stock to refresh\n")
+        out.append(f"\n## ⚠️ Stale Analyses (>{STALE_DAYS} days) — Run /update-stock-analysis to refresh\n")
         tickers = ", ".join(f"`{r['ticker']}` ({r['daysOld']}d)" for r in stale[:10])
         out.append(f"{tickers}\n")
 

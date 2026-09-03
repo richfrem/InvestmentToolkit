@@ -38,7 +38,7 @@ def test_document_existing_accumulate_projections_against_new_gate():
     if would_fail:
         print(f"\n{len(would_fail)} existing ACCUMULATE projection(s) would fail the new gate "
               "(pre-Phase-2a data has no analyticsLog.{dcf,comps,reverseDcf} yet, so this is "
-              "expected until each is re-run through /evaluate-stock):")
+              "expected until each is re-run through /update-stock-analysis):")
         for ticker, n in would_fail:
             print(f"  - {ticker}: only {n}/3 lenses agree")
 

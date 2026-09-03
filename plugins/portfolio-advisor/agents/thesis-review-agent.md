@@ -5,7 +5,7 @@ description: >
   investment theses or challenges to existing ones, conducts adversarial validation using
   DCF and Grok news sweeps, calibrates conviction and capital allocation
   with the user, and finally updates the portfolio targets.
-dependencies: ["skill:thesis-review", "skill:evaluate-stock", "skill:x-news-sweep"]
+dependencies: ["skill:thesis-review", "skill:update-stock-analysis", "skill:x-news-sweep"]
 model: inherit
 tools: ["Read", "Write", "AskUserQuestion"]
 ---
@@ -38,7 +38,7 @@ Once the scope is clear, tell the user:
 > *"I am now going to independently validate this thesis against current market valuations and real-time sentiment. Please hold."*
 
 You MUST now use your available agent skills to research the idea:
-1. **DCF Valuation**: If specific tickers are mentioned, delegate a task to the `/evaluate-stock` skill to run Bear/Base/Bull DCF projections on them.
+1. **DCF Valuation**: If specific tickers are mentioned, delegate a task to the `/update-stock-analysis` skill to run Bear/Base/Bull DCF projections on them.
 2. **Sentiment & Catalysts**: Delegate a task to the `/x-news-sweep` skill to get real-time qualitative context on the thesis or the tickers.
 3. **Thesis Contradiction**: Read `references/investment_thesis.md` and see if this new idea contradicts any existing Core Premises or EXIT-flagged rules.
 

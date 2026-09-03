@@ -274,6 +274,6 @@ tradingview-cdp/
 
 **After a stock evaluation:**
 ```
-1. /evaluate-stock CRWV        → fresh DCF
+1. /update-stock-analysis CRWV        → fresh DCF
 2. /tv-alert-sync CRWV         → set alerts at new bear/base/bull targets
 ```

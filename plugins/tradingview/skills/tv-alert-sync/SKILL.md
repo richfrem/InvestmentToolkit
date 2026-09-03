@@ -95,7 +95,7 @@ After a successful sync:
 ```
 ✅ Alerts synced to TradingView.
 
-Tip: Run /tv-alert-sync after each /evaluate-stock to keep alerts current
+Tip: Run /tv-alert-sync after each /update-stock-analysis to keep alerts current
      with your latest DCF projections.
 
 To view alerts in TradingView: Alerts panel (bell icon, top-right toolbar).

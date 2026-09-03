@@ -217,7 +217,7 @@ InvestmentToolkit/                         ← repo root
 | Plugin | Key Skills | Key Scripts |
 |--------|-----------|-------------|
 | `portfolio-advisor` | `/daily`, `/weekly-review`, `/run-advisor`, `/x-news-sweep`, `/rebalance` | `daily_brief.py`, `update_targets.py` |
-| `stock-valuation` | `/evaluate-stock`, `/research-stock` | `validate_projection.py` |
+| `stock-valuation` | `/update-stock-analysis`, `/research-stock` | `validate_projection.py` |
 | `tradingview` | `/place-order`, `/tv-ta-deep`, `/tv-portfolio-sync`, `/pine-inject` | `ta_sweep_batch.py`, `place_order.py`, `tv_launch.py` |
 | `etf-analysis` | `/analyze-etf` | `persist_etf_analysis.py` |
 | `toolkit-manager` | `/start-screener` | — |

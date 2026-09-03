@@ -75,7 +75,7 @@ graph TD
     ProjFolder[(projections/*.json)]:::storage
     
     Fetch[fetch_broker_data.py --snapshot]:::process
-    Valuation[evaluate-stock / dcf_scenarios.py]:::process
+    Valuation[update-stock-analysis / dcf_scenarios.py]:::process
     Research[research-stock / news-sweep]:::process
     UpdateTargets[update_targets.py --set]:::process
     BlueprintGen[generate_portfolio_blueprint.py]:::process
@@ -143,7 +143,7 @@ graph TD
 - **Integrity Checks**: Does not touch qualitative values. Cash positions are filtered separately to keep active cash segregated from strategic allocations. Portfolio/account totals are always computed live from these tables (never a stored aggregate) — see ADR-030.
 
 ### Loop 2: The Analysis Loop (Model & Valuation)
-- **Path**: `evaluate-stock {TICKER}` → `yfinance / fetch_financials.py` → `dcf_scenarios.py` → `projections/{TICKER}.json` & `research/{TICKER}.md`.
+- **Path**: `update-stock-analysis {TICKER}` → `yfinance / fetch_financials.py` → `dcf_scenarios.py` → `projections/{TICKER}.json` & `research/{TICKER}.md`.
 - **Flow**:
   1. Deep-dive analytical tools read the latest filings, cash flow statements, and capital structure via `yfinance`.
   2. The Python DCF calculator models Bear, Base, and Bull trajectories to output a weighted fair value.

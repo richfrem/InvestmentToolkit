@@ -23,7 +23,7 @@ wizard collects to its exact data source, calculation function, and persistence 
 DCF Bear/Base/Bull → `dcf_scenarios.py`, live EMAs/ADX/RSI → `ta_sweep_single.py`, etc.). Steps 3–5
 below should cite this checklist rather than restate the mapping loosely — if a metric's source or
 function ever changes, fix it there first (single source), same discipline as
-`questrade-tool-schemas.md` in the questrade plugin. `stock_valuation`'s `/evaluate-stock` skill
+`questrade-tool-schemas.md` in the questrade plugin. `stock_valuation`'s `/update-stock-analysis` skill
 already references this same file as its Step 10 post-completion verification gate — this wizard is
 the intake-time counterpart to that same canonical mapping, not a separate one.
 

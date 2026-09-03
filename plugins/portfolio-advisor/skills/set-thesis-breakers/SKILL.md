@@ -11,7 +11,7 @@ description: >
   plain English before writing anything — the user never sees or writes raw
   JSON. Trigger: "/set-thesis-breakers {TICKER}", "set breakers for {TICKER}",
   "what would break this thesis", or as the suggested next step right after
-  /evaluate-stock produces a fresh thesis.
+  /update-stock-analysis produces a fresh thesis.
 allowed-tools: Bash, Read, Ask
 ---
 

@@ -8,7 +8,7 @@ description: >
   to backend/data/research/{TICKER}_{DATE}.md. Summarizes findings
   conversationally and supports interactive Q&A. Trigger when user asks to
   value, analyse, re-evaluate, or price a stock, or uses /update-stock-analysis
-  (primary), /evaluate-stock (alias), or /perform-stock-valuation (alias).
+  (primary), /update-stock-analysis (alias), or /update-stock-analysis (alias).
   Renamed 2026-08-28 from stock_valuation -- see
   docs/architecture/skill-renames-2026-08-28.md for the full old->new mapping.
 has_tools: true
@@ -19,10 +19,10 @@ allowed-tools: Bash, Read, Write
 
 *(Renamed 2026-08-28 from "Stock Valuation Skill" / `stock_valuation` — same skill, clearer name.
 See `docs/architecture/skill-renames-2026-08-28.md` for the full mapping. Old triggers
-`/evaluate-stock` and `/perform-stock-valuation` still work as aliases.)*
+`/update-stock-analysis` and `/update-stock-analysis` still work as aliases.)*
 
 ## Quick Reference
-- **Trigger**: `/update-stock-analysis {TICKER}` (primary) · `/perform-stock-valuation {TICKER}` or `/evaluate-stock {TICKER}` (legacy aliases, still work)
+- **Trigger**: `/update-stock-analysis {TICKER}` (primary) · `/update-stock-analysis {TICKER}` or `/update-stock-analysis {TICKER}` (legacy aliases, still work)
 - **Output (JSON)**: `backend/data/projections/{TICKER}.json`
 - **Output (Research)**: `backend/data/research/{TICKER}_{YYYY-MM-DD}.md`
 - **Schema + Examples**: `references/examples/` ← Real validated projections (schemaVersion 1.2):
@@ -367,7 +367,7 @@ one of:
 
 After Step 3.5's valuation-committee lenses, run these three additional scripts. Unlike
 Step 3.5, none of these gate `aiThesis.action` — they are informational, surfaced in
-`/evaluate-stock` output and `analyticsLog` for context.
+`/update-stock-analysis` output and `analyticsLog` for context.
 
 ```bash
 # 1. Sector-aware weighted composite score (requires a `sector` field on the
@@ -433,7 +433,7 @@ Normalize weights if sum ≠ 1.0. Cast string numbers to actual numbers. Clamp o
 Dispatch `red-team-agent` via the Agent tool, passing the validated projection JSON (post-Step
 4, pre-persistence). Print its "Objections" and "What would change my mind" sections to the
 user, directly above whatever conversational summary this skill was about to present. This
-step is **mandatory, every `/evaluate-stock` run** — never skipped, never made conditional on
+step is **mandatory, every `/update-stock-analysis` run** — never skipped, never made conditional on
 conviction level or user request.
 
 ---
@@ -573,7 +573,7 @@ automatically derive and write structured buy/sell tiers:
 python3 plugins/portfolio-advisor/scripts/update_price_levels.py \
   --ticker {TICKER} \
   --source dcf \
-  --note "Auto-derived from /evaluate-stock $(date +%Y-%m-%d)" \
+  --note "Auto-derived from /update-stock-analysis $(date +%Y-%m-%d)" \
   --write
 ```
 
