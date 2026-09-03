@@ -67,7 +67,7 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-09-02 19:41 by TV sync · Portfolio total: $31,820 USD*
+*Auto-updated 2026-09-03 07:02 by TV sync · Portfolio total: $31,814 USD*
 
 **Active Positions**
 
@@ -95,9 +95,6 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
 | **INTC** | — | — | 2.0% | — | 🟢 INITIATE | ≤$88 |
-| **DRAM** | — | — | 0.0% | — | 🟢 INITIATE | — |
-| **CLSK** | — | — | 0.0% | — | 🟢 INITIATE | — |
-| **VRT** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
 **Pillar total — Actual: 58.4% · Target: 58.7% · Gap: -0.3pp**
 <!-- AUTO_UPDATE_END: current_positions -->
