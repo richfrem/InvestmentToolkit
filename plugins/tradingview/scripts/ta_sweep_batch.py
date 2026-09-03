@@ -126,12 +126,26 @@ def load_dcf(ticker: str, db_path: Path | None = None) -> dict[str, Any] | None:
             return None
         scenario_rows = get_projection_scenarios(conn, entry["projection_id"])
         scenarios = {r["scenario_name"]: r for r in scenario_rows}
+        analyzed_at = entry.get("analyzed_at") or entry.get("saved_at")
+        days_since_dcf = None
+        if analyzed_at:
+            try:
+                # Handle ISO format strings like '2026-05-02T21:15:00.000Z'
+                clean_ts = analyzed_at.replace("Z", "+00:00")
+                parsed_dt = datetime.fromisoformat(clean_ts)
+                now_utc = datetime.now(timezone.utc)
+                days_since_dcf = int((now_utc - parsed_dt).total_seconds() / 86400)
+            except Exception:
+                days_since_dcf = None
+
         return {
             "fairValue": entry.get("fair_value"),
             "action":    entry.get("action"),
             "bear":      (scenarios.get("bear") or {}).get("scenario_price"),
             "base":      (scenarios.get("base") or {}).get("scenario_price"),
             "bull":      (scenarios.get("bull") or {}).get("scenario_price"),
+            "analyzedAt": analyzed_at,
+            "daysSinceDCF": days_since_dcf,
         }
     finally:
         conn.close()
@@ -242,12 +256,21 @@ def add_dcf_flags(result: dict[str, Any], dcf: dict[str, Any] | None) -> None:
         return
     fv    = dcf.get("fairValue")
     price = result.get("close")
+    flags = result.setdefault("flags", [])
+    hitl_reminders = result.setdefault("hitl_reminders", [])
+
+    days_since_dcf = dcf.get("daysSinceDCF")
+    if days_since_dcf is not None and days_since_dcf >= 90:
+        flags.append("EARNINGS_DCF_DUE")
+        hitl_reminders.append(
+            f"📅 EARNINGS / QUARTERLY DCF UPDATE DUE: DCF baseline is {days_since_dcf} days old (last analyzed {dcf.get('analyzedAt', '')[:10]}). Refresh quarterly fundamental model."
+        )
+
     if not fv or not price:
         result["dcf"] = dcf
         return
 
     ratio = price / fv
-    flags = result.setdefault("flags", [])
     if ratio > 0.95:
         flags.append("NEAR_FV")
     if ratio > 1.0:
@@ -263,6 +286,8 @@ def add_dcf_flags(result: dict[str, Any], dcf: dict[str, Any] | None) -> None:
         "pctToFV":   round((fv - price) / price * 100, 1),
         "base":      dcf.get("base"),
         "action":    dcf.get("action"),
+        "daysSinceDCF": days_since_dcf,
+        "analyzedAt": dcf.get("analyzedAt"),
     }
 
 

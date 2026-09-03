@@ -188,6 +188,7 @@ SWEEP SUMMARY — {DATE} — {N} holdings scanned
 | `ABOVE_SELL_TIER_N` | Price above sellTier[N].price | Tier triggered — confirm trim executed |
 | `AT_STOP_LOSS` | Price within 3% above stopLoss.price | Thesis breaker approaching — review urgently |
 | `BELOW_STOP_LOSS` | Price below stopLoss.price | ⚠️ Thesis breaker triggered — escalate to EXIT review |
+| `EARNINGS_DCF_DUE` | DCF projection age ≥ 90 days | Quarterly earnings update due — refresh fundamental DCF |
 
 ---
 
