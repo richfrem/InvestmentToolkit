@@ -125,6 +125,18 @@ Pull live metrics via `investment_screener/backend/py_services/fetch_financials.
 2. **Part 2 — Factory & Operating Leverage**: How expanding gross margins generate outsized bottom-line profit surges.
 3. **Part 3 — Institutional Quality Scorecard**: Compare Rule of 40 and Piotroski F-Score *side-by-side with 2–3 key sector peers*.
 4. **Part 4 — Forward Consensus**: Wall Street 1Y/2Y consensus targets aligned with multi-year company guidance.
+5. **Part 5 — Strategic Outlook & Transcript Verification Checklist (Mandatory Gate)**:
+   Review the last 2 earnings call transcripts and output the structured checklist block:
+   ```markdown
+   ### 📋 Strategic Outlook & Transcript Verification Checklist
+   - [x] **Recent Earnings Calls Reviewed**: [e.g. Q1 2026, Q2 2026]
+   - [x] **Guidance Trajectory**: [RAISED / MAINTAINED / LOWERED / WITHDRAWN]
+   - [x] **Contracted Backlog & Pipeline**: [Firm Backlog vs Speculative Pipeline]
+   - [x] **Strategy Alignment Lens**: [{PILLAR} - Product & Customer fit]
+   - [x] **Adversarial Risk & Counterparty Audit**: [Credit quality, cash burn, execution hurdles]
+   - [x] **Strategic Stance & Forward Outlook**: [Conviction summary before running DCF]
+   ```
+   *Note: This audit must be passed to `persist_valuation.py` inside `analyticsLog.outlookAudit`.*
 
 ---
 
