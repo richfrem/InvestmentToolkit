@@ -102,12 +102,23 @@ Note the price delta since prior analysis: `(currentPrice - priorPrice) / priorP
 
 Conduct a structured sweep across these domains. For each, note: **what changed**, **how material is it**, and **does it affect the DCF model inputs?**
 
-### 3A: Recent Earnings & Guidance
-- Revenue and EPS vs consensus (beat/miss/in-line)
-- Management guidance for next quarter and full year
-- Any revision to multi-year outlook
-- Gross margin and operating leverage trend
-- **Model impact**: Changes analyst revenue estimates → affects `growthRate` and `netMargin` inputs
+### 3A: Recent Earnings & Guidance (Mandatory Transcript Checklist)
+The agent **MUST** audit the last 2 earnings calls and output this standardized verification block:
+
+```markdown
+### 📋 Strategic Outlook & Transcript Verification Checklist
+- [x] **Recent Earnings Calls Reviewed**: [e.g. Q1 2026, Q2 2026] (Dates: YYYY-MM-DD)
+- [x] **Guidance Trajectory**: [RAISED / MAINTAINED / LOWERED / WITHDRAWN]
+  - *Details*: [Management guidance updates, revenue beats/misses, full-year guide revisions]
+- [x] **Contracted Backlog & Pipeline**:
+  - *Firm Backlog*: [Committed commercial milestones & contracts]
+  - *Forward Pipeline*: [Multi-year pipeline size vs execution timeline]
+- [x] **Strategy Alignment Lens**: [{PILLAR_NAME} - Architecture & Tier-1 Customers]
+- [x] **Adversarial Risk & Counterparty Audit**: [Counterparty credit, cash burn rate, execution bottlenecks]
+- [x] **Strategic Stance & Forward Outlook**: [Summary conviction before Class A/B/C/D classification]
+```
+
+- **Model impact**: Feeds directly into Step 4 change classification and passes forward to `/update-stock-analysis` via `outlookAudit`.
 
 ### 3B: Competitive Landscape
 - New entrants or product launches by competitors
