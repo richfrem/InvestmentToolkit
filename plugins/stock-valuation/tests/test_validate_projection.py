@@ -278,3 +278,57 @@ def test_missing_sector_is_not_an_error():
     proj = _base_projection()  # no "sector" key at all
     errors = validate_projection(proj)
     assert not any("sector" in e for e in errors)
+
+
+class TestOutlookAuditVerification:
+    """Gate test: Every stock valuation MUST include an outlookAudit verifying that
+    the agent reviewed the last 2-4 earnings calls, verified guidance direction,
+    and assessed backlog/pipeline before running DCF."""
+
+    def _proj_with_audit(self, outlook_audit):
+        proj = _base_projection()
+        proj["snapshot"] = {
+            "price": 100.0, "currency": "USD", "shares": 1000, "revenue": 5000, "lastActualPS": 5.0,
+        }
+        proj["analyticsLog"] = {"outlookAudit": outlook_audit}
+        return proj
+
+    def test_missing_outlook_audit_fails(self):
+        proj = _base_projection()
+        proj["snapshot"] = {
+            "price": 100.0, "currency": "USD", "shares": 1000, "revenue": 5000, "lastActualPS": 5.0,
+        }
+        proj["analyticsLog"] = {}
+        errors = validate_projection(proj)
+        assert any("outlookAudit" in e for e in errors)
+
+    def test_incomplete_outlook_audit_fails(self):
+        # Missing callsAnalyzed or guidanceDirection
+        incomplete = {
+            "callsAnalyzed": [],
+            "guidanceDirection": "RAISED",
+            "strategicAssessment": "Some text",
+        }
+        errors = validate_projection(self._proj_with_audit(incomplete))
+        assert any("callsAnalyzed" in e for e in errors)
+
+    def test_placeholder_outlook_audit_fails(self):
+        placeholder = {
+            "callsAnalyzed": ["Q1", "Q2"],
+            "guidanceDirection": "N/A",
+            "strategicAssessment": "none",
+        }
+        errors = validate_projection(self._proj_with_audit(placeholder))
+        assert any("guidanceDirection" in e for e in errors)
+
+    def test_complete_valid_outlook_audit_passes(self):
+        valid = {
+            "callsAnalyzed": ["Q1 2026", "Q2 2026"],
+            "guidanceDirection": "RAISED",
+            "strategicAssessment": "FastPower platform backed by Siemens turbines and $2.4B Base Electron deal.",
+            "adversarialRisks": ["Related-party customer credit", "Negative $85M cash burn"],
+            "backlogPipeline": "$2.6B backlog, $14B pipeline",
+        }
+        errors = validate_projection(self._proj_with_audit(valid))
+        assert not any("outlookAudit" in e for e in errors)
+

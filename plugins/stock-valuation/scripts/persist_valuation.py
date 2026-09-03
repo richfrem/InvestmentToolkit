@@ -122,6 +122,12 @@ def persist_valuation(payload: dict, db_path: str | None = None) -> dict:
                 "wacc": proj.get("discount_rate", 0.085),
             }
 
+            # Preserve and enforce outlookAudit in analytics_log
+            if "outlookAudit" in proj:
+                analytics_log["outlookAudit"] = proj["outlookAudit"]
+            elif "outlookAudit" in payload:
+                analytics_log["outlookAudit"] = payload["outlookAudit"]
+
             proj_id = save_projection_version(
                 conn=conn,
                 investment_id=symbol,
@@ -136,6 +142,30 @@ def persist_valuation(payload: dict, db_path: str | None = None) -> dict:
                 analytics_log_json=json.dumps(analytics_log),
                 source=proj.get("source", "AI_AGENT"),
             )
+
+            # Insert structured investment_note if outlookAudit is present
+            audit = analytics_log.get("outlookAudit")
+            if audit and isinstance(audit, dict):
+                import uuid as _uuid
+                calls_str = ", ".join(audit.get("callsAnalyzed", []))
+                guidance = audit.get("guidanceDirection", "UNSPECIFIED")
+                assessment = audit.get("strategicAssessment", "")
+                risks = "; ".join(audit.get("adversarialRisks", [])) if audit.get("adversarialRisks") else "None recorded"
+                backlog = audit.get("backlogPipeline", "None recorded")
+
+                note_body = (
+                    f"## Earnings Calls & Forward Outlook Audit ({calls_str})\n"
+                    f"- Guidance Trajectory: {guidance}\n"
+                    f"- Contracted Backlog & Pipeline: {backlog}\n"
+                    f"- Strategic Assessment: {assessment}\n"
+                    f"- Adversarial Risks: {risks}"
+                )
+                note_id = f"{symbol}-audit-{_uuid.uuid4().hex[:8]}"
+                conn.execute(
+                    "INSERT INTO investment_note (note_id, investment_id, note_date, note_type, body, source) "
+                    "VALUES (?, ?, ?, 'INVESTOR_CALL_TRANSCRIPT_ANALYSIS', ?, 'persist_valuation::outlookAudit');",
+                    (note_id, symbol, now_iso, note_body)
+                )
 
             # Insert scenarios (bear, base, bull)
             scenarios = proj.get("scenarios") or {}

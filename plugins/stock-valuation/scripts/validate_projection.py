@@ -195,6 +195,34 @@ def validate_projection(data: dict[str, Any], verbose: bool = False) -> list[str
         check(sector in VALID_SECTORS, "sector",
               f"Must be one of {sorted(VALID_SECTORS)}, got '{sector}'", errors)
 
+    # --- Strategic Outlook & Transcript Audit Gate ---
+    analytics = data.get("analyticsLog", {}) or {}
+    outlook_audit = analytics.get("outlookAudit")
+    if outlook_audit is None:
+        errors.append(
+            "[FAIL] analyticsLog.outlookAudit: Missing mandatory multi-quarter transcript & forward outlook audit. "
+            "Agents must review the last 2-4 earnings calls, verify guidance trajectory, and audit backlog."
+        )
+    elif not isinstance(outlook_audit, dict):
+        errors.append("[FAIL] analyticsLog.outlookAudit: Must be an object.")
+    else:
+        calls = outlook_audit.get("callsAnalyzed")
+        if not calls or not isinstance(calls, list) or len(calls) == 0:
+            errors.append("[FAIL] analyticsLog.outlookAudit.callsAnalyzed: Must list at least 1-2 recent earnings calls reviewed (e.g. ['Q1 2026', 'Q2 2026']).")
+
+        guidance = str(outlook_audit.get("guidanceDirection", "")).strip().upper()
+        valid_guidance = {"RAISED", "MAINTAINED", "LOWERED", "WITHDRAWN", "NOT_PROVIDED"}
+        if guidance not in valid_guidance:
+            errors.append(
+                f"[FAIL] analyticsLog.outlookAudit.guidanceDirection: Must be one of {sorted(valid_guidance)}, got '{guidance}'."
+            )
+
+        assessment = str(outlook_audit.get("strategicAssessment", "")).strip()
+        if len(assessment) < 15 or assessment.lower() in {"none", "n/a", "placeholder", "tbd"}:
+            errors.append(
+                "[FAIL] analyticsLog.outlookAudit.strategicAssessment: Must provide substantive assessment (>15 chars) of forward strategy and backlog."
+            )
+
     # --- Valuation-committee gate (Phase 2a) ---
     gate = check_accumulate_gate(data)
     if not gate["gatePassed"]:

@@ -200,6 +200,45 @@ Read `temp/evaluations/{TICKER}_metrics.json` and use the `snapshot` and `ratios
 
 This is a **live working document** — add to it throughout Steps 2 and 3, not just at the end.
 
+---
+
+## Step 2.5: Strategic Outlook & Transcript Verification Checklist (Mandatory Gate)
+> ⚠️ **MANDATORY CONTRACT GATE**: Never anchor a DCF to backward-looking trailing data without auditing the last 2–4 earnings calls and contracted backlogs.
+> The agent **MUST** output this standardized checklist in chat before proceeding to Step 3:
+
+```markdown
+### 📋 Strategic Outlook & Transcript Verification Checklist
+- [x] **Recent Earnings Calls Reviewed**: [e.g. Q1 2026, Q2 2026] (Dates: YYYY-MM-DD)
+- [x] **Guidance Trajectory**: [RAISED / MAINTAINED / LOWERED / WITHDRAWN / NOT_PROVIDED]
+  - *Details*: [1-2 sentences on management commentary and full-year revisions]
+- [x] **Contracted Backlog & Pipeline**:
+  - *Firm Backlog*: [e.g. $2.6B (+533% YoY)]
+  - *Forward Pipeline*: [e.g. $14B+ multi-year pipeline]
+- [x] **Strategy Alignment Lens**: [{PILLAR_NAME} - e.g. Power Infrastructure / AI Datacenters]
+  - *Solution / Architecture*: [e.g. Solid oxide fuel cells / Behind-the-meter turbines]
+  - *Tier-1 Customers / Counterparties*: [e.g. Oracle, AWS, Microsoft]
+- [x] **Adversarial Risk & Counterparty Audit**:
+  - *Counterparty Credit Quality*: [e.g. Investment-grade hyperscaler vs speculative startup]
+  - *Cash Conversion & Liquidity*: [e.g. Positive FCF vs cash burn and dilution risk]
+- [x] **Strategic Stance & Forward Outlook**:
+  - [Substantive judgment on whether guidance + backlog justify forward CAGR assumptions]
+```
+
+**Mechanical Enforcement Requirement:**
+Record this audit inside `analyticsLog.outlookAudit` in the projection JSON:
+```json
+"outlookAudit": {
+  "callsAnalyzed": ["Q1 2026", "Q2 2026"],
+  "guidanceDirection": "RAISED",
+  "backlogPipeline": "$2.6B backlog, $14B pipeline",
+  "strategicAssessment": "Hyperscaler adoption accelerating; FastPower platform expanding.",
+  "adversarialRisks": ["Counterparty financing risks", "Working capital cash burn"]
+}
+```
+`validate_projection.py` will programmatically reject and block any projection missing `analyticsLog.outlookAudit`.
+
+---
+
 ## Step 3: Cognitive Analysis — Define Scenarios, Then Run DCF Calculator
 
 > ⚠️ **NEVER compute DCF math by hand or inline.** After deciding scenario parameters,
