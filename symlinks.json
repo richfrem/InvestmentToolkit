@@ -948,6 +948,12 @@
       "dst": ".agents/rules",
       "strategy": "symlink",
       "description": "Rules directory for agent IDE custom rules discovery"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/persist_valuation.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/persist_valuation.py",
+      "strategy": "symlink",
+      "description": "Canonical valuation and price level persistence script"
     }
   ]
 }

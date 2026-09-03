@@ -1,0 +1,1 @@
+../../../scripts/persist_valuation.py
