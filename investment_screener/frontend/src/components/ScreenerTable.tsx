@@ -18,11 +18,11 @@
  */
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity, Star } from 'lucide-react';
+import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity, Star, Zap } from 'lucide-react';
 import { type Projection, addToWatchlist, removeFromWatchlist } from '../services/api';
 import { TradeButtons } from './TradeButtons';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgUpside, sortByColumn } from '../utils/formatters';
-import { getActionBadgeClass } from '../utils/actionColors';
+import { getActionBadgeClass, getActionPriority } from '../utils/actionColors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -143,7 +143,18 @@ function savePrefs(prefs: TablePrefs) {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const changeBg = changeBgUpside;
-const sortRows = (rows: ScreenerRow[], col: keyof ScreenerRow, dir: 'asc' | 'desc') => sortByColumn(rows, col, dir);
+const sortRows = (rows: ScreenerRow[], col: keyof ScreenerRow, dir: 'asc' | 'desc') => {
+    if (col === 'action') {
+        return [...rows].sort((a, b) => {
+            const pA = getActionPriority(a.action);
+            const pB = getActionPriority(b.action);
+            if (pA !== pB) return dir === 'asc' ? pA - pB : pB - pA;
+            // Secondary sort: highest upside first
+            return (b.upside ?? -999) - (a.upside ?? -999);
+        });
+    }
+    return sortByColumn(rows, col, dir);
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -162,9 +173,9 @@ export default function ScreenerTable() {
     const pickerRef = useRef<HTMLDivElement>(null);
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState<Record<string, string>>({});
-    const [sortCol, setSortCol] = useState<keyof ScreenerRow>('upside');
-    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'actionable' | 'holdings' | 'watchlist' | 'portfolio_gaps' | 'watchlist_gaps'>('holdings');
+    const [sortCol, setSortCol] = useState<keyof ScreenerRow>('action');
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'actionable' | 'initiate' | 'accumulate' | 'trim' | 'exit' | 'holdings' | 'watchlist' | 'portfolio_gaps' | 'watchlist_gaps'>('holdings');
 
     const dragRef = useRef<{ colId: string; startX: number; startWidth: number } | null>(null);
 
@@ -375,9 +386,6 @@ export default function ScreenerTable() {
 
             let action = rawAction;
             if (!isHeld) {
-                // If we DO NOT own the stock:
-                // - Can only be INITIATE (if target > 0 or valuation is attractive buy) or WATCHLIST
-                // - Can NEVER be TRIM, EXIT, or ACCUMULATE (you cannot trim/exit/accumulate what you don't own)
                 if (isTarget) {
                     action = 'INITIATE';
                 } else if (['BUY', 'INITIATE'].includes((rawAction ?? '').toUpperCase())) {
@@ -386,12 +394,18 @@ export default function ScreenerTable() {
                     action = 'WATCHLIST';
                 }
             } else {
-                // If we DO own the stock:
-                // - If target is 0 or lifecycle is exit, action is EXIT
                 if (recommendedPct === 0) {
                     action = 'EXIT';
-                } else if (rawAction === 'WATCHLIST' || !rawAction) {
-                    action = thesis?.action ?? 'MAINTAIN';
+                } else if (!rawAction || rawAction === 'MAINTAIN' || rawAction === 'HOLD') {
+                    // Check allocation ratio
+                    const ratio = recommendedPct && recommendedPct > 0 ? (currentPct ?? 0) / recommendedPct : 1.0;
+                    if (ratio < 0.85 && (upside ?? 0) > 0) {
+                        action = 'ACCUMULATE';
+                    } else if (ratio > 1.15) {
+                        action = 'TRIM';
+                    } else {
+                        action = 'MAINTAIN';
+                    }
                 }
             }
 
@@ -492,6 +506,10 @@ export default function ScreenerTable() {
     // Dynamic counts per category
     const counts = useMemo(() => {
         let actionable = 0;
+        let initiate = 0;
+        let accumulate = 0;
+        let trim = 0;
+        let exit = 0;
         let holdings = 0;
         let watchlist = 0;
         let portfolioGaps = 0;
@@ -500,7 +518,13 @@ export default function ScreenerTable() {
         for (const row of rows) {
             const isCash = row.symbol.includes('CASH') || row.assetClass === 'CASH' || row.symbol === 'USD_CASH';
             const act = (row.action ?? '').toUpperCase();
-            if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act) && !isCash) actionable++;
+            if (!isCash) {
+                if (act === 'INITIATE') { initiate++; actionable++; }
+                else if (act === 'ACCUMULATE') { accumulate++; actionable++; }
+                else if (act === 'TRIM') { trim++; actionable++; }
+                else if (act === 'EXIT') { exit++; actionable++; }
+                else if (['REVIEW', 'BUY', 'SELL'].includes(act)) { actionable++; }
+            }
             
             // Portfolio holdings include all active funded positions or active thesis targets
             const isFunded = (row.currentPct ?? 0) > 0;
@@ -520,7 +544,7 @@ export default function ScreenerTable() {
             }
         }
 
-        return { all: rows.length, actionable, holdings, watchlist, portfolioGaps, watchlistGaps };
+        return { all: rows.length, actionable, initiate, accumulate, trim, exit, holdings, watchlist, portfolioGaps, watchlistGaps };
     }, [rows]);
 
     const filteredRows = rows.filter(row => {
@@ -528,12 +552,20 @@ export default function ScreenerTable() {
         const isFunded = (row.currentPct ?? 0) > 0;
         const isTarget = (row.recommendedPct ?? 0) > 0;
         const isPortfolioScope = (isFunded || isTarget) && !isCash;
+        const act = (row.action ?? '').toUpperCase();
 
         // Status bar grouping filter
         if (statusFilter === 'actionable') {
             if (isCash) return false;
-            const act = (row.action ?? '').toUpperCase();
-            if (!['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) return false;
+            if (!['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT', 'REVIEW', 'BUY', 'SELL'].includes(act)) return false;
+        } else if (statusFilter === 'initiate') {
+            if (isCash || act !== 'INITIATE') return false;
+        } else if (statusFilter === 'accumulate') {
+            if (isCash || act !== 'ACCUMULATE') return false;
+        } else if (statusFilter === 'trim') {
+            if (isCash || act !== 'TRIM') return false;
+        } else if (statusFilter === 'exit') {
+            if (isCash || act !== 'EXIT') return false;
         } else if (statusFilter === 'holdings') {
             // Portfolio holdings tab shows all active funded positions OR active thesis target allocations
             if (!isFunded && !isTarget) return false;
@@ -743,8 +775,122 @@ export default function ScreenerTable() {
                         )}
                     </div>
 
-                    <button onClick={fetchData} className="p-1.5 bg-slate-800 text-slate-400 rounded-lg hover:text-white border border-slate-700 transition-all">
+                    <button onClick={fetchData} className="p-1.5 bg-slate-800 text-slate-400 rounded-lg hover:text-white border border-slate-700 transition-all" title="Refresh screener data">
                         <ChevronsUpDown size={16} className="rotate-90" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Executive Action Priority Triage Bar */}
+            <div className="flex flex-wrap items-center justify-between px-4 py-2 bg-slate-950/80 border-b border-slate-800/80 text-xs gap-2 backdrop-blur-md">
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase font-black tracking-widest text-slate-500 flex items-center gap-1">
+                        <Zap size={12} className="text-amber-400" /> Action Triage:
+                    </span>
+
+                    {/* Exit Button */}
+                    <button
+                        onClick={() => {
+                            setStatusFilter(statusFilter === 'exit' ? 'holdings' : 'exit');
+                            setSortCol('action');
+                            setSortDir('asc');
+                        }}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-black border transition-all ${
+                            statusFilter === 'exit'
+                                ? 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-900/30'
+                                : counts.exit > 0
+                                    ? 'bg-rose-950/40 text-rose-300 border-rose-800/60 hover:bg-rose-900/50'
+                                    : 'bg-slate-900/40 text-slate-500 border-slate-800 hover:text-slate-300'
+                        }`}
+                        title="Positions to exit or zero target"
+                    >
+                        <span>🔴 Exits</span>
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === 'exit' ? 'bg-rose-800 text-white' : 'bg-rose-950 text-rose-300 border border-rose-700/50'}`}>
+                            {counts.exit}
+                        </span>
+                    </button>
+
+                    {/* Trim Button */}
+                    <button
+                        onClick={() => {
+                            setStatusFilter(statusFilter === 'trim' ? 'holdings' : 'trim');
+                            setSortCol('action');
+                            setSortDir('asc');
+                        }}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-black border transition-all ${
+                            statusFilter === 'trim'
+                                ? 'bg-orange-600 text-white border-orange-500 shadow-md shadow-orange-900/30'
+                                : counts.trim > 0
+                                    ? 'bg-orange-950/40 text-orange-300 border-orange-800/60 hover:bg-orange-900/50'
+                                    : 'bg-slate-900/40 text-slate-500 border-slate-800 hover:text-slate-300'
+                        }`}
+                        title="Positions above target weight to harvest/trim"
+                    >
+                        <span>🟠 Trims</span>
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === 'trim' ? 'bg-orange-800 text-white' : 'bg-orange-950 text-orange-300 border border-orange-700/50'}`}>
+                            {counts.trim}
+                        </span>
+                    </button>
+
+                    {/* Initiate Button */}
+                    <button
+                        onClick={() => {
+                            setStatusFilter(statusFilter === 'initiate' ? 'holdings' : 'initiate');
+                            setSortCol('action');
+                            setSortDir('asc');
+                        }}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-black border transition-all ${
+                            statusFilter === 'initiate'
+                                ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-900/30'
+                                : counts.initiate > 0
+                                    ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60 hover:bg-emerald-900/50'
+                                    : 'bg-slate-900/40 text-slate-500 border-slate-800 hover:text-slate-300'
+                        }`}
+                        title="Unowned target holdings ready to initiate"
+                    >
+                        <span>🟢 Initiate</span>
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === 'initiate' ? 'bg-emerald-800 text-white' : 'bg-emerald-950 text-emerald-300 border border-emerald-700/50'}`}>
+                            {counts.initiate}
+                        </span>
+                    </button>
+
+                    {/* Accumulate Button */}
+                    <button
+                        onClick={() => {
+                            setStatusFilter(statusFilter === 'accumulate' ? 'holdings' : 'accumulate');
+                            setSortCol('action');
+                            setSortDir('asc');
+                        }}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-black border transition-all ${
+                            statusFilter === 'accumulate'
+                                ? 'bg-cyan-600 text-white border-cyan-500 shadow-md shadow-cyan-900/30'
+                                : counts.accumulate > 0
+                                    ? 'bg-cyan-950/40 text-cyan-300 border-cyan-800/60 hover:bg-cyan-900/50'
+                                    : 'bg-slate-900/40 text-slate-500 border-slate-800 hover:text-slate-300'
+                        }`}
+                        title="Under-allocated core holdings to buy on dips"
+                    >
+                        <span>🔵 Accumulate</span>
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === 'accumulate' ? 'bg-cyan-800 text-white' : 'bg-cyan-950 text-cyan-300 border border-cyan-700/50'}`}>
+                            {counts.accumulate}
+                        </span>
+                    </button>
+                </div>
+
+                {/* Priority Sorting Indicator / Toggle */}
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 font-mono">
+                        Sort: <span className="text-white font-bold">{String(sortCol).toUpperCase()}</span> ({sortDir})
+                    </span>
+                    <button
+                        onClick={() => {
+                            setSortCol('action');
+                            setSortDir('asc');
+                        }}
+                        className="px-2 py-0.5 rounded bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-700/50 text-[10px] font-black transition-all"
+                        title="Reset sort to urgent action hierarchy"
+                    >
+                        ⚡ Prioritize Actions
                     </button>
                 </div>
             </div>
