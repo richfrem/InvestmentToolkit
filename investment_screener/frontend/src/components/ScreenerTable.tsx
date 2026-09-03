@@ -365,8 +365,12 @@ export default function ScreenerTable() {
             const bear = p.scenarios?.bear;
             const bull = p.scenarios?.bull;
 
-            const currentPrice = p.snapshot?.price ?? 0;
-            const fairValue = thesis?.fairValue ?? null;
+            // Price: TV live price from heatmap (primary) → snapshot price (fallback).
+            // Both flow through the single fetch_portfolio_heatmap.py refresh pipeline.
+            const currentPrice = heatmapMap[p.ticker]?.price ?? p.snapshot?.price ?? 0;
+            // Fair value: DCF projection (primary) → analyst consensus mean target (fallback).
+            // Analyst target is sourced from the same heatmap call — no separate yfinance call.
+            const fairValue = thesis?.fairValue ?? heatmapMap[p.ticker]?.analyst_target_mean ?? null;
             const upside = (fairValue && currentPrice) ? ((fairValue - currentPrice) / currentPrice) * 100 : null;
             const gainLoss = (fairValue && currentPrice) ? (fairValue - currentPrice) : null;
 
@@ -466,10 +470,15 @@ export default function ScreenerTable() {
                     model: '—',
                     action: h.action,  // from backend Python
                     portfolioRationale: null,
-                    fairValue: null,
-                    currentPrice: h.currentPrice ?? 0,
-                    gainLoss: null,
-                    upside: null,
+                    // Analyst target from heatmap as fair value fallback for holding stubs without DCF.
+                    fairValue: heatmapMap[h.ticker]?.analyst_target_mean ?? null,
+                    currentPrice: heatmapMap[h.ticker]?.price ?? h.currentPrice ?? 0,
+                    gainLoss: heatmapMap[h.ticker]?.analyst_target_mean && (heatmapMap[h.ticker]?.price ?? h.currentPrice ?? 0) > 0
+                        ? (heatmapMap[h.ticker].analyst_target_mean - (heatmapMap[h.ticker]?.price ?? h.currentPrice ?? 0))
+                        : null,
+                    upside: heatmapMap[h.ticker]?.analyst_target_mean && (heatmapMap[h.ticker]?.price ?? h.currentPrice ?? 0) > 0
+                        ? ((heatmapMap[h.ticker].analyst_target_mean - (heatmapMap[h.ticker]?.price ?? h.currentPrice ?? 0)) / (heatmapMap[h.ticker]?.price ?? h.currentPrice ?? 0)) * 100
+                        : null,
                     growth: null,
                     margin: null,
                     ruleOf40: null,
