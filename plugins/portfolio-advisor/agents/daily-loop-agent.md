@@ -275,7 +275,7 @@ A TRIGGERED breaker never auto-executes a trade on its own — same HITL rule as
 signal in this loop.
 
 **Card format** (field/function mapping for every line below: `docs/architecture/stock-analysis-surface-checklist.md`
-— same canonical source `stock-intake` and `/evaluate-stock` already use; if a metric's source changes, fix it
+— same canonical source `stock-intake` and `/update-stock-analysis` already use; if a metric's source changes, fix it
 there first, single source, don't restate the mapping loosely here):
 ```
 ─── [N]/[TOTAL] · [SIGNAL]: [TICKER] ─────────────────────────

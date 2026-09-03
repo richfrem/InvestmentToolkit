@@ -48,7 +48,7 @@ A new **Stock Valuation Skill** (`.agent/skills/stock_valuation/`) will encapsul
     *   **Tier 1 (Mechanical)**: Calculate purely metric-driven valuations.
     *   **Tier 2 (Cognitive)**: Send data to a Frontier Model (Gemini 3 Pro) to generate Bear/Base/Bull cases + specific justifications.
 3.  **Persist**: `scripts/save_valuation.py` writes the result to `backend/data/projections/<TICKER>.json`, merging with existing user data.
-4.  **Trigger**: The `.agent/workflows/stock-and-portfolio-evaluation/evaluate-stock` command invokes this skill.
+4.  **Trigger**: The `.agent/workflows/stock-and-portfolio-evaluation/update-stock-analysis` command invokes this skill.
 
 ## 3. API Layer & Security
 
@@ -70,7 +70,7 @@ The `storage.ts` service will transition to a **Strict API-First** model:
 ### 4.1 CLI Tool Interface
 ```bash
 # Evaluate stock using the new skill
-evaluate-stock <ticker> [options]
+update-stock-analysis <ticker> [options]
 
 Options:
   --model <name>       Specific model to use (default: gemini-1.5-flash)

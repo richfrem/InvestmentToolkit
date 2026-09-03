@@ -269,7 +269,7 @@ When adding:
 3. Add `thesisForInclusion` — why does this stock belong in the active investment thesis portfolio?
 4. Optionally add 1-3 `thesisBreakers` — conditions that would force a full exit
 5. Validate with `--dry-run` after editing the JSON directly
-6. Run `/evaluate-stock {TICKER}` to generate the first AI valuation
+6. Run `/update-stock-analysis {TICKER}` to generate the first AI valuation
 
 ---
 

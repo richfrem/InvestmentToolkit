@@ -126,7 +126,7 @@ The project extends the standard capabilities of AI coding assistants using a lo
 * **Plugins**: Self-contained directories containing scripts, prompts, and `plugin.json` manifests.
 
 
-* **Skills**: Granular capabilities (e.g., `/evaluate-stock`, `/rebalance`) documented in `SKILL.md` files that guide agent behavior.
+* **Skills**: Granular capabilities (e.g., `/update-stock-analysis`, `/rebalance`) documented in `SKILL.md` files that guide agent behavior.
 
 
 * **Exploration Workflow**: A formal 4-phase loop (Discovery → Blueprinting → Prototyping → Handoff) managed by the `exploration-workflow` orchestrator to guide the development of new features.
@@ -155,7 +155,7 @@ graph LR
 
     %% Plugins Layer
     subgraph "Plugin Ecosystem (plugins/)"
-        StockValuation[stock-valuation\n- /evaluate-stock\n- /research-stock]
+        StockValuation[stock-valuation\n- /update-stock-analysis\n- /research-stock]
         PortfolioAdvisor[portfolio-advisor\n- /strategic-review\n- /rebalance\n- /x-news-sweep]
         TradingViewBridge[tradingview\n- /tv-portfolio-sync\n- /place-order]
         ETFAnalysis[etf-analysis\n- /analyze-etf]

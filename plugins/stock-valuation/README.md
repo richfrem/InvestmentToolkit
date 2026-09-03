@@ -15,7 +15,7 @@ stock-valuation/
 ├── CONNECTORS.md                        # Tool connector abstractions
 ├── README.md                            # This file
 ├── commands/
-│   └── evaluate-stock.md               # /evaluate-stock {TICKER} command
+│   └── update-stock-analysis.md               # /update-stock-analysis {TICKER} command
 ├── docs/
 │   ├── AI-augmented-stock-valuation-and-thesis-alignment.md
 │   ├── interaction_flow.md
@@ -46,7 +46,7 @@ stock-valuation/
 
 | Command | Description |
 |:---|:---|
-| `/evaluate-stock {TICKER}` | Run full autonomous valuation: fetch → analyse → persist → report → discuss |
+| `/update-stock-analysis {TICKER}` | Run full autonomous valuation: fetch → analyse → persist → report → discuss |
 
 ---
 

@@ -71,7 +71,7 @@
     "category": "missing_valuations",
     "prompt": "Run portfolio review",
     "setup": "Some holdings have hasValuation: false",
-    "pass_condition": "Agent explicitly lists all unvalued tickers and recommends /evaluate-stock for each. Does NOT silently omit them.",
+    "pass_condition": "Agent explicitly lists all unvalued tickers and recommends /update-stock-analysis for each. Does NOT silently omit them.",
     "should_trigger": true
   }
 ]

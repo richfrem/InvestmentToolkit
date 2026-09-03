@@ -95,15 +95,15 @@ Pre-flight checks every time:
 
 ## Stock Research & Valuation Commands
 
-### `/evaluate-stock {TICKER}`
+### `/update-stock-analysis {TICKER}`
 **Full DCF valuation.** Fetches live financials (yfinance), runs Bear / Base / Bull scenario modelling, produces a weighted fair value, and saves a projection JSON. Uses live price from TradingView Desktop (active chart via CDP) when connected, otherwise yfinance.
 
 Updates the AI rating (BUY / HOLD / SELL) and price target on the Portfolio Advisor table.
 
 ```
-/evaluate-stock NVDA
-/evaluate-stock INTC
-/evaluate-stock CRWV
+/update-stock-analysis NVDA
+/update-stock-analysis INTC
+/update-stock-analysis CRWV
 ```
 
 ---
@@ -186,9 +186,9 @@ python3 plugins/tradingview/scripts/tv_launch.py
 |---|---|---|
 | Daily | `/x-news-sweep` | Gate recs against DCF + 8 hard gates |
 | Weekly | `/review-portfolio` | `/rebalance` if pillar >5pp off target |
-| Monthly | `/evaluate-stock {TICKER}` | Re-run for stale or missing AI projections |
+| Monthly | `/update-stock-analysis {TICKER}` | Re-run for stale or missing AI projections |
 | Quarterly | `/strategic-review` | Review MD, approve, apply formula patch |
-| Before buying | `/research-stock {TICKER}` then `/evaluate-stock {TICKER}` | Class C/D findings block buy recommendations |
+| Before buying | `/research-stock {TICKER}` then `/update-stock-analysis {TICKER}` | Class C/D findings block buy recommendations |
 | Execute trade | `/place-order buy N {TICKER} in {ACCOUNT}` | Preflight → CONFIRM → TV dialog filled + submitted → portfolio synced |
 | New ETF | `/analyze-etf {TICKER}` | Appears in Dashboard AI Expert Thesis panel automatically |
 

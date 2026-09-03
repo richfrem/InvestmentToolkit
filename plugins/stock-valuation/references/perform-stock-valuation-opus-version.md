@@ -1,6 +1,6 @@
 ---
 description: Perform AI-driven stock valuation (Bear/Base/Bull) and persist the result as an AI_AGENT projection to the backend store. The executing agent is the analyst — it fetches data, performs cognitive analysis, and saves via the HTTP API.
-trigger: /evaluate-stock
+trigger: /update-stock-analysis
 args:
   - name: ticker
     required: true
@@ -33,7 +33,7 @@ test -f .agent/skills/stock_valuation/SKILL.md || echo "FAIL: Skill file missing
 
 ## Execution
 
-When triggered with `/evaluate-stock {TICKER}`:
+When triggered with `/update-stock-analysis {TICKER}`:
 
 1. **Read Skill** — Load `.agent/skills/stock_valuation/SKILL.md` for the full schema, constraints table, and analysis prompt template.
 

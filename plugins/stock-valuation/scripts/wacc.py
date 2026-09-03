@@ -146,7 +146,7 @@ def compute_wacc(
     Args:
         ticker: Ticker symbol.
         market_cap: Equity market cap in dollars (caller-supplied — already
-            computed upstream in the /evaluate-stock pipeline).
+            computed upstream in the /update-stock-analysis pipeline).
         cik: SEC CIK for EDGAR lookups in get_fundamentals(), or None.
         erp: Equity risk premium (decimal), default 4.5%.
         tax_rate: Marginal tax rate for the after-tax cost of debt, default 21%.

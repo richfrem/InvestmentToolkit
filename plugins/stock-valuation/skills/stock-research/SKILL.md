@@ -7,7 +7,7 @@ description: >
   changes, management updates, and analyst sentiment. Updates the existing
   research report and priorAnalysisReview context. Ends with a structured
   judgment on whether findings warrant a full DCF re-valuation via
-  /update-stock-analysis (or legacy alias /evaluate-stock). Trigger when something happened and the user wants to
+  /update-stock-analysis (or legacy alias /update-stock-analysis). Trigger when something happened and the user wants to
   understand the impact before deciding whether to update the model.
   Also trigger on /research-stock.
 allowed-tools: Bash, Read, Write
@@ -18,19 +18,19 @@ allowed-tools: Bash, Read, Write
 ## Quick Reference
 - **Trigger**: `/research-stock {TICKER}` or natural language: "research {TICKER}", "what's changed with {TICKER}"
 - **Output (Research)**: Appends to `backend/data/research/{TICKER}_{YYYY-MM-DD}.md`
-- **Output (Decision)**: Structured re-valuation recommendation — triggers `/update-stock-analysis (or legacy alias /evaluate-stock)` if warranted
+- **Output (Decision)**: Structured re-valuation recommendation — triggers `/update-stock-analysis (or legacy alias /update-stock-analysis)` if warranted
 - **Chains into**: `update-stock-analysis` skill (renamed 2026-08-28 from `stock_valuation`) when re-valuation is confirmed
 - **Fallbacks**: `references/fallback-tree.md`
 
-## When to Use This Skill vs `/update-stock-analysis (or legacy alias /evaluate-stock)`
+## When to Use This Skill vs `/update-stock-analysis (or legacy alias /update-stock-analysis)`
 
 | Situation | Use |
 |-----------|-----|
 | Something happened (earnings, news, product launch, competitor move) | `/research-stock` first |
-| No prior valuation exists | `/update-stock-analysis (or legacy alias /evaluate-stock)` directly |
-| Prior valuation is stale (>30 days) and nothing specific happened | `/update-stock-analysis (or legacy alias /evaluate-stock)` directly |
+| No prior valuation exists | `/update-stock-analysis (or legacy alias /update-stock-analysis)` directly |
+| Prior valuation is stale (>30 days) and nothing specific happened | `/update-stock-analysis (or legacy alias /update-stock-analysis)` directly |
 | You want to know *if* the model needs updating before re-running it | `/research-stock` |
-| Explicit request for new DCF numbers | `/update-stock-analysis (or legacy alias /evaluate-stock)` directly |
+| Explicit request for new DCF numbers | `/update-stock-analysis (or legacy alias /update-stock-analysis)` directly |
 
 ---
 
@@ -102,12 +102,23 @@ Note the price delta since prior analysis: `(currentPrice - priorPrice) / priorP
 
 Conduct a structured sweep across these domains. For each, note: **what changed**, **how material is it**, and **does it affect the DCF model inputs?**
 
-### 3A: Recent Earnings & Guidance
-- Revenue and EPS vs consensus (beat/miss/in-line)
-- Management guidance for next quarter and full year
-- Any revision to multi-year outlook
-- Gross margin and operating leverage trend
-- **Model impact**: Changes analyst revenue estimates → affects `growthRate` and `netMargin` inputs
+### 3A: Recent Earnings & Guidance (Mandatory Transcript Checklist)
+The agent **MUST** audit the last 2 earnings calls and output this standardized verification block:
+
+```markdown
+### 📋 Strategic Outlook & Transcript Verification Checklist
+- [x] **Recent Earnings Calls Reviewed**: [e.g. Q1 2026, Q2 2026] (Dates: YYYY-MM-DD)
+- [x] **Guidance Trajectory**: [RAISED / MAINTAINED / LOWERED / WITHDRAWN]
+  - *Details*: [Management guidance updates, revenue beats/misses, full-year guide revisions]
+- [x] **Contracted Backlog & Pipeline**:
+  - *Firm Backlog*: [Committed commercial milestones & contracts]
+  - *Forward Pipeline*: [Multi-year pipeline size vs execution timeline]
+- [x] **Strategy Alignment Lens**: [{PILLAR_NAME} - Architecture & Tier-1 Customers]
+- [x] **Adversarial Risk & Counterparty Audit**: [Counterparty credit, cash burn rate, execution bottlenecks]
+- [x] **Strategic Stance & Forward Outlook**: [Summary conviction before Class A/B/C/D classification]
+```
+
+- **Model impact**: Feeds directly into Step 4 change classification and passes forward to `/update-stock-analysis` via `outlookAudit`.
 
 ### 3B: Competitive Landscape
 - New entrants or product launches by competitors
@@ -192,7 +203,7 @@ Compile the Class A and Class B findings. Make an explicit recommendation:
 Shall I proceed with the recommended action?
 ```
 
-**Wait for user confirmation before chaining into `/update-stock-analysis (or legacy alias /evaluate-stock)`.**
+**Wait for user confirmation before chaining into `/update-stock-analysis (or legacy alias /update-stock-analysis)`.**
 
 ---
 

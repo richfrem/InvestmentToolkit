@@ -114,7 +114,7 @@ You can:
   ✅ "agree" / "ok" / "keep it"     → accept my recommendation
   🔢 "set it to X%" / "X"           → override with your number
   🔍 "research more" / "research X" → I'll run /research-stock before we decide
-  📊 "evaluate it" / "evaluate"     → I'll run /evaluate-stock for a fresh DCF
+  📊 "evaluate it" / "evaluate"     → I'll run /update-stock-analysis for a fresh DCF
   ⏭️  "skip" / "next"               → defer, revisit at end
   🔚 "done" / "stop"                → end early, save what we have
 
@@ -183,7 +183,7 @@ After each response, record in the ledger and move to next:
 | "agree" / "ok" / "yes" / "keep" | `agreedTarget = recommendedTarget`, `decision = AGREED` |
 | A number like "8" or "8%" | `agreedTarget = float(X)`, `decision = OVERRIDE` |
 | "research more" / "research" | Run stock_research skill for this ticker, then re-present |
-| "evaluate" / "dcf" | Run evaluate-stock skill for this ticker, then re-present with new data |
+| "evaluate" / "dcf" | Run update-stock-analysis skill for this ticker, then re-present with new data |
 | "skip" / "next" | `decision = DEFERRED`, add to deferred list |
 | "exit it" / "close it" / "remove" | `agreedTarget = 0`, `decision = OVERRIDE` |
 | "done" / "stop" | End loop, proceed to Step 4 with what we have |
@@ -304,7 +304,7 @@ When user says "research more" for a ticker:
 5. Record whether the research changed your recommendation
 
 When user says "evaluate" for a ticker:
-1. Print: `"Running /evaluate-stock {TICKER} — building DCF model..."`
+1. Print: `"Running /update-stock-analysis {TICKER} — building DCF model..."`
 2. Execute the update_stock_analysis skill inline
 3. Show the new fair value + action + upside
 4. Re-present the holding card with updated DCF signal

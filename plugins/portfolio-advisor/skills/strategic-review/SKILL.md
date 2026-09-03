@@ -185,7 +185,7 @@ The highest-conviction ones are: {top 3 tickers with upsides}
   → I'll incorporate those into the formula improvement proposals.
 
 ③ Are there major stocks you want analyzed that AREN'T in the projections corpus yet?
-  (I'll note them for a `/evaluate-stock` follow-up run)
+  (I'll note them for a `/update-stock-analysis` follow-up run)
   → Answer "none" to skip.
 ```
 

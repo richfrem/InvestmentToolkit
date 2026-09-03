@@ -30,7 +30,7 @@
     "expected_not_trigger": [
       "stock_research"
     ],
-    "pass_condition": "Per the skill's own 'When to Use This Skill vs /evaluate-stock' table, no prior valuation exists so the agent routes directly to update_stock_analysis instead of running a research sweep first.",
+    "pass_condition": "Per the skill's own 'When to Use This Skill vs /update-stock-analysis' table, no prior valuation exists so the agent routes directly to update_stock_analysis instead of running a research sweep first.",
     "should_trigger": true
   },
   {
@@ -39,7 +39,7 @@
     "category": "workflow_gate",
     "prompt": "/research-stock BE \u2014 Bloom Energy just announced a new $2B AEP-style utility contract",
     "expected_trigger": "stock_research",
-    "pass_condition": "Agent classifies the finding (Class A/B/C/D per Step 4), reaches the Step 5 Re-Valuation Decision Gate, and explicitly WAITS for user confirmation before chaining into /evaluate-stock \u2014 does not auto-invoke update_stock_analysis without confirmation.",
+    "pass_condition": "Agent classifies the finding (Class A/B/C/D per Step 4), reaches the Step 5 Re-Valuation Decision Gate, and explicitly WAITS for user confirmation before chaining into /update-stock-analysis \u2014 does not auto-invoke update_stock_analysis without confirmation.",
     "should_trigger": true
   },
   {

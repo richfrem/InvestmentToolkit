@@ -128,7 +128,7 @@ If a breaker is triggered:
 ### 3D: Surface Missing Valuations
 For any holding with `hasValuation: false`:
 - List all such tickers explicitly with pillar and role
-- Recommend: *"Run `/evaluate-stock {TICKER}` for AI analysis (role: {role}, pillar: {pillar})."*
+- Recommend: *"Run `/update-stock-analysis {TICKER}` for AI analysis (role: {role}, pillar: {pillar})."*
 - Prioritize missing valuations for **core** holdings first
 
 ### 3E: Pillar Conviction Audit *(New — grounds thesis assessment in fair value data)*
@@ -191,7 +191,7 @@ Present full findings in this structure:
 - {N} holdings on target | {N} drifting | {N} critical
 - {N} strategic conflicts requiring resolution
 - {N} pillar conviction signals: {N} ALIGNED / {N} UNDER PRESSURE / {N} CRITICAL
-- Missing valuations: {N} holdings (run /evaluate-stock for each)
+- Missing valuations: {N} holdings (run /update-stock-analysis for each)
 - Thesis synchronization check: [✅ verify_thesis_sync.py passed / ❌ Out of sync (run verify_thesis_sync.py for details)]
 
 🏛️ Pillar Conviction Audit:

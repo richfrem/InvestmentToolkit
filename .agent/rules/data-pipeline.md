@@ -36,7 +36,7 @@ Dashboard / UI                     ← reads from target-portfolio.json
 ## Non-Negotiables
 
 1. **DCF run → propagate immediately.**
-   After any `/evaluate-stock` or DCF script run, call `propagate_dcf.py {TICKER}` before ending the session. Never leave `projections/{TICKER}.json` updated while `target-portfolio.json` still holds stale numbers.
+   After any `/update-stock-analysis` or DCF script run, call `propagate_dcf.py {TICKER}` before ending the session. Never leave `projections/{TICKER}.json` updated while `target-portfolio.json` still holds stale numbers.
 
 2. **Trade executes → update both portfolio and thesis.**
    After any buy or sell: update `portfolio.json` (shares, book_price) AND update `target-portfolio.json` (role, targetWeight, standingDecision). Both in the same turn. No exceptions.

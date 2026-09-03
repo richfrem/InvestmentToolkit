@@ -5,7 +5,7 @@
 **Status**: PROPOSED
 **Target Weight**: 4.5% (biohealth pillar)
 
-> **Note**: LLY and CRSP both cleared `/evaluate-stock`. Held at WATCHLIST (targetWeight = 0%) evaluating entry over time.
+> **Note**: LLY and CRSP both cleared `/update-stock-analysis`. Held at WATCHLIST (targetWeight = 0%) evaluating entry over time.
 
 ---
 
@@ -45,9 +45,9 @@ The Incretin (GLP-1R) boom represents the massive infrastructure buildout phase 
 - **Risk 1**: Off-target editing mutations or unforeseen toxicities in in-vivo liver treatments. *Mitigation*: Limit pure-play single names to capped target allocations, emphasizing players with strong lipid nanoparticle (LNP) delivery vectors.
 - **Risk 2**: Long-term regulatory drag from the FDA on broad population genetic editing. *Mitigation*: Epigenetic editing options offer a gentler regulatory hurdle because they avoid double-stranded DNA breaks.
 - **Risk 3**: Payer resistance to high single-dose upfront costs vs. distributed monthly pricing. *Mitigation*: Anchored by Eli Lilly's massive commercial distribution engine and cash flow.
-- **Risk 4 (added at intake)**: Neither remaining ticker had a DCF projection in this repo at intake, and the Phase 2a valuation-committee gate (`validate_projection.py`) will block either from carrying `aiThesis.action = ACCUMULATE` until at least 2 of 3 valuation lenses agree. *Mitigation*: Status stays PROPOSED, `role: initiate` (not accumulate), until each ticker clears `/evaluate-stock`. Both LLY and CRSP have since cleared this gate procedurally.
-- **Risk 5 (realized 2026-07-05)**: VERV, the sub-strategy's speculative watchlist name, was acquired by Eli Lilly and delisted before this sub-strategy graduated past PROPOSED — the position was never live, so no capital was at risk, but it demonstrates that speculative pre-catalyst names in this space can disappear from the public market entirely before an intake pass completes. *Mitigation*: Run `/evaluate-stock` promptly after intake rather than deferring; treat "primary strategic-acquisition target" framing as a signal to verify the ticker still trades before, not after, sizing it.
-- **Risk 6 (realized 2026-07-05 — DCF-tool mismatch on CRSP)**: `/evaluate-stock CRSP` produced a canonical DCF fair value of $16.23 vs. a $60.08 price (-73%, SELL), confirmed by reverse-DCF (implied 161% 5-yr CAGR, beyond even the 90% bull case) and Monte Carlo (100% probability overvalued). This is **not** read as a clean sell signal — CRSP's real economics run through a 40%-profit-share Vertex collaboration on CASGEVY (the first-ever approved CRISPR/Cas9 therapy) that a revenue-multiple DCF cannot price, the same structural mismatch already documented for OKLO's `DCF_GATE_SUSPENDED` standing decision elsewhere in this portfolio. *Mitigation*: `aiThesis.action` set to WATCHLIST, not ACCUMULATE, in `CRSP.json`. Auto-derived `priceLevels` (buy tier $2.66, sell tiers $3.55-$70.13) are mechanical artifacts of the degenerate fair value and are **not usable for real trading** — do not act on them. If the user wants to proceed with the planned starter-tier initiate anyway, it needs an explicit standingDecision override (OKLO-style) in `target-portfolio.json`, sized small and gated strictly on the CTX310/CTX320 clinical catalysts, not on this DCF output. See `research/CRSP_2026-07-05.md` for full detail.
+- **Risk 4 (added at intake)**: Neither remaining ticker had a DCF projection in this repo at intake, and the Phase 2a valuation-committee gate (`validate_projection.py`) will block either from carrying `aiThesis.action = ACCUMULATE` until at least 2 of 3 valuation lenses agree. *Mitigation*: Status stays PROPOSED, `role: initiate` (not accumulate), until each ticker clears `/update-stock-analysis`. Both LLY and CRSP have since cleared this gate procedurally.
+- **Risk 5 (realized 2026-07-05)**: VERV, the sub-strategy's speculative watchlist name, was acquired by Eli Lilly and delisted before this sub-strategy graduated past PROPOSED — the position was never live, so no capital was at risk, but it demonstrates that speculative pre-catalyst names in this space can disappear from the public market entirely before an intake pass completes. *Mitigation*: Run `/update-stock-analysis` promptly after intake rather than deferring; treat "primary strategic-acquisition target" framing as a signal to verify the ticker still trades before, not after, sizing it.
+- **Risk 6 (realized 2026-07-05 — DCF-tool mismatch on CRSP)**: `/update-stock-analysis CRSP` produced a canonical DCF fair value of $16.23 vs. a $60.08 price (-73%, SELL), confirmed by reverse-DCF (implied 161% 5-yr CAGR, beyond even the 90% bull case) and Monte Carlo (100% probability overvalued). This is **not** read as a clean sell signal — CRSP's real economics run through a 40%-profit-share Vertex collaboration on CASGEVY (the first-ever approved CRISPR/Cas9 therapy) that a revenue-multiple DCF cannot price, the same structural mismatch already documented for OKLO's `DCF_GATE_SUSPENDED` standing decision elsewhere in this portfolio. *Mitigation*: `aiThesis.action` set to WATCHLIST, not ACCUMULATE, in `CRSP.json`. Auto-derived `priceLevels` (buy tier $2.66, sell tiers $3.55-$70.13) are mechanical artifacts of the degenerate fair value and are **not usable for real trading** — do not act on them. If the user wants to proceed with the planned starter-tier initiate anyway, it needs an explicit standingDecision override (OKLO-style) in `target-portfolio.json`, sized small and gated strictly on the CTX310/CTX320 clinical catalysts, not on this DCF output. See `research/CRSP_2026-07-05.md` for full detail.
 
 ---
 
@@ -69,7 +69,7 @@ The Incretin (GLP-1R) boom represents the massive infrastructure buildout phase 
 - **CRSP**: WATCHLIST — both the DCF-tool-mismatch caveat (Risk 6) and the 2026-07-05 user decision apply. Do not act on the auto-derived price levels, they are not usable.
 - ~~**VERV**: Speculative watchlist.~~ Removed 2026-07-05 — acquired by Eli Lilly, delisted, no longer tradeable.
 - **Capital Source**: None currently deployed — freed back to the Strategic Reserve (`PSU-U.TO`) pending an actual initiate decision.
-- **Re-entry process**: This sub-strategy evaluates entry over time rather than initiating immediately after a DCF pass clears. Re-run `/evaluate-stock` periodically and reassess against the milestone gates in Section 6 (CTX310/CTX320 data for CRSP; technical pullback levels for LLY) before deciding to initiate either name.
+- **Re-entry process**: This sub-strategy evaluates entry over time rather than initiating immediately after a DCF pass clears. Re-run `/update-stock-analysis` periodically and reassess against the milestone gates in Section 6 (CTX310/CTX320 data for CRSP; technical pullback levels for LLY) before deciding to initiate either name.
 
 ---
 
@@ -77,9 +77,9 @@ The Incretin (GLP-1R) boom represents the massive infrastructure buildout phase 
 
 | Ticker | Price | Valuation Multiples / Metrics | Status | Entry Trigger / Strategy |
 | :--- | :--- | :--- | :--- | :--- |
-| **LLY** | $1,213.91 | TTM P/E: ~43x \| Forward P/E: ~31x \| Rule of 40: ~90% | DCF-CLEARED | `/evaluate-stock` complete; see `priceLevels` in `target-portfolio.json` for buy/sell tiers. |
+| **LLY** | $1,213.91 | TTM P/E: ~43x \| Forward P/E: ~31x \| Rule of 40: ~90% | DCF-CLEARED | `/update-stock-analysis` complete; see `priceLevels` in `target-portfolio.json` for buy/sell tiers. |
 | **CRSP** | $60.08 | DCF FV $16.23 (-73%, SELL) — but DCF-tool mismatch, see Risk 6 | WATCHLIST | Do not act on auto-derived price levels. Milestone gate: CTX310/CTX320 Phase 1/2a data. |
-| ~~**VERV**~~ | — | ~~Speculative In-Vivo Base Editor~~ | REMOVED | Acquired by Eli Lilly, delisted July 2025 — `/evaluate-stock` confirmed no data available. |
+| ~~**VERV**~~ | — | ~~Speculative In-Vivo Base Editor~~ | REMOVED | Acquired by Eli Lilly, delisted July 2025 — `/update-stock-analysis` confirmed no data available. |
 
 *LLY price above reflects the original intake proposal — see the DCF projection for current fair-value analysis. CRSP's DCF is complete but should be read alongside Risk 6 above, not taken at face value — see `research/CRSP_2026-07-05.md`.*
 
@@ -92,9 +92,9 @@ The Incretin (GLP-1R) boom represents the massive infrastructure buildout phase 
 - [ ] **REJECTED**
 
 **Decision Notes** *(2026-07-05)*:
-Structural wiring only — target weights and sub-strategy registered in `target-portfolio.json` and this file. `/evaluate-stock LLY` complete (DCF + price levels persisted, clean HOLD, no DCF concerns). `/evaluate-stock VERV` returned no data — Verve Therapeutics was acquired by Eli Lilly and delisted from Nasdaq in July 2025; VERV was removed from this sub-strategy and its 0.675% weight reallocated proportionally to LLY/CRSP. `/evaluate-stock CRSP` complete — DCF says SELL but this is a DCF-tool mismatch (see Risk 6); `aiThesis.action` set to WATCHLIST.
+Structural wiring only — target weights and sub-strategy registered in `target-portfolio.json` and this file. `/update-stock-analysis LLY` complete (DCF + price levels persisted, clean HOLD, no DCF concerns). `/update-stock-analysis VERV` returned no data — Verve Therapeutics was acquired by Eli Lilly and delisted from Nasdaq in July 2025; VERV was removed from this sub-strategy and its 0.675% weight reallocated proportionally to LLY/CRSP. `/update-stock-analysis CRSP` complete — DCF says SELL but this is a DCF-tool mismatch (see Risk 6); `aiThesis.action` set to WATCHLIST.
 
-**Final decision**: user confirmed neither LLY nor CRSP will be initiated right now, despite LLY's clean DCF pass — both held at `role: watchlist`, `targetWeight: 0`. The freed 4.5% returned in full to `PSU-U.TO` (18.425%). This sub-strategy's operating model is to evaluate entry over time rather than auto-initiating the moment a DCF clears — re-run `/evaluate-stock` periodically and reassess against Section 6's milestone gates before initiating either name.
+**Final decision**: user confirmed neither LLY nor CRSP will be initiated right now, despite LLY's clean DCF pass — both held at `role: watchlist`, `targetWeight: 0`. The freed 4.5% returned in full to `PSU-U.TO` (18.425%). This sub-strategy's operating model is to evaluate entry over time rather than auto-initiating the moment a DCF clears — re-run `/update-stock-analysis` periodically and reassess against Section 6's milestone gates before initiating either name.
 
 ---
 

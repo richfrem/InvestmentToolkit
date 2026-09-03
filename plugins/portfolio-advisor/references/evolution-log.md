@@ -161,7 +161,7 @@ COHR -8.6% DOWN). Only 1 actionable recommendation today (MSFT trim, score -1, w
 
 ## 2026-06-22 — Tier 2: Backend Local API Auth Missing from All Skill curl Calls
 
-**Tier: 2 (Failure)** — `GET /api/projections/CACI` returned `401 Unauthorized — missing or invalid local API token` during `/evaluate-stock CACI` run. Root cause: `localAuth` middleware was added to the Express backend but no skill documentation was updated to include the `Authorization: Bearer` header.
+**Tier: 2 (Failure)** — `GET /api/projections/CACI` returned `401 Unauthorized — missing or invalid local API token` during `/update-stock-analysis CACI` run. Root cause: `localAuth` middleware was added to the Express backend but no skill documentation was updated to include the `Authorization: Bearer` header.
 
 ### Root Cause
 `investment_screener/backend/src/middleware/localAuth.ts` reads/creates a bearer token at `.runtime/api-token` on first boot and gates all `/api/*` routes. SKILL.md files across 7 plugins contained raw `curl http://localhost:3001/api/...` calls with no auth header. The `/health` endpoint is correctly exempt.

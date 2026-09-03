@@ -66,7 +66,7 @@ export function AgentReminderModal({ isOpen, onClose, symbol }: Props) {
                             <span className="text-[10px] text-slate-600 group-hover:text-indigo-500 transition-colors">Copy to clipboard</span>
                         </div>
                         <div className="text-white selection:bg-indigo-500/30">
-                            /evaluate-stock {symbol || 'TICKER'}
+                            /update-stock-analysis {symbol || 'TICKER'}
                         </div>
                     </div>
 

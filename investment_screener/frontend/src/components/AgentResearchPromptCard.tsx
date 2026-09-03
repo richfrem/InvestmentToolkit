@@ -5,7 +5,7 @@
  * Purpose:
  *     Prominent, institutional call-to-action card shown on stock analysis screens
  *     when a stock lacks active fundamental research or Technical Analysis sweep data.
- *     Features a single 1-shot master command `/evaluate-stock {TICKER}`.
+ *     Features a single 1-shot master command `/update-stock-analysis {TICKER}`.
  *
  * Layer: Frontend / Components / Education
  */

@@ -7,7 +7,7 @@
 ---
 
 ## Context
-When conducting stock intake (`/stock-intake`) or deep valuation refresh (`/evaluate-stock`), the InvestmentToolkit renders analytical conclusions across 5 distinct UI surfaces:
+When conducting stock intake (`/stock-intake`) or deep valuation refresh (`/update-stock-analysis`), the InvestmentToolkit renders analytical conclusions across 5 distinct UI surfaces:
 1. **Overview Tab & Strategy** (`domain_model.sqlite` `investment` table)
 2. **Technicals Tab** (`intelligence.sqlite` `TECHNICAL_SWEEP` & `domain_model.sqlite` `price_level_tier`)
 3. **Valuation Modeler Tab** (`domain_model.sqlite` `projection_version` & `/api/projections`)
