@@ -408,6 +408,7 @@ def test_load_dcf_returns_latest_projection_fields(tmp_path):
         investment_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
         save_projection_version(
             conn, investment_id, version=1, saved_at="2026-06-01T00:00:00Z",
+            analyzed_at="2026-06-01T00:00:00Z",
             fair_value=200.0, action="ACCUMULATE", source="AI_AGENT",
         )
         projection_id = f"{investment_id}:1"
@@ -423,6 +424,39 @@ def test_load_dcf_returns_latest_projection_fields(tmp_path):
     assert dcf["bear"] == 150.0
     assert dcf["base"] == 200.0
     assert dcf["bull"] == 260.0
+    assert dcf["analyzedAt"] == "2026-06-01T00:00:00Z"
+    assert dcf["daysSinceDCF"] is not None
+    assert dcf["daysSinceDCF"] >= 90
+
+
+def test_add_dcf_flags_flags_earnings_dcf_due_when_stale():
+    from ta_sweep_batch import add_dcf_flags
+
+    res = {"ticker": "AAPL", "close": 230.0}
+    dcf = {
+        "fairValue": 220.0,
+        "action": "HOLD",
+        "daysSinceDCF": 120,
+        "analyzedAt": "2026-05-02T00:00:00Z",
+    }
+    add_dcf_flags(res, dcf)
+    assert "EARNINGS_DCF_DUE" in res["flags"]
+    assert any("EARNINGS / QUARTERLY DCF UPDATE DUE" in r for r in res.get("hitl_reminders", []))
+    assert res["dcf"]["daysSinceDCF"] == 120
+
+
+def test_add_dcf_flags_does_not_flag_fresh_dcf():
+    from ta_sweep_batch import add_dcf_flags
+
+    res = {"ticker": "ARM", "close": 230.0}
+    dcf = {
+        "fairValue": 150.0,
+        "action": "SELL",
+        "daysSinceDCF": 2,
+        "analyzedAt": "2026-09-01T00:00:00Z",
+    }
+    add_dcf_flags(res, dcf)
+    assert "EARNINGS_DCF_DUE" not in res.get("flags", [])
 
 
 def test_load_dcf_returns_none_for_unknown_ticker(tmp_path):

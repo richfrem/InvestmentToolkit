@@ -26,3 +26,9 @@ button following the last visible toolbar interval button), wait for the dropdow
 appear, then click the matching resolution row. Close the dropdown after selection.
 
 **Standing permission:** Auto-approved to patch `tradingview-cdp/core/chart.js` for this fix.
+
+## 2026-09-02 — Tier 1 Gap: Batch TA sweep lacked notification when DCF baseline aged past earnings cycle
+
+**Tier: 1 (Gap)** — TA sweep did not alert when a ticker's fundamental DCF was over 90 days old (past a quarterly earnings release).
+**Fix:** Added `analyzedAt` and `daysSinceDCF` tracking to `load_dcf` in `ta_sweep_batch.py`, triggering an `EARNINGS_DCF_DUE` flag and HITL reminder when `daysSinceDCF >= 90`.
+
