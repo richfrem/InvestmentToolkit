@@ -163,10 +163,25 @@ For every approved change, `agentRationale` will be updated with catalyst note b
 After any normalization, immediately re-lock:
 `GOOG, HUMN, KOID, ETHA, IBIT, COIN, CRCL` to their actual weights.
 
-### Gate 8 — SA/DCF conflicts require user confirmation
+### Gate 8 — Never sell PSU-U.TO across accounts
+Capital sourcing rule: sells must occur in the exact account funding the trade.
+
+### Gate 9 — Triangulated Multi-Model Verification (Capital Gated)
+For any `INITIATE` recommendation, or any `ACCUMULATE` / `TRIM` involving >20% position changes:
+- **Do not rely on Grok alone.** Grok is sensitive to breaking narrative momentum and management PR, but prone to glossing over GAAP depreciation, share dilution, and debt covenants.
+- Cross-verify the inquiry with **ChatGPT or Claude** for forensic 10-Q accounting checks:
+  1. Confirm GAAP vs Non-GAAP adjustments (e.g. M&A inflation in ARR).
+  2. Audit cash burn vs debt interest expense (e.g. CoreWeave $640M/qtr interest).
+  3. Verify all-in unit production costs including depreciation (e.g. Riot $90.6k/BTC all-in).
+  4. Separate firm, non-cancellable RPO from non-binding LOIs.
+- If Grok and ChatGPT/Claude **diverge** (e.g. Grok says "Immediate Accumulate" on backlog, ChatGPT says "Leverage Warning: -$5.7B FCF"):
+  → `gate_status = FLAGGED (MODEL_DIVERGENCE)`
+  → Reconcile the discrepancy before presenting action to user.
+
+### Gate 10 — SA/DCF conflicts require user confirmation
 If `action_rec = ACCUMULATE/INITIATE` and DCF upside < -15% AND ticker not in known-conflicts list:
 → `gate_status = CONFIRM`
-→ `gate_reason = "Gate 8: SA/DCF conflict — DCF {upside:+.1f}% — confirm before applying"`
+→ `gate_reason = "Gate 10: SA/DCF conflict — DCF {upside:+.1f}% — confirm before applying"`
 
 **Known SA/DCF conflict allowlist** (Gate 8 waived, warns only):
 `CORZ, LITE, BE, EQT, INTC`
