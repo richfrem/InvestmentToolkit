@@ -87,8 +87,23 @@ Before executing `git worktree add` or `git checkout -b` for ANY feature or chor
 3. Verify local matches remote: `git rev-parse HEAD` equals `git rev-parse origin/main`.
 Branching from an un-pulled local state is strictly prohibited.
 
-### 9. Strict Working-Directory Confinement
+### 9. Strict Working-Directory Confinement & Cross-Repo Protocol
 All commands, tool executions, and file edits MUST remain strictly within the current repository tree (`InvestmentToolkit`). Never pass `-C ../<dir>`, never reference files outside the workspace root, and never inspect or touch parallel repositories (such as `agent-plugins-skills`) unless explicitly reviewed, approved, or authorized by the user.
+
+When cross-repository ecosystem work in `agent-plugins-skills` is authorized:
+1. **Pre-Flight Baseline**: Run `git status --short` in target repo. If uncommitted changes exist, STOP immediately and consult user.
+2. **Remote Synchronization**: Run `git checkout main && git fetch origin main && git pull origin main`. Verify `HEAD == origin/main`.
+3. **Scope Approval & Worktree Isolation**: Confirm exact change approval, then create isolated worktree: `git worktree add -b <branch> .worktrees/<name> main`.
+4. **Implement, Test & PR**: Execute strictly within worktree, run tests, commit, push, open PR. Never self-merge.
+5. **Post-Merge Hygiene**: After user merges, `git fetch origin main`, verify ancestor (`git merge-base --is-ancestor`), fast-forward `main`, remove worktree (`git worktree remove --force`), delete local and remote feature branch, verify clean state (`git branch --list`, `git worktree list`).
+6. **Downstream Resync**: In `InvestmentToolkit`, run `sync_with_inventory.py` and `plugin_add.py plugins/ -y` to propagate updates.
+
+### 10. Git Worktree Hard Invariants
+- **Path Standard**: Always use `.worktrees/<branch-slug>` inside repository root; never `/tmp/`, home directories, or arbitrary locations.
+- **Main Checkout Cleanliness**: The main checkout remains untouched on `main` while a worktree is active.
+- **Never Raw `rm -rf`**: Always remove worktrees with `git worktree remove --force .worktrees/<name>`. Using raw `rm -rf` leaves stale administrative refs in `.git/worktrees/`.
+- **Data Isolation**: Gitignored data files (e.g. `domain_model.sqlite`) do not carry over to worktrees; always verify final database writes landed on the main checkout.
+- **Leak Verification**: Before opening a PR from a worktree, run `git status --short` on the main checkout to ensure no edits leaked outside the worktree.
 
 ## Approval Required
 
