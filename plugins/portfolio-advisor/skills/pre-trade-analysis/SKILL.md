@@ -32,11 +32,12 @@ Whenever this skill executes, the agent **MUST** output this structured markdown
 ```markdown
 ### 🎯 Pre-Trade Analysis Briefing: {TICKER} ({LIFECYCLE_ACTION})
 
-- [x] **1. Transcript & Strategic Guidance Audit**:
-  - *Calls Audited*: [e.g. Q1 2026, Q2 2026]
+- [x] **1. Transcript & Multi-Model Strategic Audit**:
+  - *Calls & Filings Audited*: [e.g. Q1 2026, Q2 2026 10-Qs, earnings transcripts]
+  - *Triangulated Model Sweep*: [Grok (real-time news/catalysts) + ChatGPT/Claude (10-Q/GAAP/debt audit)]
   - *Guidance Trajectory*: [RAISED / MAINTAINED / LOWERED / WITHDRAWN]
-  - *Backlog & Commercial Milestones*: [Firm backlog value, hyperscaler/tier-1 offtake status]
-  - *Adversarial Counterparty Check*: [Credit quality, cash burn, execution risks]
+  - *Backlog Quality & RPO*: [Firm contracted RPO vs non-binding LOI vs customer-funded infrastructure]
+  - *Adversarial Counterparty & Balance Sheet Check*: [Debt/interest burn, dilution, customer concentration]
 
 - [x] **2. Technical Regime & TradingView Chart Structure**:
   - *Trend vs 200 EMA*: [Trading above/below institutional 200 EMA ($Price)]
@@ -88,10 +89,13 @@ Whenever this skill executes, the agent **MUST** output this structured markdown
    "
    ```
 
-### Step 2: Multi-Quarter Transcript & Forward Outlook Audit
-1. Audit the last 2 earnings calls via web search or existing `investment_note` records.
+### Step 2: Multi-Quarter Transcript & Triangulated Multi-Model Audit
+1. Run the targeted adversarial prompt across **both Grok and ChatGPT/Claude**:
+   - **Grok**: Surfaces breaking real-time news, X executive commentary, and sentiment inflections.
+   - **ChatGPT / Claude**: Forensically checks 10-Q SEC filings, reconciles GAAP vs non-GAAP (e.g. M&A inflation like PANW), extracts all-in costs (e.g. RIOT mining depreciation), and quantifies debt/FCF burdens (e.g. CRWV debt vs backlog).
 2. Determine guidance trajectory (RAISED, MAINTAINED, LOWERED).
-3. Confirm whether forward growth is backed by contracted backlog or speculative narrative.
+3. Distinguish firm contracted RPO (e.g. SYM's $22.5B) from non-binding LOIs or speculative TAM claims.
+4. Assess customer concentration (e.g. SYM's 90.5% Walmart dependency).
 
 ### Step 3: Technical Structure & Chart Inspection
 1. Fetch live technicals from `ta_sweep_single.py` or TradingView CDP:
