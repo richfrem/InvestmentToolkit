@@ -80,6 +80,16 @@ Never skip hooks with `--no-verify` unless the user explicitly requests it.
 - Auto-modified files like `.DS_Store` or `uv.lock` should not be committed unless relevant.
 - When `skills-lock.json` or `symlinks.json` changes as a direct result of adding/modifying skills or plugins, commit them together with the changes.
 
+### 8. Mandatory Pre-Branch Fetch & Pull Gate
+Before executing `git worktree add` or `git checkout -b` for ANY feature or chore:
+1. Switch to `main`: `git checkout main`
+2. Fetch and pull latest remote: `git fetch origin main && git pull origin main`
+3. Verify local matches remote: `git rev-parse HEAD` equals `git rev-parse origin/main`.
+Branching from an un-pulled local state is strictly prohibited.
+
+### 9. Strict Working-Directory Confinement
+All commands, tool executions, and file edits MUST remain strictly within the current repository tree (`InvestmentToolkit`). Never pass `-C ../<dir>`, never reference files outside the workspace root, and never inspect or touch parallel repositories (such as `agent-plugins-skills`) unless explicitly reviewed, approved, or authorized by the user.
+
 ## Approval Required
 
 - Any `git reset` (hard or soft)
