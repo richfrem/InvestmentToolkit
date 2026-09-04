@@ -63,8 +63,19 @@ When dropping into a fresh repository clone, execute this sequence to reach 100%
 20. **TradingView Baseline & Broker MCP Independence**: TradingView CDP is the universal baseline for live pricing, TA sweeps, and visual analysis. Broker-specific MCP plugins (e.g. `plugins/questrade`) are strictly optional user-level augments for chat queries and HITL order drafting; core toolkit services, DB schemas, and dashboard routes must never depend on them. See [`.agent/rules/broker-augment-policy.md`](file:///.agent/rules/broker-augment-policy.md).
 21. **Domain Database Location & Sync Ingestion**: The sole source of truth for portfolio holdings, accounts, cash balances, target weights, and thesis data is `investment_screener/backend/data/domain_model.sqlite`. When updating portfolio state from broker feeds (TradingView or Questrade MCP), always execute the canonical sync scripts (`fetch_broker_data.py --snapshot` or `questrade_sync.py --payload`) rather than executing ad-hoc raw SQL statements.
 22. **Single-Repo Confinement, Mandatory Pull Gate & Zero-Rework Authorization**:
-    - **Single-Repo Confinement & Source Upstream Protocol**: The agent is strictly confined to `InvestmentToolkit` by default. When upstream ecosystem changes are requested at source in `agent-plugins-skills`, they must be explicitly guided, reviewed, and approved by the user step-by-step. Never jump repos unilaterally or assume file ownership across repositories without explicit user direction.
-    - **Mandatory Pre-Branch Pull Gate**: Before executing `git worktree add` or `git checkout -b`, the agent MUST run: `git checkout main && git fetch origin main && git pull origin main`. Branching from an un-pulled local state is strictly prohibited.
+    - **Single-Repo Confinement & Source Upstream Protocol**: The agent is strictly confined to `InvestmentToolkit` by default. When upstream ecosystem changes are requested at source in `agent-plugins-skills`, they must follow the **6-Step Cross-Repository Lifecycle Protocol**:
+      1. *Pre-Flight Baseline*: Run `git status --short` in `agent-plugins-skills`. If any untracked/modified files exist, STOP and consult user.
+      2. *Remote Synchronization*: Run `git checkout main && git fetch origin main && git pull origin main`. Verify `HEAD == origin/main`.
+      3. *Scope Approval & Worktree Isolation*: Confirm exact change approval, then create isolated worktree: `git worktree add -b <branch> .worktrees/<name> main`.
+      4. *Implement, Test & PR*: Execute within worktree, run tests, commit, push, open PR via `gh pr create`. Never self-merge.
+      5. *Post-Merge Hygiene*: After user merges, `git fetch origin main`, verify ancestor (`git merge-base --is-ancestor`), fast-forward `main`, remove worktree (`git worktree remove --force`), delete local and remote feature branch, verify clean state (`git branch --list`, `git worktree list`).
+      6. *Downstream Resync*: In `InvestmentToolkit`, run `sync_with_inventory.py` and `plugin_add.py plugins/ -y` to propagate updates.
+    - **Git Worktree Hard Invariants**:
+      - Always use `.worktrees/<branch-slug>` inside repository root; never `/tmp/` or home.
+      - Main checkout remains untouched on `main` while worktree is active.
+      - Never delete worktrees with raw `rm -rf`; always use `git worktree remove --force` to prevent orphaned admin metadata in `.git/worktrees/`.
+      - Gitignored files (SQLite DBs, private data) never carry over to new worktrees; verify writes on main checkout.
+    - **Mandatory Pre-Branch Pull Gate**: Before executing `git worktree add` or `git checkout -b` in ANY repo, the agent MUST run: `git checkout main && git fetch origin main && git pull origin main`. Branching from an un-pulled local state is strictly prohibited.
     - **Prior Authorization & Assumption Guards ("Measure Twice, Cut Once")**: Never take unprompted or "proactive" write actions (branch deletions, file changes, config updates). Inspect real filesystem state first (`ls`, `find`, `git status`); never guess file locations or architectures. If requirements are ambiguous, clarify before coding to eliminate rework.
 
 ## Canonical Scripts
