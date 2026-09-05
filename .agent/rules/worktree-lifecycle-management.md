@@ -87,7 +87,7 @@ ref updated", and "checked out on disk" as one undifferentiated bucket called "d
    session), and confirm via `git worktree list` that it's gone.
 6. **All symlink creation/removal inside a worktree goes through
    `.agents/skills/symlink-manager/scripts/symlink_manager.py`**, per
-   `.agent/rules/symlink-cross-platform.md` -- this applies inside worktrees exactly as
+   `.agent/rules/plugin-architecture-policy.md` Section 5 -- this applies inside worktrees exactly as
    much as the main checkout. If the tool isn't present in the worktree, restore it from
    the marketplace-cached copy or the sibling monorepo before touching any symlink, never
    fall back to raw `ln -s`.
