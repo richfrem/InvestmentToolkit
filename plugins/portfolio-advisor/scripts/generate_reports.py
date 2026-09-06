@@ -315,3 +315,27 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def render_interactive_decisions(decisions: list, final_chain_hash: str = "") -> str:
+    """Render interactive triage decisions into Markdown projection."""
+    lines = ["## Interactive Session Decisions & Overrides", ""]
+    if final_chain_hash:
+        lines.append(f"* **Receipt Anchor:** ")
+        lines.append("")
+    if not decisions:
+        lines.append("*(No interactive trade decisions or overrides recorded this session)*")
+        lines.append("")
+        return chr(10).join(lines)
+    lines.append("| Ticker | Recommended | Action Taken | Override Reason | Actor | Timestamp |")
+    lines.append("|---|---|---|---|---|---|")
+    for d in decisions:
+        t = d.get('ticker', 'N/A')
+        r = d.get('recommended', 'N/A')
+        a = d.get('action', 'N/A')
+        o = d.get('override_reason') or 'None'
+        act = d.get('actor', 'human')
+        ts = d.get('timestamp', 'N/A')
+        lines.append(f"| {t} | {r} | {a} | {o} | {act} | {ts} |")
+    lines.append("")
+    return chr(10).join(lines)
