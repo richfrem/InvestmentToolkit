@@ -26,9 +26,27 @@ smarter every day this runs.
 
 ---
 
-## The 5-Step Loop
+## The 5-Step Loop & Deterministic Verification Protocol
 
 Run these steps in order. Never skip a step. Never ask multiple questions at once.
+
+### Deterministic Execution & Verification Protocol
+To guarantee complete fidelity and prevent shortcuts, every `/daily` execution creates an isolated scratch run folder:
+`temp/daily_run_<TIMESTAMP>/` (e.g., `temp/daily_run_20260906_080000/`).
+
+As each step completes, write its structured completion manifest JSON to this directory:
+- Step 0: `step0_readiness.json`
+- Step 1: `step1_brief.json`
+- Step 2: `step2_triage.json`
+- Step 3: `step3_actions.json`
+- Step 4: `step4_evolution.json`
+- Step 5: `step5_summary.json`
+
+At the conclusion of Step 5, you MUST execute the independent deterministic verifier:
+```bash
+python3 plugins/portfolio-advisor/scripts/verify_daily_run.py --dir temp/daily_run_<TIMESTAMP>/ --cleanup
+```
+The script validates all step artifacts and invariant fields, verifies that every step ran, and cleans up the temporary directory upon 100% verification.
 
 ---
 
@@ -528,7 +546,30 @@ This parses daily brief outputs and compiles the structured markdown reports int
 
 ---
 
-### Step 5 — Session Summary
+### Step 5 — Session Summary & Deterministic Verification Check
+
+Write `step5_summary.json` to the session run directory, close with a tight summary block, and execute the independent verifier with `--cleanup`:
+
+```bash
+# Write Step 5 artifact
+python3 -c "
+import json, os
+from datetime import datetime, timezone
+run_dir = os.environ.get(DAILY_RUN_DIR)
+if run_dir:
+    with open(os.path.join(run_dir, step5_summary.json), w) as f:
+        json.dump({
+            step: 5,
+            status: COMPLETED,
+            reviewed_holdings: [N],
+            acted_trades: [N],
+            timestamp: datetime.now(timezone.utc).isoformat()
+        }, f, indent=2)
+"
+
+# Execute independent deterministic verification check
+python3 plugins/portfolio-advisor/scripts/verify_daily_run.py --dir "$DAILY_RUN_DIR" --cleanup
+```
 
 Close with a tight summary. One block, no prose:
 
@@ -538,6 +579,7 @@ Close with a tight summary. One block, no prose:
   Acted:      [N] trades prepared  ·  [TICKER sell, TICKER buy, ...]
   Deferred:   [N] items queued for tomorrow
   Evolved:    [N] tool fixes · [N] overrides logged
+  Verified:   ✅ Independent deterministic checklist verification passed (temp run purged)
               Next improvement trigger: [pillar stress / consecutive EXIT / none]
 ─────────────────────────────────────────────────────────
 Tomorrow: run `/daily` again. Deltas compound.
