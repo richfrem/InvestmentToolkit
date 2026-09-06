@@ -2010,3 +2010,11 @@ Read the full skill before any symlink work:
 - Present 1–3 Socratic questions with explicit `[Recommended]` defaults to align on scope.
 - Compile the immutable 4-Pillar Specification (`TASK_SPEC.md`).
 - Obtain explicit human authorization ("Proceed", "Go", or "Execute") before creating a worktree or modifying code.
+
+
+## Plugin & Skill Maintenance Policy
+- Check `context/plugin-config.json` for this repository's configured contribution mode:
+  1. `fork-and-pr`: Test fix locally, commit to feature branch in cloned upstream repo, and submit PR to `richfrem/agent-plugins-skills`.
+  2. `local-patch-and-issue`: Apply immediate fix directly in `.agents/skills/` and log an issue in `richfrem/agent-plugins-skills` with reproduction details.
+  3. `domain-override`: Keep upstream shared skills unmodified; put project customizations in `.agent/rules/local-*` or local `plugins/`.
+- Never make silent undocumented edits to shared skills without either opening an upstream PR or logging an issue.

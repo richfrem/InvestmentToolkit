@@ -20,8 +20,37 @@ allowed-tools: Bash, Read, Write
 This master coordinator takes an investor from a clean repository clone directly to an institutional-grade, fully operating investment operating system:
 
 ```
-[1. Pre-Flight Engine Check] ➔ [2. Accounts & Strategy Pillars] ➔ [3. Broker/TV Ingestion] ➔ [4. Automated DCF Baseline] ➔ [5. Live Chart Overlay & Launch]
+[0. Agentic OS & Contribution Mode] ➔ [1. Pre-Flight Engine Check] ➔ [2. Accounts & Strategy Pillars] ➔ [3. Broker/TV Ingestion] ➔ [4. Automated DCF Baseline] ➔ [5. Live Chart Overlay & Launch]
 ```
+
+---
+
+## 🛠️ Step 0 — Agentic OS Foundation & Plugin Contribution Setup
+
+Before setting up investment pipelines, establish the repository's Agentic OS substrate and align plugin contribution preferences:
+
+1. **Interactive Plugin Contribution Choice**:
+   Ask the user / guide the agent on how they prefer to handle bug fixes and updates to shared skills:
+   - **Option A [Recommended] (Fork & PR / `fork-and-pr`)**:
+     Clone or link `richfrem/agent-plugins-skills`. When an agent fixes an issue in an installed skill, test with `pytest`, commit to a branch, and open an upstream PR.
+   - **Option B (Local Patch & Issue / `local-patch-and-issue`)**:
+     Apply hotfixes directly to `.agents/skills/` and log an issue upstream with reproduction details.
+   - **Option C (Domain Overrides / `domain-override`)**:
+     Keep upstream plugins vanilla; house all repo-specific customizations in `.agent/rules/local-*` or `plugins/`.
+
+2. **Run OS Initialization & Retrofit**:
+   ```bash
+   python3 .agents/skills/os-init/scripts/init_agentic_os.py --target . --retrofit --contribution-mode <fork-and-pr|local-patch-and-issue|domain-override>
+   ```
+
+3. **Mandatory Post-Init OS Substrate Health Check**:
+   Deterministically verify core substrates are active before proceeding:
+   ```bash
+   test -f context/control_plane.db && echo "OK control_plane.db" || echo "MISSING control_plane.db"
+   test -f .claude/hooks/hooks.json && echo "OK hooks.json" || echo "MISSING hooks.json"
+   test -f .git/hooks/pre-commit-evolution-guard && echo "OK pre-commit-guard" || echo "MISSING pre-commit-guard"
+   test -f .github/workflows/verify-evolution-integrity.yml && echo "OK verify-evolution-integrity.yml" || echo "MISSING verify-evolution-integrity.yml"
+   ```
 
 ---
 
@@ -54,6 +83,11 @@ This master coordinator takes an investor from a clean repository clone directly
            shutil.copy(src, dst)
            print(f'Initialized: {f}')
    "
+   ```
+5. **Verify Symlinks & System Baseline**:
+   ```bash
+   python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+   python3 run_tests.py
    ```
 
 ---
