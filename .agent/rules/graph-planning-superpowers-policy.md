@@ -33,10 +33,7 @@ Phase 3: Deterministic Exit Gates & Asymmetric Persistence (6-State Vocabulary +
 
 ## 2. Phase 0: Pre-Planning Intake Bookend & Socratic Gate
 
-### 2.1. Native Read-Only Plan Sandboxing
-- Before generating code, you MUST enter host-native Plan Mode (Claude Code `/plan` / `Shift+Tab` or Copilot `@plan`).
-- While in Plan Mode, filesystem mutations and write operations are **strictly prohibited**. Use only read-only search and AST analysis tools.
-- The output must be written to an immutable spec/plan contract (e.g., `docs/plans/<feature-id>.md` or `~/.claude/plans/`).
+Before Plan Mode can ever be entered, the task must be bounded:
 
 1. **Read-Only Exploration Cycle:**
    - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
@@ -56,17 +53,14 @@ Phase 3: Deterministic Exit Gates & Asymmetric Persistence (6-State Vocabulary +
 
 ## 3. Phase 1: Native Plan Mode & Adversarial Review
 
-### 3.1. Worktree State Isolation & Graph Execution
-- Execute implementation subagents strictly within dedicated `git worktree` branches (`../worktree-<feature-name>`).
-- Subagents must not execute in shared or dirty working trees.
-- High-assurance, multi-step tasks must execute as a deterministic Directed Acyclic Graph (DAG) state machine via [`agent-orchestration:graph-execution`](../plugins/agent-orchestration/skills/graph-execution/SKILL.md), enforcing Proposal Mode, Verifier Sovereignty, and Asymmetric Persistence.
-- Delegation between director and worker agents follows the [`agent-orchestration:dual-loop`](../plugins/agent-orchestration/skills/dual-loop/SKILL.md) pattern (or [`agent-orchestration:co-pilot-loop`](../plugins/agent-orchestration/skills/co-pilot-loop/SKILL.md) for fast-tier models).
-
-### 3.2. Strict Red-Green-Refactor Enforcement
-- Invoke `superpowers/test-driven-development` protocols:
-  1. **Red:** Author concrete unit/integration test cases against the contract. Verify they FAIL.
-  2. **Green:** Implement minimum functional code to make tests pass.
-  3. **Refactor:** Clean up code while maintaining green test status.
+1. **Native Plan Sandboxing:**
+   - Enforce host-native Plan Mode (Claude `/plan`, Copilot `@plan`, Antigravity plan mode) where available. Defer to Superpowers graph planning *only* when native host planning is absent or when executing complex multi-agent DAGs.
+   - While in Plan Mode, filesystem mutations outside plan artifacts are strictly prohibited.
+2. **Pre-Execution Critic Review:**
+   - Run clean-context adversarial review via `critical-auditor` (max 2–3 rounds) probing failure domains and cross-plugin boundaries before human presentation.
+3. **The Supreme Law Human Gate:**
+   - Present plan and require explicit user approval ("Proceed", "Go", "Execute").
+   - On approval, transition task to `APPROVED` in `context/control_plane.db`.
 
 ---
 
@@ -102,22 +96,7 @@ Phase 3: Deterministic Exit Gates & Asymmetric Persistence (6-State Vocabulary +
 
 ## 6. Git & Environment Invariants
 
-- **NEVER** commit directly to `main`. **ALWAYS** use a feature branch.
-- **NEVER** run `git push` without explicit, fresh approval.
-- **NEVER** "auto-fix" via git operations.
-- **HALT** immediately on any user "Stop/Wait" command.
-- Write descriptive commit messages in the imperative mood.
-- **NEVER** commit agent directories (`.agents/`, `.claude/`, `.gemini/`, `.codex/`) to version control. They contain session data and secrets.
-- Any planning artifacts created inside an isolated git worktree will be deleted when the worktree is removed. Sync these to the main checkout directory before merging.
-
----
-
-## 7. Context Management
-
-- **Build context, then maintain it.** Do not redundantly re-read unchanged artifacts in a single session.
-- **Never** use blind full-repo sweeps (`grep`, `find`, or `ls -R`); use targeted native `rg` / exact scoped file matches or structured directories. Zero background daemons required.
-
----
-**Renamed**: 2026-08-27 (from `spec-driven-development-policy.md` — dropped "Spec-Kit" branding; this repo does not use the spec-kitty tool)
-**Refactored**: 2026-08-27 — replaced with the three-phase Graph Planning, Superpowers, and Execution Discipline lifecycle (native Plan Mode sandboxing, context-bundler adversarial convergence capped at 2-3 rounds, worktree-isolated TDD, multi-stage verification)
-**Ratified**: 2026-05-22 | **Replaces**: `constitution.md`, `AGENTS.md`, legacy `spec_driven_development_policy.md`
+- **NEVER** commit directly to `main`. Always use isolated branches.
+- **NEVER** run `git push` without explicit approval.
+- **NEVER** commit transient agent directories (`.agents/`, `.claude/`, `.gemini/`, `.codex/`).
+- UTF-8 encoding only. No smart quotes or non-ASCII characters in manifests and rules.

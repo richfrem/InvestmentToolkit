@@ -2001,3 +2001,12 @@ Zero `? regular file` or `✗ broken symlink` entries must remain before committ
 Read the full skill before any symlink work:
 `.agents/skills/symlink-manager/SKILL.md`
 
+
+
+## Phase 0 Intake & Socratic Gate (Mandatory)
+> Every non-trivial engineering task, feature request, or architectural refactor MUST trigger `interview-spec` first.
+- Register the task in `context/control_plane.db` via `python3 scripts/agent_control.py init`.
+- Enforce host-native Plan Mode (strictly read-only discovery).
+- Present 1–3 Socratic questions with explicit `[Recommended]` defaults to align on scope.
+- Compile the immutable 4-Pillar Specification (`TASK_SPEC.md`).
+- Obtain explicit human authorization ("Proceed", "Go", or "Execute") before creating a worktree or modifying code.
