@@ -59,6 +59,7 @@ The true power of this repository is not just the frontend UI—it is the **Agen
 
 Runs the **`toolkit-onboarding`** master wizard. This coordinator guides you end-to-end through:
 
+0. **Agentic OS Substrate & Contribution Alignment**: Interactively configures plugin maintenance policy (`context/plugin-config.json` via `fork-and-pr`, `local-patch-and-issue`, or `domain-override`), initializes the `context/control_plane.db` SQLite state store, configures pre-commit evolution guards, and verifies substrate liveness via `os-health-check`.
 1. **Pre-Flight Engine & Plugin Install**: Compiles Python venv, installs npm deps, redeploys all 20 plugins via `plugin-syncer`, and initializes private data templates.
 2. **Account & Strategy Pillar Setup**: Configures your account structure (e.g. TFSA primary + RRSP mirror) and seeds target strategy pillars (`Power`, `Compute`, `Data Infra`, `Cash`).
 3. **Portfolio Ingestion**: Scrapes active holdings, shares, and USD cash from TradingView Desktop via `/tv-portfolio-sync` (or manual intake via `/stock-intake`).
