@@ -97,7 +97,13 @@ InvestmentToolkit/                         ← repo root
 │
 ├── docs/architecture/                     ← ADRs and sequence diagrams
 ├── temp/                                  ← gitignored scratch space (never /tmp/)
-└── context/events.jsonl                  ← agent self-evolution event log
+├── context/                               ← Agentic OS runtime control plane & 3-layer memory
+│   ├── control_plane.db                  ← SQLite task state, execution lifecycle, sessions
+│   ├── plugin-config.json                ← plugin maintenance policy (fork-and-pr / patch)
+│   ├── events.jsonl                      ← agent self-evolution event log
+│   └── os-state.json                     ← substrate runtime health & cache state
+├── INIT_AGENTS.md                         ← fresh clone onboarding & upstream dependency setup
+└── start_here.md                          ← session briefing & personal roadmap tracker
 ```
 
 ---
@@ -105,15 +111,19 @@ InvestmentToolkit/                         ← repo root
 ## 2. High-Level System Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  User / AI Agent                                                │
-└───────────┬─────────────────────────────┬───────────────────────┘
-            │ browser                     │ CLI skill / agent
-            ▼                             ▼
-┌─────────────────────┐       ┌──────────────────────────────────┐
-│  React 19 Frontend  │       │  AI Agent Skills (.agents/)      │
-│  Vite · port 5173   │       │  Claude Code / Gemini / Copilot  │
-└─────────┬───────────┘       └──────────────┬───────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│  User / AI Coding Agent (Claude Code / Gemini CLI / Cursor / Antigravity)         │
+└─────────────┬─────────────────────────────────┬───────────────────────────────────┘
+              │ browser                         │ CLI skill / agent orchestration
+              ▼                                 ▼
+┌───────────────────────┐       ┌───────────────────────────────────────────────────┐
+│  React 19 Frontend    │       │  Agentic OS Substrate & Plugins (.agents/)        │
+│  Vite · port 5173     │       │  Upstream: richfrem/agent-plugins-skills          │
+└───────────┬───────────┘       │  • Control Plane: context/control_plane.db        │
+            │                   │  • Substrate: os-init, os-health-check, hooks     │
+            │                   │  • Domain Plugins: portfolio-advisor, tradingview,│
+            │                   │    stock-valuation, toolkit-manager, questrade    │
+            │                   └─────────────────────────┬─────────────────────────┘
           │ /api/* (Vite proxy)               │ subprocess / Bash
           ▼                                   ▼
 ┌─────────────────────────────────────────────────────────────────┐
@@ -210,17 +220,26 @@ InvestmentToolkit/                         ← repo root
 
 **Critical rule:** All Node.js CDP snippets must end with `.then(() => process.exit(0)).catch(() => process.exit(1))` — otherwise the WebSocket holds the event loop open indefinitely.
 
-### 3.5. AI Agent Plugin Layer
-**Location:** `plugins/` (canonical source), `.agents/` (multi-tool skill store)  
+### 3.5. AI Agent Plugin & Substrate Layer
+**Location:** `plugins/` (canonical domain plugins), `.agents/` (multi-tool ecosystem skill store), `context/` (control plane & configuration).  
+**Ecosystem Upstream Dependency:** [`richfrem/agent-plugins-skills`](https://github.com/richfrem/agent-plugins-skills) — provides the core **Agentic OS substrate** (`agent-agentic-os` plugin: `os-init`, `os-health-check`, `interview-spec`) and shared developer skills.  
 **Convention:** Each plugin has `skills/`, `agents/`, `scripts/`, `tests/`, `references/`.
 
+#### Domain Plugins (Local to InvestmentToolkit)
 | Plugin | Key Skills | Key Scripts |
 |--------|-----------|-------------|
 | `portfolio-advisor` | `/daily`, `/weekly-review`, `/run-advisor`, `/x-news-sweep`, `/rebalance` | `daily_brief.py`, `update_targets.py` |
-| `stock-valuation` | `/update-stock-analysis`, `/research-stock` | `validate_projection.py` |
-| `tradingview` | `/place-order`, `/tv-ta-deep`, `/tv-portfolio-sync`, `/pine-inject` | `ta_sweep_batch.py`, `place_order.py`, `tv_launch.py` |
-| `etf-analysis` | `/analyze-etf` | `persist_etf_analysis.py` |
-| `toolkit-manager` | `/start-screener` | — |
+| `stock-valuation` | `/update-stock-analysis`, `/stock-research` | `validate_projection.py`, `dcf_scenarios.py` |
+| `tradingview` | `/tv-place-order`, `/tv-ta-daily-sweep`, `/tv-portfolio-sync`, `/tv-pine-inject` | `ta_sweep_batch.py`, `place_order.py`, `tv_launch.py` |
+| `etf-analysis` | `/etf_analysis` | `persist_etf_analysis.py` |
+| `toolkit-manager` | `/toolkit-onboarding`, `/todo-check` | `symlink_manager.py`, `plugin_add.py` |
+| `questrade` | `/questrade-sync-portfolio`, `/questrade-activities`, `/questrade-order-draft` | `questrade_sync.py` |
+
+#### Agentic OS Substrate (`agent-agentic-os` via upstream repo)
+- **Control Plane (`context/control_plane.db`)**: SQLite task lifecycle and session state tracking (`scripts/agent_control.py`).
+- **Interactive Initialization (`os-init`)**: `init_agentic_os.py` bootstraps hooks, evolution guards, and aligns the plugin maintenance policy (`context/plugin-config.json`).
+- **Substrate Health Check (`os-health-check`)**: Deterministically audits control plane integrity, symlinks, and backup file hygiene.
+- **Phase 0 Intake Gate (`interview-spec`)**: Mandatory Socratic interview and 4-Pillar Specification generation (`TASK_SPEC.md`) before implementation.
 
 ---
 
@@ -269,10 +288,11 @@ Rationale Bar, not a generic "out of scope"):
 
 ---
 
-## 5. External Integrations
+## 5. External Integrations & Upstream Dependencies
 
-| Service | Purpose | Method |
-|---------|---------|--------|
+| Service / Dependency | Purpose | Method |
+|----------------------|---------|--------|
+| **`richfrem/agent-plugins-skills`** | Upstream Agentic OS substrate (`agent-agentic-os`), developer skills, hooks, and evolution guards | Git repository dependency / plugin syncer (`.agents/`) |
 | **yfinance** (Python) | Market data: OHLCV, financials, balance sheet, income statement | Python library — `fetch_financials.py` |
 | **TradingView Desktop** | Live chart prices, order execution, broker panel sync (broker: Broker) | Chrome DevTools Protocol (WebSocket port 9222) |
 | **X.com / Grok** | News sweep and portfolio analysis | Manual paste workflow — agent generates prompt, user pastes to grok.com |
