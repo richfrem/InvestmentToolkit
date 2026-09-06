@@ -97,7 +97,13 @@ InvestmentToolkit/                         ← repo root
 │
 ├── docs/architecture/                     ← ADRs and sequence diagrams
 ├── temp/                                  ← gitignored scratch space (never /tmp/)
-└── context/events.jsonl                  ← agent self-evolution event log
+├── context/                               ← Agentic OS runtime control plane & 3-layer memory
+│   ├── control_plane.db                  ← SQLite task state, execution lifecycle, sessions
+│   ├── plugin-config.json                ← plugin maintenance policy (fork-and-pr / patch)
+│   ├── events.jsonl                      ← agent self-evolution event log
+│   └── os-state.json                     ← substrate runtime health & cache state
+├── INIT_AGENTS.md                         ← fresh clone onboarding & upstream dependency setup
+└── start_here.md                          ← session briefing & personal roadmap tracker
 ```
 
 ---
@@ -105,15 +111,19 @@ InvestmentToolkit/                         ← repo root
 ## 2. High-Level System Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  User / AI Agent                                                │
-└───────────┬─────────────────────────────┬───────────────────────┘
-            │ browser                     │ CLI skill / agent
-            ▼                             ▼
-┌─────────────────────┐       ┌──────────────────────────────────┐
-│  React 19 Frontend  │       │  AI Agent Skills (.agents/)      │
-│  Vite · port 5173   │       │  Claude Code / Gemini / Copilot  │
-└─────────┬───────────┘       └──────────────┬───────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│  User / AI Coding Agent (Claude Code / Gemini CLI / Cursor / Antigravity)         │
+└─────────────┬─────────────────────────────────┬───────────────────────────────────┘
+              │ browser                         │ CLI skill / agent orchestration
+              ▼                                 ▼
+┌───────────────────────┐       ┌───────────────────────────────────────────────────┐
+│  React 19 Frontend    │       │  Agentic OS Substrate & Plugins (.agents/)        │
+│  Vite · port 5173     │       │  Upstream: richfrem/agent-plugins-skills          │
+└───────────┬───────────┘       │  • Control Plane: context/control_plane.db        │
+            │                   │  • Substrate: os-init, os-health-check, hooks     │
+            │                   │  • Domain Plugins: portfolio-advisor, tradingview,│
+            │                   │    stock-valuation, toolkit-manager, questrade    │
+            │                   └─────────────────────────┬─────────────────────────┘
           │ /api/* (Vite proxy)               │ subprocess / Bash
           ▼                                   ▼
 ┌─────────────────────────────────────────────────────────────────┐
