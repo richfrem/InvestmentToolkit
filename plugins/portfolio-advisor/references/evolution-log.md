@@ -450,3 +450,10 @@ positions (vs the false 106.6h/0-positions reading before the fix).
 **Files patched:** `plugins/portfolio-advisor/agents/daily-loop-agent.md`
 (Step 0 script + readiness card + hard-gate text, now source-agnostic between
 TradingView and Questrade MCP sync paths).
+
+## 2026-09-06 — Daily Loop Consolidation & Hardened Control Plane Receipts
+- Consolidated morning operations into `/daily` (`--scan` vs `--interactive`).
+- Cleanly deleted `/daily-brief` to eliminate dual-command ambiguity.
+- Created `daily_receipts.py` with canonical JSON serialization, float normalization, and `BEGIN IMMEDIATE` transaction isolation with a UNIQUE index on `gate_name`.
+- Added explicit terminal closure receipt (`DAILY_RUN_<run_id>_TERMINAL`) to prevent prefix truncation attacks.
+- Upgraded `verify_daily_run.py` with 4-way cleanup sandboxing and process-liveness checking stale janitor.

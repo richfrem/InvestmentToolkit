@@ -5,7 +5,6 @@ description: >
   portfolio freshness check → morning brief → interactive triage → action execution →
   self-evolution logging. One command replaces 10 manual steps. Compounds over time.
 dependencies:
-  - skill:daily-brief
   - skill:x-news-sweep
   - skill:rebalance-portfolio
   - skill:strategic-review

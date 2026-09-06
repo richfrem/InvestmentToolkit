@@ -75,11 +75,6 @@
             "trigger": "/13f-analyze"
         },
         {
-            "name": "daily_brief",
-            "path": "skills/daily-brief/SKILL.md",
-            "trigger": "/daily-brief"
-        },
-        {
             "name": "daily_loop",
             "path": "skills/daily-loop/SKILL.md",
             "trigger": "/daily"
