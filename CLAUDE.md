@@ -22,7 +22,12 @@ InvestmentToolkit/
 `npm run dev -w backend | frontend`, `npm run build -w backend | frontend`, `npm run lint -w frontend`.
 
 ## Day-1 Agent Bootstrap Protocol (Fresh Clone Quickstart)
-When dropping into a fresh repository clone, execute this sequence to reach 100% operational parity:
+When dropping into a fresh repository clone, agents MUST execute this sequence to reach 100% operational parity:
+0. **Agentic OS & Upstream Dependency Alignment (Mandatory First Step)**:
+   - Consult [`INIT_AGENTS.md`](INIT_AGENTS.md).
+   - Interactively confirm plugin maintenance mode (`fork-and-pr`, `local-patch-and-issue`, or `domain-override`).
+   - Run `python3 .agents/skills/os-init/scripts/init_agentic_os.py --target . --retrofit --contribution-mode <mode>`.
+   - Deterministically verify OS substrates: `test -f context/control_plane.db && test -f .claude/hooks/hooks.json && test -f .git/hooks/pre-commit-evolution-guard`.
 1. **Initialize Data Files**: Copy missing private templates (`cash_flows.json.example` → `cash_flows.json`, `portfolio-config.json.example` → `portfolio-config.json`).
 2. **Compile Deps & Deploy Plugins**: Run `python3 .agents/skills/plugin-syncer/scripts/sync_with_inventory.py` to symlink all 20 plugins into `.agents/`.
 3. **If using Claude Code**: Also run `/plugin marketplace add richfrem/InvestmentToolkit`, then `/plugin install <name>@investment-toolkit-plugins` for each of `tradingview`, `portfolio-advisor`, `stock-valuation`, `toolkit-manager`, `etf-analysis` — this is required for `/tv-*` and other plugin skills to appear; Step 2 alone does not register them with Claude Code.
