@@ -100,7 +100,7 @@ def test_db(tmp_path: Path) -> str:
             investment_id TEXT PRIMARY KEY,
             price REAL NOT NULL,
             currency TEXT NOT NULL,
-            as_of TEXT NOT NULL
+            fetched_at TEXT NOT NULL
         );
     """)
     conn.commit()

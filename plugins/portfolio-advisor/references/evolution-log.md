@@ -8,6 +8,24 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-09-06 — Daily Loop Deterministic Checklist Verifier (Tier 1 Evolution)
+
+**Trigger:** Added independent, deterministic Python verification to `/daily` and `daily-loop-agent` to eliminate shortcut execution and self-attestation.
+
+**Tier 1 Evolution:**
+1. **Deterministic Verification Script (`verify_daily_run.py`)**:
+   - Audits structured phase completion artifacts (`step0_readiness.json` through `step5_summary.json`) written to an isolated run directory (`temp/daily_run_<TIMESTAMP>/`).
+   - Validates that every step ran to `COMPLETED` status with required invariant fields present.
+   - Cleans up the temporary directory upon 100% verified pass (`--cleanup`).
+2. **Skill and Agent Persona Updates**:
+   - `plugins/portfolio-advisor/agents/daily-loop-agent.md`: Enforces step-by-step artifact logging and calls `verify_daily_run.py` at Step 5.
+   - `plugins/portfolio-advisor/skills/daily-loop/SKILL.md`: Codified the deterministic verification mandate.
+3. **Unit Tests**:
+   - `plugins/portfolio-advisor/tests/test_verify_daily_run.py`: 4 tests validating success, missing steps, invalid status, and cleanup.
+   - Fixed pre-existing column name bug in `test_manage_watchlist.py` (`fetched_at` vs `as_of`).
+
+---
+
 ## 2026-09-02 — Grok News Sweep Model-Intelligence Synthesis & Review Fixes (Tier 0/1 Evolution)
 
 **Trigger:** Enhancement to `/x-news-sweep` prompt generation to inject deep model intelligence (scenario risks, standing decision anchors, SA/DCF tension) into the Grok prompt with mandatory Phase 1.5 agent review.
