@@ -1,4 +1,4 @@
-# Copilot Instructions for InvestmentToolkit
+# Copilot Instructions for CLAUDE.md — InvestmentToolkit
 
 > Authoritative repository instructions for GitHub Copilot. Mirrors CLAUDE.md.
 
@@ -2002,3 +2002,20 @@ Zero `? regular file` or `✗ broken symlink` entries must remain before committ
 Read the full skill before any symlink work:
 `.agents/skills/symlink-manager/SKILL.md`
 
+
+
+## Phase 0 Intake & Socratic Gate (Mandatory)
+> Every non-trivial engineering task, feature request, or architectural refactor MUST trigger `interview-spec` first.
+- Register the task in `context/control_plane.db` via `python3 scripts/agent_control.py init`.
+- Enforce host-native Plan Mode (strictly read-only discovery).
+- Present 1–3 Socratic questions with explicit `[Recommended]` defaults to align on scope.
+- Compile the immutable 4-Pillar Specification (`TASK_SPEC.md`).
+- Obtain explicit human authorization ("Proceed", "Go", or "Execute") before creating a worktree or modifying code.
+
+
+## Plugin & Skill Maintenance Policy
+- Check `context/plugin-config.json` for this repository's configured contribution mode:
+  1. `fork-and-pr`: Test fix locally, commit to feature branch in cloned upstream repo, and submit PR to `richfrem/agent-plugins-skills`.
+  2. `local-patch-and-issue`: Apply immediate fix directly in `.agents/skills/` and log an issue in `richfrem/agent-plugins-skills` with reproduction details.
+  3. `domain-override`: Keep upstream shared skills unmodified; put project customizations in `.agent/rules/local-*` or local `plugins/`.
+- Never make silent undocumented edits to shared skills without either opening an upstream PR or logging an issue.

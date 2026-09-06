@@ -41,11 +41,15 @@ An institutional-grade portfolio management and automated research suite built n
 
 ## 🚀 First Things First: Getting Started with Agents
 
-The true power of this repository is not just the frontend UI—it is the **Agentic Operating System** behind it. 
+The true power of this repository is not just the frontend UI—it is the **Agentic Operating System** behind it.
+
+> [!TIP]
+> ### 📖 Fresh Clone Setup Guide
+> For a detailed walkthrough on initializing the Agentic OS substrate, choosing your plugin contribution policy, and handling upstream dependencies, consult [`INIT_AGENTS.md`](INIT_AGENTS.md).
 
 ### 💬 Just Cloned the Repo? Paste This Prompt to Your AI Agent:
 
-> **"Please run `/toolkit-onboarding` to bootstrap my investment environment from scratch, initialize my accounts, and guide me through connecting TradingView and setting up my portfolio."**
+> **"Please read INIT_AGENTS.md and run `/toolkit-onboarding` to bootstrap my investment environment, align plugin contribution preferences, initialize accounts, and connect TradingView."**
 
 ---
 

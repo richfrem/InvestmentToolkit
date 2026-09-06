@@ -40,22 +40,8 @@ Before triggering an autonomous self-evolution cycle, all 4 criteria must be sat
 
 ### Proposal Mode & Verifier Sovereignty Invariants
 
-1. **Verify Boundaries First**: Escalate immediately if repairs require modifying files outside permitted boundaries.
-2. **Three-Attempt Maximum**: Max 3 attempts per failure. If 3rd fails, stop and present formal Escalation Template.
-3. **Update The Map, Not Just the Diary**: Every fix must update domain playbooks/rules (`wiki/` or `references/`). Log a `Status: RESOLVED` entry in `map-debt.md` for every Tier 0-3 friction event even when patched immediately. Dual-log to `references/evolution-log.md`.
-4. **Autonomy Gates**: Auto-approve: new functions/selectors. Gated: file renames/moves. **Hard Gated (Human Permission Required)**: deletions of any file, function, rule, or skill.
-5. **Absorption Fallacy**: Never delete a file/skill assuming it is 'redundant' or 'consolidated'.
-6. **One Fix at a Time**: Apply one clean logical fix per execution pass.
-7. **Fix Forward**: Never skip failures, add blind retries, or leave workarounds unaddressed.
-8. **Sync Templates & Generators**: Update templates/generators immediately when core rules, schemas, or strategies change.
-9. **Refine Prompt Templates**: Evaluate external model outputs and update prompt templates to guard against observed gaps.
-10. **Sync Manifests on Decommission**: Remove entries from `symlinks.json` and reinstall via `plugin_add.py`.
-11. **Pre-Deletion Git Check**: Always run `git log --follow -- <file>` before proposing deletions.
-12. **Hub First, Spoke Second**: New skill assets must land in plugin root and symlink into skill folders via `symlink_manager.py`.
-13. **Asymmetric Worktree Transfer**: Export Layer 2 failure insights to main checkout before tearing down failed worktrees.
-14. **Integrity Receipts**: Autonomous evolution commits require `EVO-INTEGRITY-<cycle_id>-<hash>`.
-15. **Single Source of Truth**: Verify live state against canonical DB/ledger before classifying entity status (e.g. holding vs watchlist).
-16. **In-Situ Evolution (Flywheel)**: Resolve friction at shared tool/skill layer immediately during normal user tasks.
+- **Proposal Mode:** During Stage 1 (`PLAN`), workspace files and configs are strictly read-only. No repo files modified or branches/worktrees spawned until explicit human authorization (`evolution_state.py authorize`).
+- **Verifier Sovereignty:** Mutation subject cannot modify the acceptance gate. Immutable base protection set (`evaluate.py`, `eval_runner.py`, tests, holdout sets, baselines, policies) and declared verifiers cannot be targeted for mutation. Pre-execution SHA256 hashes are locked; modifications abort cycle with exit code 2. Verifier command must run directly in isolated worktree.
 
 ---
 
@@ -97,8 +83,7 @@ A self-evolution event is required when a script/eval/tool fails, an existing ca
 
 ### Pre-Completion Self-Evolution Gate
 
-> [!IMPORTANT]
-> **Turn-by-Turn Mandatory Protocol**: On EVERY turn modifying code, running tests, or presenting findings, the agent MUST proactively output this block verbatim before yielding control:
+Before claiming a task is complete, output this block verbatim:
 
 ```
 PRE-COMPLETION GATE:
