@@ -30,26 +30,35 @@ When an agent encounters a bug, deprecated selector, or friction in an upstream 
 | **Local Patch & Issue** | `local-patch-and-issue` | You want rapid local resolution without maintaining a full git clone of the plugin repo. | Patches installed files directly in `.agents/skills/`. Generates an issue reproduction report to submit to upstream maintainers. |
 | **Domain Override** | `domain-override` | Strict production consumer. Upstream plugins remain 100% vanilla. | Never alters upstream skills. Overrides logic using `.agent/rules/local-*` or dedicated `plugins/` in this repository. |
 
-### 2. Download / Clone Upstream Dependency (If using `fork-and-pr`)
+### 2. Upstream Dependency Alignment (Local Checkout vs. Remote Clone)
 
-If opting for **`fork-and-pr`**, clone the upstream plugin source adjacent to this repository or into your development directory:
-
-```bash
-# Clone adjacent to InvestmentToolkit (recommended structure)
-cd ..
-git clone https://github.com/richfrem/agent-plugins-skills.git
-cd agent-plugins-skills
-# Verify upstream status
-python3 run_tests.py
-cd ../InvestmentToolkit
-```
+- **For Maintainers / Authors (if `agent-plugins-skills` is already cloned locally)**:
+  Use your existing local sibling checkout directly without cloning from GitHub:
+  ```bash
+  # Fast local install using adjacent checkout:
+  python3 ../agent-plugins-skills/plugins/plugin-manager/scripts/plugin_add.py ../agent-plugins-skills/plugins/ --all -y
+  ```
+- **For External Users / Fresh Machines (remote GitHub clone)**:
+  If opting for **`fork-and-pr`**, clone upstream adjacent to this repository:
+  ```bash
+  cd ..
+  git clone https://github.com/richfrem/agent-plugins-skills.git
+  cd agent-plugins-skills && python3 run_tests.py && cd ../InvestmentToolkit
+  ```
+  *(Or install universally via uvx: `uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills`)*
 
 ### 3. Run Agentic OS Initialization & Retrofit
 
 Run the initialization script targeting this workspace. This scaffolds `.claude/hooks`, Git evolution guards, control plane SQLite DB, and configures `context/plugin-config.json`:
 
 ```bash
-# From InvestmentToolkit repository root:
+# If agent-plugins-skills is local:
+python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/init_agentic_os.py \
+  --target . \
+  --retrofit \
+  --contribution-mode fork-and-pr
+
+# Or from within an initialized workspace using existing .agents/ symlink:
 python3 .agents/skills/os-init/scripts/init_agentic_os.py \
   --target . \
   --retrofit \
