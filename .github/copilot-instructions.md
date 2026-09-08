@@ -27,7 +27,8 @@ When dropping into a fresh repository clone, agents MUST execute this sequence t
 0. **Agentic OS & Upstream Dependency Alignment (Mandatory First Step)**:
    - Consult [`INIT_AGENTS.md`](INIT_AGENTS.md).
    - Interactively confirm plugin maintenance mode (`fork-and-pr`, `local-patch-and-issue`, or `domain-override`).
-   - Run `python3 .agents/skills/os-init/scripts/init_agentic_os.py --target . --retrofit --contribution-mode <mode>`.
+   - If `agent-plugins-skills` is local: `python3 ../agent-plugins-skills/plugins/plugin-manager/scripts/plugin_add.py ../agent-plugins-skills/plugins/ --all -y` (author fast-path).
+   - Run `python3 .agents/skills/os-init/scripts/init_agentic_os.py --target . --retrofit --contribution-mode <mode>` (or run via `../agent-plugins-skills/...`).
    - Deterministically verify OS substrates: `test -f context/control_plane.db && test -f .claude/hooks/hooks.json && test -f .git/hooks/pre-commit-evolution-guard`.
 1. **Initialize Data Files**: Copy missing private templates (`cash_flows.json.example` → `cash_flows.json`, `portfolio-config.json.example` → `portfolio-config.json`).
 2. **Compile Deps & Deploy Plugins**: Run `python3 .agents/skills/plugin-syncer/scripts/sync_with_inventory.py` to symlink all 20 plugins into `.agents/`.
