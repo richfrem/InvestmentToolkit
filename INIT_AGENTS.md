@@ -1,6 +1,6 @@
 # Agent Onboarding & Environment Initialization Guide (`INIT_AGENTS.md`)
 
-Welcome to **InvestmentToolkit**. This guide is designed for both human engineers and AI coding assistants (Claude Code, Gemini CLI, Cursor, Antigravity, Copilot) when dropping into a fresh repository clone.
+Welcome to **InvestmentToolkit**. This guide is designed for both human engineers and AI coding assistants (Claude Code, Gemini CLI, Cursor, Antigravity, Copilot, Codex) when dropping into a fresh repository clone.
 
 Follow this sequential protocol to configure your **Agentic OS Substrate**, align your **Plugin Contribution Policy**, and execute the **Master Onboarding Coordinator**.
 
@@ -49,27 +49,34 @@ When an agent encounters a bug, deprecated selector, or friction in an upstream 
 
 ### 3. Run Agentic OS Initialization & Retrofit
 
-Run the initialization script targeting this workspace. This scaffolds `.claude/hooks`, Git evolution guards, control plane SQLite DB, and configures `context/plugin-config.json`:
+Run the installation probe preflight first, then initialize or retrofit targeting this workspace:
 
 ```bash
-# If agent-plugins-skills is local:
+# 1. Check current substrate state (read-only diagnostic):
+python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/control_plane/installation_probe.py --target .
+
+# 2. Run retrofit (if agent-plugins-skills is local):
 python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/init_agentic_os.py \
   --target . \
   --retrofit \
   --contribution-mode fork-and-pr
 
-# Or from within an initialized workspace using existing .agents/ symlink:
-python3 .agents/skills/os-init/scripts/init_agentic_os.py \
-  --target . \
-  --retrofit \
-  --contribution-mode fork-and-pr
+# 3. Ensure control plane schema migration is current:
+python3 -c "
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path('../agent-plugins-skills/plugins/agent-agentic-os/scripts').resolve()))
+from agent_control import ControlPlane
+ControlPlane(db_path=Path('context/control_plane.db')).init_db()
+"
 ```
 *(Replace `fork-and-pr` with `local-patch-and-issue` or `domain-override` based on your choice).*
 
 > [!IMPORTANT]
-> **Preserving Domain Rules & Handling `.bak` Files**:
-> `init_agentic_os.py` creates `.bak` files when updating existing guidelines (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`).
-> **Agents MUST NOT blindly delete `.bak` files.** First review the diffs (`git diff`), reconcile any custom domain rules, and only remove `.bak` files once domain integrity is verified.
+> **Single Instruction File (`AGENTS.md`) & Handling `.bak` Files**:
+> - All agent instructions, rules, and architecture are consolidated into **`AGENTS.md`** to minimize context bloat.
+> - `init_agentic_os.py` creates `.bak` files when updating existing guidelines or hooks.
+> - **Agents MUST NOT blindly delete `.bak` files.** First review the diffs (`git diff`), reconcile any custom domain rules, and only remove `.bak` files once domain integrity is verified.
 
 ---
 
@@ -78,19 +85,27 @@ python3 .agents/skills/os-init/scripts/init_agentic_os.py \
 Confirm that the local agentic runtime substrate is operational:
 
 ```bash
-# 1. Control plane and hooks
+# 1. Installation probe verification
+python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/control_plane/installation_probe.py --target .
+
+# 2. Control plane, hooks, and evolution CI gate
 test -f context/control_plane.db && echo "✅ control_plane.db active" || echo "❌ Missing control_plane.db"
 test -f .claude/hooks/hooks.json && echo "✅ Claude hooks active" || echo "❌ Missing hooks.json"
+test -f .git/hooks/pre-commit-evolution-guard && echo "✅ Evolution guard active" || echo "❌ Missing evolution guard"
+test -f .github/workflows/verify-evolution-integrity.yml && echo "✅ CI integrity gate active" || echo "❌ Missing CI gate"
 
-# 2. Symlink integrity
+# 3. Cryptographic signing identity readiness (read-only)
+python3 .agents/skills/os-health-check/scripts/setup_ciba_identity.py --check
+
+# 4. Symlink integrity
 python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
 
-# 3. Comprehensive Agentic OS audit
-python3 -c "
-# Trigger os-health-check or run substrate audit
-import subprocess
-subprocess.run(['python3', 'run_tests.py', '-m', 'not slow'])
-"
+# 5. Core test suites
+python3 run_tests.py --t0-only
+python3 run_tests.py --unit
+
+# 6. Run full OS health check loop
+python3 .agents/skills/os-health-check/scripts/kernel.py emit_event --agent os-health-check --type intent --action scan_metrics
 ```
 
 ---
@@ -117,4 +132,4 @@ The master wizard interactively guides you through:
 
 When editing code across repositories:
 - **Strict Worktree Discipline**: Always work in a dedicated git worktree (`.agent/rules/local-worktree-and-dual-repo-edit-protocol.md`).
-- **Pre-Completion Gate**: Before concluding any agent turn, run `python3 run_tests.py` and inspect `.agent/rules/test-driven-development.md`.
+- **Pre-Completion Gate**: Before concluding any agent turn, run `python3 run_tests.py --t0-only` and inspect `.agent/rules/test-driven-development.md`.
