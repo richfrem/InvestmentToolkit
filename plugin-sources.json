@@ -6,6 +6,7 @@
         "adr-manager",
         "agent-loops",
         "context-bundler",
+        "plugin-manager",
         "spec-kitty-plugin",
         "task-manager"
       ]
@@ -38,8 +39,7 @@
         "dependency-management",
         "dev-utils",
         "exploration-cycle-plugin",
-        "obsidian-wiki-engine",
-        "plugin-manager"
+        "obsidian-wiki-engine"
       ]
     }
   ]

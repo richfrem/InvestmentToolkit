@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "updated_at": "2026-09-11T00:00:00Z",
+  "protected_defaults": [
+    "plugin-installer",
+    "plugin-remover",
+    "plugin-syncer",
+    "plugin-pruner",
+    "symlink-manager",
+    "worktree-manager"
+  ],
+  "plugins": {
+    "agent-agentic-os": {
+      "skills": {
+        "critical-auditor": true,
+        "evo-smoketest": true,
+        "issue-resolution-reviewer": true,
+        "optimize-agent-instructions": true,
+        "os-architect": true,
+        "os-clean-locks": true,
+        "os-environment-probe": true,
+        "os-eval-backport": true,
+        "os-eval-lab-setup": true,
+        "os-eval-runner": true,
+        "os-evolution-planner": true,
+        "os-evolution-verifier": true,
+        "os-experiment-log": true,
+        "os-guide": true,
+        "os-health-check": true,
+        "os-improvement-loop": true,
+        "os-improvement-report": true,
+        "os-init": true,
+        "os-memory-manager": true,
+        "os-signing-setup": true,
+        "os-skill-improvement": true,
+        "repository-improvement": true,
+        "self-evolution": true,
+        "todo-check": true,
+        "transition-simulator": true,
+        "work-intake": true,
+        "worktree-manager": true
+      },
+      "rules": {
+        "adversarial-reasoning-before-agreement-rule.md": true,
+        "config-driven-constants-over-hardcoding.md": true,
+        "destructive-action-guard.md": true,
+        "github-issue-logging-policy.md": true,
+        "self-evolution-policy.md": true,
+        "state-transition-guidance-compliance.md": true,
+        "test-driven-development.md": true,
+        "worktree-lifecycle-management.md": true,
+        "worktree-subagent-leak-detection.md": true
+      },
+      "agents": {
+        "agent-agentic-os-agentic-os-setup.md": true,
+        "agent-agentic-os-improvement-intake-agent.md": true,
+        "agent-agentic-os-os-architect-agent.md": true,
+        "agent-agentic-os-os-architect-tester-agent.md": true
+      }
+    }
+  }
+}
