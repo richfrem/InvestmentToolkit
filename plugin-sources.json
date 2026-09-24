@@ -6,7 +6,6 @@
         "adr-manager",
         "agent-loops",
         "context-bundler",
-        "plugin-manager",
         "spec-kitty-plugin",
         "task-manager"
       ]
@@ -29,7 +28,7 @@
       ]
     },
     {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills",
       "plugins": [
         "agent-agentic-os",
         "agent-memory",
@@ -39,7 +38,8 @@
         "dependency-management",
         "dev-utils",
         "exploration-cycle-plugin",
-        "obsidian-wiki-engine"
+        "obsidian-wiki-engine",
+        "plugin-manager"
       ]
     }
   ]

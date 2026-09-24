@@ -191,4 +191,26 @@ Core Scientific's multi-billion dollar contracts with CoreWeave and other hypers
 - **Trim Tier 1**: $28.73 (DCF Fair Value)
 - **Stop Loss / Breaker**: $14.20
 
+---
+
+## 2026-09-22 — Grok Live Intelligence Sweep: 437 MW CoreWeave Live, AMD Partnership, ERCOT Approvals
+
+- **Source**: Grok (X/SEC/Analyst Disclosures)
+- **Holding**: 68.0 shares (3.73% target weight, core lifecycle)
+- **Market Price**: ~$18.48 | **DCF Fair Value**: $28.73 (+55.5% upside)
+- **Analyst Actions**:
+  - Wells Fargo initiated at Overweight ($28 PT), naming CORZ an industry leader in converting announced AI deals into operating MW.
+  - Rothschild & Co Redburn initiated at Neutral ($16 PT).
+- **CoreWeave & AMD Execution**:
+  - CoreWeave billable capacity reached 437 MW (ahead of schedule) out of ~590 MW leased suite (~$10B+ contract value; ~$850M annualized colocation run-rate).
+  - AMD initial ~530 MW partnership (> $14B contracted over 15 years with 2.5% escalators) across 5 sites (Pecos lead site 1H 2027 delivery).
+  - Total contracted billable capacity exceeds 1.1 GW / > $24B base contracted revenue.
+- **Texas ERCOT Power Clarity (Sept 10 8-K)**:
+  - Aggregate ~1,402 MW conditional approvals across Denton (297 MW Base Load Pathway a + 74 MW study), Pecos (300 MW Base Load Pathway b + 300 MW studied), and Hunt County (431 MW Base Load Pathway e).
+- **Liquidity & Financing**:
+  - Secured $600M senior credit facility on Aug 27; cash & equiv ~$1.77B. Debt ~$4.3B.
+  - Insider buying: Director Eric Stanton Weiss purchased 6,000 shares at ~$16.33 on open market.
+- **Conviction & Tactical Stance**: 7.5/10 conviction. **`MAINTAIN`** existing core stake at ~$18.48. High discount to $28.73 DCF Fair Value; pullbacks support accumulation.
+
+
 
