@@ -123,6 +123,9 @@ Create a new `py_services/` script + ADR in `docs/architecture/` whenever you'd 
 | Plugin scripts | `plugins/<plugin>/tests/` |
 | React | `investment_screener/frontend/tests/` |
 
+## SUB-agent usage
+Use the cheapest models possible where possible. If the job doesn't require spawning sub-agents don't do so.
+
 ## Capital Sourcing
 All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.TO in the **same account** first (never cross-account). Shares to sell ≈ `ceil(N × price / 100)`. TFSA is primary (larger); RRSP mirrors at ~1/3 share count — separate trade log entries per account for both buy and PSU sell. TSX observes Canadian holidays — PSU-U.TO can't trade those days; defer or check for leftover USD cash.
 
