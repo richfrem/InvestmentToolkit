@@ -161,6 +161,9 @@ plugins/portfolio-advisor/references/triage-history.json
 # Wave/session planning docs, kickoff prompts, status reports (not for version control)
 docs/superpowers/
 
+# work-intake task artifacts (spec/plan/outline/reviews) - ephemeral per-task agent state
+docs/plans/work-tasks/
+
 # Local personal overrides & heartbeat
 CLAUDE.local.md
 *.local.md

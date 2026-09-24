@@ -141,4 +141,24 @@ Applied Digital has made immense operational strides in energizing its high-dens
 - **Trim Tier 1**: $35.76 (DCF Fair Value)
 - **Stop Loss / Breaker**: $22.50
 
+---
+
+## 2026-09-21 — Grok Live Intelligence Sweep: 1.41 GW / $36B Backlog, Wells Fargo $50 PT vs Redburn $22 PT
+
+- **Source**: Grok (X/SEC/Analyst Disclosures)
+- **Holding**: 32.0 shares (2.65% target weight, core lifecycle)
+- **Market Price**: ~$28.25 | **DCF Fair Value**: $35.76 (+26.6% upside)
+- **Analyst Actions**: 
+  - Wells Fargo initiated at Overweight ($50 PT), citing 1.4 GW power backlog and valuation discount.
+  - Rothschild & Co Redburn initiated at Neutral ($22 PT), citing unit economics and leverage.
+- **Campus Energization & Capacity**:
+  - 1,410 MW contracted critical IT load across five campuses (~$36B 15-year take-or-pay base revenue, ~$86B with renewals).
+  - Polaris Forge 1 (Ellendale, ND): 175 MW live as of late June 2026; tenant fit-out underway on Building 3 (~2,000 workers on-site).
+  - Polaris Forge 2 (Harwood, ND): ~280 MW facility powered via Cass County Electric; electrical substation and lines visible; partial operations expected by end-2026.
+- **Financing & Liquidity**:
+  - Cash / restricted cash ~$4.2B; debt ~$5.0B as of May 31, 2026.
+  - Dilution pace moderated; ~287.9M shares outstanding (RSU tax withholding only in recent Form 4s).
+- **Conviction & Tactical Stance**: 7/10 conviction. **`MAINTAIN`** existing core stake at ~$28.25. Add on pullbacks near $24.50 support; first trim shelf at $35.76.
+
+
 
