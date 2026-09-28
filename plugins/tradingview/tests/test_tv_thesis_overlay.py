@@ -51,7 +51,8 @@ def mock_db(tmp_path):
             tier_id TEXT PRIMARY KEY,
             price_level_set_id TEXT NOT NULL,
             tier_kind TEXT NOT NULL,
-            price REAL NOT NULL
+            price REAL NOT NULL,
+            status TEXT
         );
     """)
     
@@ -82,6 +83,9 @@ def mock_db(tmp_path):
     # A ticker with a projection but no scenarios
     conn.execute("INSERT INTO investment (investment_id, symbol, name, thesis_breaker_status) VALUES ('ABC', 'ABC', 'No Scenarios Inc', 'OK');")
     conn.execute("INSERT INTO projection_version (projection_id, investment_id, version, fair_value, action) VALUES ('ABC:1', 'ABC', 1, 10.00, 'HOLD');")
+    # ABC's bear-derived stop was suppressed by update_price_levels (>50% below price)
+    conn.execute("INSERT INTO price_level_set (price_level_set_id, investment_id) VALUES ('ABC-pls', 'ABC');")
+    conn.execute("INSERT INTO price_level_tier (tier_id, price_level_set_id, tier_kind, price, status) VALUES ('ABC-tier-1', 'ABC-pls', 'STOP_LOSS', 2.76, 'suppressed');")
     
     conn.commit()
     conn.close()
@@ -151,3 +155,48 @@ def test_generate_pine_script_missing_scenarios_default_to_zero(tmp_path):
     pine_code = generate_pine_script_content({"symbol": "ABC", "fair_value": 10.0})
     for var in ("bearPrice", "basePrice", "bullPrice"):
         assert f"var float {var} = input.float(0.0" in pine_code
+
+
+def test_resolve_ticker_levels_ignores_suppressed_stop(mock_db):
+    levels = resolve_ticker_levels("ABC", db_path=mock_db)
+    assert levels["stop_loss"] is None
+
+
+def test_apply_overlay_injects_once_without_retry_or_stale_cache(mock_db, monkeypatch):
+    # 2026-09-28: pine inject mutates the chart (edit, save, add), but ran through
+    # tv_call's defaults: 10s timeout, 3 retries and a cached-response fallback.
+    # The inject outlived 10s, was retried, and a stale cached refusal was
+    # reported as the current result.
+    import tv_thesis_overlay as m
+    calls = []
+
+    def fake_tv_call(*args, **kwargs):
+        calls.append((args, kwargs))
+        if args[:2] == ("pine", "inject"):
+            return {"success": True, "verified": True, "study": "AI Thesis Overlay - NVDA"}
+        return {"success": True}
+
+    monkeypatch.setattr(m, "tv_call", fake_tv_call)
+    monkeypatch.setattr(m, "validate_cdp_installation", lambda: {"installed": True})
+    monkeypatch.setattr(m, "switch_chart_symbol", lambda s: True)
+    monkeypatch.setattr(m.resolve_ticker_levels, "__defaults__", (mock_db,))
+
+    result = m.apply_overlay("NVDA")
+
+    inject_kwargs = [kw for a, kw in calls if a[:2] == ("pine", "inject")][0]
+    assert inject_kwargs.get("enable_retry") is False
+    assert inject_kwargs.get("enable_cache_fallback") is False
+    assert inject_kwargs.get("timeout", 10) >= 45
+    assert result["success"] is True
+
+
+def test_apply_overlay_reports_failure_for_cached_inject_response(mock_db, monkeypatch):
+    import tv_thesis_overlay as m
+    monkeypatch.setattr(m, "tv_call", lambda *a, **k: (
+        {"error": "timed out", "data": {"success": True}, "cached": True, "timestamp": "x"}
+        if a[:2] == ("pine", "inject") else {"success": True}))
+    monkeypatch.setattr(m, "validate_cdp_installation", lambda: {"installed": True})
+    monkeypatch.setattr(m, "switch_chart_symbol", lambda s: True)
+    monkeypatch.setattr(m.resolve_ticker_levels, "__defaults__", (mock_db,))
+
+    assert m.apply_overlay("NVDA")["success"] is False

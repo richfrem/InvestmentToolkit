@@ -13,9 +13,17 @@ Usage:
 Options:
     --help      Show this help message
     --verbose   Print field-by-field results
+
+Key Functions (Index):
+    - check_accumulate_gate(projection) - 2-of-3 valuation-lens gate for ACCUMULATE
+    - find_stripped_currency_artifacts(text) - detect "$<digits>" eaten by shell interpolation
+    - check(condition, field, message, errors) - append a [FAIL] line when condition is false
+    - validate_projection(data, verbose) - full schema + gate validation, returns error list
+    - main() - CLI entry point (stdin JSON)
 """
 
 import json
+import re
 import sys
 import argparse
 from typing import Any
@@ -24,6 +32,23 @@ from typing import Any
 ACCUMULATE_SPREAD_THRESHOLD_PCT = 25.0
 ACCUMULATE_DCF_UPSIDE_THRESHOLD_PCT = 15.0
 VALID_SECTORS = {"saas_cyber", "chips_ai", "energy_infra"}
+
+# Shapes left behind when a shell expands "$<digits>" to nothing, e.g.
+# "~$36B" -> "~B", "at $28.25" -> "at .25", "($44 PT)" -> "( PT)".
+# A bare ".NN" preceded by a space, "~" or "(" never occurs in well-formed
+# thesis text (real decimals always have a leading digit).
+STRIPPED_CURRENCY_PATTERNS = [
+    re.compile(r"~[BMK]\b"),
+    re.compile(r"(?:(?<=\s)|(?<=~)|(?<=\())\.\d{1,2}\b"),
+    re.compile(r"\(\s+PT\)"),
+]
+
+
+def find_stripped_currency_artifacts(text: str) -> list[str]:
+    """Return every substring of text that looks like a shell-stripped dollar amount."""
+    if not isinstance(text, str):
+        return []
+    return [m.group(0) for pattern in STRIPPED_CURRENCY_PATTERNS for m in pattern.finditer(text)]
 
 
 def check_accumulate_gate(projection: dict) -> dict:
@@ -194,6 +219,23 @@ def validate_projection(data: dict[str, Any], verbose: bool = False) -> list[str
     if sector is not None:
         check(sector in VALID_SECTORS, "sector",
               f"Must be one of {sorted(VALID_SECTORS)}, got '{sector}'", errors)
+
+    # --- Stripped-currency guard (shell interpolation ate "$<digits>") ---
+    text_fields = {
+        "rationale": data.get("rationale"),
+        "aiThesis.rationale": (data.get("aiThesis") or {}).get("rationale"),
+    }
+    for case_name, case_data in (data.get("scenarios") or {}).items():
+        if isinstance(case_data, dict):
+            text_fields[f"scenarios.{case_name}.rationale"] = case_data.get("rationale")
+    for field_name, text in text_fields.items():
+        artifacts = find_stripped_currency_artifacts(text)
+        if artifacts:
+            errors.append(
+                f"[FAIL] {field_name}: stripped currency artifact(s) {sorted(set(artifacts))} — "
+                "dollar amounts were removed by shell interpolation; write thesis text via a "
+                "quoted heredoc (<< 'EOF') or a --file payload."
+            )
 
     # --- Strategic Outlook & Transcript Audit Gate ---
     analytics = data.get("analyticsLog", {}) or {}

@@ -602,3 +602,48 @@ class TestDeriveAndWrite:
             db_path=db_path,
         )
         assert result["ticker"] == "GOOG"
+
+
+# ── Tests: bear-derived level sanity guard ───────────────────────────────────
+# Real APLD numbers: v7 bear PV 3.62 wrote a $3.44 stop on a $26.25 stock;
+# v8 bear PV 2.91 would write $2.76. A "thesis breaker" that far below price
+# protects nothing, so it must be suppressed rather than emitted as active.
+
+class TestBearLevelSanityGuard:
+    def test_far_below_price_bear_levels_are_suppressed(self):
+        tiers = derive_tiers_from_dcf(2.91, 21.78, 61.04, TODAY, current_price=26.25)
+        assert tiers["stopLoss"]["status"] == "suppressed"
+        assert tiers["buyTiers"][1]["status"] == "suppressed"
+        assert ">50% below current price" in tiers["stopLoss"]["basis"]
+        # base-derived buy tier and sell tiers stay active
+        assert tiers["buyTiers"][0]["status"] == "active"
+        assert all(t["status"] == "active" for t in tiers["sellTiers"])
+
+    def test_bear_levels_near_price_stay_active(self):
+        tiers = derive_tiers_from_dcf(22.0, 30.0, 45.0, TODAY, current_price=26.25)
+        assert tiers["stopLoss"]["status"] == "active"
+        assert tiers["buyTiers"][1]["status"] == "active"
+
+    def test_without_current_price_behaviour_is_unchanged(self):
+        tiers = derive_tiers_from_dcf(2.91, 21.78, 61.04, TODAY)
+        assert tiers["stopLoss"]["status"] == "active"
+        assert tiers["stopLoss"]["price"] == round(2.91 * 0.95, 2)
+
+    def test_suppressed_stop_raises_no_proximity_flags(self):
+        tiers = derive_tiers_from_dcf(2.91, 21.78, 61.04, TODAY, current_price=26.25)
+        assert "BELOW_STOP_LOSS" not in compute_proximity_flags(1.0, tiers)
+
+    def test_derive_and_write_uses_stored_current_price(self, tmp_path):
+        from domain_model.investment_price_repository import upsert_investment_price
+        db_path = _make_db(tmp_path)
+        conn = initialize_db(str(db_path))
+        bear = SAMPLE_PROJECTION[0]["scenarios"]["bear"]["scenarioPrice"]
+        upsert_investment_price(conn, resolve_investment(conn, "GOOG"), bear * 3, "USD", TODAY)
+        conn.close()
+        derive_and_write("GOOG", source="dcf", dry_run=False,
+                         target_json_path=_make_target_json(tmp_path),
+                         portfolio_json_path=_make_portfolio_json(tmp_path), db_path=db_path)
+        conn = initialize_db(str(db_path))
+        stored = get_price_levels(conn, resolve_investment(conn, "GOOG"))
+        conn.close()
+        assert stored["stop_loss"]["status"] == "suppressed"

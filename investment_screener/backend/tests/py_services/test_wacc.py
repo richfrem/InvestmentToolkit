@@ -80,6 +80,17 @@ def test_compute_risk_free_rate_divides_tnx_close_correctly():
     assert result["usedFallback"] is False
 
 
+def test_compute_risk_free_rate_handles_tnx_quoted_as_percent():
+    # Live yfinance ^TNX close captured 2026-09-28 was 5.23 (i.e. 5.23%), not
+    # yield*10. Dividing by 1000 produced 0.00523 and understated every WACC.
+    with patch("wacc.get_prices", return_value={
+        "^TNX": {"data": [{"date": "2026-09-25", "close": 5.23}], "source": "yfinance", "asOf": "x"}
+    }):
+        result = compute_risk_free_rate()
+    assert result["riskFreeRate"] == 0.0523
+    assert result["usedFallback"] is False
+
+
 def test_compute_risk_free_rate_falls_back_when_no_data():
     with patch("wacc.get_prices", return_value={}):
         result = compute_risk_free_rate()

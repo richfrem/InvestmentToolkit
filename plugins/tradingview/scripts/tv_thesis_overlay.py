@@ -47,7 +47,7 @@ if SCRIPTS_DIR not in sys.path:
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from tv_client import tv_call, validate_cdp_installation
+from tv_client import tv_call, validate_cdp_installation, MUTATING_CALL_OPTS
 from pine_linter import PineLinter
 from investment_screener.backend.py_services.ticker_aliases import normalize_ticker
 
@@ -130,7 +130,8 @@ def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[s
             SELECT plt.tier_kind, plt.price
             FROM price_level_tier plt
             JOIN price_level_set pls ON plt.price_level_set_id = pls.price_level_set_id
-            WHERE pls.investment_id = ?;
+            WHERE pls.investment_id = ?
+              AND COALESCE(plt.status, 'active') NOT IN ('inactive', 'suppressed');
             """,
             (investment_id,),
         ).fetchall()
@@ -327,7 +328,7 @@ def apply_overlay(symbol: str, dry_run: bool = False) -> Dict[str, Any]:
     tv_call("chart", "removeIndicator", "AI Thesis")
 
     # Step 3: Inject Pine Script via Node CLI (Pitfall #12 — pass content, not file path)
-    inject_res = tv_call("pine", "inject", "--content", pine_code)
+    inject_res = tv_call("pine", "inject", "--content", pine_code, **MUTATING_CALL_OPTS)
     is_ok = isinstance(inject_res, dict) and (inject_res.get("success") is True or "error" not in inject_res)
     return {
         "success": is_ok,

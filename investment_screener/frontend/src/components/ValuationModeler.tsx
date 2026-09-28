@@ -31,6 +31,7 @@ import { saveUserPreset } from '../services/presets';
 import { ScenarioEditor } from './analysis/ScenarioEditor';
 import { SliderInput } from './analysis/SliderInput';
 import { SensitivityGrid } from './analysis/SensitivityGrid';
+import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
 
 function normalizeScenario(s: any): Scenario & { weight: number } {
     return {
@@ -605,12 +606,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => {
-                                        navigator.clipboard.writeText(`/guide-valuation ${stockData.symbol}`);
+                                        navigator.clipboard.writeText(newReviewCommand(stockData.symbol));
                                     }}
-                                    title={`Copy: /guide-valuation ${stockData.symbol}`}
+                                    title={`Copy: ${newReviewCommand(stockData.symbol)}`}
                                     className="text-[10px] font-semibold text-indigo-300 bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-500/40 px-2 py-0.5 rounded flex items-center gap-1 transition-all"
                                 >
-                                    <Sparkles size={11} className="text-indigo-400" /> Update via /guide-valuation
+                                    <Sparkles size={11} className="text-indigo-400" /> Update via {REVIEW_COMMAND}
                                 </button>
                                 <button
                                     onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
