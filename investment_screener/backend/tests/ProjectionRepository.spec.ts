@@ -93,6 +93,34 @@ describe('ProjectionRepository', () => {
             expect(savedFirst.id).to.not.equal(savedSecond.id);
         });
 
+        // Caught live 2026-09-28 (APLD): the "existing" lookup had no ORDER BY, so a
+        // re-save could compute an already-used version and ON CONFLICT DO UPDATE
+        // silently replaced that row (the 2026-09-22 projection was overwritten).
+        it('never overwrites an earlier version when the same id is saved repeatedly', () => {
+            const parsed = ProjectionSchema.safeParse(makeProjection()).data as Projection;
+            let saved = repo.upsertProjection(parsed);
+            saved = repo.upsertProjection({ ...saved } as Projection);
+            saved = repo.upsertProjection({ ...saved } as Projection);
+            expect(saved.version).to.equal(3);
+            const db = new Database(dbPath);
+            const versions = db.prepare('SELECT version FROM projection_version ORDER BY version').all().map((r: any) => r.version);
+            db.close();
+            expect(versions).to.deep.equal([1, 2, 3]);
+        });
+
+        it("a same-id re-save never overwrites another identity's version", () => {
+            const a = ProjectionSchema.safeParse(makeProjection({ id: '11111111-1111-4111-8111-111111111111' })).data as Projection;
+            const b = ProjectionSchema.safeParse(makeProjection({ id: '22222222-2222-4222-8222-222222222222' })).data as Projection;
+            const savedA = repo.upsertProjection(a);            // v1 (A)
+            repo.upsertProjection(b);                           // v2 (B)
+            const resavedA = repo.upsertProjection({ ...savedA } as Projection);
+            expect(resavedA.version).to.equal(3);
+            const db = new Database(dbPath);
+            const rows = db.prepare('SELECT version, legacy_id FROM projection_version ORDER BY version').all() as any[];
+            db.close();
+            expect(rows.map(r => r.legacy_id)).to.deep.equal([a.id, b.id, a.id]);
+        });
+
         it('persists scenarios and passthrough fields (round trips via raw_json)', () => {
             const parsed = ProjectionSchema.safeParse(makeProjection()).data as Projection;
             repo.upsertProjection(parsed);

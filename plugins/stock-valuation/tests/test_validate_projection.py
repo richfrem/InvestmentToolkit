@@ -332,3 +332,58 @@ class TestOutlookAuditVerification:
         errors = validate_projection(self._proj_with_audit(valid))
         assert not any("outlookAudit" in e for e in errors)
 
+
+
+# --- Stripped-currency guard -------------------------------------------------
+# Real APLD v7 aiThesis.rationale captured 2026-09-28: every "$<digits>" was
+# eaten by shell interpolation before persistence ("$35.76" -> ".76").
+APLD_V7_STRIPPED = (
+    "representing ~B in 15-year base lease value (~B with renewals). "
+    "At ~.25, our 5-year DCF yields a fair value of .76 (+26.6% upside at 9.72% WACC). "
+    "Recent initiations from Wells Fargo ( PT) and Rothschild Redburn ( PT) bracket our valuation. "
+    "Accumulate on pullbacks near .50, trim Tier 1 at .76."
+)
+# Real APLD v8 text (same shapes, dollar signs intact) plus ordinary decimals.
+APLD_V8_CLEAN = (
+    "Probability-weighted DCF fair value $23.97 vs $26.25 (-8.7%) at a corrected 12.9% WACC. "
+    "~$36B of signed 15-year base-term rent (~$2.4B/yr). Beta 2.82, 0.95 multiplier, "
+    "EV/Sales 29x, Monte Carlo median $21.13 (76% probability overvalued), Morgan Stanley ($36.50 PT)."
+)
+
+
+def _full_projection(rationale_text):
+    scen = {"weight": 1 / 3, "growthRate": 10, "netMargin": 10, "exitPE": 15,
+            "qualityMultiplier": 1.0, "shareChange": 0.0, "scenarioPrice": 10.0}
+    return {
+        "ticker": "APLD", "id": "x", "source": "AI_AGENT", "schemaVersion": "1.2", "version": 8,
+        "savedAt": "2026-09-28T00:00:00Z", "rationale": rationale_text,
+        "snapshot": {"price": 26.25, "shares": 1, "revenue": 1},
+        "scenarios": {"bear": dict(scen, growthRate=5, scenarioPrice=5.0),
+                      "base": dict(scen), "bull": dict(scen, growthRate=15, scenarioPrice=15.0)},
+        "aiThesis": {"model": "Claude Opus 5.5", "rationale": rationale_text, "fairValue": 10.0,
+                     "action": "MAINTAIN", "analyzedAt": "2026-09-28T00:00:00Z"},
+        "analyticsLog": {"outlookAudit": {"callsAnalyzed": ["Q4 FY2026"], "guidanceDirection": "NOT_PROVIDED",
+                                          "strategicAssessment": "Substantive forward assessment text."}},
+        "globalSettings": {"discountRate": 12.68, "timeHorizon": 5},
+    }
+
+
+def _stripped_errors(errors):
+    return [e for e in errors if "stripped currency" in e]
+
+
+def test_stripped_currency_in_thesis_rationale_is_rejected():
+    errors = validate_projection(_full_projection(APLD_V7_STRIPPED))
+    assert _stripped_errors(errors), errors
+
+
+def test_clean_dollar_amounts_and_plain_decimals_are_not_flagged():
+    errors = validate_projection(_full_projection(APLD_V8_CLEAN))
+    assert _stripped_errors(errors) == []
+
+
+def test_stripped_currency_in_scenario_rationale_is_rejected():
+    proj = _full_projection(APLD_V8_CLEAN)
+    proj["scenarios"]["base"]["rationale"] = "Scales to B revenue; fair value .32 at 22x."
+    errors = validate_projection(proj)
+    assert any("scenarios.base.rationale" in e for e in _stripped_errors(errors)), errors

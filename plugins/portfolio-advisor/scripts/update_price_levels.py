@@ -14,6 +14,10 @@ Derivation formulas (source=dcf):
   sellTier[3].price = round(bull_fv * 1.20, 2)   # exit 100% at 20% above bull
   stopLoss.price    = round(bear_fv * 0.95, 2)   # thesis breaker
 
+Sanity guard: buyTier[2] and stopLoss (bear-derived) are written with
+status='suppressed' when more than 50% below the stored current price
+(investment_price), e.g. a $3.44 stop on a $26 stock. Never clamped.
+
 Usage:
   python3 update_price_levels.py --ticker GOOG --source dcf --write
   python3 update_price_levels.py --ticker GOOG --source dcf --dry-run
@@ -49,8 +53,49 @@ from domain_model.investment_repository import resolve_investment
 from domain_model.price_level_repository import replace_price_levels, get_price_levels
 from domain_model.investment_price_repository import get_investment_price
 
-def derive_tiers_from_dcf(bear_fv: float, base_fv: float, bull_fv: float, source_date: str, note: str = '') -> dict:
-    """Returns complete priceLevels dict derived from bear, base, and bull scenario prices."""
+MAX_BEAR_LEVEL_DISTANCE = 0.50  # bear-derived levels further than this below price are suppressed
+
+
+def _suppress_if_far_below(level: dict, current_price: float | None) -> dict:
+    """Mark a bear-derived level 'suppressed' when it sits >50% below the current price.
+
+    A stop or accumulation level that far away (e.g. a $3.44 stop on a $26
+    stock) has no protective or actionable meaning; it is kept for audit but
+    never emitted as active. Clamping is deliberately not done: a clamped
+    level would be a number with no analytical basis.
+    """
+    if not current_price or current_price <= 0:
+        return level
+    if level['price'] < current_price * (1 - MAX_BEAR_LEVEL_DISTANCE):
+        level['status'] = 'suppressed'
+        level['basis'] += (
+            f" — SUPPRESSED: >50% below current price ${current_price:.2f}; "
+            "bear scenario too far out to act as a level"
+        )
+    return level
+
+
+def derive_tiers_from_dcf(
+    bear_fv: float,
+    base_fv: float,
+    bull_fv: float,
+    source_date: str,
+    note: str = '',
+    current_price: float | None = None,
+) -> dict:
+    """Returns complete priceLevels dict derived from bear, base, and bull scenario prices.
+
+    When current_price is given, bear-derived levels (buyTier 2, stopLoss) more
+    than MAX_BEAR_LEVEL_DISTANCE below it are returned with status 'suppressed'.
+    """
+    levels = _derive_raw_tiers(bear_fv, base_fv, bull_fv, source_date, note)
+    _suppress_if_far_below(levels['buyTiers'][1], current_price)
+    _suppress_if_far_below(levels['stopLoss'], current_price)
+    return levels
+
+
+def _derive_raw_tiers(bear_fv: float, base_fv: float, bull_fv: float, source_date: str, note: str) -> dict:
+    """Builds the unguarded priceLevels dict from the fixed DCF multipliers."""
     return {
         'schemaVersion': '1.0',
         'lastUpdated': source_date,
@@ -256,6 +301,16 @@ def compute_price_level_snapshot_from_db(conn, investment_id: str) -> dict | Non
     }
 
 
+def _load_current_price(ticker: str, db_path: Path | None = None) -> float | None:
+    """Reads the stored current price for ticker from investment_price, or None."""
+    conn = initialize_db(str(db_path or DB_PATH))
+    try:
+        row = get_investment_price(conn, resolve_investment(conn, ticker))
+        return row['price'] if row else None
+    finally:
+        conn.close()
+
+
 def derive_and_write(
     ticker: str,
     source: str = 'dcf',
@@ -283,7 +338,11 @@ def derive_and_write(
         raise ValueError(f"Could not find scenarioPrice or presentValue in scenarios for {ticker}")
     
     today = datetime.now().strftime('%Y-%m-%d')
-    price_levels = derive_tiers_from_dcf(bear_fv, base_fv, bull_fv, today, note)
+    current_price = _load_current_price(ticker, db_path)
+    price_levels = derive_tiers_from_dcf(bear_fv, base_fv, bull_fv, today, note, current_price=current_price)
+    for level in [*price_levels['buyTiers'], price_levels['stopLoss']]:
+        if level.get('status') == 'suppressed':
+            print(f"WARNING: {ticker} {level['basis']}", file=sys.stderr)
     
     if ta_overrides:
         # Merge or append TA levels if provided

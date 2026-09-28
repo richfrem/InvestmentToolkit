@@ -1,7 +1,10 @@
 """Replay a JSONL intelligence-event ledger into the SQLite read model.
 
 Reads newline-delimited JSON events from a ledger file and inserts any
-events newer than the last recorded checkpoint into ``intelligence_event``.
+event whose ``event_id`` is not yet in ``intelligence_event`` (identity-based,
+so a ledger whose numbering restarted, or a checkpoint advanced by another
+source, can no longer hide new events). A ledger ``event_sequence`` already
+owned by another read-model row is reassigned to MAX(event_sequence)+1.
 After a successful pass, records progress in ``ledger_checkpoint`` so a
 subsequent replay only processes events past the last processed sequence
 number (idempotent re-runs).
@@ -54,12 +57,32 @@ def _get_last_checkpoint_sequence(conn):
     return row[0] if row and row[0] is not None else 0
 
 
+def _free_sequence(conn, ledger_sequence):
+    """Return ledger_sequence if unused in the read model, else MAX(event_sequence)+1.
+
+    Args:
+        conn: Open sqlite3 connection with the read-model schema applied.
+        ledger_sequence: The event's sequence number within its ledger file.
+
+    Returns:
+        A read-model event_sequence that does not collide with an existing row.
+    """
+    taken = conn.execute(
+        "SELECT 1 FROM intelligence_event WHERE event_sequence = ?;", (ledger_sequence,)
+    ).fetchone()
+    if not taken:
+        return ledger_sequence
+    return conn.execute("SELECT COALESCE(MAX(event_sequence), 0) + 1 FROM intelligence_event;").fetchone()[0]
+
+
 def replay_events_to_db(jsonl_path, conn):
     """Replay a JSONL event ledger into the intelligence_event table.
 
-    Reads each line of the ledger as a JSON event object, skips any event
-    whose ``event_sequence`` is not greater than the last recorded
-    checkpoint. Events written via ``event_store.append_event()`` carry a
+    Reads each line of the ledger as a JSON event object and skips any event
+    whose ``event_id`` is already present in the read model (the checkpoint
+    is bookkeeping only; see the module docstring for why sequences are not
+    comparable across ledgers). A sequence collision with an existing row is
+    resolved by ``_free_sequence()``. Events written via ``event_store.append_event()`` carry a
     ``"ticker"`` string rather than an ``instrument_id`` (JSONL appends must
     not require a live SQLite connection), so for any event with a truthy
     ``ticker`` and no ``instrument_id`` already set, this function resolves
@@ -105,6 +128,14 @@ def replay_events_to_db(jsonl_path, conn):
 
     file_hash = _compute_file_hash(jsonl_path)
 
+    # Identity, not sequence, decides what is already applied. Ledger files
+    # number their own events (observations.jsonl restarted at 1 on
+    # 2026-08-25) and record_intelligence_event.py writes straight to the
+    # read model with MAX(event_sequence)+1, so ledger sequences and the
+    # 'global' checkpoint are not comparable with read-model sequences.
+    # Skipping by `seq <= checkpoint` silently dropped every new ledger event.
+    known_ids = {row[0] for row in conn.execute("SELECT event_id FROM intelligence_event;")}
+
     try:
         with open(jsonl_path, "r") as f:
             for line in f:
@@ -112,7 +143,7 @@ def replay_events_to_db(jsonl_path, conn):
                     continue
                 event = json.loads(line)
                 seq = event["event_sequence"]
-                if seq <= last_seq:
+                if event.get("event_id") in known_ids:
                     continue
 
                 ticker = event.get("ticker")
@@ -122,7 +153,10 @@ def replay_events_to_db(jsonl_path, conn):
                         "instrument_id": resolve_instrument(conn, ticker),
                     }
 
+                event = {**event, "event_sequence": _free_sequence(conn, seq)}
                 inserted = insert_event(conn, event)
+                if inserted:
+                    known_ids.add(event["event_id"])
 
                 if inserted:
                     processed_count += 1

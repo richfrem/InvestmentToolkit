@@ -10,7 +10,62 @@
  * 
  * Key Output Dependencies:
  *   None (manipulates the user's active TradingView Pine Editor in the browser)
+ *
+ * Key Functions (Index):
+ *   - scriptTitles(source) - indicator title/shorttitle declared by a Pine script
+ *   - sameFamily(a, b) - true for generated overlays sharing a "Prefix - " title
+ *   - injectPineScript(client, scriptContent) - guarded inject; success only when verified on chart
+ *   - readIndicatorValues(client, indicatorName) - read Data Window values
+ *   - removePineScript(client, indicatorName) - remove an indicator from the chart
+ *   - savePineToLibrary(client, scriptName) - save the active script
+ *   - readSourceFromDialog(client, name) - read a script's source
  */
+
+// Browser-side snippet: resolves the active Pine Editor's Monaco instance via
+// its React fiber into a local `editor` (or sets `editorError`). Shared by the
+// overwrite guard and the inject step so both look at the same tab.
+const FIND_EDITOR_JS = `
+  var editor = null, editorError = null;
+  var edEl = document.querySelector('textarea.inputarea') ||
+             document.querySelector('[class*="editorWrapper-"]') ||
+             document.querySelector('.pine-editor-monaco');
+  if (!edEl) { editorError = 'Monaco input element not found'; }
+  var el = edEl, fk = null;
+  for (var depth = 0; edEl && depth < 15; depth++) {
+    if (!el) break;
+    fk = Object.keys(el).find(function(k) { return k.startsWith('__reactFiber'); });
+    if (fk) break;
+    el = el.parentElement;
+  }
+  if (edEl && !fk) { editorError = 'React fiber not found within 15 ancestors'; }
+  if (fk) {
+    try {
+      var controller = el[fk].return.memoizedState.memoizedState.current;
+      editor = controller._editor;
+      if (!editor || typeof editor.getModel !== 'function') { editor = null; editorError = 'Monaco editor not found via fiber'; }
+    } catch (e) { editorError = e.message; }
+  }
+`;
+
+// Titles TradingView may show for a script: indicator("title", shorttitle="st").
+export function scriptTitles(source) {
+  const title = (source.match(/indicator\s*\(\s*["']([^"']+)["']/i) || [])[1];
+  const short = (source.match(/shorttitle\s*=\s*["']([^"']+)["']/i) || [])[1];
+  return [title, short].filter(Boolean).map(t => t.trim());
+}
+
+// A blank tab holds TradingView's "My script" template, which is safe to replace.
+const REPLACEABLE_TITLES = ['my script'];
+
+// Generated overlays share a family prefix ("AI Thesis Overlay - NBIS" and
+// "AI Thesis Overlay - APLD"); replacing one with another is the intended use.
+export function sameFamily(a, b) {
+  const prefix = t => (t || '').split(' - ')[0].trim().toLowerCase();
+  return Boolean(a && b && a.includes(' - ') && b.includes(' - ') && prefix(a) === prefix(b));
+}
+
+const VERIFY_ATTEMPTS = 3;
+const VERIFY_INTERVAL_MS = 1500;
 
 /**
  * Inject a Pine Script into the active TradingView chart.
@@ -29,41 +84,6 @@ export async function injectPineScript(client, scriptContent) {
    */
   try {
     const safeContent = JSON.stringify(scriptContent);
-
-    // 0. Extract title/shorttitle from script and clear old instances from chart legend (Write-once replace protocol)
-    await client.Runtime.evaluate({
-      expression: `(function() {
-        var raw = ${safeContent};
-        var titleMatch = raw.match(/indicator\\s*\\(\\s*["']([^"']+)["']/i);
-        var shortMatch = raw.match(/shorttitle\\s*=\\s*["']([^"']+)["']/i);
-        var targetNames = [];
-        if (titleMatch && titleMatch[1]) targetNames.push(titleMatch[1].trim().toLowerCase());
-        if (shortMatch && shortMatch[1]) targetNames.push(shortMatch[1].trim().toLowerCase());
-        targetNames.push('ai-ta', 'ai ta levels', 'ai thesis');
-
-        var items = [...document.querySelectorAll('[data-name="legend-series-item"], [class*="item-"], [class*="legend-"]')];
-        items.forEach(function(item) {
-          if (!item.offsetParent) return;
-          var titleEl = item.querySelector('[class*="titleWrapper-"]') || item.querySelector('[class*="title-"]');
-          var text = (titleEl ? titleEl.textContent : item.textContent).trim().toLowerCase();
-          var isMatch = targetNames.some(function(n) { return text.includes(n); });
-          if (isMatch) {
-            item.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window }));
-            var btn = item.querySelector('button[aria-label="Remove"]') || 
-                      item.querySelector('[data-name="remove"]') ||
-                      item.querySelector('button[title="Remove"]');
-            if (btn) {
-              btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-              btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
-              btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-            }
-          }
-        });
-      })()`,
-      returnByValue: true,
-      awaitPromise: false,
-    });
-    await new Promise(r => setTimeout(r, 600));
 
     // 1. Open Pine Editor if not already visible
     const openResult = await client.Runtime.evaluate({
@@ -177,33 +197,82 @@ export async function injectPineScript(client, scriptContent) {
       await new Promise(r => setTimeout(r, 1500));
     }
 
+    // 2.5 Overwrite guard: the active tab may hold one of the user's saved
+    //     scripts (e.g. "AI TA Levels v6"). Step 4 clicks Save, so injecting
+    //     into it would replace that script. Fail closed instead.
+    const targetTitles = scriptTitles(scriptContent).map(t => t.toLowerCase());
+    const guardResult = await client.Runtime.evaluate({
+      expression: `(function() {
+        ${FIND_EDITOR_JS}
+        if (!editor) return JSON.stringify({ activeSource: '', error: editorError });
+        return JSON.stringify({ activeSource: editor.getValue() });
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    const guard = JSON.parse(guardResult.result.value || '{}');
+    const activeTitles = scriptTitles(guard.activeSource || '');
+    const activeTitle = activeTitles[0];
+    if (activeTitle
+        && !REPLACEABLE_TITLES.includes(activeTitle.toLowerCase())
+        && !activeTitles.some(t => targetTitles.includes(t.toLowerCase()))
+        && !sameFamily(activeTitle, scriptTitles(scriptContent)[0])) {
+      return {
+        success: false,
+        error: `Active Pine tab holds a different script; refusing to overwrite '${activeTitle}'. Open a blank Pine tab and retry.`,
+      };
+    }
+
+    // 2.6 Clear old instances from the chart legend (write-once replace protocol).
+    //     Runs only after the overwrite guard passed, so a refused inject never
+    //     removes anything from the chart.
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var raw = ${safeContent};
+        var titleMatch = raw.match(/indicator\\s*\\(\\s*["']([^"']+)["']/i);
+        var shortMatch = raw.match(/shorttitle\\s*=\\s*["']([^"']+)["']/i);
+        var targetNames = [];
+        if (titleMatch && titleMatch[1]) targetNames.push(titleMatch[1].trim().toLowerCase());
+        if (shortMatch && shortMatch[1]) targetNames.push(shortMatch[1].trim().toLowerCase());
+        // Own family only (e.g. "ai thesis overlay" for "AI Thesis Overlay - APLD")
+        // plus the legacy "ai thesis" name. Other AI indicators such as
+        // "AI TA Levels v6" are left alone.
+        var family = ${JSON.stringify(((scriptTitles(scriptContent)[0] || '').split(' - ')[0] || '').trim().toLowerCase())};
+        if (family) targetNames.push(family);
+        targetNames.push('ai thesis');
+
+        var items = [...document.querySelectorAll('[data-name="legend-series-item"], [class*="item-"], [class*="legend-"]')];
+        items.forEach(function(item) {
+          if (!item.offsetParent) return;
+          var titleEl = item.querySelector('[class*="titleWrapper-"]') || item.querySelector('[class*="title-"]');
+          var text = (titleEl ? titleEl.textContent : item.textContent).trim().toLowerCase();
+          var isMatch = targetNames.some(function(n) { return text.includes(n); });
+          if (isMatch) {
+            item.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window }));
+            var btn = item.querySelector('button[aria-label="Remove"]') || 
+                      item.querySelector('[data-name="remove"]') ||
+                      item.querySelector('button[title="Remove"]');
+            if (btn) {
+              btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+              btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+              btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+            }
+          }
+        });
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 600));
+
     // 3. Inject via executeEdits — fires onDidChangeModelContent so TV recompiles.
     //    editor.focus() ensures the blank tab's editor is active before edits.
     const injectResult = await client.Runtime.evaluate({
       expression: `(function() {
         var script = ${safeContent};
-        var edEl = document.querySelector('textarea.inputarea') ||
-                   document.querySelector('[class*="editorWrapper-"]') ||
-                   document.querySelector('.pine-editor-monaco');
-        if (!edEl) return JSON.stringify({ success: false, error: 'Monaco input element not found' });
-
-        var el = edEl;
-        var fk = null;
-        for (var depth = 0; depth < 15; depth++) {
-          if (!el) break;
-          fk = Object.keys(el).find(function(k) { return k.startsWith('__reactFiber'); });
-          if (fk) break;
-          el = el.parentElement;
-        }
-        if (!fk) return JSON.stringify({ success: false, error: 'React fiber not found within 15 ancestors' });
-
+        ${FIND_EDITOR_JS}
+        if (!editor) return JSON.stringify({ success: false, error: editorError });
         try {
-          var fiber = el[fk].return;
-          var controller = fiber.memoizedState.memoizedState.current;
-          var editor = controller._editor;
-          if (!editor || typeof editor.getModel !== 'function') {
-            return JSON.stringify({ success: false, error: 'Monaco editor not found via fiber' });
-          }
           var model = editor.getModel();
           var fullRange = model.getFullModelRange();
           editor.focus();
@@ -216,6 +285,10 @@ export async function injectPineScript(client, scriptContent) {
       returnByValue: true,
       awaitPromise: false,
     });
+    const injectData = JSON.parse(injectResult.result.value || '{}');
+    if (!injectData.success) {
+      return { success: false, error: injectData.error || 'Pine inject failed' };
+    }
 
     // 4. Click Save in toolbar (ensures script is compiled and saved in user library)
     await client.Runtime.evaluate({
@@ -306,7 +379,30 @@ export async function injectPineScript(client, scriptContent) {
     });
     await new Promise(r => setTimeout(r, 600));
 
-    return { success: true };
+    // 8. Verify the indicator actually reached the chart. Clicking "Add to
+    //    chart" is fire-and-forget; without this check a compile error or a
+    //    missed button still reported success (DEBT-20260927-01).
+    let studyNames = [];
+    for (let attempt = 0; attempt < VERIFY_ATTEMPTS; attempt++) {
+      const verifyResult = await client.Runtime.evaluate({
+        expression: `(function() {
+          try {
+            return JSON.stringify({ studies: window.TradingViewApi.activeChart().getAllStudies() });
+          } catch (e) { return JSON.stringify({ studies: [], error: e.message }); }
+        })()`,
+        returnByValue: true,
+        awaitPromise: false,
+      });
+      studyNames = (JSON.parse(verifyResult.result.value || '{}').studies || []).map(st => st.name);
+      const match = studyNames.find(n => targetTitles.includes(String(n).trim().toLowerCase()));
+      if (match) return { success: true, verified: true, study: match };
+      await new Promise(r => setTimeout(r, VERIFY_INTERVAL_MS));
+    }
+    return {
+      success: false,
+      error: `Indicator '${scriptTitles(scriptContent)[0] || '(untitled)'}' not found on chart after injection`,
+      studies: studyNames,
+    };
   } catch (e) {
     return { success: false, error: e.message || 'Pine inject failed' };
   }

@@ -79,6 +79,12 @@ except FileNotFoundError as e:
 
 TV_PORT = int(os.environ.get("TV_CDP_PORT", "9222"))
 
+# Options for CLI commands that change chart/editor state (e.g. "pine inject":
+# edit, save, add to chart). Retrying re-applies the mutation and a cached
+# response would report a stale result as current, so both are off; the
+# command also verifies its result on the chart, which needs > 10s.
+MUTATING_CALL_OPTS = {"timeout": 60, "enable_retry": False, "enable_cache_fallback": False}
+
 # --- Task 5A-8: resilience layer imports -----------------------------------
 #
 # tv_cdp_health.py (investment_screener/backend/py_services/) holds the

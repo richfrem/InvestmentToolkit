@@ -100,13 +100,18 @@ if not ai:
     sys.exit(0)
 latest = max(ai, key=lambda p: p.get('savedAt',''))
 age = datetime.now(timezone.utc) - datetime.fromisoformat(latest['savedAt'].replace('Z','+00:00'))
-if age < timedelta(days=30):
+model = (latest.get('aiThesis',{}).get('model') or 'UNKNOWN')
+flagged = [f for f in ('GPT-5 mini','Gemini','Grok','Antigravity','UNKNOWN') if f.lower() in model.lower()]
+if flagged:
+    print(f'STALE (flagged model: {model}) — {age.days}d old — re-analyze')
+elif age < timedelta(days=30):
     print(f'CACHED — analyzed {age.days}d ago — fair value \${latest[\"aiThesis\"][\"fairValue\"]}')
 else:
     print(f'STALE — {age.days}d old — re-analyze')
 "
 ```
 - If output starts with `CACHED` → **STOP**. Report the cached fair value and action to the user. Offer to force-refresh if they explicitly ask.
+- A projection from a flagged model (GPT-5 mini, Gemini, Grok, Antigravity, UNKNOWN) is never `CACHED` — its assumptions are unvalidated per the Adversarial Objectivity Constraint, so it prints `STALE (flagged model: …)`.
 - If `NO_CACHE` → continue to Step 0.1.
 - If `STALE` → continue to Step 0.1 before Step 0.5.
 
@@ -448,6 +453,8 @@ Read this template, fill in the fields based on your analysis, and use the exact
 > **analyticsLog is mandatory** in schemaVersion 1.2+. Every field must be populated — no null strings. `dataQualityFlags` must be a non-empty array (at minimum note "No anomalies detected" if clean).
 
 ## Step 6: Persist Projection JSON
+> ⚠️ **Thesis text must survive the shell.** Never pass rationale text through double quotes or an unquoted heredoc — `$35.76` becomes `.76` (shell expands `$35`). Build payloads with a quoted heredoc (`<< 'EOF'`) or from Python/`--file`. `validate_projection.py` rejects stripped-currency artifacts (`~B`, ` .76`, `( PT)`).
+> Re-posting with the prior projection's `id` appends a new version (`MAX(version)+1`); it never replaces an earlier row (fixed 2026-09-28, DEBT-20260928-08).
 ```bash
 cat > temp/evaluations/{TICKER}_valuation_payload.json << 'EOF'
 <JSON_PAYLOAD>

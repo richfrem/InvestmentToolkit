@@ -42,6 +42,7 @@ DEFAULT_TAX_RATE = 0.21
 FALLBACK_BETA = 1.2
 FALLBACK_COST_OF_DEBT = 0.05
 FALLBACK_RISK_FREE_RATE = 0.04
+TNX_TIMES_TEN_THRESHOLD = 20.0  # ^TNX closes >= this are yield*10, below are percent
 MIN_REGRESSION_OBSERVATIONS = 30
 
 
@@ -115,16 +116,20 @@ def compute_cost_of_debt(
 def compute_risk_free_rate() -> dict:
     """Fetch the 10Y Treasury yield via market_data.get_prices(["^TNX"]).
 
-    Yahoo Finance quotes ^TNX as the yield * 10 (e.g. close 42.79 = 4.279%
-    yield = 0.04279 as a decimal fraction). Falls back to a fixed 4.0%
-    estimate if no fresh quote is available.
+    Yahoo Finance has quoted ^TNX both as the yield * 10 (e.g. close 42.79 =
+    4.279%) and as the yield in percent (e.g. close 5.23 = 5.23%, observed
+    2026-09-28). A 10Y yield of 20% or more is implausible, so closes at or
+    above TNX_TIMES_TEN_THRESHOLD are read as yield * 10 and anything lower
+    as percent. Falls back to a fixed 4.0% estimate if no fresh quote is
+    available.
     """
     prices = get_prices(["^TNX"], period="5d")
     rows = prices.get("^TNX", {}).get("data", [])
     if not rows:
         return {"riskFreeRate": FALLBACK_RISK_FREE_RATE, "usedFallback": True}
     latest_close = rows[-1]["close"]
-    return {"riskFreeRate": round(latest_close / 1000, 5), "usedFallback": False}
+    divisor = 1000 if latest_close >= TNX_TIMES_TEN_THRESHOLD else 100
+    return {"riskFreeRate": round(latest_close / divisor, 5), "usedFallback": False}
 
 
 def compute_wacc(

@@ -62,8 +62,9 @@
  *   without a collision. `upsertProjection` avoids ever silently overwriting a
  *   different `id`'s row: a brand-new `id` for a ticker that already has other rows is
  *   assigned `version = MAX(existing versions for that ticker) + 1`, not a reset to 1.
- *   The exact "same `id` -> existing.version + 1, with a conflict check" rule is
- *   preserved unchanged for the common case (same `id` being re-saved).
+ *   A re-save of the same `id` keeps the stale-version conflict check against that
+ *   id's latest row, but also takes `MAX(version) + 1` for the ticker, so it can
+ *   never land on (and ON CONFLICT-overwrite) an existing row of any identity.
  *
  * Key Functions (Index):
  *   - findByTicker(ticker) - Current-state-per-identity rows for one ticker (MAX version
@@ -400,27 +401,29 @@ export class ProjectionRepository {
         const ticker = validated.ticker;
         const investmentId = this.resolveInvestmentId(ticker);
 
+        // Latest row for this id (ORDER BY is required: an id accumulates one row
+        // per save, and an unordered lookup returned an older row).
         const existing = this.db
-            .prepare('SELECT * FROM projection_version WHERE investment_id = ? AND legacy_id = ?')
+            .prepare('SELECT * FROM projection_version WHERE investment_id = ? AND legacy_id = ? ORDER BY version DESC LIMIT 1')
             .get(investmentId, validated.id) as ProjectionVersionRow | undefined;
 
         const final: any = { ...validated };
 
-        let newVersion: number;
         if (existing) {
             if (existing.version > validated.version) {
                 throw new Error(
                     `Conflict: Server has version ${existing.version}, incoming is ${validated.version}`
                 );
             }
-            newVersion = existing.version + 1;
             final.updatedAt = new Date().toISOString();
-        } else {
-            const maxRow = this.db
-                .prepare('SELECT MAX(version) as maxVersion FROM projection_version WHERE investment_id = ?')
-                .get(investmentId) as { maxVersion: number | null };
-            newVersion = maxRow.maxVersion ? maxRow.maxVersion + 1 : 1;
         }
+        // Always the next free slot for the ticker, never existing.version + 1:
+        // another identity may already hold that slot, and ON CONFLICT DO UPDATE
+        // below would silently replace it (APLD 2026-09-22 row, lost 2026-09-28).
+        const maxRow = this.db
+            .prepare('SELECT MAX(version) as maxVersion FROM projection_version WHERE investment_id = ?')
+            .get(investmentId) as { maxVersion: number | null };
+        const newVersion = maxRow.maxVersion ? maxRow.maxVersion + 1 : 1;
         final.version = newVersion;
 
         const projectionId = `${investmentId}:${newVersion}`;

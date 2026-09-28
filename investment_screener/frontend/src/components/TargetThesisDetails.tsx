@@ -39,6 +39,17 @@ interface TargetHolding {
     priceLevels?: PriceLevels;
 }
 
+// Tiers with status 'inactive' or 'suppressed' (bear-derived levels >50% below
+// price, see update_price_levels.py) are not actionable and are not displayed.
+const HIDDEN_STATUSES = new Set(['inactive', 'suppressed']);
+const isVisible = (t?: { status?: string } | null) => !!t && !HIDDEN_STATUSES.has(t.status ?? 'active');
+
+export const visibleTiers = (priceLevels?: PriceLevels) => ({
+    buyTiers: priceLevels?.buyTiers?.filter(isVisible) || [],
+    sellTiers: priceLevels?.sellTiers?.filter(isVisible) || [],
+    stopLoss: isVisible(priceLevels?.stopLoss) ? priceLevels!.stopLoss! : null,
+});
+
 interface TargetThesisDetailsProps {
     holding: TargetHolding;
     currentPrice?: number;
@@ -46,9 +57,7 @@ interface TargetThesisDetailsProps {
 
 export const TargetThesisDetails: React.FC<TargetThesisDetailsProps> = ({ holding, currentPrice }) => {
     const { targetWeight, conviction, role, agentRationale, priceLevels } = holding;
-    const buyTiers = priceLevels?.buyTiers?.filter(t => t.status !== 'inactive') || [];
-    const sellTiers = priceLevels?.sellTiers?.filter(t => t.status !== 'inactive') || [];
-    const stopLoss = priceLevels?.stopLoss?.status !== 'inactive' ? priceLevels?.stopLoss : null;
+    const { buyTiers, sellTiers, stopLoss } = visibleTiers(priceLevels);
 
     const getRoleLabel = (r: string) => {
         return r.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');

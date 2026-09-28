@@ -186,3 +186,72 @@ def test_replay_resolves_ticker_to_instrument_id(tmp_path):
 
     expected_instrument_id = resolve_instrument(conn, "PLTR")
     assert instrument_id == expected_instrument_id
+
+
+def _ledger_event(event_id, seq, ticker="APLD", title="APLD research update"):
+    return {
+        "event_id": event_id, "event_sequence": seq, "ticker": ticker,
+        "event_type": "RESEARCH_IMPORT", "effective_at": "2026-09-28",
+        "ingested_at": "2026-09-28T14:31:34Z", "status": "ACTIVE",
+        "title": title, "body_markdown": "body", "content_hash": f"hash_{event_id}",
+    }
+
+
+def test_replay_inserts_new_ledger_event_despite_stale_higher_checkpoint(tmp_path):
+    # Reproduces 2026-09-28: observations.jsonl restarted numbering at 1 while
+    # the 'global' checkpoint sat at 427 from earlier imports, so every new
+    # ledger event (APLD v8 research at seq 347) was silently skipped.
+    jsonl_file = tmp_path / "observations.jsonl"
+    conn = initialize_db(str(tmp_path / "intelligence.sqlite"))
+    conn.execute(
+        "INSERT INTO ledger_checkpoint (checkpoint_id, last_event_sequence, last_event_id, "
+        "schema_version, processed_at, ledger_file_hash) VALUES ('global', 427, 'evt_old', 1, 'x', 'x');"
+    )
+    conn.commit()
+    jsonl_file.write_text(json.dumps(_ledger_event("evt_7ee0d09e3900", 347)) + "\n")
+
+    result = replay_events_to_db(str(jsonl_file), conn)
+
+    assert result["processed"] == 1
+    row = conn.execute("SELECT title FROM intelligence_event WHERE event_id = 'evt_7ee0d09e3900';").fetchone()
+    assert row == ("APLD research update",)
+
+
+def test_replay_reassigns_sequence_when_ledger_sequence_is_taken_by_direct_writer(tmp_path):
+    # record_intelligence_event.py writes straight to the read model with
+    # MAX(event_sequence)+1, so a ledger event can arrive carrying a sequence
+    # number another row already owns (UNIQUE -> INSERT OR IGNORE dropped it).
+    jsonl_file = tmp_path / "observations.jsonl"
+    conn = initialize_db(str(tmp_path / "intelligence.sqlite"))
+    conn.execute(
+        "INSERT INTO intelligence_event (event_id, event_sequence, event_type, effective_at, "
+        "ingested_at, status, title, body_markdown, content_hash) VALUES "
+        "('event-direct', 5, 'NEWS_SWEEP', '2026-09-22', '2026-09-22', 'ACTIVE', 'direct', 'b', 'h');"
+    )
+    conn.commit()
+    jsonl_file.write_text(json.dumps(_ledger_event("evt_ledger", 5)) + "\n")
+
+    result = replay_events_to_db(str(jsonl_file), conn)
+
+    assert result["processed"] == 1 and result["skipped"] == []
+    seqs = dict(conn.execute("SELECT event_id, event_sequence FROM intelligence_event;").fetchall())
+    assert seqs["event-direct"] == 5
+    assert seqs["evt_ledger"] == 6
+
+
+def test_replay_rerun_after_reassignment_does_not_duplicate(tmp_path):
+    jsonl_file = tmp_path / "observations.jsonl"
+    conn = initialize_db(str(tmp_path / "intelligence.sqlite"))
+    conn.execute(
+        "INSERT INTO intelligence_event (event_id, event_sequence, event_type, effective_at, "
+        "ingested_at, status, title, body_markdown, content_hash) VALUES "
+        "('event-direct', 1, 'NEWS_SWEEP', '2026-09-22', '2026-09-22', 'ACTIVE', 'direct', 'b', 'h');"
+    )
+    conn.commit()
+    jsonl_file.write_text(json.dumps(_ledger_event("evt_ledger", 1)) + "\n")
+
+    replay_events_to_db(str(jsonl_file), conn)
+    second = replay_events_to_db(str(jsonl_file), conn)
+
+    assert second["processed"] == 0
+    assert conn.execute("SELECT COUNT(*) FROM intelligence_event;").fetchone()[0] == 2

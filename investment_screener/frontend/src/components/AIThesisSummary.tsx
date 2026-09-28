@@ -21,6 +21,7 @@ import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { BrainCircuit, FolderOpen, X, AlertTriangle, Loader2, Sparkles, Check, Clock } from 'lucide-react';
 import { getActionBadgeClass } from '../utils/actionColors';
+import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
 
 interface AIThesisSummaryProps {
     aiResult: any;
@@ -41,7 +42,7 @@ export function AIThesisSummary({ aiResult, isAnalyzing, aiError, symbol, onView
 
     const handleCopySkill = () => {
         if (!ticker) return;
-        navigator.clipboard.writeText(`/guide-valuation ${ticker}`);
+        navigator.clipboard.writeText(newReviewCommand(ticker));
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -80,11 +81,11 @@ export function AIThesisSummary({ aiResult, isAnalyzing, aiError, symbol, onView
                         {ticker && (
                             <button
                                 onClick={handleCopySkill}
-                                title={`Copy command: /guide-valuation ${ticker}`}
+                                title={`Copy command: ${newReviewCommand(ticker)}`}
                                 className="text-[11px] font-semibold text-indigo-300 bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-500/40 px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
                             >
                                 {copied ? <Check size={13} className="text-emerald-400" /> : <Sparkles size={13} className="text-indigo-400" />}
-                                {copied ? 'Copied /guide-valuation!' : 'Update via /guide-valuation'}
+                                {copied ? `Copied ${REVIEW_COMMAND}!` : `Update via ${REVIEW_COMMAND}`}
                             </button>
                         )}
                         {onClose && (

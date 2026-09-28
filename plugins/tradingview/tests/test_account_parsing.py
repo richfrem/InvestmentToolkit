@@ -123,7 +123,11 @@ def test_select_account_robust_matching():
     func_idx = content.find("async function selectAccount")
     assert func_idx != -1, "Could not find selectAccount function"
     
-    func_body = content[func_idx:func_idx + 1200]
+    # Read to the function's closing brace: a fixed 1200-char window broke when
+    # the coding-conventions pass (3aba5b1f) added a longer doc comment.
+    func_end = content.find("\n}\n", func_idx)
+    assert func_end != -1, "Could not find end of selectAccount function"
+    func_body = content[func_idx:func_end]
     assert "s.className === ''" in func_body or 's.className === ""' in func_body, \
         "selectAccount should check for empty className on spans"
     assert "MouseEvent" in func_body, \

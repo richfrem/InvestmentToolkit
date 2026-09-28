@@ -21,6 +21,7 @@ import { SmartText } from './SmartText';
 import { HelpTrigger } from './HelpModal';
 import { DeepDiveModal } from './DeepDiveModal';
 import { getActionBadgeClass } from '../utils/actionColors';
+import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
 
 interface AIAnalysisModalProps {
     symbol: string;
@@ -103,12 +104,12 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                         {symbol && (
                             <button
                                 onClick={() => {
-                                    navigator.clipboard.writeText(`/guide-valuation ${symbol}`);
+                                    navigator.clipboard.writeText(newReviewCommand(symbol));
                                 }}
-                                title={`Copy: /guide-valuation ${symbol}`}
+                                title={`Copy: ${newReviewCommand(symbol)}`}
                                 className="text-xs font-bold text-indigo-300 bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-500/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
                             >
-                                <Sparkles size={13} className="text-indigo-400" /> New Review via /guide-valuation
+                                <Sparkles size={13} className="text-indigo-400" /> New Review via {REVIEW_COMMAND}
                             </button>
                         )}
                         <button

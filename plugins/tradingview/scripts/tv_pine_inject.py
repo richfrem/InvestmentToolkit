@@ -20,7 +20,7 @@ import json
 
 # Resolve imports even when executed via symlink from a skill folder
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from tv_client import tv_call, validate_cdp_installation
+from tv_client import tv_call, validate_cdp_installation, MUTATING_CALL_OPTS
 
 
 def _preflight_check(content: str) -> str | None:
@@ -76,7 +76,7 @@ def main():
         sys.exit(1)
 
     try:
-        result = tv_call("pine", "inject", "--content", script_content)
+        result = tv_call("pine", "inject", "--content", script_content, **MUTATING_CALL_OPTS)
     except Exception as e:
         print(json.dumps({"success": False, "error": str(e)}))
         sys.exit(1)
