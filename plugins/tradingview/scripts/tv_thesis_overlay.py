@@ -6,7 +6,8 @@ tv_thesis_overlay.py (Python Utility)
 Purpose:
     Generate and inject Pine Script Thesis Overlays directly into TradingView Desktop.
     Reads fundamental valuation price levels (Fair Value from projection table,
-    Target Entry and Stop Loss from price_level_tier, Thesis Breaker status from investment table)
+    Target Entry and Stop Loss from price_level_tier, Thesis Breaker status from investment table,
+    DCF Bear/Base/Bull scenario prices from projection_scenario for the latest projection version)
     from domain_model.sqlite, switches the active TradingView chart to the target ticker,
     validates the active chart symbol (Pitfall #7), lints the generated Pine Script v6 (Pitfall #26),
     and injects the indicator via Chrome DevTools Protocol (CDP).
@@ -21,7 +22,7 @@ Usage Examples:
     python3 plugins/tradingview/scripts/tv_thesis_overlay.py --ticker NVDA
 
 Key Functions:
-    - resolve_ticker_levels()      — Joins investment, projection, and price_level_tier rows
+    - resolve_ticker_levels()      — Joins investment, projection, projection_scenario (bear/base/bull) and price_level_tier rows
     - generate_pine_script_content() — Compiles valid Pine Script v6 overlay code with badges
     - switch_chart_symbol()        — Ensures active TradingView chart symbol matches target
     - apply_overlay()              — Main execution pipeline (Resolve -> Lint -> Switch -> Inject)
@@ -64,7 +65,8 @@ def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[s
         db_path: Path to domain_model.sqlite database.
 
     Returns:
-        Dict with keys: symbol, name, fair_value, target_entry, stop_loss, breaker_status, action.
+        Dict with keys: symbol, name, fair_value, target_entry, stop_loss, breaker_status, action,
+        bear_price, base_price, bull_price (DCF scenario prices from the latest projection version).
     """
     norm_symbol = normalize_ticker(symbol)
     result = {
@@ -75,6 +77,9 @@ def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[s
         "stop_loss": None,
         "breaker_status": None,
         "action": None,
+        "bear_price": None,
+        "base_price": None,
+        "bull_price": None,
     }
 
     if not os.path.exists(db_path):
@@ -103,7 +108,23 @@ def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[s
             result["fair_value"] = proj["fair_value"]
             result["action"] = proj["action"]
 
-        # 3. Price level tier table (Target Entry and Stop Loss)
+        # 3. DCF scenario prices (bear/base/bull) from the latest projection version
+        scenarios = conn.execute(
+            """
+            SELECT ps.scenario_name, ps.scenario_price
+            FROM projection_scenario ps
+            JOIN projection_version pv ON ps.projection_id = pv.projection_id
+            WHERE pv.investment_id = ?
+              AND pv.version = (SELECT MAX(version) FROM projection_version WHERE investment_id = ?);
+            """,
+            (investment_id, investment_id),
+        ).fetchall()
+        for sc in scenarios:
+            key = f"{(sc['scenario_name'] or '').strip().lower()}_price"
+            if key in ("bear_price", "base_price", "bull_price"):
+                result[key] = sc["scenario_price"]
+
+        # 4. Price level tier table (Target Entry and Stop Loss)
         tiers = conn.execute(
             """
             SELECT plt.tier_kind, plt.price
@@ -142,6 +163,9 @@ def generate_pine_script_content(levels: Dict[str, Any]) -> str:
     fv = levels.get("fair_value")
     entry = levels.get("target_entry")
     stop = levels.get("stop_loss")
+    bear = levels.get("bear_price")
+    base = levels.get("base_price")
+    bull = levels.get("bull_price")
     action = levels.get("action") or "MONITOR"
     breaker = levels.get("breaker_status") or "OK"
 
@@ -153,6 +177,9 @@ def generate_pine_script_content(levels: Dict[str, Any]) -> str:
         f"var float fairValue = input.float({fv if fv is not None else 0.0}, title='Fair Value', inline='fv')",
         f"var float targetEntry = input.float({entry if entry is not None else 0.0}, title='Target Entry (Buy Zone)', inline='entry')",
         f"var float stopLoss = input.float({stop if stop is not None else 0.0}, title='Stop Loss / Breaker', inline='stop')",
+        f"var float bearPrice = input.float({bear if bear is not None else 0.0}, title='DCF Bear Case', inline='bear')",
+        f"var float basePrice = input.float({base if base is not None else 0.0}, title='DCF Base Case', inline='base')",
+        f"var float bullPrice = input.float({bull if bull is not None else 0.0}, title='DCF Bull Case', inline='bull')",
         "",
         "// === Persistent Labeled Lines & Annotations ===",
         "var line fvLine = na",
@@ -161,6 +188,12 @@ def generate_pine_script_content(levels: Dict[str, Any]) -> str:
         "var label entryLabel = na",
         "var line stopLine = na",
         "var label stopLabel = na",
+        "var line bearLine = na",
+        "var label bearLabel = na",
+        "var line baseLine = na",
+        "var label baseLabel = na",
+        "var line bullLine = na",
+        "var label bullLabel = na",
         "",
         "if barstate.islast",
         "    if not na(fvLine)",
@@ -183,6 +216,28 @@ def generate_pine_script_content(levels: Dict[str, Any]) -> str:
         "    if stopLoss > 0",
         "        stopLine := line.new(bar_index - 50, stopLoss, bar_index + 10, stopLoss, color=color.rgb(239, 83, 80), width=2, style=line.style_dashed, extend=extend.right)",
         "        stopLabel := label.new(bar_index + 10, stopLoss, '🛑 Stop / Breaker: $' + str.tostring(stopLoss, '#.##'), color=color.rgb(239, 83, 80), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    // DCF scenario lines (dotted): bear red, base blue, bull green",
+        "    if not na(bearLine)",
+        "        line.delete(bearLine)",
+        "        label.delete(bearLabel)",
+        "    if bearPrice > 0",
+        "        bearLine := line.new(bar_index - 50, bearPrice, bar_index + 10, bearPrice, color=color.rgb(244, 67, 54), width=1, style=line.style_dotted, extend=extend.right)",
+        "        bearLabel := label.new(bar_index + 10, bearPrice, '🐻 DCF Bear: $' + str.tostring(bearPrice, '#.##'), color=color.rgb(244, 67, 54), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    if not na(baseLine)",
+        "        line.delete(baseLine)",
+        "        label.delete(baseLabel)",
+        "    if basePrice > 0",
+        "        baseLine := line.new(bar_index - 50, basePrice, bar_index + 10, basePrice, color=color.rgb(33, 150, 243), width=1, style=line.style_dotted, extend=extend.right)",
+        "        baseLabel := label.new(bar_index + 10, basePrice, '📘 DCF Base: $' + str.tostring(basePrice, '#.##'), color=color.rgb(33, 150, 243), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    if not na(bullLine)",
+        "        line.delete(bullLine)",
+        "        label.delete(bullLabel)",
+        "    if bullPrice > 0",
+        "        bullLine := line.new(bar_index - 50, bullPrice, bar_index + 10, bullPrice, color=color.rgb(76, 175, 80), width=1, style=line.style_dotted, extend=extend.right)",
+        "        bullLabel := label.new(bar_index + 10, bullPrice, '🐂 DCF Bull: $' + str.tostring(bullPrice, '#.##'), color=color.rgb(76, 175, 80), textcolor=color.white, style=label.style_label_left, size=size.small)",
         "",
         "// === Alert Conditions ===",
         f"alertcondition(ta.crossover(close, targetEntry), title='Alert: Crossed into Buy Zone', message='{symbol} has entered the target Buy Pocket at $' + str.tostring(close, '#.##'))",

@@ -1,6 +1,6 @@
 ---
 name: tv-thesis-overlay
-description: "Generates a dynamic Pine Script indicator containing Fair Value, Target Entry, and Breaker levels from SQLite and injects it onto the active TradingView chart."
+description: "Generates a dynamic Pine Script indicator containing Fair Value, Target Entry, Breaker, and DCF Bear/Base/Bull scenario levels from SQLite and injects it onto the active TradingView chart."
 triggers:
   - "/tv-thesis-overlay"
   - "inject thesis overlay"
@@ -9,7 +9,9 @@ triggers:
 
 # /tv-thesis-overlay — AI Thesis Chart Overlay
 
-Injects fundamental valuation levels (Fair Value from projections, Target Entry from price levels, and Breaker status) from `domain_model.sqlite` onto the active TradingView chart.
+Injects fundamental valuation levels (Fair Value from projections, Target Entry from price levels, Breaker status, and dotted DCF Bear/Base/Bull scenario lines from the latest projection version) from `domain_model.sqlite` onto the active TradingView chart.
+
+**Keeping lines current:** each run removes the previous "AI Thesis" overlay and injects a fresh one, so re-run this skill for a ticker whenever a workflow writes a new projection version for it (for example after `update-stock-analysis`).
 
 ## Flow
 1. Resolves ticker's fundamental levels across SQLite tables.
