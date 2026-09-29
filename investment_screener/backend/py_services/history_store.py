@@ -39,12 +39,14 @@ import csv
 import logging
 from datetime import date, timedelta, datetime
 
+from price_changes import period_changes
+
 import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
-HISTORY_DAYS = 365  # rolling window
+HISTORY_DAYS = 380  # rolling window: 1 year + slack so the 1Y lookback (calendar-based) always has a close
 
 
 class HistoricalPriceStore:
@@ -59,12 +61,16 @@ class HistoricalPriceStore:
 
     def get_or_update(self, symbol: str) -> list[dict]:
         """
-        Return a sorted list of {date, close} dicts for the past year.
+        Return a sorted list of {date, close} dicts covering HISTORY_DAYS.
         Fetches full history on first call; incremental on subsequent calls.
         """
         rows = self._load(symbol)
 
-        if not rows:
+        # A cache that doesn't reach the start of the window (e.g. written under
+        # an older, shorter HISTORY_DAYS) can't be fixed incrementally, which only
+        # appends newer days — refetch it in full.
+        window_start = (date.today() - timedelta(days=HISTORY_DAYS - 7)).isoformat()
+        if not rows or rows[0]["date"] > window_start:
             rows = self._fetch_full(symbol)
         else:
             rows = self._fetch_incremental(symbol, rows)
@@ -75,37 +81,21 @@ class HistoricalPriceStore:
 
     def calc_changes(self, symbol: str, current_price: float) -> dict:
         """
-        Derive % change for common periods from the stored history.
-        Returns a dict with keys: change_1w, change_1m, change_ytd, change_1y.
-        Values are floats (percent) or None if not enough history.
+        % change for the heatmap / table periods, via the shared
+        price_changes.period_changes() so every surface uses one definition.
+        Returns change_1w, change_1m, change_3m, change_ytd, change_1y
+        (percent, 2 dp) or None where the stored history doesn't reach.
         """
         rows = self.get_or_update(symbol)
         if not rows or current_price <= 0:
             return self._empty_changes()
-
-        closes = rows  # already sorted oldest → newest
-
-        def pct(past_close: float) -> float | None:
-            if past_close and past_close > 0:
-                return round(((current_price - past_close) / past_close) * 100, 2)
-            return None
-
-        # Trading-day offsets (approximate)
-        n = len(closes)
-        change_1w  = pct(closes[-6]["close"])  if n >= 6   else None
-        change_1m  = pct(closes[-22]["close"]) if n >= 22  else None
-        change_1y  = pct(closes[0]["close"])   if n >= 200 else None  # ~252 days, accept 200 min
-
-        # YTD: first close of current calendar year
-        current_year = date.today().year
-        ytd_rows = [r for r in closes if r["date"].startswith(str(current_year))]
-        change_ytd = pct(ytd_rows[0]["close"]) if ytd_rows else None
-
+        changes = period_changes(
+            [r["date"] for r in rows], [r["close"] for r in rows],
+            current_price=current_price, as_of=date.today(),
+        )
         return {
-            "change_1w":  change_1w,
-            "change_1m":  change_1m,
-            "change_ytd": change_ytd,
-            "change_1y":  change_1y,
+            f"change_{p}": (round(changes[p], 2) if changes[p] is not None else None)
+            for p in ("1w", "1m", "3m", "ytd", "1y")
         }
 
     # ------------------------------------------------------------------
@@ -198,4 +188,4 @@ class HistoricalPriceStore:
 
     @staticmethod
     def _empty_changes() -> dict:
-        return {"change_1w": None, "change_1m": None, "change_ytd": None, "change_1y": None}
+        return {"change_1w": None, "change_1m": None, "change_3m": None, "change_ytd": None, "change_1y": None}

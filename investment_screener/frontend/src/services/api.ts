@@ -38,15 +38,8 @@ export interface StockData {
         revenue_growth?: number;
         profit_margin?: number;
     };
-    performance?: {
-        "1d": number;
-        "1w": number;
-        "1m": number;
-        "3m": number;
-        "ytd": number;
-        "1y": number;
-        "5y": number;
-    };
+    /** % change per period from the shared price_changes calculation; null when history doesn't reach. */
+    performance?: Record<'1d' | '1w' | '1m' | '3m' | 'ytd' | '1y' | '5y', number | null>;
     expert_metrics: {
         rule_of_40: {
             score: number;
@@ -163,6 +156,7 @@ export interface PortfolioPerformance {
     '1d': PeriodPerformance | null;
     '1w': PeriodPerformance | null;
     '1m': PeriodPerformance | null;
+    '3m': PeriodPerformance | null;
 }
 
 export const fetchPortfolioPerformance = async (): Promise<PortfolioPerformance> => {

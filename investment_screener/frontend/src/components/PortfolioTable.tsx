@@ -23,6 +23,7 @@ import { PriceSourceBadge } from './PriceSourceBadge';
 import { TradeButtons } from './TradeButtons';
 import { TradeLogModal } from './TradeLogModal';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgDaily, sortByColumn } from '../utils/formatters';
+import { PORTFOLIO_PERIODS } from '../utils/priceChangePeriods';
 import { usePrivacy } from '../context/PrivacyContext';
 
 function computeSuggestedShares(currentPct: number | null, targetPct: number | null, price: number | null, totalValue: number): number {
@@ -49,6 +50,7 @@ interface StockRow {
     change_1d: number | null;
     change_1w: number | null;
     change_1m: number | null;
+    change_3m: number | null;
     change_ytd: number | null;
     change_1y: number | null;
     change_overall: number | null;
@@ -87,6 +89,8 @@ interface ColDef {
     label: string;
     always?: boolean;
     isChange?: boolean;
+    /** Period % change column: colour with the period-scaled daily ladder. */
+    changeScale?: number;
     defaultOn?: boolean;
     align?: 'left' | 'right';
     format: (v: number | string | null | undefined, row?: StockRow) => string;
@@ -121,11 +125,11 @@ const COLUMNS: ColDef[] = [
     { id: 'bear',           label: 'Bear',       defaultOn: false, align: 'right', format: fmtDollar },
     { id: 'base',           label: 'Base',       defaultOn: false, align: 'right', format: fmtDollar },
     { id: 'bull',           label: 'Bull',       defaultOn: false, align: 'right', format: fmtDollar },
-    { id: 'change_1d',      label: '1D %',       isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_1w',      label: '1W %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
-    { id: 'change_1m',      label: '1M %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
-    { id: 'change_ytd',     label: 'YTD %',      isChange: true, defaultOn: false, align: 'right', format: fmtPct },
-    { id: 'change_1y',      label: '1Y %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    // Period % change columns come from the shared list (utils/priceChangePeriods).
+    ...PORTFOLIO_PERIODS.map((p): ColDef => ({
+        id: p.field as keyof StockRow, label: `${p.label} %`, isChange: true, changeScale: p.scale,
+        defaultOn: p.key === '1d', align: 'right', format: fmtPct,
+    })),
     { id: 'change_overall', label: 'Overall %',  isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
     { id: 'sector',         label: 'Sector',     defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
     { id: 'shares',         label: 'Shares',     defaultOn: false, align: 'right', format: v => safeNum(v) != null ? safeNum(v)!.toLocaleString() : '—' },
@@ -138,9 +142,9 @@ const COLUMNS: ColDef[] = [
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
+    ...Object.fromEntries(PORTFOLIO_PERIODS.map(p => [p.field, 72])),
     symbol: 70, name: 170, currentPct: 90, recommendedPct: 85, earnings_date: 110, subStrategyId: 130, sector: 115, shares: 60, currentPrice: 72,
-    book_price: 72, change_1d: 65, change_1w: 65, change_1m: 65,
-    change_ytd: 65, change_1y: 65, change_overall: 80,
+    book_price: 72, change_overall: 80,
     total_book: 80, total_market: 80,
     action: 115, fairValue: 95, gainLoss: 85, upside: 85, ruleOf40: 70, growth: 80,
     model: 130, base: 80, bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90,
@@ -623,7 +627,7 @@ export default function PortfolioTable() {
                                             <td
                                                 key={col.id}
                                                 className={`px-3 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'}`}
-                                                style={col.isChange ? { backgroundColor: changeBg(numVal) } : isPctCol ? { backgroundColor: pctBg } : undefined}
+                                                style={col.isChange ? { backgroundColor: changeBg(numVal, col.changeScale) } : isPctCol ? { backgroundColor: pctBg } : undefined}
                                             >
                                                 {col.id === 'symbol' ? (
                                                      <div className="flex items-center gap-1.5">

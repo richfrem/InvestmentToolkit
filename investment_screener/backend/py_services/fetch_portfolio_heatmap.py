@@ -23,6 +23,7 @@ Key Functions (Index):
     - prefetch_info()
     - prefetch_history()
     - _warm()
+    - resolve_sector() - override > stored (unless Unknown) > Yahoo
     - fetch_portfolio_data()
     - main()
 
@@ -200,6 +201,39 @@ def prefetch_history(symbols: list[str], history: HistoricalPriceStore, max_work
         list(pool.map(_warm, symbols))
 
 
+def _known(value: str | None) -> str | None:
+    """Treat empty and the placeholder "Unknown" as missing."""
+    return value if value and value != "Unknown" else None
+
+
+# Sector/industry precedence: curated SECTOR_OVERRIDES first (the single place to
+# correct a classification), then the stored value unless it is "Unknown", then
+# Yahoo. Stored values come from earlier refreshes of this same function, so the
+# old order (stored first) made bad persisted values permanent.
+def resolve_sector(sym: str, norm_sym: str, item_sector: str | None,
+                   item_industry: str | None, info: dict) -> tuple[str, str]:
+    """Return (sector, industry) for a holding.
+
+    Args:
+        sym: Symbol as held (e.g. "PSU-U.TO").
+        norm_sym: Normalized symbol used for data lookups.
+        item_sector: Sector stored in domain_model.sqlite (may be "Unknown"/None).
+        item_industry: Industry stored in domain_model.sqlite.
+        info: yfinance info dict (may be empty).
+
+    Returns:
+        (sector, industry), "Unknown" where nothing is known.
+    """
+    override = SECTOR_OVERRIDES.get(sym.upper()) or SECTOR_OVERRIDES.get(norm_sym.upper())
+    yahoo_sector, yahoo_industry = _known(info.get("sector")), _known(info.get("industry"))
+    if override:
+        return (override.get("sector") or yahoo_sector or "Unknown",
+                override.get("industry") or yahoo_industry or "Unknown")
+    sector = _known(item_sector) or yahoo_sector or "Unknown"
+    industry = (_known(item_industry) if _known(item_sector) else None) or yahoo_industry or "Unknown"
+    return sector, industry
+
+
 def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
     """Fetch heatmap data for portfolio items with shares.
 
@@ -271,7 +305,8 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                 industry = "CASH"
                 current_price = 1.0
                 change_pct = 0.0
-                hist_changes: dict = {}
+                # Cash doesn't move: 0% for every heatmap period, not "no data".
+                hist_changes: dict = {k: 0.0 for k in ("change_1w", "change_1m", "change_3m", "change_ytd", "change_1y")}
                 book_price = 1.0
             else:
                 norm_sym = normalize_ticker(sym)
@@ -279,24 +314,8 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                 if "_error" in info:
                     raise RuntimeError(info["_error"])
 
-                yahoo_sector = info.get("sector", "Unknown")
-                yahoo_industry = info.get("industry", "Unknown")
                 name = info.get("shortName", sym)
-
-                if item_sector:
-                    sector = item_sector
-                    industry = item_industry or yahoo_industry
-                elif sym.upper() in SECTOR_OVERRIDES:
-                    override = SECTOR_OVERRIDES[sym.upper()]
-                    sector = override.get("sector", yahoo_sector)
-                    industry = override.get("industry", yahoo_industry)
-                elif norm_sym.upper() in SECTOR_OVERRIDES:
-                    override = SECTOR_OVERRIDES[norm_sym.upper()]
-                    sector = override.get("sector", yahoo_sector)
-                    industry = override.get("industry", yahoo_industry)
-                else:
-                    sector = yahoo_sector
-                    industry = yahoo_industry
+                sector, industry = resolve_sector(sym, norm_sym, item_sector, item_industry, info)
 
                 # Price priority: TradingView live → yfinance fast_info → post/pre-market → current/regular
                 yf_price = (info.get("_fastLastPrice")
@@ -348,6 +367,7 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                 "change_1d": round(change_pct, 2),
                 "change_1w": hist_changes.get("change_1w"),
                 "change_1m": hist_changes.get("change_1m"),
+                "change_3m": hist_changes.get("change_3m"),
                 "change_ytd": hist_changes.get("change_ytd"),
                 "change_1y": hist_changes.get("change_1y"),
                 "change_overall": change_overall,

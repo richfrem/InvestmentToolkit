@@ -13,7 +13,7 @@
  *
  * Key Functions:
  *     - shortLabel() - Maps long IDs/names to display labels
- *     - color() - Retrieves theme-consistent colors from predefined maps
+ *     - slice colours: utils/themeColors.assignCategoryColors (shared, distinct per chart)
  *     - fmtCAD() - Formats currency with CA$ prefix
  *     - groupBySector() - Aggregates holdings by industry sector
  *     - groupBySubStrategy() - Aggregates holdings by sub-strategy tags
@@ -23,10 +23,9 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import type { StrategyAllocationItem, StrategyHolding } from '../services/api';
-import { PILLAR_COLORS, SECTOR_COLORS, SUB_STRATEGY_COLORS } from '../utils/themeColors';
+import { assignCategoryColors } from '../utils/themeColors';
 import { usePrivacy } from '../context/PrivacyContext';
 
-const FALLBACK = '#6b7280';
 
 const PILLAR_SHORT: Record<string, string> = {
     compute:   'Compute',
@@ -73,11 +72,6 @@ function shortLabel(id: string, name: string, mode: GroupBy): string {
     return name.split(' ').slice(0, 2).join(' ');
 }
 
-function color(id: string, mode: GroupBy): string {
-    if (mode === 'pillar') return PILLAR_COLORS[id] ?? FALLBACK;
-    if (mode === 'sub-strategy') return SUB_STRATEGY_COLORS[id] ?? FALLBACK;
-    return SECTOR_COLORS[id] ?? FALLBACK;
-}
 
 // ── formatting ────────────────────────────────────────────────────────────────
 
@@ -174,6 +168,12 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
         return groupBySector(data);
     }, [data, groupBy]);
 
+    // One colour per slice, distinct within the chart (shared with the heatmap).
+    const sliceColors = useMemo(
+        () => assignCategoryColors(groupBy, chartData.map(d => d.id)),
+        [chartData, groupBy],
+    );
+
     // ── 1. Donut chart ───────────────────────────────────────────────────────
     useEffect(() => {
         const wrap  = donutWrapRef.current;
@@ -209,7 +209,7 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
             .data(pieData, d => d.data.id)
             .enter().append('path').attr('class', 's')
             .attr('d', d => arc(d) ?? '')
-            .attr('fill', d => color(d.data.id, groupBy))
+            .attr('fill', d => sliceColors[d.data.id])
             .attr('stroke', '#0a0f1a')
             .attr('stroke-width', 1.5)
             .attr('opacity', d => !selectedId || d.data.id === selectedId ? 1 : 0.25)
@@ -270,7 +270,7 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
             const isRight  = Math.sin(mid) >= 0;
             const anchor   = isRight ? 'start' : 'end';
             const isActive = !selectedId || d.data.id === selectedId;
-            const col      = color(d.data.id, groupBy);
+            const col      = sliceColors[d.data.id];
 
             const ex = Math.sin(mid) * (radius + 10);
             const ey = -Math.cos(mid) * (radius + 10);
@@ -298,7 +298,7 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
                 .text(`${d.data.pct.toFixed(1)}%`);
         });
 
-    }, [chartData, groupBy, usdCadRate, selectedId, totalCAD]);
+    }, [chartData, sliceColors, groupBy, usdCadRate, selectedId, totalCAD]);
 
     // ── 2. Holdings bar chart ─────────────────────────────────────────────────
     useEffect(() => {
@@ -340,7 +340,7 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
         }
 
         const holdings = pillar.holdings;
-        const col      = color(pillar.id, groupBy);
+        const col      = sliceColors[pillar.id];
 
         const ROW_H    = 34;
         const LABEL_W  = 78;
@@ -401,7 +401,7 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
             .attr('fill', '#3d5166').attr('font-size', '10px')
             .text(d => `${d.pct.toFixed(1)}%`);
 
-    }, [chartData, groupBy, selectedId, usdCadRate]);
+    }, [chartData, sliceColors, groupBy, selectedId, usdCadRate]);
 
     // ── render ────────────────────────────────────────────────────────────────
     return (

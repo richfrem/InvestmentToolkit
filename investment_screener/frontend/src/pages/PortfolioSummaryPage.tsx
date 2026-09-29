@@ -30,6 +30,11 @@ import PortfolioBreakdown from '../components/PortfolioBreakdown';
 import StrategyAllocationChart from '../components/StrategyAllocationChart';
 import { PriceSourceBadge } from '../components/PriceSourceBadge';
 import { usePrivacy } from '../context/PrivacyContext';
+import { PRICE_CHANGE_PERIODS } from '../utils/priceChangePeriods';
+import { deltaColor } from '../utils/formatters';
+
+// Portfolio-level periods the /api/portfolio/performance endpoint returns.
+const PORTFOLIO_PERF_KEYS = { '1d': true, '1w': true, '1m': true, '3m': true } as const;
 
 function PeriodCard({
     label,
@@ -43,7 +48,7 @@ function PeriodCard({
     const { isPrivacyMode } = usePrivacy();
     const isPos = (perf?.change ?? 0) >= 0;
     const sign = isPos ? '+' : '';
-    const color = (perf?.change ?? 0) > 0 ? 'text-emerald-400' : (perf?.change ?? 0) < 0 ? 'text-red-400' : 'text-slate-400';
+    const color = deltaColor(perf?.change ?? 0);   // shared delta colours
     const glow = (perf?.change ?? 0) > 0 ? 'shadow-emerald-500/10' : (perf?.change ?? 0) < 0 ? 'shadow-red-500/10' : '';
 
     function fmt(v: number) {
@@ -167,10 +172,12 @@ export default function PortfolioSummaryPage() {
             <PortfolioSummaryCards data={summary} />
 
             {/* Row 2: Period performance cards (1d / 1w / 1m) */}
-            <div className="grid grid-cols-3 gap-3">
-                <PeriodCard label="1D" perf={perf?.['1d']} loading={perfLoading} />
-                <PeriodCard label="1W" perf={perf?.['1w']} loading={perfLoading} />
-                <PeriodCard label="1M" perf={perf?.['1m']} loading={perfLoading} />
+            {/* Periods and labels from the shared list (utils/priceChangePeriods); the
+                API supplies the portfolio-level ones it computes (1D/1W/1M/3M). */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {PRICE_CHANGE_PERIODS.filter(p => p.key in PORTFOLIO_PERF_KEYS).map(p => (
+                    <PeriodCard key={p.key} label={p.label} perf={perf?.[p.key as keyof typeof PORTFOLIO_PERF_KEYS]} loading={perfLoading} />
+                ))}
             </div>
 
             {/* Row 3: Strategy allocation chart */}

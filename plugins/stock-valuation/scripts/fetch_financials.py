@@ -17,6 +17,7 @@ Key Functions (Index):
     - get_cached_data(ticker) - Retrieve cached data if valid
     - save_to_cache(ticker, data) - Save data to cache
     - sanitize_json_data(val) - Clean floats/nans for valid JSON serialization
+    - compute_performance(hist) - 1D..5Y % changes via shared price_changes.period_changes
     - fetch_financial_data(ticker_symbol, no_cache) - Primary orchestrator for data retrieval, caching, and transformation
     - main() - Main CLI entry point
 
@@ -37,6 +38,8 @@ from typing import Any, Optional
 import yfinance as yf
 import pandas as pd
 import numpy as np
+
+from price_changes import PERIODS, period_changes
 
 # --- Caching Configuration ---
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
@@ -178,6 +181,24 @@ def check_margin_consistency(
 
 
 # Retrieve comprehensive financial data for a stock
+# Stock Analysis "performance" chips: delegates to the shared calculation used
+# by the heatmap and tables (AGENTS.md rule 22) instead of a local copy.
+def compute_performance(hist: pd.DataFrame) -> dict[str, Optional[float]]:
+    """% change for each period in price_changes.PERIODS from a yfinance history frame.
+
+    Args:
+        hist: DataFrame with a 'Close' column indexed by (tz-aware) timestamps.
+
+    Returns:
+        {period: percent change or None where the history doesn't reach}.
+    """
+    if hist is None or hist.empty or "Close" not in hist:
+        return {p: None for p in PERIODS}
+    closes = hist["Close"].dropna()
+    dates = [ts.date().isoformat() for ts in closes.index]
+    return period_changes(dates, [float(c) for c in closes])
+
+
 def fetch_financial_data(ticker_symbol: str, no_cache: bool = False) -> None:
     """Retrieves and compiles financial statements, analyst targets, and key metrics for a given ticker.
 
@@ -268,35 +289,11 @@ def fetch_financial_data(ticker_symbol: str, no_cache: bool = False) -> None:
         except Exception as e:
             print(f"Growth estimates fetch failed: {e}", file=sys.stderr)
 
-        # --- Performance Metrics ---
-        performance = {}
+        # --- Performance Metrics (shared price_changes definition) ---
+        performance = {p: None for p in PERIODS}
         try:
-            hist = stock.history(period="5y")
-            if not hist.empty:
-                current_price = hist['Close'].iloc[-1]
-                
-                def get_change(days_ago_idx):
-                    if len(hist) > days_ago_idx:
-                        prev_price = hist['Close'].iloc[-days_ago_idx]
-                        return float(((current_price - prev_price) / prev_price) * 100)
-                    return 0.0
-
-                performance = {
-                    "1d": float(((current_price - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2] * 100)) if len(hist) > 1 else 0.0,
-                    "1w": get_change(5),
-                    "1m": get_change(21),
-                    "3m": get_change(63),
-                    "ytd": 0.0,
-                    "1y": get_change(252),
-                    "5y": get_change(len(hist) - 1)
-                }
-                
-                # YTD Calculation
-                start_of_year = f"{current_year}-01-01"
-                ytd_data = hist.loc[hist.index >= start_of_year]
-                if not ytd_data.empty:
-                     start_price = ytd_data['Close'].iloc[0]
-                     performance["ytd"] = float(((current_price - start_price) / start_price) * 100)
+            # 5y lookback needs a close on/before today - 5 years; fetch a little extra.
+            performance = compute_performance(stock.history(period="6y"))
         except Exception as e:
             print(f"Error fetching history: {e}", file=sys.stderr)
 
@@ -370,11 +367,6 @@ def fetch_financial_data(ticker_symbol: str, no_cache: bool = False) -> None:
         else:
             hist_fcf = [0] * years_count
             
-        # Ensure performance object is populated
-        if not performance:
-            performance = {
-                "1d": 0, "1w": 0, "1m": 0, "3m": 0, "ytd": 0, "1y": 0, "5y": 0
-            }
 
         # --- Rule of 40 & Piotroski Calculations (using latest year) ---
         latest_idx = years_count - 1
