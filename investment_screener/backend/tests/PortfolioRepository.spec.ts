@@ -59,6 +59,30 @@ describe('PortfolioRepository', () => {
         });
     });
 
+    describe('listPositionsBySymbol average cost across accounts', () => {
+        // Caught live 2026-09-28: APLD held as TFSA 20 @ 32.8337 and RRSP 12 @ 39.0215.
+        // MAX(average_cost) reported 39.02 for all 32 shares (book 1248.69, -36.7%);
+        // the quantity-weighted cost is 35.15 (book 1124.93, -29.7%).
+        it('returns the quantity-weighted average cost, not the highest account cost', () => {
+            repo.upsertAccount('TFSA', 'TFSA');
+            repo.upsertAccount('RRSP', 'RRSP');
+            repo.upsertAccountInvestment('TFSA', 'AAPL', 20, 32.8337, null, 'USD', '2026-09-28T00:00:00.000Z');
+            repo.upsertAccountInvestment('RRSP', 'AAPL', 12, 39.0215, null, 'USD', '2026-09-28T00:00:00.000Z');
+            const pos = repo.listPositionsBySymbol().find(p => p.symbol === 'AAPL')!;
+            expect(pos.quantity).to.equal(32);
+            expect(pos.averageCost).to.be.closeTo((20 * 32.8337 + 12 * 39.0215) / 32, 1e-9);
+        });
+
+        it('ignores accounts with no recorded cost instead of treating them as zero', () => {
+            repo.upsertAccount('TFSA', 'TFSA');
+            repo.upsertAccount('RRSP', 'RRSP');
+            repo.upsertAccountInvestment('TFSA', 'AAPL', 20, 32.8337, null, 'USD', '2026-09-28T00:00:00.000Z');
+            repo.upsertAccountInvestment('RRSP', 'AAPL', 12, null, null, 'USD', '2026-09-28T00:00:00.000Z');
+            const pos = repo.listPositionsBySymbol().find(p => p.symbol === 'AAPL')!;
+            expect(pos.averageCost).to.be.closeTo(32.8337, 1e-9);
+        });
+    });
+
     describe('broker reported total (broker_reported_total singleton)', () => {
         it('returns null when never synced', () => {
             expect(repo.getBrokerReportedTotal()).to.equal(null);

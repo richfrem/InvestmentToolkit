@@ -360,16 +360,21 @@ export class PortfolioRepository {
         return row?.latest ?? null;
     }
 
-    /** Per-symbol aggregate across all accounts: summed quantity, a representative
-     * average_cost, and the latest price (LEFT JOIN — a symbol with no price row
-     * yet still appears, with price = null), for /weights and /strategy-allocation
-     * call sites which need one row per ticker rather than per (account, ticker). */
+    /** Per-symbol aggregate across all accounts: summed quantity, the
+     * quantity-weighted average_cost (accounts with no recorded cost are left out
+     * rather than counted as zero), and the latest price (LEFT JOIN — a symbol with
+     * no price row yet still appears, with price = null), for /weights and
+     * /strategy-allocation call sites which need one row per ticker rather than per
+     * (account, ticker). MAX(average_cost) was used before 2026-09-28 and priced
+     * every share at the most expensive account's cost (APLD: 39.02 vs 35.15). */
     listPositionsBySymbol(): Array<{ symbol: string; quantity: number; averageCost: number | null; price: number | null }> {
         const rows = this.db
             .prepare(
                 `SELECT i.symbol AS symbol,
                         SUM(ai.quantity) AS quantity,
-                        MAX(ai.average_cost) AS average_cost,
+                        SUM(CASE WHEN ai.average_cost IS NOT NULL THEN ai.quantity * ai.average_cost END)
+                            / NULLIF(SUM(CASE WHEN ai.average_cost IS NOT NULL THEN ai.quantity END), 0)
+                            AS average_cost,
                         MAX(ip.price) AS price
                  FROM account_investment ai
                  JOIN investment i ON i.investment_id = ai.investment_id
