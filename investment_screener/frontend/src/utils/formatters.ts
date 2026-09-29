@@ -23,23 +23,39 @@ export function fmtPrice(v: any): string {
     return n != null ? `$${n.toFixed(2)}` : '—';
 }
 
-// Heatmap background for daily/period % change (tight thresholds ±8%)
-export function changeBgDaily(v: number | null): string {
-    if (v == null) return 'transparent';
-    if (v >=  8) return 'rgba(0,77,0,0.85)';
-    if (v >=  5) return 'rgba(0,102,0,0.80)';
-    if (v >=  3) return 'rgba(0,128,0,0.75)';
-    if (v >=  2) return 'rgba(0,160,0,0.70)';
-    if (v >=  1) return 'rgba(0,192,0,0.65)';
-    if (v >=  0.5) return 'rgba(0,220,0,0.55)';
-    if (v >=  0) return 'rgba(30,180,30,0.30)';
-    if (v >= -0.5) return 'rgba(200,30,30,0.30)';
-    if (v >= -1) return 'rgba(210,0,0,0.55)';
-    if (v >= -2) return 'rgba(185,0,0,0.65)';
-    if (v >= -3) return 'rgba(160,0,0,0.70)';
-    if (v >= -5) return 'rgba(130,0,0,0.75)';
-    if (v >= -8) return 'rgba(100,0,0,0.80)';
-    return 'rgba(70,0,0,0.85)';
+// ─── % change colour ladder (single source: AGENTS.md rule 22) ─────────────────
+// One set of 1-day thresholds, two palettes: `changeBgDaily` for table cells and
+// `changeTileColor` for heatmap tiles. `scale` widens the thresholds for longer
+// periods (see priceChangePeriods.periodScale), so 1Y moves don't all saturate.
+const CHANGE_THRESHOLDS = [8, 5, 3, 2, 1, 0.5, 0, -0.5, -1, -2, -3, -5, -8];
+const CELL_PALETTE = [
+    'rgba(0,77,0,0.85)', 'rgba(0,102,0,0.80)', 'rgba(0,128,0,0.75)', 'rgba(0,160,0,0.70)',
+    'rgba(0,192,0,0.65)', 'rgba(0,220,0,0.55)', 'rgba(30,180,30,0.30)', 'rgba(200,30,30,0.30)',
+    'rgba(210,0,0,0.55)', 'rgba(185,0,0,0.65)', 'rgba(160,0,0,0.70)', 'rgba(130,0,0,0.75)',
+    'rgba(100,0,0,0.80)', 'rgba(70,0,0,0.85)',
+];
+const TILE_PALETTE = [
+    '#004d00', '#006600', '#008000', '#00a000', '#00c000', '#00e000', '#40ff40',
+    '#ff6060', '#e00000', '#c00000', '#a00000', '#800000', '#600000', '#400000',
+];
+export const NO_DATA_TILE_COLOR = '#3f3f46';
+
+/** Index into the palettes: first threshold (scaled) the value reaches; last = below all. */
+function changeLevel(v: number, scale: number): number {
+    const i = CHANGE_THRESHOLDS.findIndex(t => v >= t * scale);
+    return i === -1 ? CHANGE_THRESHOLDS.length : i;
+}
+
+// Table cell background for daily/period % change
+export function changeBgDaily(v: number | null, scale = 1): string {
+    if (v == null || !Number.isFinite(v)) return 'transparent';
+    return CELL_PALETTE[changeLevel(v, scale)];
+}
+
+// Heatmap tile colour for daily/period % change
+export function changeTileColor(v: number | null, scale = 1): string {
+    if (v == null || !Number.isFinite(v)) return NO_DATA_TILE_COLOR;
+    return TILE_PALETTE[changeLevel(v, scale)];
 }
 
 // Heatmap background for DCF upside % (wide thresholds ±50%)

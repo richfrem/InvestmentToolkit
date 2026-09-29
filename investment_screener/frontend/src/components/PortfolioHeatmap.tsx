@@ -15,7 +15,7 @@
  *     - refreshPrices() - Triggers backend price update and re-fetches data
  *     - fetchHeatmapData() - Pulls current portfolio and generates heatmap metrics
  *     - getTextColor() - Utility for WCAG-compliant text contrast
- *     - getColorForChange() - Returns Finviz-style green/red shades for price action
+ *     - Period toggle + colours: utils/priceChangePeriods + formatters.changeTileColor (shared, AGENTS.md rule 22)
  *     - formatValue() - Formats dollar amounts (K/M suffixes)
  *     - formatChange() - Formats percentages with +/- signs
  *     - renderTreemap() - Core D3 logic for building the hierarchy and SVG nodes
@@ -24,9 +24,25 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as d3 from 'd3';
 import { PriceSourceBadge } from './PriceSourceBadge';
-import { PILLAR_COLORS, SECTOR_COLORS, SUB_STRATEGY_COLORS } from '../utils/themeColors';
+import { assignCategoryColors } from '../utils/themeColors';
 import { syncAndRefreshPortfolio } from '../services/api';
 import { usePrivacy } from '../context/PrivacyContext';
+import {
+    PORTFOLIO_PERIODS, DEFAULT_PERIOD, getPeriodChange, periodScale, legendRange,
+} from '../utils/priceChangePeriods';
+import type { PricePeriod } from '../utils/priceChangePeriods';
+import { changeTileColor } from '../utils/formatters';
+
+const PERIOD_STORAGE_KEY = 'heatmap.period';
+
+// Remembered per browser; storage can be unavailable (private mode), so never throw.
+const loadPeriod = (): PricePeriod => {
+    try {
+        const saved = localStorage.getItem(PERIOD_STORAGE_KEY);
+        if (saved && PORTFOLIO_PERIODS.some(p => p.key === saved)) return saved as PricePeriod;
+    } catch { /* fall through */ }
+    return DEFAULT_PERIOD;
+};
 
 interface StockHeatmapData {
     symbol: string;
@@ -37,6 +53,12 @@ interface StockHeatmapData {
     shares: number;
     position_value: number;
     change_pct: number;
+    change_1d?: number | null;
+    change_1w?: number | null;
+    change_1m?: number | null;
+    change_3m?: number | null;
+    change_ytd?: number | null;
+    change_1y?: number | null;
 }
 
 interface SectorData {
@@ -58,7 +80,7 @@ interface TreemapNode {
     name: string;
     id?: string; // Add id to identify pillar/strategy for coloring
     value?: number;
-    change_pct?: number;
+    change_pct?: number | null;
     symbol?: string;
     shares?: number;
     price?: number;
@@ -73,6 +95,11 @@ export default function PortfolioHeatmap() {
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [groupBy, setGroupBy] = useState<'sector' | 'strategy' | 'pillar'>('sector');
+    const [period, setPeriodState] = useState<PricePeriod>(loadPeriod);
+    const setPeriod = (p: PricePeriod) => {
+        setPeriodState(p);
+        try { localStorage.setItem(PERIOD_STORAGE_KEY, p); } catch { /* not persisted */ }
+    };
     const [strategyMap, setStrategyMap] = useState<Record<string, string>>({});
     const [pillarMap, setPillarMap] = useState<Record<string, string>>({});
     const [pillarNames, setPillarNames] = useState<Record<string, string>>({});
@@ -112,7 +139,7 @@ export default function PortfolioHeatmap() {
         if (data && svgRef.current && containerRef.current) {
             renderTreemap();
         }
-    }, [data, groupBy, strategyMap, pillarMap, pillarNames]);
+    }, [data, groupBy, period, strategyMap, pillarMap, pillarNames]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -198,23 +225,6 @@ export default function PortfolioHeatmap() {
     };
 
     // Finviz-style colors: bigger gains = darker green, bigger losses = darker red
-    const getColorForChange = (change: number): string => {
-        if (change >= 8) return '#004d00';    // Deepest green
-        if (change >= 5) return '#006600';    // Very dark green
-        if (change >= 3) return '#008000';    // Dark green
-        if (change >= 2) return '#00a000';    // Medium-dark green
-        if (change >= 1) return '#00c000';    // Medium green
-        if (change >= 0.5) return '#00e000';  // Light green
-        if (change >= 0) return '#40ff40';    // Very light green
-        if (change >= -0.5) return '#ff6060'; // Very light red
-        if (change >= -1) return '#e00000';   // Light red
-        if (change >= -2) return '#c00000';   // Medium red
-        if (change >= -3) return '#a00000';   // Medium-dark red
-        if (change >= -5) return '#800000';   // Dark red
-        if (change >= -8) return '#600000';   // Very dark red
-        return '#400000';                      // Deepest red
-    };
-
     const formatValue = (value: number): string => {
         if (isPrivacyMode) return '$••••';
         if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
@@ -222,7 +232,8 @@ export default function PortfolioHeatmap() {
         return `$${value.toFixed(0)}`;
     };
 
-    const formatChange = (change: number): string => {
+    const formatChange = (change: number | null): string => {
+        if (change === null || !Number.isFinite(change)) return 'n/a';
         const sign = change >= 0 ? '+' : '';
         return `${sign}${change.toFixed(2)}%`;
     };
@@ -235,6 +246,7 @@ export default function PortfolioHeatmap() {
         const height = Math.max(520, container.clientHeight);
 
         d3.select(svgRef.current).selectAll('*').remove();
+        const periodLabel = PORTFOLIO_PERIODS.find(p => p.key === period)?.label ?? '1D';
 
         const hierarchyData: TreemapNode = {
             name: 'Portfolio',
@@ -246,7 +258,7 @@ export default function PortfolioHeatmap() {
                         name: stock.symbol,
                         symbol: stock.symbol,
                         value: stock.position_value,
-                        change_pct: stock.change_pct,
+                        change_pct: getPeriodChange(stock, period),
                         shares: stock.shares,
                         price: stock.price
                     }))
@@ -268,7 +280,7 @@ export default function PortfolioHeatmap() {
                             name: stock.symbol,
                             symbol: stock.symbol,
                             value: stock.position_value,
-                            change_pct: stock.change_pct,
+                            change_pct: getPeriodChange(stock, period),
                             shares: stock.shares,
                             price: stock.price,
                         }))
@@ -299,19 +311,18 @@ export default function PortfolioHeatmap() {
             .join('g')
             .attr('class', 'sector');
 
+        // Group colours shared with the Portfolio Summary donut, distinct per chart.
+        const groupKind = groupBy === 'strategy' ? 'sub-strategy' : groupBy;
+        const groupColors = assignCategoryColors(groupKind, (hierarchyData.children ?? []).map(c => c.id || c.name));
+        const groupColor = (d: any) => groupColors[d.data.id || d.data.name];
+
         // Sector header background for better visibility
         sectors.append('rect')
             .attr('x', d => (d as any).x0)
             .attr('y', d => (d as any).y0)
             .attr('width', d => (d as any).x1 - (d as any).x0)
             .attr('height', 18)
-            .attr('fill', d => {
-                const id = d.data.id || d.data.name;
-                if (groupBy === 'pillar') return PILLAR_COLORS[id] || 'rgba(255,255,255,0.05)';
-                if (groupBy === 'sector') return SECTOR_COLORS[id] || 'rgba(255,255,255,0.05)';
-                if (groupBy === 'strategy') return SUB_STRATEGY_COLORS[id] || 'rgba(255,255,255,0.05)';
-                return 'rgba(255,255,255,0.05)';
-            })
+            .attr('fill', groupColor)
             .attr('opacity', 0.15);
 
         // Sector label - Finviz style with arrow
@@ -326,13 +337,7 @@ export default function PortfolioHeatmap() {
                 if (name.length * 6 > width) return name.substring(0, Math.floor(width / 7)) + '...';
                 return `${name} ›`;
             })
-            .attr('fill', d => {
-                const id = d.data.id || d.data.name;
-                if (groupBy === 'pillar') return PILLAR_COLORS[id] || 'rgba(255,255,255,0.6)';
-                if (groupBy === 'sector') return SECTOR_COLORS[id] || 'rgba(255,255,255,0.6)';
-                if (groupBy === 'strategy') return SUB_STRATEGY_COLORS[id] || 'rgba(255,255,255,0.6)';
-                return 'rgba(255,255,255,0.6)';
-            })
+            .attr('fill', groupColor)
             .attr('font-size', '10px')
             .attr('font-weight', '600');
 
@@ -349,7 +354,7 @@ export default function PortfolioHeatmap() {
             .attr('class', 'stock-cell')
             .attr('width', d => Math.max(0, (d as any).x1 - (d as any).x0))
             .attr('height', d => Math.max(0, (d as any).y1 - (d as any).y0))
-            .attr('fill', d => getColorForChange(d.data.change_pct || 0))
+            .attr('fill', d => changeTileColor(d.data.change_pct ?? null, periodScale(period)))
             .attr('stroke', '#0a0a0a')
             .attr('stroke-width', 0.5)
             .style('transition', 'filter 0.15s ease');
@@ -375,7 +380,7 @@ export default function PortfolioHeatmap() {
             .attr('y', d => ((d as any).y1 - (d as any).y0) / 2 - 9)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
-            .attr('fill', d => getTextColor(getColorForChange(d.data.change_pct || 0)))
+            .attr('fill', d => getTextColor(changeTileColor(d.data.change_pct ?? null, periodScale(period))))
             .attr('font-size', d => {
                 const w = (d as any).x1 - (d as any).x0;
                 if (w > 150) return '26px';
@@ -387,7 +392,7 @@ export default function PortfolioHeatmap() {
             })
             .attr('font-weight', '800')
             .style('text-shadow', d => {
-                const tc = getTextColor(getColorForChange(d.data.change_pct || 0));
+                const tc = getTextColor(changeTileColor(d.data.change_pct ?? null, periodScale(period)));
                 return tc === '#000000' ? 'none' : '0 1px 3px rgba(0,0,0,0.8)';
             })
             .text(d => ((d as any).x1 - (d as any).x0) > 28 ? d.data.symbol || '' : '');
@@ -398,7 +403,7 @@ export default function PortfolioHeatmap() {
             .attr('y', d => ((d as any).y1 - (d as any).y0) / 2 + 13)
             .attr('text-anchor', 'middle')
             .attr('fill', d => {
-                const tc = getTextColor(getColorForChange(d.data.change_pct || 0));
+                const tc = getTextColor(changeTileColor(d.data.change_pct ?? null, periodScale(period)));
                 return tc === '#000000' ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.95)';
             })
             .attr('font-size', d => {
@@ -411,13 +416,13 @@ export default function PortfolioHeatmap() {
             })
             .attr('font-weight', '600')
             .style('text-shadow', d => {
-                const tc = getTextColor(getColorForChange(d.data.change_pct || 0));
+                const tc = getTextColor(changeTileColor(d.data.change_pct ?? null, periodScale(period)));
                 return tc === '#000000' ? 'none' : '0 1px 2px rgba(0,0,0,0.6)';
             })
             .text(d => {
                 const w = (d as any).x1 - (d as any).x0;
                 if (w < 38) return '';
-                return formatChange(d.data.change_pct || 0);
+                return formatChange(d.data.change_pct ?? null);
             });
 
         // Value for larger cells
@@ -426,7 +431,7 @@ export default function PortfolioHeatmap() {
             .attr('y', d => ((d as any).y1 - (d as any).y0) / 2 + 32)
             .attr('text-anchor', 'middle')
             .attr('fill', d => {
-                const tc = getTextColor(getColorForChange(d.data.change_pct || 0));
+                const tc = getTextColor(changeTileColor(d.data.change_pct ?? null, periodScale(period)));
                 return tc === '#000000' ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.5)';
             })
             .attr('font-size', d => {
@@ -446,7 +451,7 @@ export default function PortfolioHeatmap() {
 
         // Tooltips
         leaves.append('title')
-            .text(d => `${d.data.symbol}\n${d.data.shares} shares @ $${(d.data.price || 0).toFixed(2)}\nValue: ${formatValue(d.value || 0)}\nChange: ${formatChange(d.data.change_pct || 0)}`);
+            .text(d => `${d.data.symbol}\n${d.data.shares} shares @ $${(d.data.price || 0).toFixed(2)}\nValue: ${formatValue(d.value || 0)}\n${periodLabel} change: ${formatChange(d.data.change_pct ?? null)}`);
     };
 
     if (loading) {
@@ -482,7 +487,7 @@ export default function PortfolioHeatmap() {
                 <div className="flex items-center gap-4">
                     <span className="text-white font-semibold text-sm">Stock Heatmap</span>
                     <div className="flex items-center gap-2 text-xs text-zinc-500">
-                        <span className="text-red-400">-5%</span>
+                        <span className="text-red-400">-{legendRange(period)}%</span>
                         <div className="flex gap-px">
                             <div className="w-3 h-2 bg-red-800"></div>
                             <div className="w-3 h-2 bg-red-600"></div>
@@ -491,10 +496,21 @@ export default function PortfolioHeatmap() {
                             <div className="w-3 h-2 bg-green-600"></div>
                             <div className="w-3 h-2 bg-green-800"></div>
                         </div>
-                        <span className="text-green-400">+5%</span>
+                        <span className="text-green-400">+{legendRange(period)}%</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
+                    {/* Change period toggle */}
+                    <div className="flex items-center bg-zinc-800 rounded text-xs overflow-hidden" role="group" aria-label="Change period">
+                        {PORTFOLIO_PERIODS.map(p => (
+                            <button
+                                key={p.key}
+                                onClick={() => setPeriod(p.key)}
+                                aria-pressed={period === p.key}
+                                className={`px-2.5 py-1 transition-colors ${period === p.key ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+                            >{p.label}</button>
+                        ))}
+                    </div>
                     {/* Group by toggle */}
                     <div className="flex items-center bg-zinc-800 rounded text-xs overflow-hidden">
                         <button

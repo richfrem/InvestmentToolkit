@@ -14,6 +14,7 @@
  *     - PerformanceMetrics() - Functional component that maps performance timeframes to visual indicators
  */
 import type { StockData } from '../services/api';
+import { PRICE_CHANGE_PERIODS, getPeriodChange } from '../utils/priceChangePeriods';
 
 interface PerformanceMetricsProps {
     performance: StockData['performance'];
@@ -22,15 +23,9 @@ interface PerformanceMetricsProps {
 export default function PerformanceMetrics({ performance }: PerformanceMetricsProps) {
     if (!performance) return null;
 
-    const metrics = [
-        { label: '1D', value: performance['1d'] },
-        { label: '1W', value: performance['1w'] },
-        { label: '1M', value: performance['1m'] },
-        { label: '3M', value: performance['3m'] },
-        { label: 'YTD', value: performance['ytd'] },
-        { label: '1Y', value: performance['1y'] },
-        { label: '5Y', value: performance['5y'] },
-    ];
+    // Periods come from the shared list; values are the backend's shared
+    // price_changes calculation (null when history doesn't reach — chip hidden).
+    const metrics = PRICE_CHANGE_PERIODS.map(p => ({ label: p.label, value: getPeriodChange(performance, p.key) }));
 
     return (
         <div className="flex gap-1.5 items-center">

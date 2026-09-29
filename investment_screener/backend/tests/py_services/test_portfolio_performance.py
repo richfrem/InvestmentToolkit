@@ -154,3 +154,34 @@ class TestCurrentTotalOverride:
 
         expected_current = 10 * 204.0 + 80 * 100.09
         assert abs(result["1d"]["currentValue"] - expected_current) < 0.01
+
+
+class TestSharedPeriodDefinition:
+    """Portfolio-level 1D/1W/1M/3M use the same reference dates as every per-stock
+    % change (price_changes.period_reference_dates, AGENTS.md rule 22). Before
+    2026-09-28 this file had its own rules (1M = 30 days) and only 35 days of history."""
+
+    def _daily_close(self, start, end, price_for):
+        idx = pd.bdate_range(start, end)
+        return pd.DataFrame({"AAA": [price_for(d) for d in idx]}, index=idx)
+
+    def test_periods_follow_the_shared_reference_dates(self):
+        from price_changes import period_reference_dates
+        now = datetime(2026, 3, 31, 12, 0, 0)
+        close = self._daily_close("2025-11-01", "2026-03-31", lambda d: float(d.toordinal() % 40 + 60))
+        result = compute_performance(close, {"AAA": 1}, cash_value=0.0, tickers=["AAA"], now=now)
+        refs = period_reference_dates(now.date())
+        assert set(result) == {"1d", "1w", "1m", "3m"}
+        for p in ("1d", "1w", "1m", "3m"):
+            past = close.loc[close.index <= pd.Timestamp(refs[p]), "AAA"].iloc[-1]
+            assert result[p]["historicalValue"] == round(past, 2)
+
+    def test_one_month_is_a_calendar_month_not_thirty_days(self):
+        now = datetime(2026, 3, 31, 12, 0, 0)
+        # 30 days back is 03-01 (Sun) -> 02-27; a calendar month back is 02-28 (Sat) -> 02-27 too,
+        # so pick a date where they differ: 2026-05-31 -> 30d = 05-01 (Fri), 1 month = 04-30 (Thu).
+        now = datetime(2026, 5, 31, 12, 0, 0)
+        close = self._daily_close("2026-04-01", "2026-05-29",
+                                  lambda d: 50.0 if d.date().isoformat() == "2026-04-30" else 100.0)
+        result = compute_performance(close, {"AAA": 1}, cash_value=0.0, tickers=["AAA"], now=now)
+        assert result["1m"]["historicalValue"] == 50.0

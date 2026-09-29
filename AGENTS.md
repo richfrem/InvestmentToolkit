@@ -104,6 +104,7 @@ When dropping into a fresh repository clone, agents MUST execute this sequence t
 19. **Adversarial Reasoning & News Confluence**: Challenge thesis assumptions before agreement; correlate news catalysts with price action. See [`.agent/rules/adversarial-reasoning-before-agreement-rule.md`](file:///.agent/rules/adversarial-reasoning-before-agreement-rule.md) and [`.agent/rules/local-news-technical-confluence.md`](file:///.agent/rules/local-news-technical-confluence.md).
 20. **TradingView Baseline & Broker MCP Independence**: TradingView CDP is the universal baseline for live pricing, TA sweeps, and visual analysis. Broker-specific MCP plugins (e.g. `plugins/questrade`) are strictly optional user-level augments for chat queries and HITL order drafting; core toolkit services, DB schemas, and dashboard routes must never depend on them. See [`.agent/rules/local-broker-augment-policy.md`](file:///.agent/rules/local-broker-augment-policy.md).
 21. **Domain Database Location & Sync Ingestion**: The sole source of truth for portfolio holdings, accounts, cash balances, target weights, and thesis data is `investment_screener/backend/data/domain_model.sqlite`. When updating portfolio state from broker feeds (TradingView or Questrade MCP), always execute the canonical sync scripts (`fetch_broker_data.py --snapshot` or `questrade_sync.py --payload`) rather than executing ad-hoc raw SQL statements.
+22. **One implementation per concept — fix once, fixed everywhere**: Proper architecture over quick local code. Before writing any calculation, aggregation, formatter, label/period list, threshold/colour ladder, SQL query or UI helper, **search for an existing implementation** (`investment_screener/backend/py_services/`, `plugins/*/scripts/`, `investment_screener/backend/src/services/`, `investment_screener/frontend/src/utils/`) and reuse or extend it. When two surfaces show the same quantity (e.g. 1D/1W/1M/3M/YTD/1Y % change on the heatmap, Portfolio Table, Screener and Stock Analysis), they MUST call the same function and share the same definitions — never a second copy, never a bug fixed in only one copy. If you find duplicates, consolidating them into the canonical location is part of the task: Python in `plugins/<plugin>/scripts/` linked into `py_services/` via `symlink_manager.py`; TypeScript in `frontend/src/utils/` or `backend/src/services/`; with tests on the shared function and callers asserting they delegate to it. *Why:* on 2026-09-28 one review found two diverging period-change calculations (1W = 4 vs 5 trading days; missing history shown as 0.0%), three copies of the period list, three copies of the colour ladder, and one `MAX(average_cost)` aggregation silently mis-costing 27 tickers across six callers.
 
 ## Canonical Scripts
 | Script | Purpose |
@@ -111,8 +112,9 @@ When dropping into a fresh repository clone, agents MUST execute this sequence t
 | `py_services/fetch_financials.py {TICKER}` | Raw yfinance data |
 | `py_services/dcf_scenarios.py --raw FILE --scenarios FILE` | DCF scenario math |
 | `plugins/stock-valuation/.../validate_projection.py` | Schema validation |
+| `plugins/stock-valuation/scripts/price_changes.py` (`period_changes`) | The only 1D/1W/1M/3M/YTD/1Y/5Y % change calculation (heatmap, tables, Stock Analysis) |
 
-Create a new `py_services/` script + ADR in `docs/architecture/` whenever you'd compute the same formula twice.
+Create a new canonical script + ADR in `docs/architecture/` whenever you'd compute the same formula twice (see rule 22).
 
 ## Test Locations
 | Area | Path |
@@ -122,6 +124,8 @@ Create a new `py_services/` script + ADR in `docs/architecture/` whenever you'd 
 | TV CDP | `plugins/tradingview/tests/tv_test_harness.py` |
 | Plugin scripts | `plugins/<plugin>/tests/` |
 | React | `investment_screener/frontend/tests/` |
+
+**Frontend type check:** run `npx tsc -b` in `investment_screener/frontend` (what `npm run build` runs). `tsc -p .` checks nothing: the root `tsconfig.json` has `"files": []` and only references `tsconfig.app.json` / `tsconfig.node.json`. Under `verbatimModuleSyntax`, import types with `import type`.
 
 ## SUB-agent usage
 Use the cheapest models possible where possible. If the job doesn't require spawning sub-agents don't do so.

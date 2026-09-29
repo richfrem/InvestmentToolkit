@@ -21,7 +21,8 @@ import { useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity, Star, Zap } from 'lucide-react';
 import { type Projection, addToWatchlist, removeFromWatchlist } from '../services/api';
 import { TradeButtons } from './TradeButtons';
-import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgUpside, sortByColumn } from '../utils/formatters';
+import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgUpside, changeBgDaily, sortByColumn } from '../utils/formatters';
+import { PORTFOLIO_PERIODS, portfolioPeriodFields } from '../utils/priceChangePeriods';
 import { getActionBadgeClass, getActionPriority } from '../utils/actionColors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -60,6 +61,7 @@ interface ScreenerRow {
     total_market: number | null;
     change_1w: number | null;
     change_1m: number | null;
+    change_3m: number | null;
     change_ytd: number | null;
     change_1y: number | null;
     isWatched: boolean;
@@ -72,6 +74,8 @@ interface ColDef {
     label: string;
     always?: boolean;
     isChange?: boolean;
+    /** Period % change column: colour with the period-scaled daily ladder. */
+    changeScale?: number;
     defaultOn?: boolean;
     align?: 'left' | 'right';
     format: (v: any) => string;
@@ -94,11 +98,11 @@ const COLUMNS: ColDef[] = [
     { id: 'bear',           label: 'Bear',       defaultOn: false, align: 'right', format: fmtDollar },
     { id: 'base',           label: 'Base',       defaultOn: false, align: 'right', format: fmtDollar },
     { id: 'bull',           label: 'Bull',       defaultOn: false, align: 'right', format: fmtDollar },
-    { id: 'change_1d',      label: '1D %',       isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_1w',      label: '1W %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
-    { id: 'change_1m',      label: '1M %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
-    { id: 'change_ytd',     label: 'YTD %',      isChange: true, defaultOn: false, align: 'right', format: fmtPct },
-    { id: 'change_1y',      label: '1Y %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    // Period % change columns come from the shared list (utils/priceChangePeriods).
+    ...PORTFOLIO_PERIODS.map((p): ColDef => ({
+        id: p.field as keyof ScreenerRow, label: `${p.label} %`, isChange: true, changeScale: p.scale,
+        defaultOn: p.key === '1d', align: 'right', format: fmtPct,
+    })),
     { id: 'change_overall', label: 'Overall %',  isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
     { id: 'subStrategyId',  label: 'Strategy',   defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
     { id: 'sector',         label: 'Sector',     defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
@@ -111,8 +115,9 @@ const COLUMNS: ColDef[] = [
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
+    ...Object.fromEntries(PORTFOLIO_PERIODS.map(p => [p.field, 72])),
     symbol: 80, action: 185, subStrategyId: 135, fairValue: 95, currentPrice: 80, gainLoss: 85,
-    change_1d: 65, change_overall: 80, change_1w: 65, change_1m: 65, change_ytd: 65, change_1y: 65, sector: 115, shares: 60, book_price: 72, total_book: 80, total_market: 80, 
+    change_overall: 80, sector: 115, shares: 60, book_price: 72, total_book: 80, total_market: 80, 
     upside: 85, ruleOf40: 70, growth: 80, model: 130, base: 80,
     bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90,
     currentPct: 90, recommendedPct: 85, rationale: 260,
@@ -438,17 +443,13 @@ export default function ScreenerTable() {
                 assetClass: allHoldingsMap[p.ticker]?.assetClass ?? (p.source === 'ETF_ANALYSIS' ? 'ETF' : 'EQUITY'),
                 pillarId: allHoldingsMap[p.ticker]?.pillarId ?? null,
                 subStrategyId: allHoldingsMap[p.ticker]?.subStrategyId ?? null,
-                change_1d: heatmapMap[p.ticker]?.change_1d ?? null,
+                ...portfolioPeriodFields(heatmapMap[p.ticker]),
                 change_overall: heatmapMap[p.ticker]?.change_overall ?? null,
                 sector: heatmapMap[p.ticker]?.sector ?? null,
                 shares: heatmapMap[p.ticker]?.shares ?? null,
                 book_price: heatmapMap[p.ticker]?.book_price ?? null,
                 total_book: heatmapMap[p.ticker]?.total_book ?? null,
                 total_market: heatmapMap[p.ticker]?.total_market ?? null,
-                change_1w: heatmapMap[p.ticker]?.change_1w ?? null,
-                change_1m: heatmapMap[p.ticker]?.change_1m ?? null,
-                change_ytd: heatmapMap[p.ticker]?.change_ytd ?? null,
-                change_1y: heatmapMap[p.ticker]?.change_1y ?? null,
                 isWatched: allHoldingsMap[p.ticker]?.isWatched ?? false,
             };
         });
@@ -494,17 +495,13 @@ export default function ScreenerTable() {
                     assetClass: h.assetClass ?? 'EQUITY',
                     pillarId: h.pillarId ?? null,
                     subStrategyId: h.subStrategyId ?? null,
-                    change_1d: heatmapMap[h.ticker]?.change_1d ?? null,
-                    change_overall: heatmapMap[h.ticker]?.change_overall ?? null,
+                    ...portfolioPeriodFields(heatmapMap[h.ticker]),
+                change_overall: heatmapMap[h.ticker]?.change_overall ?? null,
                     sector: heatmapMap[h.ticker]?.sector ?? null,
                     shares: heatmapMap[h.ticker]?.shares ?? null,
                     book_price: heatmapMap[h.ticker]?.book_price ?? null,
                     total_book: heatmapMap[h.ticker]?.total_book ?? null,
                     total_market: heatmapMap[h.ticker]?.total_market ?? null,
-                    change_1w: heatmapMap[h.ticker]?.change_1w ?? null,
-                    change_1m: heatmapMap[h.ticker]?.change_1m ?? null,
-                    change_ytd: heatmapMap[h.ticker]?.change_ytd ?? null,
-                    change_1y: heatmapMap[h.ticker]?.change_1y ?? null,
                     isWatched: h.isWatched ?? false,
                 };
             });
@@ -1106,7 +1103,7 @@ export default function ScreenerTable() {
                                             key={col.id}
                                             className={`px-4 py-4 text-ellipsis ${col.id === 'action' ? 'relative z-10' : 'overflow-hidden'} ${col.id === 'rationale' ? 'whitespace-normal align-top' : 'whitespace-nowrap'} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
                                             style={{
-                                                ...(col.isChange ? { backgroundColor: changeBg(numVal) } : {}),
+                                                ...(col.isChange ? { backgroundColor: col.changeScale ? changeBgDaily(numVal, col.changeScale) : changeBg(numVal) } : {}),
                                                 ...(col.id === 'currentPct' ? { backgroundColor: pctHeatBg(row.currentPct, 'current') } : {}),
                                                 ...(col.id === 'recommendedPct' ? { backgroundColor: pctHeatBg(row.recommendedPct, 'target') } : {}),
                                             }}

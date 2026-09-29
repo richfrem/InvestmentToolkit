@@ -30,7 +30,13 @@ Key Output Dependencies:
 import json
 import sys
 import math
-from datetime import datetime, timedelta
+from datetime import datetime
+
+from price_changes import period_reference_dates
+
+# Portfolio-level periods (current holdings x past prices). YTD/1Y are not shown
+# here: the Portfolio Summary's YTD is a cash-flow-aware TWR from another source.
+PORTFOLIO_PERIODS = ("1d", "1w", "1m", "3m")
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -102,8 +108,8 @@ def fetch_history_dataframe(tickers: List[str]) -> pd.DataFrame:
     """
     Downloads historical close prices and normalizes index timezone.
     """
-    # Fetch 35 calendar days of history in one batch call
-    raw = yf.download(tickers, period="35d", auto_adjust=True, progress=False)
+    # Enough daily history to answer the longest PORTFOLIO_PERIODS lookback (3M)
+    raw = yf.download(tickers, period="6mo", auto_adjust=True, progress=False)
 
     if raw is None or raw.empty:
         return pd.DataFrame()
@@ -154,11 +160,10 @@ def compute_performance(
         )
         current_total = current_equity + cash_value
 
-    periods = {
-        "1d": now - timedelta(days=1),
-        "1w": now - timedelta(days=7),
-        "1m": now - timedelta(days=30),
-    }
+    # Reference dates come from the shared definition (price_changes), so "1M ago"
+    # here is the same date the heatmap / tables / Stock Analysis use.
+    refs = period_reference_dates(now.date())
+    periods = {p: refs[p] for p in PORTFOLIO_PERIODS}
 
     result: Dict[str, Any] = {}
     for label, ref_date in periods.items():
@@ -203,7 +208,7 @@ def main() -> None:
     if not tickers:
         fallback = cash_value
         result = {p: {"change": 0.0, "changePct": 0.0, "historicalValue": fallback, "currentValue": fallback}
-                  for p in ("1d", "1w", "1m")}
+                  for p in PORTFOLIO_PERIODS}
         print(json.dumps(result))
         return
 

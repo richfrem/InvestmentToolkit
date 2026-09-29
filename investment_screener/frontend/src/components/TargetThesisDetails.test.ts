@@ -13,12 +13,12 @@ import { visibleTiers } from './TargetThesisDetails';
 
 const levels = {
     buyTiers: [
-        { tier: 1, price: 16.34, status: 'active' },
-        { tier: 2, price: 3.06, status: 'suppressed' },
+        { tier: 1, price: 16.34, action: 'accumulate', status: 'active' },
+        { tier: 2, price: 3.06, action: 'accumulate_aggressive', status: 'suppressed' },
     ],
     sellTiers: [
-        { tier: 1, price: 21.78, status: 'active' },
-        { tier: 2, price: 61.04, status: 'inactive' },
+        { tier: 1, price: 21.78, action: 'trim', trimPct: 30, status: 'active' },
+        { tier: 2, price: 61.04, action: 'trim', trimPct: 50, status: 'inactive' },
     ],
     stopLoss: { price: 2.76, status: 'suppressed' },
 };
