@@ -31,7 +31,9 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT        = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # sibling helpers, also via links
+from repo_root import find_repo_root  # noqa: E402  (shared; works from installed copies)
+REPO_ROOT        = find_repo_root(Path(__file__))
 PY_SERVICES      = REPO_ROOT / "investment_screener/backend/py_services"
 TA_SWEEP_SCRIPT  = REPO_ROOT / "plugins/tradingview/scripts/ta_sweep_batch.py"
 DAILY_BRIEFS_DIR = REPO_ROOT / "investment_screener/backend/data/daily-briefs"

@@ -17,6 +17,11 @@ import sqlite3
 import pytest
 from pathlib import Path
 from unittest.mock import patch
+import sys
+
+# Tests import the plugin's scripts directly (same convention as sibling test files);
+# without this the module never collected, so none of these tests ran before 2026-09-29.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from daily_receipts import (
     ensure_receipt_index,
@@ -191,3 +196,61 @@ def test_prune_stale_runs_protects_live_pid(tmp_path, test_db):
     pruned = prune_stale_runs(tmp_path, test_db, older_than_days=0)
     assert pruned == 0
     assert stale_dir.exists()
+
+
+# --- Shared control_plane.db table (caught live 2026-09-29) ---
+# verification_receipts is shared with the work-intake control plane, which
+# legitimately records the same gate_name more than once (test_suite,
+# human_gate_proof, ...). A global UNIQUE(gate_name) index can't be created on
+# that table, so every /daily run failed at Step 0 — and the ROLLBACK in the
+# error handler then masked the real IntegrityError.
+
+@pytest.fixture
+def shared_db(tmp_path):
+    db_path = tmp_path / "control_plane.db"
+    con = sqlite3.connect(db_path)
+    con.execute("""
+        CREATE TABLE verification_receipts (
+            receipt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id TEXT NOT NULL,
+            gate_name TEXT NOT NULL,
+            command_executed TEXT NOT NULL,
+            exit_code INTEGER NOT NULL,
+            receipt_token TEXT NOT NULL,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    for task in ("task-a", "task-b"):   # work-intake receipts repeat gate names
+        con.execute("INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token) "
+                    "VALUES (?, 'test_suite', 'pytest', 0, 'EVO-INTEGRITY-x')", (task,))
+    con.commit()
+    con.close()
+    return db_path
+
+
+def test_daily_receipts_work_when_other_systems_repeat_gate_names(shared_db):
+    run_id = "DAILY-20260929-145242-573139C9"
+    h0 = record_daily_receipt(shared_db, run_id, 0, "READINESS", "COMPLETED", {"db_ok": True})
+    h1 = record_daily_receipt(shared_db, run_id, 1, "BRIEF", "COMPLETED", {"macro": "RISK-ON"})
+    assert h0 != h1
+    record_terminal_receipt(shared_db, run_id, "scan", "COMPLETED", [0, 1], h1)
+
+
+def test_daily_gate_names_are_still_unique(shared_db):
+    run_id = "DAILY-20260929-145242-573139C9"
+    record_daily_receipt(shared_db, run_id, 0, "READINESS", "COMPLETED", {"db_ok": True})
+    con = sqlite3.connect(shared_db)
+    with pytest.raises(sqlite3.IntegrityError):
+        con.execute("INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token) "
+                    "VALUES (?, ?, 'cmd', 0, 'token')", (run_id, f"DAILY_RUN_{run_id}_STEP_0"))
+    # work-intake style repeats remain allowed
+    con.execute("INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token) "
+                "VALUES ('task-c', 'test_suite', 'pytest', 0, 'EVO-INTEGRITY-y')")
+    con.close()
+
+
+def test_errors_before_the_transaction_are_not_masked(tmp_path):
+    missing_table_db = tmp_path / "empty.db"
+    sqlite3.connect(missing_table_db).close()
+    with pytest.raises(sqlite3.OperationalError, match="no such table"):
+        record_daily_receipt(missing_table_db, "DAILY-X", 0, "READINESS", "COMPLETED", {})

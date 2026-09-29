@@ -668,12 +668,6 @@
       "description": "daily_brief.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
     },
     {
-      "src": "plugins/portfolio-advisor/scripts/daily_brief.py",
-      "dst": "plugins/portfolio-advisor/skills/daily-brief/scripts/daily_brief.py",
-      "strategy": "symlink",
-      "description": "ADR-003: daily-brief skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
       "src": "investment_screener/backend/py_services/portfolio_io.py",
       "dst": "plugins/portfolio-advisor/scripts/portfolio_io.py",
       "strategy": "symlink",
@@ -966,6 +960,42 @@
       "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/price_changes.py",
       "strategy": "symlink",
       "description": "Shared price-period % change calculation"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/run_daily.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/run_daily.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: /daily runner (canonical in plugin scripts/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/daily_receipts.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/daily_receipts.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: /daily runner (canonical in plugin scripts/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_daily_run.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/verify_daily_run.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: /daily runner (canonical in plugin scripts/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/daily_brief.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/daily_brief.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: /daily runner (canonical in plugin scripts/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/daily-brief-methodology.md",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/references/daily-brief-methodology.md",
+      "strategy": "symlink",
+      "description": "daily-loop skill: brief methodology (canonical in plugin references/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/repo_root.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/repo_root.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: shared repo-root finder"
     }
   ]
 }

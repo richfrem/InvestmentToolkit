@@ -23,9 +23,15 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # sibling helpers, also via links
+from repo_root import find_repo_root  # noqa: E402  (shared; works from installed copies)
+REPO_ROOT = find_repo_root(Path(__file__))
 TEMP_DIR = REPO_ROOT / "temp"
 CONTROL_PLANE_DB = REPO_ROOT / "context" / "control_plane.db"
+# The backend serves an unauthenticated /health; /api/* is auth-gated.
+HEALTH_URL = "http://localhost:3001/health"
+# Sibling script (works from the plugin's scripts/ and from an installed skill copy).
+BRIEF_SCRIPT = Path(__file__).parent / "daily_brief.py"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from daily_receipts import (
@@ -33,6 +39,19 @@ from daily_receipts import (
     record_daily_receipt,
     record_terminal_receipt,
 )
+
+
+def server_is_running(url: str = HEALTH_URL, timeout: float = 2) -> bool:
+    """True when the server answers at all; any HTTP status (even 401/404) means it is up."""
+    import urllib.error
+    import urllib.request
+    try:
+        urllib.request.urlopen(url, timeout=timeout)
+        return True
+    except urllib.error.HTTPError:
+        return True
+    except Exception:
+        return False
 
 
 def step_0_readiness(run_id: str, db_path: Path) -> Dict[str, Any]:
@@ -49,14 +68,7 @@ def step_0_readiness(run_id: str, db_path: Path) -> Dict[str, Any]:
     except Exception:
         db_ok = False
 
-    # Check server
-    server_running = False
-    try:
-        import urllib.request
-        urllib.request.urlopen("http://localhost:3001/api/health", timeout=2)
-        server_running = True
-    except Exception:
-        server_running = False
+    server_running = server_is_running()
 
     payload = {
         "status": "COMPLETED" if db_ok else "FAILED",
@@ -66,30 +78,25 @@ def step_0_readiness(run_id: str, db_path: Path) -> Dict[str, Any]:
     return payload
 
 
-def step_1_brief(run_id: str) -> Dict[str, Any]:
-    """Execute Step 1: Morning Brief calculation."""
-    script_path = REPO_ROOT / "plugins" / "portfolio-advisor" / "scripts" / "daily_brief.py"
+def step_1_brief(run_id: str, script_path: Path = BRIEF_SCRIPT) -> Dict[str, Any]:
+    """Execute Step 1: Morning Brief. A failed or unparseable brief is FAILED, never
+    reported as COMPLETED with placeholder values."""
     res = subprocess.run(
         [sys.executable, str(script_path), "--json"],
         capture_output=True,
         text=True,
         cwd=str(REPO_ROOT),
     )
-    if res.returncode == 0:
-        try:
-            data = json.loads(res.stdout)
-            return {
-                "status": "COMPLETED",
-                "macro_regime": data.get("macro_regime", {}).get("regime", "NEUTRAL"),
-                "conviction_count": len(data.get("conviction_scores", [])),
-            }
-        except Exception:
-            pass
-
+    if res.returncode != 0:
+        return {"status": "FAILED", "error": (res.stderr or res.stdout).strip()[-2000:]}
+    try:
+        data = json.loads(res.stdout)
+    except json.JSONDecodeError as e:
+        return {"status": "FAILED", "error": f"brief output was not JSON: {e}"}
     return {
         "status": "COMPLETED",
-        "macro_regime": "NEUTRAL",
-        "conviction_count": 0,
+        "macro_regime": data.get("macro_regime", {}).get("regime", "NEUTRAL"),
+        "conviction_count": len(data.get("conviction_scores", [])),
     }
 
 
@@ -146,10 +153,12 @@ def main() -> int:
             raise RuntimeError("Step 0 readiness check failed")
 
         # Step 1
-        p1 = step_1_brief(run_id)
+        p1 = step_1_brief(run_id, BRIEF_SCRIPT)
         last_chain_hash = record_daily_receipt(
             CONTROL_PLANE_DB, run_id, 1, "BRIEF", p1["status"], p1, args.correlation_id
         )
+        if p1["status"] != "COMPLETED":
+            raise RuntimeError(f"Step 1 morning brief failed: {p1.get('error', 'unknown error')}")
         print("  ✓ Step 1: Morning Brief complete")
 
         if mode == "scan":

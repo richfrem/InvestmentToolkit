@@ -9,7 +9,8 @@ Layer:
     plugins/portfolio-advisor/scripts (Execution & Audit Engine)
 
 Key Functions:
-    - ensure_receipt_index(con): Creates UNIQUE index on verification_receipts(gate_name).
+    - ensure_receipt_index(con): Partial UNIQUE index on daily gate names (table is shared).
+    - _rollback_if_open(con): Roll back only an active transaction (never mask the real error).
     - normalize_numerics(payload): Recursively converts floats to fixed-precision strings.
     - canonical_json(data): Deterministic JSON serialization.
     - compute_receipt_hash(payload): SHA-256 hash of normalized canonical JSON.
@@ -49,11 +50,23 @@ def generate_run_id() -> str:
 
 
 def ensure_receipt_index(con: sqlite3.Connection) -> None:
-    """Ensure unique index on verification_receipts(gate_name) exists."""
+    """Ensure daily gate names (DAILY_RUN_<run_id>_STEP_<n> / _TERMINAL) are unique.
+
+    Partial index: verification_receipts in context/control_plane.db is shared with
+    the work-intake control plane, which legitimately repeats gate names
+    (test_suite, human_gate_proof, ...). A global UNIQUE(gate_name) index cannot be
+    created on that table, which made every /daily run fail at Step 0 (2026-09-29).
+    """
     con.execute(
-        "CREATE UNIQUE INDEX IF NOT EXISTS idx_verification_receipts_gate_name "
-        "ON verification_receipts(gate_name)"
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_verification_receipts_daily_gate "
+        "ON verification_receipts(gate_name) WHERE gate_name LIKE 'DAILY_RUN_%'"
     )
+
+
+def _rollback_if_open(con: sqlite3.Connection) -> None:
+    """Roll back only when a transaction is active, so the original error surfaces."""
+    if con.in_transaction:
+        con.execute("ROLLBACK")
 
 
 def normalize_numerics(obj: Any) -> Any:
@@ -171,7 +184,7 @@ def record_daily_receipt(
         con.execute("COMMIT")
         return chain_hash
     except Exception:
-        con.execute("ROLLBACK")
+        _rollback_if_open(con)
         raise
     finally:
         con.close()
@@ -222,7 +235,7 @@ def record_terminal_receipt(
         con.execute("COMMIT")
         return receipt_token
     except Exception:
-        con.execute("ROLLBACK")
+        _rollback_if_open(con)
         raise
     finally:
         con.close()
