@@ -11,25 +11,13 @@
  * Layer:
  *   Backend / Services / Data Persistence (SQLite-backed repository)
  *
- * Schema-shape contract (must stay in sync with `py_services/domain_model/db_client.py`):
- *   `ensureSchema()` below intentionally transcribes the SAME `CREATE TABLE IF NOT EXISTS`
- *   statements as `db_client.py::initialize_db` for `investment`, `strategy_pillar`,
- *   `sub_strategy`, `projection_version`, and `projection_scenario` (idempotent no-ops
- *   against the real, already-initialized file; load-bearing for fresh temp/`:memory:`
- *   test databases that have no schema yet). Do not invent a parallel/divergent schema.
- *   Python (`db_client.py`) is the single source of truth for this shared schema —
- *   `ensureSchema()` below must ONLY ever run `CREATE TABLE IF NOT EXISTS` /
- *   `CREATE INDEX IF NOT EXISTS` matching that file's DDL verbatim, column-for-column,
- *   including `raw_json`/`legacy_id` on `projection_version` (see below). It must NEVER
- *   run `ALTER TABLE` against the shared file as a side effect of construction — an
- *   earlier version of this file did exactly that (unconditional `ALTER TABLE
- *   projection_version ADD COLUMN ...` in the constructor), which silently mutated the
- *   real production `domain_model.sqlite` the moment anything imported this module,
- *   before `db_client.py` even knew those columns existed. Fixed in the Task 5 review
- *   pass: `db_client.py::initialize_db` now declares `raw_json`/`legacy_id` directly in
- *   its own `CREATE TABLE IF NOT EXISTS projection_version` DDL, and this file's
- *   `ensureSchema()` mirrors that DDL as a plain (no-op-if-already-there) `CREATE TABLE
- *   IF NOT EXISTS`, not a runtime schema migration.
+ * Schema ownership (Python owns it):
+ *   This class creates and alters NO tables. The schema is the numbered SQL files in
+ *   `backend/schema/domain_model/`, applied by `py_services/domain_model/schema_migrator.py`.
+ *   `ensureSchema()` below only verifies `PRAGMA user_version` through
+ *   `utils/schemaVersion.ts` (a brand-new empty file is built by asking the Python
+ *   migrator; a populated file that is behind or ahead is refused with a message).
+ *   To change a table, add the next migration file. Never add DDL here.
  *
  * Round-trip fidelity design decision (`raw_json` / `legacy_id` columns):
  *   The Python schema's `projection_version` table (Task 1/4) has no column for the
@@ -76,6 +64,7 @@
 import Database from 'better-sqlite3';
 import crypto from 'crypto';
 import { Projection, ProjectionSchema } from '../utils/zod-schemas';
+import { ensureSchemaReady } from '../utils/schemaVersion';
 
 interface ProjectionVersionRow {
     projection_id: string;
@@ -133,104 +122,20 @@ export class ProjectionRepository {
 
     constructor(dbPath: string) {
         this.db = new Database(dbPath);
-        this.ensureSchema();
+        this.ensureSchema(dbPath);
     }
 
     close(): void {
         this.db.close();
     }
 
-    /** Transcribed from `py_services/domain_model/db_client.py::initialize_db` — see the
-     * module-level comment above for the sync contract. Idempotent against the real,
-     * already-initialized `domain_model.sqlite` file. */
-    private ensureSchema(): void {
+    /** Connection settings only. The schema itself is owned by Python (see
+     * `utils/schemaVersion.ts`): this verifies the version and never creates or
+     * alters a table. */
+    private ensureSchema(dbPath: string): void {
         this.db.pragma('journal_mode = WAL');
         this.db.pragma('foreign_keys = ON');
-
-        this.db.exec(`
-            CREATE TABLE IF NOT EXISTS strategy_pillar (
-                pillar_id       TEXT PRIMARY KEY,
-                name            TEXT NOT NULL,
-                target_weight   REAL
-            );
-
-            CREATE TABLE IF NOT EXISTS sub_strategy (
-                sub_strategy_id TEXT PRIMARY KEY,
-                pillar_id       TEXT REFERENCES strategy_pillar(pillar_id),
-                name            TEXT NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS investment (
-                investment_id              TEXT PRIMARY KEY,
-                symbol                      TEXT NOT NULL,
-                name                        TEXT,
-                asset_class                 TEXT NOT NULL,
-                currency                    TEXT NOT NULL DEFAULT 'USD',
-                lifecycle_status            TEXT,
-                target_weight               REAL,
-                target_action               TEXT,
-                standing_decision_type      TEXT,
-                standing_decision_reason    TEXT,
-                standing_decision_source    TEXT,
-                standing_decision_review    TEXT,
-                pillar_id                   TEXT REFERENCES strategy_pillar(pillar_id),
-                sub_strategy_id             TEXT REFERENCES sub_strategy(sub_strategy_id),
-                thesis_for_inclusion        TEXT,
-                agent_rationale             TEXT,
-                is_watchlisted              INTEGER NOT NULL DEFAULT 0,
-                watchlist_added_at          TEXT,
-                latest_projection_id        TEXT REFERENCES projection_version(projection_id),
-                latest_research_event_id    TEXT,
-                thesis_breaker_status       TEXT,
-                updated_at                  TEXT NOT NULL,
-                UNIQUE(symbol)
-            );
-
-            CREATE TABLE IF NOT EXISTS projection_version (
-                projection_id         TEXT PRIMARY KEY,
-                investment_id         TEXT NOT NULL REFERENCES investment(investment_id),
-                version               INTEGER NOT NULL,
-                saved_at              TEXT NOT NULL,
-                analyzed_at           TEXT,
-                model                 TEXT,
-                fair_value            REAL,
-                action                TEXT,
-                rationale             TEXT,
-                research_event_id     TEXT,
-                snapshot_json         TEXT,
-                analytics_log_json    TEXT,
-                raw_json              TEXT,
-                legacy_id             TEXT,
-                source                TEXT,
-                UNIQUE(investment_id, version)
-            );
-
-            CREATE TABLE IF NOT EXISTS projection_scenario (
-                scenario_id         TEXT PRIMARY KEY,
-                projection_id       TEXT NOT NULL REFERENCES projection_version(projection_id),
-                scenario_name       TEXT NOT NULL,
-                weight              REAL,
-                growth_rate         REAL,
-                net_margin          REAL,
-                exit_pe             REAL,
-                quality_multiplier  REAL,
-                share_change        REAL,
-                rationale           TEXT,
-                moat_score          INTEGER,
-                management_score    INTEGER,
-                year5_revenue       REAL,
-                year5_net_income    REAL,
-                year5_eps           REAL,
-                scenario_price      REAL,
-                risks_json          TEXT,
-                UNIQUE(projection_id, scenario_name)
-            );
-
-            CREATE INDEX IF NOT EXISTS idx_projection_investment
-                ON projection_version(investment_id);
-            CREATE INDEX IF NOT EXISTS idx_projection_scenario_projection
-                ON projection_scenario(projection_id);
-        `);
+        ensureSchemaReady(this.db, dbPath);
     }
 
     /** Mirrors `investment_repository.py::resolve_investment` — idempotent lookup-or-insert

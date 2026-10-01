@@ -1,3 +1,7 @@
+-- SUPERSEDED (2026-09-30): this file is a historical design document and is NOT what runs.
+-- The live schema is investment_screener/backend/schema/domain_model/NNNN_*.sql, applied by
+-- py_services/domain_model/schema_migrator.py. See docs/architecture/schema-migrations.md.
+--
 -- Domain Data Model Schema (Account / Investment / Account_Investment)
 -- Bounded context: portfolio construction, target/watchlist/holding lifecycle, valuation
 -- pricing, and price-level/alert tracking. ADR-029, docs/architecture/domain-data-model.md

@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import Database from 'better-sqlite3';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -11,6 +12,15 @@ describe('PriceLevelRepository', () => {
     beforeEach(() => {
         dbPath = path.join(os.tmpdir(), `price-level-repo-test-${Date.now()}-${Math.random()}.sqlite`);
         repo = new PriceLevelRepository(dbPath);
+        // The real schema (built by Python) makes price_level_set.investment_id a foreign
+        // key to investment. The old test-only TypeScript table omitted that key, so these
+        // tests used an ID with no investment behind it. Seed the investment, as production does.
+        const seed = new Database(dbPath);
+        seed.prepare(
+            "INSERT INTO investment (investment_id, symbol, asset_class, currency, is_watchlisted, updated_at) " +
+                "VALUES ('NVDA', 'NVDA', 'EQUITY', 'USD', 0, '2026-01-01T00:00:00Z')"
+        ).run();
+        seed.close();
     });
 
     afterEach(() => {

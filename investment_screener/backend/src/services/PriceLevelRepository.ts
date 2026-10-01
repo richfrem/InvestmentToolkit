@@ -20,6 +20,7 @@
  *     price_level_repository.py::get_price_levels's return shape
  */
 import Database from 'better-sqlite3';
+import { ensureSchemaReady } from '../utils/schemaVersion';
 
 export interface PriceTierRow {
     tier: number;
@@ -60,40 +61,19 @@ export class PriceLevelRepository {
 
     constructor(dbPath: string) {
         this.db = new Database(dbPath);
-        this.ensureSchema();
+        this.ensureSchema(dbPath);
     }
 
     close(): void {
         this.db.close();
     }
 
-    private ensureSchema(): void {
+    /** Connection settings only. The schema itself is owned by Python (see
+     * `utils/schemaVersion.ts`): this verifies the version and never creates or
+     * alters a table. */
+    private ensureSchema(dbPath: string): void {
         this.db.pragma('journal_mode = WAL');
-        this.db.exec(`
-            CREATE TABLE IF NOT EXISTS price_level_set (
-                price_level_set_id  TEXT PRIMARY KEY,
-                investment_id       TEXT NOT NULL,
-                schema_version      TEXT,
-                last_updated        TEXT,
-                last_updated_by     TEXT,
-                note                TEXT
-            );
-            CREATE TABLE IF NOT EXISTS price_level_tier (
-                tier_id              TEXT PRIMARY KEY,
-                price_level_set_id   TEXT NOT NULL,
-                tier_kind            TEXT NOT NULL DEFAULT 'BUY_TIER',
-                tier_number          INTEGER NOT NULL,
-                price                REAL,
-                action               TEXT,
-                trim_pct             REAL,
-                order_type           TEXT,
-                basis                TEXT,
-                source               TEXT,
-                source_date          TEXT,
-                condition            TEXT,
-                status               TEXT
-            );
-        `);
+        ensureSchemaReady(this.db, dbPath);
     }
 
     replacePriceLevels(

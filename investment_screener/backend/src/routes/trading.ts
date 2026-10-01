@@ -316,13 +316,10 @@ export function readLog(dbPath: string = DOMAIN_MODEL_DB_FILE): any[] {
  * an entry from the array (cancellation is a status flip, not a delete), so
  * upserting the whole array is equivalent to the old full-file overwrite. */
 export function writeLog(entries: any[], dbPath: string = DOMAIN_MODEL_DB_FILE): void {
-  // InvestmentRepository must open FIRST: its `investment` table DDL has many
-  // more columns than TradeLogRepository's/PortfolioRepository's own minimal
-  // `CREATE TABLE IF NOT EXISTS investment` (needed only for their FK). Since
-  // that's a no-op against an existing table and only sector/industry are in
-  // db_client.py's SCHEMA_EVOLUTIONS self-heal list, opening a narrower
-  // repository first on a fresh DB would permanently lock in a schema missing
-  // lifecycle_status etc. (a real bug caught by this task's own tests).
+  // Open order no longer matters: no repository creates tables any more. The schema is
+  // built once, whole, by the Python migrator (see utils/schemaVersion.ts). Previously each
+  // repository carried its own copy of `investment`, and opening a narrower one first on a
+  // fresh DB would have locked in a table missing lifecycle_status etc.
   const investmentRepo = new InvestmentRepository(dbPath);
   const portfolioRepo = new PortfolioRepository(dbPath);
   const tradeLogRepo = new TradeLogRepository(dbPath);

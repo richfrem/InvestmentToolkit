@@ -6,9 +6,8 @@
  *   (Domain Data Model v3.2, spec s2.7), reading/writing the same physical
  *   `data/domain_model.sqlite` file via `better-sqlite3`. Mirrors
  *   `PortfolioRepository.ts`'s Wave pattern: a thin repository class wrapping the
- *   Node SQLite driver for this table, with `ensureSchema()` transcribing the same
- *   `CREATE TABLE IF NOT EXISTS` DDL as `db_client.py::initialize_db` (idempotent
- *   no-op against the real file; load-bearing for fresh temp/test databases). No
+ *   Node SQLite driver for this table, with `ensureSchema()` verifying the Python-owned schema version
+ *   (`utils/schemaVersion.ts`); Node never creates or alters tables. No
  *   script or service should open its own connection against `trade_log_entry`
  *   outside this class.
  *
@@ -30,6 +29,7 @@
  *   - deleteTradeLogEntry(entryId) - removes the row
  */
 import Database from 'better-sqlite3';
+import { ensureSchemaReady } from '../utils/schemaVersion';
 
 export interface TradeLogEntryRow {
     entry_id: string;
@@ -61,70 +61,20 @@ export class TradeLogRepository {
 
     constructor(dbPath: string) {
         this.db = new Database(dbPath);
-        this.ensureSchema();
+        this.ensureSchema(dbPath);
     }
 
     close(): void {
         this.db.close();
     }
 
-    /** Transcribed from `py_services/domain_model/db_client.py::initialize_db` —
-     * see `PortfolioRepository.ts`'s module docstring for the sync contract this
-     * mirrors. Idempotent against the real, already-initialized file. Includes the
-     * `investment` table since `trade_log_entry.investment_id` is a FK against it,
-     * needed for a fresh temp/test database. */
-    private ensureSchema(): void {
+    /** Connection settings only. The schema itself is owned by Python (see
+     * `utils/schemaVersion.ts`): this verifies the version and never creates or
+     * alters a table. */
+    private ensureSchema(dbPath: string): void {
         this.db.pragma('journal_mode = WAL');
         this.db.pragma('foreign_keys = ON');
-
-        this.db.exec(`
-            CREATE TABLE IF NOT EXISTS account (
-                account_id      TEXT PRIMARY KEY,
-                account_name    TEXT NOT NULL,
-                account_type    TEXT,
-                base_currency   TEXT NOT NULL DEFAULT 'CAD'
-            );
-
-            CREATE TABLE IF NOT EXISTS investment (
-                investment_id              TEXT PRIMARY KEY,
-                symbol                      TEXT NOT NULL,
-                name                        TEXT,
-                sector                      TEXT,
-                industry                    TEXT,
-                pillar_id                   TEXT,
-                asset_class                 TEXT NOT NULL,
-                currency                    TEXT NOT NULL DEFAULT 'USD',
-                updated_at                  TEXT NOT NULL,
-                UNIQUE(symbol)
-            );
-
-            CREATE TABLE IF NOT EXISTS trade_log_entry (
-                entry_id        TEXT PRIMARY KEY,
-                investment_id   TEXT NOT NULL REFERENCES investment(investment_id),
-                account_id      TEXT REFERENCES account(account_id),
-                action          TEXT,
-                shares          REAL,
-                price           REAL,
-                total_cost      REAL,
-                order_type      TEXT,
-                limit_price     REAL,
-                trade_date      TEXT,
-                notes           TEXT,
-                status          TEXT,
-                source          TEXT,
-                priority        TEXT,
-                logged_at       TEXT,
-                tv_order_id     TEXT
-            );
-        `);
-        // Self-heal an existing test/real file created before tv_order_id existed
-        // (mirrors db_client.py's SCHEMA_EVOLUTIONS pattern) -- additive only.
-        const cols = new Set(
-            (this.db.prepare('PRAGMA table_info(trade_log_entry)').all() as Array<{ name: string }>).map(c => c.name)
-        );
-        if (!cols.has('tv_order_id')) {
-            this.db.exec('ALTER TABLE trade_log_entry ADD COLUMN tv_order_id TEXT');
-        }
+        ensureSchemaReady(this.db, dbPath);
     }
 
     /** Mirrors `trade_log_entry_repository.py::upsert_trade_log_entry` — insert-
