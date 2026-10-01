@@ -20,7 +20,20 @@ InvestmentToolkit/
 **npm commands** — always run from `investment_screener/` (workspace root). Never use `--prefix investment_screener` from within `investment_screener/` — doubles the path and fails.
 `npm run dev -w backend | frontend`, `npm run build -w backend | frontend`, `npm run lint -w frontend`.
 
-## Phase 0 Intake & Socratic Gate (Mandatory)
+## On-Demand Skills (Enable / Disable)
+Plugin skills, agents, rules and hooks are on demand. Look for them in `.agents/` first (`.agents/skills/<name>/SKILL.md`, `.agents/agents/`); read `SKILL.md` directly and don't copy assets into `.claude/`. Desired state lives in `.agents/ownership/<plugin>.json` (one JSON line per component with a `should_install` flag).
+
+When the user asks to enable or disable a skill or plugin:
+1. Read `.agents/ownership/<plugin>.json`, find the matching component(s); if several match or none, confirm first.
+2. Set `should_install` to `true`/`false` for only those entries, keeping the one-line-per-component format.
+3. Read `.agents/skills/plugin-syncer/SKILL.md` and run `python3 .agents/skills/plugin-syncer/scripts/sync_with_inventory.py` (`--dry-run` first for large changes). Never `plugin_add.py`: it resets every component to `true`.
+4. Report what was enabled/disabled and what the sync changed.
+
+Disabling removes files, so only the user's explicit request naming the skill or plugin authorizes it ("clean up skills" does not). Never toggle skills on your own initiative; suggest it and let the user decide.
+
+## Phase 0 Intake & Socratic Gate (Mandatory when the control plane is enabled)
+> **Control plane is opt-in:** everything in this section, rule 6 (`PRE-COMPLETION GATE` / Map Debt) and Day-1 step 0 apply only if `.agents/skills/work-intake/SKILL.md` exists. If it is absent, skip them (no `agent_control.py`, no `context/control_plane.db`, no task registration). Disable the Agentic OS skills in `.agents/ownership/agent-agentic-os.json` to cut context bloat.
+
 > Every engineering task, feature proposal, bugfix, or improvement MUST trigger `work-intake` first.
 - Register the task in `context/control_plane.db` via `python3 scripts/agent_control.py init`.
 - Enforce host-native Plan Mode (strictly read-only discovery).
@@ -76,10 +89,11 @@ When dropping into a fresh repository clone, agents MUST execute this sequence t
 | Command | Purpose |
 |---------|---------|
 | `/toolkit-onboarding` | Master Portfolio Bootstrap Wizard: pre-flight check → plugin install → account/pillar setup → broker sync → DCF baseline |
-| `/daily` | Full daily loop: sync → brief → triage → execute → log |
+| `/daily` | The single daily skill (`daily-loop`; absorbed the former `daily-brief`). Full loop: sync → brief → triage → action cards → evolution log → verified receipts |
+| `/daily --scan` | Fast non-interactive morning brief — also "daily scan", "morning scan", `/daily-brief`, "what should I do today". Present the brief from `data/daily-briefs/YYYY-MM-DD.json` following `plugins/portfolio-advisor/references/daily-brief-methodology.md` |
 | `/weekly-review` | Weekend drift + Grok sweep |
-| `/run-advisor` | Post-catalyst: review → calibrate → rebalance |
-| `/tv-portfolio-sync` | Sync portfolio.json from TradingView CDP |
+| Post-catalyst review | `/strategic-review` → `/calibrate-targets` → `/rebalance-portfolio` (the old `/run-advisor` command stub was retired in `eaa53976` in favor of these skills) |
+| `/tv-portfolio-sync` | Sync broker positions from TradingView into `domain_model.sqlite` (`fetch_broker_data.py --snapshot`, all accounts). Preview first with read-only `--positions` (shows only the account selected in the broker panel); never run `--snapshot` when TradingView returns 0 positions (broker panel logged out) |
 
 ## Non-Negotiable Rules
 
@@ -96,7 +110,7 @@ When dropping into a fresh repository clone, agents MUST execute this sequence t
 11. **`ticker` key, not `symbol`**: All investment lookups use the `symbol` column (Python/SQL) or `ticker` key (API JSON responses) — never conflate the two across the Python/TS boundary.
 12. **Sync sweep templates**: When target weights/pillars/sub-strategies change, update "Core Portfolio Thesis Background" in both `daily_sweep.md.template` and `weekly_sweep.md.template`.
 13. **Refine templates on Grok ingest**: After each Grok response, improve prompt templates to guard against observed gaps (grouped tickers, lazy placeholders, TA errors).
-14. **Initialize missing private data**: If any local gitignored data files (e.g., `portfolio.json`, `cash_flows.json`) are missing from `investment_screener/backend/data/`, initialize them by copying their corresponding `.example` files.
+14. **Initialize missing private data**: If any local gitignored data files (e.g., `cash_flows.json`; never `portfolio.json` / `target-portfolio.json`, retired per rule 30) are missing from `investment_screener/backend/data/`, initialize them by copying their corresponding `.example` files.
 15. **Worktree-first is mandatory, not a judgment call**: Before any code/script/multi-file change, create a git worktree first — never decide unilaterally that a task is "small enough" to skip it and work directly on the main checkout. Only a single trivial doc-typo fix is exempt. See [`.agent/rules/git-operations.md`](file:///.agent/rules/git-operations.md) and [`.agent/rules/worktree-subagent-leak-detection.md`](file:///.agent/rules/worktree-subagent-leak-detection.md).
 16. **Worktree lifecycle does not end at "PR created"**: full routine is (1) create worktree/feature branch → (2) implement, commit, push → (3) open PR, **do not merge it yourself unless explicitly told to** → (4) user reviews and merges the PR on GitHub → (5) **you then close the loop**: `git fetch origin`; sync local `main` to `origin/main` (merge or fast-forward — check for other in-progress work first, never force); verify the merged commit is actually an ancestor of `main` (`git merge-base --is-ancestor <branch-tip> main`); once confirmed, remove the now-merged worktree (`ExitWorktree action: "remove"`); delete the local **and remote** feature branch; confirm a clean `git worktree list`/`git branch --list`. **A user telling you "I merged the PR" is the trigger for step 5, not the end of the task** — treat post-merge repository hygiene as a mandatory completion step, not optional cleanup, and do not start next-phase work until it's done.
 17. **No Autonomous Trade Execution (TradingView ToS Compliance)**: In compliance with TradingView's Terms of Use prohibiting non-display automated trading and third-party execution APIs, AI agents are strictly forbidden from placing, modifying, or cancelling live broker orders autonomously. All agent outputs are advisory only; trade execution must remain 100% human-in-the-loop (HITL) executed manually by the user directly in the official broker / TradingView UI. See [`.agent/rules/local-trade-execution-policy.md`](file:///.agent/rules/local-trade-execution-policy.md).
@@ -201,6 +215,8 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 | `investment_screener/backend/data/domain_model.sqlite` | Investment/pillar/price-level/projection/trade/portfolio-policy tables — sole source of truth for portfolio + thesis data (gitignored, self-creating) |
 | `investment_screener/backend/data/intelligence.sqlite` | Research/TA-sweep/prediction event ledger, incl. former `ta-sweep-results.json` data (gitignored, self-creating) |
 | `plugins/tradingview/scripts/ta_sweep_batch.py` | TA sweep orchestrator |
+| `plugins/portfolio-advisor/references/daily-brief-methodology.md` | How to read and act on the daily brief: macro gate (incl. NEUTRAL ≥ +4, degraded data → RISK-OFF), binary event protocol, routing, escalation signals. Linked into the `daily-loop` skill |
+| `plugins/portfolio-advisor/scripts/run_daily.py` | `/daily` runner (receipts in `context/control_plane.db`; verify with `verify_daily_run.py --latest`) |
 | `.agents/` | All skills/agents (Claude, Gemini, Copilot) |
 | `docs/superpowers/status/wave6-program-closure-report.md` | Domain Data Model v3.2 migration program closure report (final state, KPI rollup, retained-JSON rationale) |
 
