@@ -175,7 +175,7 @@ def main() -> int:
             return 0
 
         # Interactive steps 2-5 placeholder for interactive session driver
-        # (In an interactive shell, the agent / daily-loop-agent drives steps 2-5)
+        # (In an interactive shell, the daily-loop skill drives steps 2-5)
         print("Starting interactive loop guidance...")
         return 0
 

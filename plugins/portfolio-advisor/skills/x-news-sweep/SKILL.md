@@ -164,6 +164,11 @@ If ticker not in `target-portfolio.json` holdings at all:
 → `gate_status = CONFIRM`
 → `gate_reason = "Gate 2: {ticker} not in thesis — confirm before adding"`
 
+> **SA LP is a non-signal until its Q3 13F (mid-November 2026).** Situational Awareness LP was forced to sell its public
+> holdings to Citadel on 2026-07-30 (CNBC, TechCrunch). Gates 3, 5 and 10 below were written when its 13F was a live signal;
+> do not let a model's "SA LP reinforces/holds X" claim approve or justify a trade. On 2026-10-01 ChatGPT and Gemini
+> cited the stale 6/30 13F as reinforcing; Grok and Claude Opus correctly reported the liquidation.
+
 ### Gate 3 — SA LP put closure ≠ bullish signal
 If Grok's news mentions "SA LP closed puts" or "covered puts":
 → `gate_status = FLAGGED`

@@ -37,6 +37,32 @@ etc.) was **not independently verified** and must not be treated as fact.
 | Speed / cost | Fast | Fast | Slow (long reasoning), long output |
 | Best use | Breaking news / X sentiment, quick cross-check | Challenge or second opinion, **only after the fact-check gate** | Filings, valuation context, prompt/data auditing |
 
+## Addendum 2026-10-01 (later): Claude Opus 5.5 (web) and two more verified facts
+
+The user ran the same prompt on **Claude Opus 5.5** (web) after the first three. Further facts checked afterwards:
+
+| Claim | Truth | Grok | Gemini | ChatGPT | Opus |
+|---|---|---|---|---|---|
+| SA LP status | Forced to sell its public holdings to Citadel on 2026-07-30 (CNBC, TechCrunch); kept private assets (Anthropic). Its 6/30 13F describes a book that no longer exists. | ✅ reported it | ❌ "reinforces" via stale 13F | ❌ treated 6/30 13F as reinforcing | ✅ reported it, told the user to ignore SA signals until the Q3 13F |
+| Fed | Raised 25bp on 2026-09-16 to 3.75–4.00%, one more hike signalled | implied higher-for-longer | ❌ "rate cuts" | not stated | ✅ |
+| SNDK 9/30 close | $1,739.89 (market data) | — | — | — | ✅ exact |
+| MU after-hours | ~$1,056 (-0.78% from the close) | — | — | — | ✅ |
+| 10-year yield / VIX | 5.31% / ~16–17 | ✅ | ✅ after challenge | ✅ | ✅ (5.342% intraday; VIX 16.04 on 9/29) |
+
+**Opus 5.5 (web), one session:** accurate on every figure I could check; reported "no verified news" rows
+explicitly instead of filling them; stated its limits up front (cannot search X; which Gemini 4 specs are *not*
+disclosed); corrected its own earlier error unprompted; caught the SA LP liquidation; formed independent views
+(e.g. cancel the MU trim, flag the BTDR DCF/fundamentals gap, hold more cash). Weaknesses: **no source links**;
+its SPCX valuation reused the prompt's share count (7.57B) and so did not catch the anchor problem ChatGPT found
+(at the $135 IPO price and $1.77T valuation the implied share count is ~13B, so the prompt's figure is
+unreconciled); its MU "don't trim, target 4.0%" sits below the current 4.3% weight, which is a small internal
+inconsistency. Correction rounds needed: 0.
+
+**Revised picture (still one session):** ChatGPT = best sourced; Opus = best calibrated and most independent, but
+unlinked; Grok = strong on fresh facts, low independence; Gemini = needs the gate and repeated correction.
+The SA LP miss shows ChatGPT's citations do not guarantee it has the latest context — it cited a real 13F that
+was stale. Do not read "linked" as "current".
+
 ## Cadence: which models run when (decided 2026-10-01)
 
 Cost and effort matter, so not every model runs every day.
@@ -91,6 +117,12 @@ Cost and effort matter, so not every model runs every day.
   copied by a model as if it were fresh.
 - **Pre-labelled Actions** in the table cause models to echo them. Consider withholding the
   Action column and asking for an independent view first.
+- **Stale SA LP section (fixed 2026-10-01):** the generated prompt said SA LP's "Q4 2025 top positions" should be flagged as
+  reinforcing the portfolio, but SA LP liquidated its public book on 2026-07-30. Two of four models took the bait.
+  `generate_grok_prompt.py` and the weekly template now state the liquidation (test added); x-news-sweep Gates 3/5/10 carry a
+  non-signal note until the Q3 13F (mid-November).
+- **SPCX share count unreconciled:** the prompt's "7.57B public shares" implies ~$1.1T at $145, but $1.77T at the $135 IPO price
+  implies ~13B shares. Rebuild SPCX's valuation inputs from filings before trusting its DCF.
 - **Targets over-allocated:** held targets sum to 95.0% and the INITIATE targets add 14.5%
   (109.5% total before any watchlist rows). Initiations cannot all be funded without trims.
 

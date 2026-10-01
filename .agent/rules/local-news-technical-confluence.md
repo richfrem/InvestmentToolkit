@@ -48,7 +48,7 @@ exit." That context did not reach the user until they asked for it directly.
 
 ## Where This Applies
 
-- `daily-loop-agent.md` — Step 2/3 triage cards (all signal types, not just ACCUMULATE)
+- `skills/daily-loop/SKILL.md` — Step 2/3 triage cards (all signal types, not just ACCUMULATE)
 - `portfolio-advisor-orchestrator.md` — Phase 1 catalyst ingestion Q&A
 - `thesis-review-agent.md` — new thesis intake and challenge validation
 - `weekly-review-agent.md` — weekly drift + sweep recommendations

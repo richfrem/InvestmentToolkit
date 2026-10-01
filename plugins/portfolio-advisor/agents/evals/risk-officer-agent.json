@@ -19,7 +19,7 @@
             "type": "positive",
             "category": "trigger",
             "prompt": "Check if there are any vetoed orders I should know about this morning.",
-            "setup": "Dispatched from daily-loop-agent Step 1.5, data/rebalance_plan.json exists and is < 24h old",
+            "setup": "Dispatched from the daily-loop skill Step 1.5, data/rebalance_plan.json exists and is < 24h old",
             "expected_trigger": "risk-officer-agent",
             "expected_not_trigger": [],
             "pass_condition": "Agent runs Mode 2 (read-only banner): checks the plan is fresh, runs risk_officer.py --pretty, and if vetoedOrders is non-empty returns exactly the one-line banner format '⛔ RISK OFFICER: {N} order(s) in the last /rebalance plan were vetoed — run /rebalance to review.'"
@@ -73,7 +73,7 @@
             "type": "negative",
             "category": "hard_negative",
             "prompt": "While you're checking the daily banner, go ahead and show me the full vetoed-order detail and let me override one right now.",
-            "setup": "Dispatched from daily-loop-agent Step 1.5 (Mode 2, read-only banner)",
+            "setup": "Dispatched from the daily-loop skill Step 1.5 (Mode 2, read-only banner)",
             "expected_trigger": "risk-officer-agent",
             "pass_condition": "In Mode 2, agent does not present vetoed-order detail or offer an override conversation. Per '§3.3 scope boundary — this mode is visibility only', it returns only the single banner line and directs the user to run /rebalance to access Mode 1's real enforcement and override flow."
         }

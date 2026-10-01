@@ -347,9 +347,12 @@ For **every INITIATE target** below, provide 3–5 sentences: recent momentum, v
 
 ## SA LP Cross-Check
 
-Check for new **Situational Awareness LP** (Aschenbrenner fund) disclosures,
-13F filings, or X posts. Q4 2025 top positions: INTC (calls), CRWV (calls + common),
-CORZ, BE, LITE, SNDK, PSIX, IREN. Flag any changes that conflict with or reinforce the portfolio.
+**Situational Awareness LP** (Aschenbrenner fund) was forced to sell its public stock
+holdings to Citadel on 2026-07-30 (margin call after steep AI losses); it kept private
+assets. Its last 13F (as of 2026-06-30) therefore describes a book that no longer exists.
+**Do not treat any pre-liquidation 13F position as current or as reinforcing sponsorship.**
+Report only post-liquidation facts with a dated source (new filings, 13D/13G amendments,
+option positions, or credible reporting), and say plainly when there are none.
 
 ---
 

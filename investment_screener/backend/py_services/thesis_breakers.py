@@ -389,7 +389,7 @@ def log_breaker_override(
 ) -> None:
     """Append one accountability-trail record for a TRIGGERED-breaker override.
 
-    Called by the daily-loop-agent (not daily_brief.py itself) — only a human
+    Called by the daily-loop skill (not daily_brief.py itself) — only a human
     decision to hold through a TRIGGERED breaker constitutes an "override."
 
     Args:
@@ -433,7 +433,7 @@ def _cli_log_override(
 ) -> None:
     """Resolve a breaker's definition + current state, then log an override.
 
-    Thin wrapper so a caller (the daily-loop-agent, via `--log-override`) only
+    Thin wrapper so a caller (the daily-loop skill, via `--log-override`) only
     needs a ticker, breaker id, and rationale — not thesis_breaker_state.json's
     internal shape.
 
@@ -480,7 +480,7 @@ def _cli_log_override(
 def main() -> None:
     """CLI entry point — evaluate breakers standalone, or log an override.
 
-    --log-override lets the daily-loop-agent record a TRIGGERED-breaker
+    --log-override lets the daily-loop skill record a TRIGGERED-breaker
     override without importing this module directly.
     """
     import argparse

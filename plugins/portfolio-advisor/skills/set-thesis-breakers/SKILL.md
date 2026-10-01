@@ -131,6 +131,6 @@ is no separate `--edit-breaker` flag by design (see
 ## What this skill does NOT do
 - Does not evaluate breakers — that's `daily_brief.py` + `thesis_breakers.py`, every
   `/daily` run.
-- Does not decide overrides when a breaker later triggers — that's the daily-loop-agent's
+- Does not decide overrides when a breaker later triggers — that's the daily-loop skill's
   job during triage, logged via `thesis_breakers.log_breaker_override()`.
 - Does not hand-block on hitting exactly 3 breakers (Step 7).

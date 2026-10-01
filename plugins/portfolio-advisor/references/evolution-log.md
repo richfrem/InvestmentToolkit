@@ -474,3 +474,8 @@ TradingView and Questrade MCP sync paths).
   escalate to ChatGPT on capital-gated actions, imminent binary events, failed gates, signal conflicts or
   unsourced trade-relevant claims; weekly = all available models, which is also when model ratings are re-scored.
 - **User observation (2026-10-01):** Gemini needed 3+ rounds of user call-outs to reach correct figures (it never self-checked). Recorded in `news-sweep-model-assessment.md` as a cost dimension; weekly-only for such a model.
+- **Skill/agent merge (user decision, 2026-10-01):** `daily-loop-agent` folded into the `daily-loop` skill (one interactive skill; no persona switch). Interactive-run verification gap logged as DEBT-20261001-01. After merge: resync `.agents` with plugin-syncer and remove the old agent artifact.
+- **Opus 5.5 comparison and SA LP (2026-10-01):** Opus was accurate on all checked figures and caught the 2026-07-30 SA LP liquidation that
+  ChatGPT and Gemini missed. Prompt fixed (generator + weekly template, test added), x-news-sweep gates annotated, ETF note added to
+  `daily-brief-methodology.md`, model assessment addendum written.
+
