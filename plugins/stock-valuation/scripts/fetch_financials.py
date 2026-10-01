@@ -18,6 +18,7 @@ Key Functions (Index):
     - save_to_cache(ticker, data) - Save data to cache
     - sanitize_json_data(val) - Clean floats/nans for valid JSON serialization
     - compute_performance(hist) - 1D..5Y % changes via shared price_changes.period_changes
+    - overlay_ttm(annual, quarterly, kind) - Appends a TTM column when quarterly data is newer than the last fiscal year
     - fetch_financial_data(ticker_symbol, no_cache) - Primary orchestrator for data retrieval, caching, and transformation
     - main() - Main CLI entry point
 
@@ -199,6 +200,52 @@ def compute_performance(hist: pd.DataFrame) -> dict[str, Optional[float]]:
     return period_changes(dates, [float(c) for c in closes])
 
 
+# Minimum gap between the newest quarter-end and the newest fiscal-year-end before a
+# TTM overlay is worth applying (avoids churning when the annual report is current).
+TTM_MIN_GAP_DAYS = 45
+MAX_STATEMENT_COLUMNS = 5
+
+
+def overlay_ttm(
+    annual: Optional[pd.DataFrame], quarterly: Optional[pd.DataFrame], kind: str
+) -> tuple[Optional[pd.DataFrame], bool]:
+    """Appends a trailing-twelve-month column when the quarterly statement is newer.
+
+    yfinance's annual statements stop at the last fiscal year-end, so mid-year the
+    "latest year" is stale (MU on 2026-10-01: FY25 labelled as TTM). When the newest
+    reported quarter is more than TTM_MIN_GAP_DAYS past the newest annual column, a
+    new newest column dated at that quarter is added: flow items (income / cash flow)
+    become the sum of the last four quarters, point-in-time items (balance sheet) take
+    the latest quarter. A flow row with any missing quarter stays NaN rather than a
+    partial sum. Columns end up ascending and trimmed to MAX_STATEMENT_COLUMNS.
+
+    Args:
+        annual: Annual statement (line items x period-end dates), any column order.
+        quarterly: Quarterly statement in the same shape, any column order.
+        kind: "flow" (sum last four quarters) or "point" (latest quarter).
+
+    Returns:
+        Tuple of (statement, applied). When not applied, the annual frame is returned
+        unchanged (same object) so callers keep their existing behavior.
+    """
+    if annual is None or annual.empty or quarterly is None or quarterly.empty:
+        return annual, False
+    q_cols = sorted(quarterly.columns)
+    if kind == "flow" and len(q_cols) < 4:
+        return annual, False
+    newest_q, newest_a = q_cols[-1], max(annual.columns)
+    if (pd.Timestamp(newest_q) - pd.Timestamp(newest_a)).days <= TTM_MIN_GAP_DAYS:
+        return annual, False
+    if kind == "flow":
+        window = quarterly[q_cols[-4:]]
+        col = window.sum(axis=1, min_count=4)
+    else:
+        col = quarterly[newest_q]
+    out = annual.reindex(sorted(annual.columns), axis=1).copy()
+    out[newest_q] = col.reindex(out.index)
+    return out.iloc[:, -MAX_STATEMENT_COLUMNS:], True
+
+
 def fetch_financial_data(ticker_symbol: str, no_cache: bool = False) -> None:
     """Retrieves and compiles financial statements, analyst targets, and key metrics for a given ticker.
 
@@ -306,6 +353,12 @@ def fetch_financial_data(ticker_symbol: str, no_cache: bool = False) -> None:
         if financials.empty:
             print(json.dumps({"error": "Insufficient financial data"}), file=sys.stderr)
             sys.exit(1)
+
+        # TTM overlay: swap the stale "latest fiscal year" for four reported quarters
+        # when the quarterly statements are newer (see overlay_ttm).
+        financials, ttm_applied = overlay_ttm(financials, stock.quarterly_financials, "flow")
+        cashflow, _ = overlay_ttm(cashflow, stock.quarterly_cashflow, "flow") if ttm_applied else (cashflow, False)
+        balance_sheet, _ = overlay_ttm(balance_sheet, stock.quarterly_balance_sheet, "point") if ttm_applied else (balance_sheet, False)
 
         # SORT FINANCIALS BY DATE (Oldest -> Newest)
         financials = financials.reindex(sorted(financials.columns), axis=1)
@@ -538,10 +591,18 @@ def fetch_financial_data(ticker_symbol: str, no_cache: bool = False) -> None:
                 "profit_margin": round(profit_margin * 100, 2),
                 "forward_pe": forward_pe
             },
+            "periodBasis": (
+                f"TTM through {max(financials.columns).date()}" if ttm_applied
+                else f"FY ending {max(financials.columns).date()}"
+            ),
             "dataQualityFlags": check_margin_consistency(
                 round(profit_margin * 100, 2),
                 hist_net_margin[-1] if hist_net_margin else 0.0,
-            )
+            ) + ([
+                "financials.historical_* final entry is a TTM built from the last four "
+                "reported quarters (annual statement was stale); prior entries are fiscal "
+                "years, so Piotroski year-over-year comparisons overlap by ~9 months."
+            ] if ttm_applied else [])
         }
 
         # 3. Save to Cache
