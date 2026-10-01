@@ -473,3 +473,4 @@ TradingView and Questrade MCP sync paths).
 - **Cadence decision (user, 2026-10-01):** daily sweep = Grok alone with the fact-check and coverage gates;
   escalate to ChatGPT on capital-gated actions, imminent binary events, failed gates, signal conflicts or
   unsourced trade-relevant claims; weekly = all available models, which is also when model ratings are re-scored.
+- **User observation (2026-10-01):** Gemini needed 3+ rounds of user call-outs to reach correct figures (it never self-checked). Recorded in `news-sweep-model-assessment.md` as a cost dimension; weekly-only for such a model.

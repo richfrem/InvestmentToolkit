@@ -33,6 +33,7 @@ etc.) was **not independently verified** and must not be treated as fact.
 | Calibration (admits what it can't verify) | Medium — "no material news" often, but missed APLD's earnings date | Low — specific unverifiable figures (e.g. CoWoS wpm, ATM dilution) | **High** — states what it could not verify, e.g. 1M tokens is output not input |
 | Independence from the prompt | **Low** — every Action in its table equals the prompt's pre-assigned Action | Medium — deviated on several tickers, but copied stale anchors | **High** — challenged the prompt's own numbers and proposed its own destination weights |
 | Error recovery when challenged | not needed | **Good** — corrected figures matched the checks and it withdrew unverified items | not needed |
+| **Correction rounds the user had to spend** | 0 | **3+** (wrong answer, "corrected" answer still stale, then a good one); it fixed errors only when told, never by self-checking | 0 |
 | Speed / cost | Fast | Fast | Slow (long reasoning), long output |
 | Best use | Breaking news / X sentiment, quick cross-check | Challenge or second opinion, **only after the fact-check gate** | Filings, valuation context, prompt/data auditing |
 
@@ -73,6 +74,10 @@ Cost and effort matter, so not every model runs every day.
    either, if they share the prompt's anchor.
 4. **Treat a model's destination weights and Action labels as opinions**, not signals.
    Grok's actions mirrored the prompt, so they carry no independent information.
+5. **User correction time is a real cost.** A model that needs repeated call-outs (Gemini: 3+ rounds on
+   2026-10-01, fixing errors only when told) is not worth a daily slot. Keep it to the weekly comparison, and
+   if it fails the fact-check gate, exclude it for the day rather than coaching it. The evidence-standard
+   bullets in the sweep templates exist to prevent these rounds up front.
 5. **Require a source link for any claim that changes a trade.** A claim with no link and no
    second model confirming it is a lead, not evidence.
 
