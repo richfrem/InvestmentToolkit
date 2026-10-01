@@ -20,7 +20,20 @@ InvestmentToolkit/
 **npm commands** — always run from `investment_screener/` (workspace root). Never use `--prefix investment_screener` from within `investment_screener/` — doubles the path and fails.
 `npm run dev -w backend | frontend`, `npm run build -w backend | frontend`, `npm run lint -w frontend`.
 
-## Phase 0 Intake & Socratic Gate (Mandatory)
+## On-Demand Skills (Enable / Disable)
+Plugin skills, agents, rules and hooks are on demand. Look for them in `.agents/` first (`.agents/skills/<name>/SKILL.md`, `.agents/agents/`); read `SKILL.md` directly and don't copy assets into `.claude/`. Desired state lives in `.agents/ownership/<plugin>.json` (one JSON line per component with a `should_install` flag).
+
+When the user asks to enable or disable a skill or plugin:
+1. Read `.agents/ownership/<plugin>.json`, find the matching component(s); if several match or none, confirm first.
+2. Set `should_install` to `true`/`false` for only those entries, keeping the one-line-per-component format.
+3. Read `.agents/skills/plugin-syncer/SKILL.md` and run `python3 .agents/skills/plugin-syncer/scripts/sync_with_inventory.py` (`--dry-run` first for large changes). Never `plugin_add.py`: it resets every component to `true`.
+4. Report what was enabled/disabled and what the sync changed.
+
+Disabling removes files, so only the user's explicit request naming the skill or plugin authorizes it ("clean up skills" does not). Never toggle skills on your own initiative; suggest it and let the user decide.
+
+## Phase 0 Intake & Socratic Gate (Mandatory when the control plane is enabled)
+> **Control plane is opt-in:** everything in this section, rule 6 (`PRE-COMPLETION GATE` / Map Debt) and Day-1 step 0 apply only if `.agents/skills/work-intake/SKILL.md` exists. If it is absent, skip them (no `agent_control.py`, no `context/control_plane.db`, no task registration). Disable the Agentic OS skills in `.agents/ownership/agent-agentic-os.json` to cut context bloat.
+
 > Every engineering task, feature proposal, bugfix, or improvement MUST trigger `work-intake` first.
 - Register the task in `context/control_plane.db` via `python3 scripts/agent_control.py init`.
 - Enforce host-native Plan Mode (strictly read-only discovery).
