@@ -17,6 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 
+from legacy_db import make_legacy_db  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import (  # noqa: E402
     resolve_investment,
@@ -68,17 +69,8 @@ def test_schema_evolution_self_heals_existing_file(tmp_path):
     """An older file whose investment table predates these columns must gain them
     on the next initialize_db() call (CREATE TABLE IF NOT EXISTS alone cannot)."""
     db_path = str(tmp_path / "old.sqlite")
-    old = sqlite3.connect(db_path)
-    # Mirrors the real pre-completion file: every Wave 0/2 column present
-    # (including pillar_id/lifecycle_status the indexes reference) EXCEPT the two
-    # new sector/industry columns this completion adds.
-    old.execute(
-        "CREATE TABLE investment (investment_id TEXT PRIMARY KEY, symbol TEXT NOT NULL, "
-        "name TEXT, asset_class TEXT NOT NULL, currency TEXT NOT NULL DEFAULT 'USD', "
-        "lifecycle_status TEXT, pillar_id TEXT, updated_at TEXT NOT NULL);"
-    )
-    old.commit()
-    old.close()
+    # Mirrors the real pre-completion file: the baseline minus the late sector/industry columns.
+    make_legacy_db(db_path, drop={"investment": ["sector", "industry", "last_deep_analysis_at"]})
 
     conn = initialize_db(db_path)
     cols = {row[1] for row in conn.execute("PRAGMA table_info(investment);").fetchall()}

@@ -9,6 +9,7 @@ SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from domain_model.db_client import initialize_db  # noqa: E402
+from legacy_db import make_legacy_db  # noqa: E402
 
 EXPECTED_TABLES = {
     "account",
@@ -143,43 +144,9 @@ def test_initialize_db_self_heals_missing_projection_version_columns_on_existing
     # Simulate a database file created under an OLDER schema version: build
     # projection_version by hand, without the three newer columns, and insert a row
     # (mirrors the real file's 115 pre-existing rows).
+    # A realistic pre-migrator file: the baseline schema minus the three late columns.
+    make_legacy_db(db_path, drop={"projection_version": ["source", "last_grok_sweep", "catalyst_updates_json"]})
     old_conn = sqlite3.connect(db_path)
-    old_conn.execute(
-        """
-        CREATE TABLE investment (
-            investment_id TEXT PRIMARY KEY,
-            symbol TEXT NOT NULL,
-            asset_class TEXT NOT NULL,
-            currency TEXT NOT NULL DEFAULT 'USD',
-            lifecycle_status TEXT,
-            pillar_id TEXT,
-            sub_strategy_id TEXT,
-            updated_at TEXT NOT NULL,
-            UNIQUE(symbol)
-        );
-        """
-    )
-    old_conn.execute(
-        """
-        CREATE TABLE projection_version (
-            projection_id      TEXT PRIMARY KEY,
-            investment_id      TEXT NOT NULL REFERENCES investment(investment_id),
-            version             INTEGER NOT NULL,
-            saved_at            TEXT NOT NULL,
-            analyzed_at         TEXT,
-            model               TEXT,
-            fair_value          REAL,
-            action              TEXT,
-            rationale           TEXT,
-            research_event_id   TEXT,
-            snapshot_json       TEXT,
-            analytics_log_json  TEXT,
-            raw_json            TEXT,
-            legacy_id           TEXT,
-            UNIQUE(investment_id, version)
-        );
-        """
-    )
     old_conn.execute(
         "INSERT INTO investment (investment_id, symbol, asset_class, currency, updated_at) "
         "VALUES ('bw-1', 'BW', 'EQUITY', 'USD', '2026-05-01T00:00:00Z');"

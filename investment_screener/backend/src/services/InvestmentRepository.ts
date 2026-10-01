@@ -6,9 +6,8 @@
  *   (ADR-029), reading/writing the same physical `data/domain_model.sqlite` file
  *   via `better-sqlite3`. Mirrors `ProjectionRepository.ts`'s established Wave 1
  *   pattern (Wave 2 Task 9.4 investigation): a thin repository class wrapping the
- *   Node SQLite driver for one table, with `ensureSchema()` transcribing the same
- *   `CREATE TABLE IF NOT EXISTS` DDL as `db_client.py::initialize_db` (idempotent
- *   no-op against the real file; load-bearing for fresh temp/test databases).
+ *   Node SQLite driver for one table, with `ensureSchema()` verifying the Python-owned schema version
+ *   (`utils/schemaVersion.ts`); Node never creates or alters tables.
  *   No script or service should open its own connection against `investment` —
  *   this is the only place that does, per this migration's global constraint.
  *
@@ -44,6 +43,7 @@
  *   - listPillars() - All strategy_pillar rows, mapped to {id, name, targetWeight}
  */
 import Database from 'better-sqlite3';
+import { ensureSchemaReady } from '../utils/schemaVersion';
 
 export interface ThesisHoldingView {
     ticker: string;
@@ -100,73 +100,20 @@ export class InvestmentRepository {
 
     constructor(dbPath: string) {
         this.db = new Database(dbPath);
-        this.ensureSchema();
+        this.ensureSchema(dbPath);
     }
 
     close(): void {
         this.db.close();
     }
 
-    /** Transcribed from `py_services/domain_model/db_client.py::initialize_db` —
-     * see `ProjectionRepository.ts`'s module docstring for the sync contract this
-     * mirrors. Idempotent against the real, already-initialized file; never runs
-     * `ALTER TABLE` against it. */
-    private ensureSchema(): void {
+    /** Connection settings only. The schema itself is owned by Python (see
+     * `utils/schemaVersion.ts`): this verifies the version and never creates or
+     * alters a table. */
+    private ensureSchema(dbPath: string): void {
         this.db.pragma('journal_mode = WAL');
         this.db.pragma('foreign_keys = ON');
-
-        this.db.exec(`
-            CREATE TABLE IF NOT EXISTS strategy_pillar (
-                pillar_id       TEXT PRIMARY KEY,
-                name            TEXT NOT NULL,
-                target_weight   REAL
-            );
-
-            CREATE TABLE IF NOT EXISTS sub_strategy (
-                sub_strategy_id TEXT PRIMARY KEY,
-                pillar_id       TEXT REFERENCES strategy_pillar(pillar_id),
-                name            TEXT NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS investment (
-                investment_id              TEXT PRIMARY KEY,
-                symbol                      TEXT NOT NULL,
-                name                        TEXT,
-                sector                      TEXT,
-                industry                    TEXT,
-                asset_class                 TEXT NOT NULL,
-                currency                    TEXT NOT NULL DEFAULT 'USD',
-                lifecycle_status            TEXT,
-                target_weight               REAL,
-                target_action               TEXT,
-                standing_decision_type      TEXT,
-                standing_decision_reason    TEXT,
-                standing_decision_source    TEXT,
-                standing_decision_review    TEXT,
-                pillar_id                   TEXT REFERENCES strategy_pillar(pillar_id),
-                sub_strategy_id             TEXT REFERENCES sub_strategy(sub_strategy_id),
-                thesis_for_inclusion        TEXT,
-                agent_rationale             TEXT,
-                is_watchlisted              INTEGER NOT NULL DEFAULT 0,
-                watchlist_added_at          TEXT,
-                latest_projection_id        TEXT,
-                latest_research_event_id    TEXT,
-                thesis_breaker_status       TEXT,
-                updated_at                  TEXT NOT NULL,
-                UNIQUE(symbol)
-            );
-
-            CREATE INDEX IF NOT EXISTS idx_investment_pillar ON investment(pillar_id);
-            CREATE INDEX IF NOT EXISTS idx_investment_lifecycle ON investment(lifecycle_status);
-        `);
-        // Deliberately NO ALTER TABLE here — merely opening this repository against
-        // the real, pre-completion domain_model.sqlite must never mutate its
-        // schema (respecting this class's "never ALTER the real file on open"
-        // rule and CLAUDE.md's don't-mutate-gitignored-data rule). Fresh test DBs
-        // get sector/industry from the CREATE TABLE above; the real file's two new
-        // columns are added by db_client.py::_evolve_schema (Python, on any
-        // initialize_db call) OR, failing that, lazily at first write by
-        // updateSectorIndustry() below — never on a read-only open.
+        ensureSchemaReady(this.db, dbPath);
     }
 
     /** Mirrors `investment_repository.py::update_investment_sector` — persist the
@@ -174,15 +121,9 @@ export class InvestmentRepository {
      * completion). Resolves (creating if new) the investment row first, so a
      * symbol seen only via a price refresh still gets its metadata. This is the
      * only TS write path for these two columns, per the "one writer per table"
-     * rule. Lazily self-heals the two columns on the real file at first write
-     * (a genuine write path, never a read-only open) so a pre-completion file
-     * that Python's _evolve_schema hasn't reached yet still accepts the write. */
+     * rule. The two columns are part of the schema baseline (migration 0001), so
+     * there is no runtime ALTER here. */
     updateSectorIndustry(symbol: string, sector: string | null, industry: string | null): void {
-        const cols = new Set(
-            (this.db.prepare('PRAGMA table_info(investment)').all() as Array<{ name: string }>).map(c => c.name)
-        );
-        if (!cols.has('sector')) this.db.exec('ALTER TABLE investment ADD COLUMN sector TEXT');
-        if (!cols.has('industry')) this.db.exec('ALTER TABLE investment ADD COLUMN industry TEXT');
         const investmentId = this.resolveInvestmentId(symbol);
         const now = new Date().toISOString();
         this.db

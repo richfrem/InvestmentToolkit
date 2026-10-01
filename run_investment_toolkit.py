@@ -283,6 +283,34 @@ def start_services_loop(process_env: Dict[str, str]) -> None:
         Colors.print("All services stopped.", Colors.GREEN)
 
 
+# External comment: Back up the SQLite databases, then bring the schema up to date
+def prepare_databases(process_env: Dict[str, str]) -> None:
+    """
+    The gitignored databases hold data git cannot restore, so every launch first takes a
+    verified, WAL-safe backup of each existing one (a failure here warns and continues),
+    then applies pending schema migrations. The migrator takes its own pre-migration
+    backup of a populated file and aborts startup on any problem, so the Node backend
+    never opens a database whose schema it does not understand.
+    """
+    py_services = os.path.join(APP_DIR, "backend", "py_services", "domain_model")
+    data_dir = os.path.join(APP_DIR, "backend", "data")
+
+    for name in ("domain_model", "intelligence"):
+        if not os.path.exists(os.path.join(data_dir, f"{name}.sqlite")):
+            continue
+        result = subprocess.run(
+            [sys.executable, os.path.join(py_services, "db_backup.py"), "backup", "--db", name],
+            env=process_env, capture_output=True, text=True,
+        )
+        if result.returncode == 0:
+            Colors.print(f"💾 {result.stdout.strip()}", Colors.CYAN)
+        else:
+            Colors.print(f"⚠️  Backup of {name}.sqlite FAILED (continuing): {result.stderr.strip()}", Colors.YELLOW)
+
+    Colors.print("Checking database schema...", Colors.GREEN)
+    run_command([sys.executable, os.path.join(py_services, "schema_migrator.py")], env=process_env)
+
+
 # External comment: CLI execution coordinator
 def main() -> None:
     """
@@ -327,7 +355,10 @@ def main() -> None:
     else:
         Colors.print("⚡ Skipping Backend build (--skip-build active)", Colors.CYAN)
 
-    # 6. Start active servers
+    # 6. Back up databases and apply pending schema migrations (before Node opens them)
+    prepare_databases(process_env)
+
+    # 7. Start active servers
     start_services_loop(process_env)
 
 

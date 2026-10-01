@@ -9,6 +9,7 @@
  *   overwrite/replace an existing entry.
  */
 import Database from 'better-sqlite3';
+import { ensureSchemaReady } from '../utils/schemaVersion';
 
 export interface ChangeLogEntry {
     entryId: string;
@@ -23,24 +24,19 @@ export class PortfolioChangeLogRepository {
 
     constructor(dbPath: string) {
         this.db = new Database(dbPath);
-        this.ensureSchema();
+        this.ensureSchema(dbPath);
     }
 
     close(): void {
         this.db.close();
     }
 
-    private ensureSchema(): void {
+    /** Connection settings only. The schema itself is owned by Python (see
+     * `utils/schemaVersion.ts`): this verifies the version and never creates or
+     * alters a table. */
+    private ensureSchema(dbPath: string): void {
         this.db.pragma('journal_mode = WAL');
-        this.db.exec(`
-            CREATE TABLE IF NOT EXISTS portfolio_change_log (
-                entry_id        TEXT PRIMARY KEY,
-                version         TEXT NOT NULL,
-                entry_date      TEXT NOT NULL,
-                note            TEXT NOT NULL,
-                created_at      TEXT NOT NULL
-            );
-        `);
+        ensureSchemaReady(this.db, dbPath);
     }
 
     addEntry(version: string, entryDate: string, note: string, createdAt: string): string {

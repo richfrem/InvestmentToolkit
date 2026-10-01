@@ -112,10 +112,14 @@ investment_screener/backend/data/intelligence.sqlite
 investment_screener/backend/data/intelligence.sqlite-wal
 investment_screener/backend/data/intelligence.sqlite-shm
 
-# Domain-model DB (derived/rebuildable from projections/*.json etc., never committed — ADR-029, Wave 1 Task 4)
+# Domain-model DB — the SOLE source of truth for holdings, accounts, targets and thesis data
+# (ADR-029/030). Never committed and NOT rebuildable from git: protected by db_backup.py instead.
 investment_screener/backend/data/domain_model.sqlite
 investment_screener/backend/data/domain_model.sqlite-wal
 investment_screener/backend/data/domain_model.sqlite-shm
+
+# Verified SQLite backups written by db_backup.py (startup, pre-migration, pre-restore)
+investment_screener/backend/data/backups/
 
 # Runtime secrets (generated at startup, never committed)
 .runtime/

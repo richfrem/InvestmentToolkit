@@ -7,9 +7,8 @@
  *   (ADR-029/030), reading/writing the same physical `data/domain_model.sqlite` file
  *   via `better-sqlite3`. Mirrors `InvestmentRepository.ts`'s Wave 2 pattern: a thin
  *   repository class wrapping the Node SQLite driver for these two tables, with
- *   `ensureSchema()` transcribing the same `CREATE TABLE IF NOT EXISTS` DDL as
- *   `db_client.py::initialize_db` (idempotent no-op against the real file;
- *   load-bearing for fresh temp/test databases). No script or service should open
+ *   `ensureSchema()` verifying the Python-owned schema version
+ *   (`utils/schemaVersion.ts`; Node never creates or alters tables). No script or service should open
  *   its own connection against `account`/`account_investment` outside this class.
  *
  *   `investment` rows themselves (the FK target of `account_investment.investment_id`)
@@ -48,6 +47,7 @@
  *     exchange_rate_repository.py (Wave 3 Task 8, ADR-030 addendum)
  */
 import Database from 'better-sqlite3';
+import { ensureSchemaReady } from '../utils/schemaVersion';
 
 export interface AccountInvestmentRow {
     account_investment_id: string;
@@ -65,91 +65,20 @@ export class PortfolioRepository {
 
     constructor(dbPath: string) {
         this.db = new Database(dbPath);
-        this.ensureSchema();
+        this.ensureSchema(dbPath);
     }
 
     close(): void {
         this.db.close();
     }
 
-    /** Transcribed from `py_services/domain_model/db_client.py::initialize_db` —
-     * see `InvestmentRepository.ts`'s module docstring for the sync contract this
-     * mirrors. Idempotent against the real, already-initialized file. */
-    private ensureSchema(): void {
+    /** Connection settings only. The schema itself is owned by Python (see
+     * `utils/schemaVersion.ts`): this verifies the version and never creates or
+     * alters a table. */
+    private ensureSchema(dbPath: string): void {
         this.db.pragma('journal_mode = WAL');
         this.db.pragma('foreign_keys = ON');
-
-        this.db.exec(`
-            CREATE TABLE IF NOT EXISTS account (
-                account_id      TEXT PRIMARY KEY,
-                account_name    TEXT NOT NULL,
-                account_type    TEXT,
-                base_currency   TEXT NOT NULL DEFAULT 'CAD'
-            );
-
-            CREATE TABLE IF NOT EXISTS investment (
-                investment_id              TEXT PRIMARY KEY,
-                symbol                      TEXT NOT NULL,
-                name                        TEXT,
-                sector                      TEXT,
-                industry                    TEXT,
-                pillar_id                   TEXT,
-                asset_class                 TEXT NOT NULL,
-                currency                    TEXT NOT NULL DEFAULT 'USD',
-                updated_at                  TEXT NOT NULL,
-                UNIQUE(symbol)
-            );
-
-            CREATE TABLE IF NOT EXISTS investment_price (
-                investment_id   TEXT PRIMARY KEY REFERENCES investment(investment_id),
-                price           REAL NOT NULL,
-                currency        TEXT NOT NULL DEFAULT 'USD',
-                fetched_at      TEXT NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS account_investment (
-                account_investment_id   TEXT PRIMARY KEY,
-                account_id              TEXT NOT NULL REFERENCES account(account_id),
-                investment_id           TEXT NOT NULL REFERENCES investment(investment_id),
-                quantity                REAL NOT NULL DEFAULT 0,
-                average_cost            REAL,
-                book_value              REAL,
-                currency                TEXT NOT NULL DEFAULT 'USD',
-                last_synced_at          TEXT NOT NULL,
-                UNIQUE(account_id, investment_id)
-            );
-
-            CREATE INDEX IF NOT EXISTS idx_account_investment_account ON account_investment(account_id);
-            CREATE INDEX IF NOT EXISTS idx_account_investment_investment ON account_investment(investment_id);
-
-            CREATE TABLE IF NOT EXISTS broker_exchange_rate (
-                id              INTEGER PRIMARY KEY CHECK (id = 1),
-                usd_to_cad_rate REAL NOT NULL,
-                synced_at       TEXT NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS broker_reported_total (
-                id              INTEGER PRIMARY KEY CHECK (id = 1),
-                total_usd       REAL NOT NULL,
-                total_cad       REAL,
-                synced_at       TEXT NOT NULL,
-                source          TEXT
-            );
-
-            CREATE TABLE IF NOT EXISTS portfolio_policy (
-                policy_id                                TEXT PRIMARY KEY,
-                rebalance_frequency                      TEXT,
-                portfolio_value_usd_target               REAL,
-                max_marginal_risk_contribution_pct        REAL,
-                max_cluster_variance_contribution_pct      REAL,
-                rebalance_band_relative_pct                REAL,
-                rebalance_band_absolute_pct                REAL,
-                rebalance_band_critical_multiplier          REAL,
-                account_preference_rules_json                TEXT,
-                psu_funding_rule_json                          TEXT,
-                updated_at                                      TEXT NOT NULL
-            );
-        `);
+        ensureSchemaReady(this.db, dbPath);
     }
 
     /** Mirrors `broker_reported_total_repository.py::upsert_broker_reported_total`

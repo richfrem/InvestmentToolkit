@@ -84,7 +84,16 @@ Before setting up investment pipelines, establish the repository's Agentic OS su
            print(f'Initialized: {f}')
    "
    ```
-5. **Verify Symlinks & System Baseline**:
+5. **Create the Databases (schema migrations)**:
+   The schema is owned by Python: numbered SQL files in `investment_screener/backend/schema/domain_model/`,
+   applied by one runner. Never create tables by hand or from Node.
+   ```bash
+   python3 investment_screener/backend/py_services/domain_model/schema_migrator.py
+   python3 investment_screener/backend/py_services/domain_model/schema_migrator.py --status   # expect: pending: none
+   ```
+   `run_investment_toolkit.py` runs this on every launch and takes a verified backup first.
+   See `docs/architecture/schema-migrations.md` (adding migrations, backup and restore).
+6. **Verify Symlinks & System Baseline**:
    ```bash
    python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
    python3 run_tests.py
@@ -115,7 +124,18 @@ Guide the user through their core wealth architecture:
 > - **Option B (Custom Allocation)**: Provide your custom pillars and percentages.
 
 **Idempotency & Execution**:
-Check if accounts/pillars are already seeded (`SELECT COUNT(*) FROM strategy_pillar`). If unseeded, execute the canonical seeding script:
+Check what is already seeded (`SELECT COUNT(*) FROM account`; `SELECT COUNT(*) FROM strategy_pillar`).
+`initialize_db()` creates/updates the schema through the migrator, so the tables always exist (Step 1, item 5).
+
+> **Known gap:** `seed_real_accounts` seeds the three **accounts only**. Nothing seeds
+> `strategy_pillar` or `sub_strategy`: those rows appear only when something calls
+> `pillar_repository.resolve_pillar()` / `resolve_sub_strategy()`, so a fresh install has empty
+> pillar tables, and the pillar IDs offered in Checkpoint B (e.g. `software`) do not match the
+> taxonomy in a populated portfolio. A tracked reference-data catalog (pillars, sub-strategies and
+> their `valuation_model` types) that this step seeds is the next piece of work; do not claim the
+> pillars were "seeded" until it ships.
+
+Seed the accounts:
 ```bash
 python3 -c "
 import sys, sqlite3
