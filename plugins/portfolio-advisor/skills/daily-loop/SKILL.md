@@ -32,6 +32,12 @@ rules that the brief must follow.
 A failed brief ends the run as FAILED (non-zero exit, FAILED terminal receipt); report the
 error instead of presenting stale data.
 
+### News Sweep Models & ETFs
+Before building the sweep prompt or ingesting model responses, read
+`plugins/portfolio-advisor/references/news-sweep-model-assessment.md`: per-model strengths and
+weaknesses (Grok / Gemini Flash / ChatGPT), the fact-check gate, the held-ticker coverage gate,
+and how ETFs (thematic funds such as FOTO, HUMN, KOID) are handled differently from stocks.
+
 ### Deterministic Verification Mandate
 At completion, verify the run against context/control_plane.db:
 `python3 scripts/verify_daily_run.py --latest`

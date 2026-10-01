@@ -202,6 +202,25 @@ When TA shows `RSI_COOLING` + `VOLUME_DRY` + `BIG_DAY` together, check news for 
 that caused the spike — if found, prefer TRIM over EXIT unless news also confirms the thesis
 itself is broken.
 
+**Multi-model sweep & ETF handling (2026-10-01).** Full detail, ratings and the ETF card live in
+`plugins/portfolio-advisor/references/news-sweep-model-assessment.md` — read it before building the
+sweep prompt or ingesting responses. Rules in brief:
+- **Run the sweep on Grok, Gemini and ChatGPT where possible; never average them.** Roles: ChatGPT =
+  filings/valuation/prompt auditing; Grok = breaking news and X sentiment; Gemini = second opinion
+  only after it passes the fact-check gate.
+- **Fact-check gate on ingest:** compare each model's 10-year yield, VIX and any "latest earnings"
+  figures against market data/primary sources. A model that fails is excluded from that day's
+  verdicts (its claims become leads to verify) until it restates them correctly. Record pass/fail.
+- **Coverage gate before sending the prompt:** every held ticker (`quantity > 0`) must appear either
+  in the stock tables or in an ETF/theme section. `generate_grok_prompt.py` excludes tickers that have
+  an `etf_analysis/` file, so ETFs are otherwise unseen.
+- **ETFs (detect via `etf_analysis/{TICKER}.json` or `industry LIKE 'ETF%'`) are not stocks:** no DCF,
+  fair value, earnings, Rule-of-40 or Piotroski. Use the ETF card (NAV premium/discount, AUM/liquidity,
+  expense ratio, top holdings, overlap with direct holdings and INITIATE targets, theme news) and ask
+  the theme's sector questions in the sweep (robotics: HUMN, KOID; photonics: FOTO).
+- Treat model-proposed weights and Action labels as opinions; require a source link for any claim that
+  changes a trade.
+
 After presenting the brief, build a **priority queue** from the signals. Present it as a
 numbered list, ranked by urgency:
 

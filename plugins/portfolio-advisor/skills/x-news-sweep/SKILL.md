@@ -74,7 +74,20 @@ python3 scripts/generate_grok_prompt.py --output /tmp/grok_sweep_prompt.md
 2. **Directly Modify Prompt File with Surgical Inquiries**:
    - Read `/tmp/grok_sweep_prompt.md` (or `temp/grok-prompts/daily_grok_prompt.md`).
    - Use `replace_file_content` to replace the raw default strings in the **Targeted Inquiries & Key Thesis Vulnerabilities** column with rich, tailored inquiries incorporating the live repository context (e.g., flag imminent earnings with exact dates, mandate inquiries on specific deal terms, customer concentrations, or cluster delivery timelines).
-3. **Copy to Clipboard & Report Modifications**:
+3. **Audit the prompt's own anchors (added 2026-10-01).** The generated tables and thesis text feed every
+   model, so one wrong number poisons all of them. Before sending, spot-check against market data / the
+   latest ledger: last-reported quarter for any ticker that reported in the window, IPO/price anchors
+   (2026-10-01: SPCX "IPO $185" was actually $135; MU's "Q3 $41.5B" was a pre-print quarter), and share counts.
+   Fix or delete anything stale or unverifiable.
+4. **Coverage gate (added 2026-10-01).** Every held ticker (`quantity > 0`) must appear in the stock tables
+   or in an ETF/theme section. The generator silently excludes any ticker that has an `etf_analysis/` file,
+   so held thematic ETFs (FOTO, HUMN, KOID) were seen by no model. Until the generator emits an ETF section,
+   append one manually using the ETF/theme question sets in
+   `plugins/portfolio-advisor/references/news-sweep-model-assessment.md` and ground them in the ETF's
+   current top holdings from `etf_analysis/{TICKER}.json`.
+5. **Consider withholding the pre-assigned Action column** (or asking for an independent view first):
+   on 2026-10-01 Grok's actions mirrored it exactly, so they carried no independent information.
+6. **Copy to Clipboard & Report Modifications**:
    - Write the modified prompt back and copy to macOS clipboard (`pbcopy < path`).
    - In the user turn, explicitly summarize the specific thesis inquiry enhancements made during Phase 1.5.
 
@@ -90,7 +103,14 @@ curl -s http://127.0.0.1:9223/json/version >/dev/null 2>&1 && echo "Chrome ready
 
 ## Phase 2 — Receive Grok's Response
 
-When the user pastes Grok's response back, parse **all three parts**:
+When the user pastes a model's response back (Grok, Gemini or ChatGPT — label which), first run the
+**fact-check gate** from `plugins/portfolio-advisor/references/news-sweep-model-assessment.md`: compare
+its 10-year yield, VIX and any "latest earnings" figures to market data / primary sources, and record
+pass/fail with the date. A model that fails is excluded from the day's verdicts (its claims become leads to
+verify) until it restates them correctly. Also confirm the paste is really that model's answer: on
+2026-10-01 a "Gemini" paste turned out to be the prompt echoed back, and another was Grok's text.
+
+Then parse **all three parts**:
 
 **Part 1 — Sweep Table:** extract from each row:
 ```
@@ -168,8 +188,14 @@ Capital sourcing rule: sells must occur in the exact account funding the trade.
 
 ### Gate 9 — Triangulated Multi-Model Verification (Capital Gated)
 For any `INITIATE` recommendation, or any `ACCUMULATE` / `TRIM` involving >20% position changes:
-- **Do not rely on Grok alone.** Grok is sensitive to breaking narrative momentum and management PR, but prone to glossing over GAAP depreciation, share dilution, and debt covenants.
-- Cross-verify the inquiry with **ChatGPT or Claude** for forensic 10-Q accounting checks:
+- **Do not rely on one model.** Measured 2026-10-01 (one session; see
+  `references/news-sweep-model-assessment.md`): Grok is strong on fresh facts and breaking news but its
+  actions mirror the prompt, so its Action labels are not an independent signal and it is prone to glossing
+  over GAAP depreciation, dilution and covenants; Gemini Flash gave a wrong yield and a stale quarter until
+  challenged, so it counts only after passing the fact-check gate; ChatGPT (GPT-6.1 SOL) was the best sourced
+  and best calibrated, and the only one to question the prompt's own numbers.
+- Cross-verify the inquiry with **ChatGPT or Claude** for forensic 10-Q accounting checks. Do not treat
+  two models agreeing as confirmation if they share a prompt anchor, and treat a model's silence as no evidence.
   1. Confirm GAAP vs Non-GAAP adjustments (e.g. M&A inflation in ARR).
   2. Audit cash burn vs debt interest expense (e.g. CoreWeave $640M/qtr interest).
   3. Verify all-in unit production costs including depreciation (e.g. Riot $90.6k/BTC all-in).

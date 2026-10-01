@@ -457,3 +457,16 @@ TradingView and Questrade MCP sync paths).
 - Created `daily_receipts.py` with canonical JSON serialization, float normalization, and `BEGIN IMMEDIATE` transaction isolation with a UNIQUE index on `gate_name`.
 - Added explicit terminal closure receipt (`DAILY_RUN_<run_id>_TERMINAL`) to prevent prefix truncation attacks.
 - Upgraded `verify_daily_run.py` with 4-way cleanup sandboxing and process-liveness checking stale janitor.
+
+## 2026-10-01 — Multi-model news-sweep assessment and ETF awareness
+
+- First sweep run on all three models (Grok, Gemini 3.8 Flash, ChatGPT GPT-6.1 SOL). Gemini gave a
+  wrong 10-year yield (3.84% vs 5.31%) and reused a stale MU quarter, then corrected after challenge;
+  ChatGPT questioned the prompt's own SPCX anchor ($185 vs actual $135 IPO) and noticed a 7.9% coverage gap;
+  Grok's actions mirrored the prompt's pre-assigned Action column. Ratings, fact-check gate and roles are
+  recorded in `references/news-sweep-model-assessment.md`; `daily-loop-agent.md` Step 2 and the skill point to it.
+- **Tool failure (Tier 1, missing capability):** FOTO, HUMN and KOID (thematic ETFs, 7.93% of the portfolio) were
+  absent from the sweep because `generate_grok_prompt.py` excludes every ticker with an `etf_analysis/` file and
+  nothing replaced them. The agent now requires a held-ticker coverage check and an ETF card/sector questions.
+  Prompt-generator change (ETF section + coverage assertion) is a follow-up, not yet built.
+- Open: the brief shows DCF-style actions (`ACCUMULATE`, `pct_to_fv` 2.1/9.5/7.4) for the three ETFs; source not established.
