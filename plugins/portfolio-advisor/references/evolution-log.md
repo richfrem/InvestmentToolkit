@@ -479,3 +479,4 @@ TradingView and Questrade MCP sync paths).
   ChatGPT and Gemini missed. Prompt fixed (generator + weekly template, test added), x-news-sweep gates annotated, ETF note added to
   `daily-brief-methodology.md`, model assessment addendum written.
 - **Correction (2026-10-01):** Opus 5.5's CRDO price (~$150-170) was wrong vs market ($202.66); assessment corrected and a price spot-check added to the fact-check gate.
+- **Post-merge corrections (2026-10-01):** target totals corrected to 17.5% / 112.5% (an earlier figure was an addition error); logged DEBT-20261001-04 (TA sweep writes null indicators but reports success), -05 (`update_targets.py` silent normalization), -06 (target over-allocation recurrence).

@@ -123,8 +123,10 @@ Cost and effort matter, so not every model runs every day.
   non-signal note until the Q3 13F (mid-November).
 - **SPCX share count unreconciled:** the prompt's "7.57B public shares" implies ~$1.1T at $145, but $1.77T at the $135 IPO price
   implies ~13B shares. Rebuild SPCX's valuation inputs from filings before trusting its DCF.
-- **Targets over-allocated:** held targets sum to 95.0% and the INITIATE targets add 14.5%
-  (109.5% total before any watchlist rows). Initiations cannot all be funded without trims.
+- **Targets over-allocated:** targets total **112.5%** (`update_targets.py --show`): 95.0% on held names plus 17.5% on the six
+  uninitiated names (NVDA 5, META 4, VST 3, INTC 2, SYM 2, PSIX 1.5). Initiations cannot all be funded without trims, and any
+  `update_targets.py --write` silently rescales every target (see DEBT-20261001-05). (An earlier version of this file said
+  14.5% / 109.5%; that was an addition error.)
 
 ## Maintenance
 
