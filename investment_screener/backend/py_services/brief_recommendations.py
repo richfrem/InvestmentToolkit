@@ -53,6 +53,9 @@ STANDING_DECISIONS_PATH = (
 
 _ACTIONABLE_BANDS = frozenset({"EXIT", "REDUCE", "ACCUMULATE"})
 
+# Overweight (in percentage points) beyond which a REDUCE signal proposes a trim back to target.
+_TRIM_BAND_PP = 0.5
+
 
 def load_standing_decisions(path: Path = STANDING_DECISIONS_PATH) -> dict[str, Any]:
     """Load the user's standing decisions keyed by ticker.
@@ -168,10 +171,27 @@ def build_recommendations(
                 trim_pct = actual
                 base["recommendation"] = "SELL"
                 verb = f"selling the full {actual:.1f}% position"
-            else:
-                trim_pct = -gap if (gap is not None and gap < -0.5) else actual / 2
+            elif gap is not None and gap < -_TRIM_BAND_PP:
+                trim_pct = -gap
                 base["recommendation"] = "TRIM"
                 verb = f"trimming {trim_pct:.1f}% of portfolio back toward target"
+            else:
+                # REDUCE comes from the DCF score; with no material overweight there is no
+                # basis to size a sell (AGENTS rule 9: DCF never silently overrides targets).
+                # This used to fall through to `actual / 2` and propose selling half of a
+                # position that was at or under target (RIOT, MU on 2026-10-01).
+                target = s.get("target_weight")
+                where = (f"{actual:.1f}% vs a {target:.1f}% target"
+                         if target is not None else f"{actual:.1f}% with no target weight")
+                base["recommendation"] = "HOLD"
+                base["rationale"] = (
+                    f"{_signal_summary(s)}. Weight is within {_TRIM_BAND_PP:.1f}pp of target "
+                    f"({where}), so no trade is proposed; the REDUCE signal alone does not "
+                    f"size a sale. Review the thesis if you want to cut it."
+                    f"{_earnings_note(earn)}"
+                )
+                sells.append(base)
+                continue
             value = round(trim_pct / 100 * total_equity, 2)
             base["proposedTrade"] = {
                 "side": "sell", "ticker": s["ticker"], "approxValueUSD": value,
