@@ -49,17 +49,17 @@ The user ran the same prompt on **Claude Opus 5.5** (web) after the first three.
 | MU after-hours | ~$1,056 (-0.78% from the close) | — | — | — | ✅ |
 | 10-year yield / VIX | 5.31% / ~16–17 | ✅ | ✅ after challenge | ✅ | ✅ (5.342% intraday; VIX 16.04 on 9/29) |
 
-**Opus 5.5 (web), one session:** accurate on every figure I could check; reported "no verified news" rows
+**Opus 5.5 (web), one session:** accurate on nearly every figure I checked (SNDK close, MU after-hours, PLTR, BE, NVDA, SYM, PSIX, yield, VIX, Fed, SA LP), with **one material miss**: it put CRDO at "~$150–170, back near your $149 entry" when it closed at $202.66 (+36% above the entry), and its "build to 3.0% now" call rested on that. Always price-check a model's entry-zone claim before acting. It reported "no verified news" rows
 explicitly instead of filling them; stated its limits up front (cannot search X; which Gemini 4 specs are *not*
 disclosed); corrected its own earlier error unprompted; caught the SA LP liquidation; formed independent views
 (e.g. cancel the MU trim, flag the BTDR DCF/fundamentals gap, hold more cash). Weaknesses: **no source links**;
 its SPCX valuation reused the prompt's share count (7.57B) and so did not catch the anchor problem ChatGPT found
 (at the $135 IPO price and $1.77T valuation the implied share count is ~13B, so the prompt's figure is
 unreconciled); its MU "don't trim, target 4.0%" sits below the current 4.3% weight, which is a small internal
-inconsistency. Correction rounds needed: 0.
+inconsistency. Correction rounds needed: 0 (the CRDO price error was found by the agent's own check, not by the user).
 
 **Revised picture (still one session):** ChatGPT = best sourced; Opus = best calibrated and most independent, but
-unlinked; Grok = strong on fresh facts, low independence; Gemini = needs the gate and repeated correction.
+unlinked and wrong on one price; Grok = strong on fresh facts, low independence; Gemini = needs the gate and repeated correction.
 The SA LP miss shows ChatGPT's citations do not guarantee it has the latest context — it cited a real 13F that
 was stale. Do not read "linked" as "current".
 
@@ -92,7 +92,7 @@ Cost and effort matter, so not every model runs every day.
 2. **Fact-check gate before a model's answer counts** (run it right after ingest). Compare the
    model's stated macro numbers against market data: 10-year yield (`^TNX`), VIX (`^VIX`), and for
    any ticker the model says reported earnings in the window, the latest quarterly revenue.
-   A model that misses a gate item by a clear margin is **excluded from the verdicts for that
+   Also spot-check any price a model quotes for a name we may trade (entry-zone claims especially). A model that misses a gate item by a clear margin is **excluded from the verdicts for that
    day** (its claims become "leads to verify"), not down-weighted. Re-admit it only after it
    restates the figures correctly (Gemini did this after one challenge round).
 3. **Silence from a model is not confirmation.** Today Gemini repeated the wrong SPCX $185

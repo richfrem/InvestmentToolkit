@@ -478,4 +478,4 @@ TradingView and Questrade MCP sync paths).
 - **Opus 5.5 comparison and SA LP (2026-10-01):** Opus was accurate on all checked figures and caught the 2026-07-30 SA LP liquidation that
   ChatGPT and Gemini missed. Prompt fixed (generator + weekly template, test added), x-news-sweep gates annotated, ETF note added to
   `daily-brief-methodology.md`, model assessment addendum written.
-
+- **Correction (2026-10-01):** Opus 5.5's CRDO price (~$150-170) was wrong vs market ($202.66); assessment corrected and a price spot-check added to the fact-check gate.
