@@ -60,11 +60,11 @@
             "type": "near_miss",
             "category": "agent_conflict",
             "prompt": "/daily",
-            "expected_trigger": "daily-loop-agent",
+            "expected_trigger": "daily_loop",
             "expected_not_trigger": [
                 "portfolio-advisor-orchestrator"
             ],
-            "pass_condition": "Agent routes to daily-loop-agent, not portfolio-advisor-orchestrator. The orchestrator is the post-catalyst 5-phase lifecycle (triggered after a 13F filing or news sweep), while /daily is the separate, higher-frequency daily triage cadence — these are explicitly not meant to be merged."
+            "pass_condition": "Agent routes to the daily-loop skill, not portfolio-advisor-orchestrator. The orchestrator is the post-catalyst 5-phase lifecycle (triggered after a 13F filing or news sweep), while /daily is the separate, higher-frequency daily triage cadence — these are explicitly not meant to be merged."
         }
     ],
     "benchmark_targets": {

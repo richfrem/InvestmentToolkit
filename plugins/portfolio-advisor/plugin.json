@@ -112,11 +112,6 @@
     ],
     "agents": [
         {
-            "name": "daily_loop_agent",
-            "path": "agents/daily-loop-agent.md",
-            "trigger": "/daily"
-        },
-        {
             "name": "portfolio_advisor_orchestrator",
             "path": "agents/portfolio-advisor-orchestrator.md",
             "trigger": "/run-advisor"

@@ -96,3 +96,24 @@ def test_no_longer_references_target_portfolio_json():
     assert "target-portfolio.json" not in src
     assert "THESIS_JSON" not in src
     assert "compute_target" not in src
+
+
+def test_sa_lp_section_reflects_the_july_2026_liquidation(tmp_path, monkeypatch):
+    """2026-10-01: the prompt told every model that SA LP's Q4 2025 positions
+    "reinforce the portfolio". Situational Awareness LP was forced to sell its public
+    holdings to Citadel on 2026-07-30 (CNBC, TechCrunch), so ChatGPT and Gemini treated
+    stale 6/30 13F data as a live, reinforcing signal while Grok and Opus got it right.
+    The prompt must not present the old position list as current sponsorship and must
+    tell the model the fund's public book was liquidated.
+    """
+    db_path = tmp_path / "test.sqlite"
+    _seed_thesis_holding(db_path)
+    monkeypatch.setattr(generate_grok_prompt, "DB_PATH", db_path)
+
+    prompt = generate_grok_prompt.build_prompt("2026-10-01")
+
+    sa_section = prompt.split("## SA LP Cross-Check", 1)[1].split("## Output Format", 1)[0]
+    assert "Q4 2025 top positions" not in sa_section
+    assert "2026-07-30" in sa_section
+    assert "liquidat" in sa_section.lower()
+    assert "do not treat" in sa_section.lower()

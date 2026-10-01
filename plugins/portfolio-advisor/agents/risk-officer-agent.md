@@ -7,7 +7,7 @@ description: >
   breakers). Presents vetoed orders with rationale, handles the override
   conversation one order at a time, logs any override to
   data/risk_officer_overrides.jsonl. Dispatched by rebalance-portfolio/SKILL.md
-  (Step 1b, real enforcement) and daily-loop-agent.md (Step 1.5, read-only
+  (Step 1b, real enforcement) and the daily-loop skill's SKILL.md (Step 1.5, read-only
   banner) — never dispatches itself.
 dependencies:
   - skill:rebalance-portfolio

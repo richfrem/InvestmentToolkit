@@ -457,3 +457,25 @@ TradingView and Questrade MCP sync paths).
 - Created `daily_receipts.py` with canonical JSON serialization, float normalization, and `BEGIN IMMEDIATE` transaction isolation with a UNIQUE index on `gate_name`.
 - Added explicit terminal closure receipt (`DAILY_RUN_<run_id>_TERMINAL`) to prevent prefix truncation attacks.
 - Upgraded `verify_daily_run.py` with 4-way cleanup sandboxing and process-liveness checking stale janitor.
+
+## 2026-10-01 — Multi-model news-sweep assessment and ETF awareness
+
+- First sweep run on all three models (Grok, Gemini 3.8 Flash, ChatGPT GPT-6.1 SOL). Gemini gave a
+  wrong 10-year yield (3.84% vs 5.31%) and reused a stale MU quarter, then corrected after challenge;
+  ChatGPT questioned the prompt's own SPCX anchor ($185 vs actual $135 IPO) and noticed a 7.9% coverage gap;
+  Grok's actions mirrored the prompt's pre-assigned Action column. Ratings, fact-check gate and roles are
+  recorded in `references/news-sweep-model-assessment.md`; `daily-loop-agent.md` Step 2 and the skill point to it.
+- **Tool failure (Tier 1, missing capability):** FOTO, HUMN and KOID (thematic ETFs, 7.93% of the portfolio) were
+  absent from the sweep because `generate_grok_prompt.py` excludes every ticker with an `etf_analysis/` file and
+  nothing replaced them. The agent now requires a held-ticker coverage check and an ETF card/sector questions.
+  Prompt-generator change (ETF section + coverage assertion) is a follow-up, not yet built.
+- Open: the brief shows DCF-style actions (`ACCUMULATE`, `pct_to_fv` 2.1/9.5/7.4) for the three ETFs; source not established.
+- **Cadence decision (user, 2026-10-01):** daily sweep = Grok alone with the fact-check and coverage gates;
+  escalate to ChatGPT on capital-gated actions, imminent binary events, failed gates, signal conflicts or
+  unsourced trade-relevant claims; weekly = all available models, which is also when model ratings are re-scored.
+- **User observation (2026-10-01):** Gemini needed 3+ rounds of user call-outs to reach correct figures (it never self-checked). Recorded in `news-sweep-model-assessment.md` as a cost dimension; weekly-only for such a model.
+- **Skill/agent merge (user decision, 2026-10-01):** `daily-loop-agent` folded into the `daily-loop` skill (one interactive skill; no persona switch). Interactive-run verification gap logged as DEBT-20261001-01. After merge: resync `.agents` with plugin-syncer and remove the old agent artifact.
+- **Opus 5.5 comparison and SA LP (2026-10-01):** Opus was accurate on all checked figures and caught the 2026-07-30 SA LP liquidation that
+  ChatGPT and Gemini missed. Prompt fixed (generator + weekly template, test added), x-news-sweep gates annotated, ETF note added to
+  `daily-brief-methodology.md`, model assessment addendum written.
+- **Correction (2026-10-01):** Opus 5.5's CRDO price (~$150-170) was wrong vs market ($202.66); assessment corrected and a price spot-check added to the fact-check gate.

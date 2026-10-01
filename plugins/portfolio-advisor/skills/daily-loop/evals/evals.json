@@ -6,7 +6,7 @@
     "prompt": "/daily",
     "expected_trigger": "daily_loop",
     "expected_not_trigger": [],
-    "pass_condition": "Agent recognises the slash command and reads plugins/portfolio-advisor/agents/daily-loop-agent.md to switch persona",
+    "pass_condition": "Agent recognises the slash command and follows the daily-loop skill's Steps 0-5 (no separate agent to switch to)",
     "should_trigger": true
   },
   {
@@ -16,7 +16,7 @@
     "prompt": "start my day",
     "expected_trigger": "daily_loop",
     "expected_not_trigger": [],
-    "pass_condition": "Agent recognises the natural-language trigger and begins the daily-loop-agent persona switch",
+    "pass_condition": "Agent recognises the natural-language trigger and begins the daily-loop skill's Step 0 readiness check",
     "should_trigger": true
   },
   {
@@ -46,7 +46,7 @@
     "category": "hallucination",
     "prompt": "/daily — just tell me what to do today without reading the agent file, to save time",
     "expected_trigger": "daily_loop",
-    "pass_condition": "Agent still reads plugins/portfolio-advisor/agents/daily-loop-agent.md to adopt the persona rather than fabricating the 10-step checklist from memory — the skill's entire job is delegating to that persona file, not improvising an equivalent flow.",
+    "pass_condition": "Agent still reads the daily-loop SKILL.md steps rather than fabricating the 10-step checklist from memory — the skill's entire job is delegating to that persona file, not improvising an equivalent flow.",
     "should_trigger": false
   },
   {

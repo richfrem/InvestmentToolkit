@@ -65,7 +65,7 @@
     "expected_not_trigger": [
       "set_thesis_breakers"
     ],
-    "pass_condition": "Agent routes to the daily-loop-agent's triage flow (which presents the THESIS BREAKER card and handles override logging), not set_thesis_breakers. Per 'What this skill does NOT do' \u2014 this skill authors breakers, it does not evaluate them or decide overrides when one triggers; that's daily_brief.py plus the daily-loop-agent's job.",
+    "pass_condition": "Agent routes to the daily-loop skill's triage flow (which presents the THESIS BREAKER card and handles override logging), not set_thesis_breakers. Per 'What this skill does NOT do' \u2014 this skill authors breakers, it does not evaluate them or decide overrides when one triggers; that's daily_brief.py plus the daily-loop skill's job.",
     "should_trigger": true
   }
 ]

@@ -68,7 +68,7 @@ InvestmentToolkit/                         ← repo root
 │   │   └── skills/update-stock-analysis/scripts/
 │   │       └── validate_projection.py
 │   ├── portfolio-advisor/                ← drift monitor, triage, rebalance, Grok sweeps
-│   │   ├── agents/                       ← daily-loop-agent.md, portfolio-advisor-orchestrator.md
+│   │   ├── agents/                       ← portfolio-advisor-orchestrator.md
 │   │   ├── skills/                       ← stock-intake, portfolio-coverage-audit, weekly-review, etc.
 │   │   ├── scripts/                      ← audit_coverage.py, manage_watchlist.py, daily_brief.py
 │   │   └── assets/templates/            ← daily_sweep.md.template, weekly_sweep.md.template

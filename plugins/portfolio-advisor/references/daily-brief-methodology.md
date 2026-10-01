@@ -82,7 +82,7 @@ drift or valuation logic.
 |---|---|
 | Trim / exit a ticker | `/rebalance` or `/place-order sell` |
 | Accumulate a ticker | Check its `TARGET_ENTRY` price level (domain_model `price_level_tier`) first, then `/place-order buy` |
-| News context | `/x-news-sweep` |
+| News context | `/x-news-sweep` (model roles, fact-check gate and ETF handling: `references/news-sweep-model-assessment.md`) |
 | Re-evaluate the thesis | `/strategic-review` |
 | Update DCF | `/update-stock-analysis TICKER` |
 
@@ -111,3 +111,12 @@ running, warn that conviction scores are partially stale and offer to re-run it.
    macro improves", never as actionable.
 3. Binary event protocol first for holdings within 14 days of earnings.
 4. Warn about stale TA as above.
+
+## ETFs in the brief
+
+Thematic ETFs (e.g. FOTO, HUMN, KOID; detect via an `etf_analysis/{TICKER}.json` file or `industry LIKE 'ETF%'`) are not
+stocks: a company DCF, fair value, earnings date, Rule of 40 or Piotroski does not apply. As of 2026-10-01 the brief still
+scores them with DCF-style points and `pct_to_fv` whose source is not established, so do not present those as a valuation.
+Judge them on NAV premium/discount, AUM/liquidity, expense ratio, top-holdings composition, overlap with directly held
+stocks and INITIATE targets, and the theme's news (see the ETF card in the daily-loop skill).
+
