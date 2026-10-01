@@ -1,39 +1,68 @@
 # MU Research Timeline
 
-## 2026-09-01 — Autonomous DCF Refresh & HBM Memory Supercycle
+## 2026-09-30 — MU research update v4 (Claude Opus 5.5, post-FY26)
 
-# MU — Micron Technology, Inc.
-**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: MAINTAIN | **Fair Value**: $695.61 vs $938.32 (-25.9%)
+# MU — Research Update 2026-09-30 (v4, Claude Opus 5.5)
 
-### Executive Summary
-Micron Technology is riding a historic High-Bandwidth Memory (HBM3e/HBM4) supercycle with capacity sold out through 2027 to leading AI accelerator vendors (NVIDIA, AMD). TTM revenue surged **+345.7% YoY to $37.38B** with gross margins expanding into peak-cycle territory. While our cycle-disciplined DCF yields **$695.61** (incorporating historical memory downcycle probabilities), Wall Street consensus stands at **$1,513.41** (44 analysts, Strong Buy) under a forward P/E of just 6.05x. As an active core holding (1.2 shares, 3.55% target weight), Rule 9 standing decision is firmly **`MAINTAIN`**.
+**Action: TRIM toward target weight** · Fair value $700.25 vs price $1,065.11 (-34.3%) · WACC 14.0% · Confidence 0.50
 
-### Key Financials & Valuation
-| Metric | Value |
-|---|---|
-| Current Price | $938.32 |
-| Fair Value (DCF Floor) | **$695.61** (-25.9%) |
-| Wall Street Mean Target | **$1,513.41** (44 analysts, Strong Buy) |
-| WACC | 11.46% |
-| TTM Revenue | $37.38B (+345.7% YoY) |
-| Diluted Shares | 1.13B |
-| Reverse DCF Implied CAGR | 53.9% (`PRICING_IN_MORE_THAN_BULL`) |
-| Strategy Pillar | `compute` (`semiconductor-manufacturing`) |
-| Portfolio Position | 1.2 shares (3.55% target weight) |
+## What happened
+FY26 results (reported 2026-09-30): revenue $133.19B (+256%), Q4 revenue $54.23B, Q1 FY27 guide $61.5B revenue and about $38.15 EPS. Micron also signed 16 multi-year supply contracts with price floors and deposits, covering about 20% of DRAM/HBM and 33% of NAND volume.
 
-### Scenario Breakdown
-- **🐻 Bear (25% weight)**: $53.02 PV (15% CAGR to $75.2B Y5, 16% net margin, 10x PE). Severe memory downcycle following industry-wide HBM capacity overbuild.
-- **⚖️ Base (50% weight)**: $506.00 PV (36% CAGR to $173.9B Y5, 32% net margin, 16x PE). HBM3e/HBM4 multi-year LTAs maintain tight supply-demand and premium pricing.
-- **🚀 Bull (25% weight)**: $1,717.40 PV (50% CAGR to $283.8B Y5, 42% net margin, 22x PE). Micron captures #1 market share in HBM4/HBM4e and CXL enterprise memory.
+## Valuation
+| Scenario | Weight | Value/share |
+|---|---|---|
+| Bear: memory glut, 15% margin, 10x | 30% | $163.85 |
+| Base: FY27 boom then normalization, 35% margin, 14x | 50% | $643.18 |
+| Bull: contracts hold revenue near $290B, 50% margin, 18x | 20% | $1,647.55 |
 
-### Recommendation & Execution Tiers
-- **Lifecycle Status**: `core`
-- **Action**: **`MAINTAIN`**
-- **Target Entry / Pullback Support**: $848.55 (Keltner Channel Lower Band)
-- **Trim Tier 1**: $1,050.00+
-- **Stop Loss / Breaker**: $790.00
+Each scenario includes cash accumulated through FY31.
 
----
+- Reverse DCF: the price implies about 24.3% annual growth at a 35% margin, which is more than the bull case.
+- Monte Carlo (excludes accumulated cash): p10 $316.19 / p50 $497.82 / p90 $733.09.
+- Comps: unusable (negative peer EV/Sales data); excluded.
+- Analyst mean target: $1,520.76 (46 analysts), which assumes the boom lasts.
+
+## Why TRIM, not EXIT
+The operations are excellent and the forward P/E is about 6.6x on consensus. The disagreement is about how long the cycle lasts. MU is overweight (about 4.3% vs a 3.48% target), so trimming to target locks in part of the gain and keeps the thesis exposure.
+
+## What would change this
+Contracted share above about 50% of DRAM/HBM volume, an FY28 guide above the $285.5B consensus, or competitor capacity discipline.
+
+*Replaces v3 (Gemini 3.7 Flash, FV $695.61, 2026-09-01), which used FY25 revenue as TTM.*
+
+
+## 2026-09-29 — TA Sweep for MU
+
+Batch technical indicators for MU.
+
+## 2026-09-03 — TA Sweep for MU
+
+Batch technical indicators for MU.
+
+## 2026-09-02 — TA Sweep for MU
+
+Batch technical indicators for MU.
+
+## 2026-08-28 — TA Sweep for MU
+
+Batch technical indicators for MU.
+
+## 2026-08-25 — TA Sweep for MU
+
+Batch technical indicators for MU.
+
+## 2026-08-21 — TA Sweep for MU
+
+Batch technical indicators for MU.
+
+## 2026-08-13 — TA Sweep for MU
+
+Batch technical indicators for MU.
+
+## 2026-07-23 — TA Sweep for MU
+
+Batch technical indicators for MU.
 
 ## 2026-05-02 — MU research import (2026-05-02)
 
@@ -230,3 +259,7 @@ AI/HBM demand drives an extraordinary near-term surge (FY2026-FY2027 following a
 ## Sources Unavailable
 - None
 
+
+## 2026-05-02 — Prediction claim: MU dcf_fair_value (2026-05-02)
+
+Direction: bullish, horizon: 180 days.
