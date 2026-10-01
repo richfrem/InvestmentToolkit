@@ -36,9 +36,29 @@ etc.) was **not independently verified** and must not be treated as fact.
 | Speed / cost | Fast | Fast | Slow (long reasoning), long output |
 | Best use | Breaking news / X sentiment, quick cross-check | Challenge or second opinion, **only after the fact-check gate** | Filings, valuation context, prompt/data auditing |
 
+## Cadence: which models run when (decided 2026-10-01)
+
+Cost and effort matter, so not every model runs every day.
+
+- **Daily: Grok alone by default** (fast, strongest on fresh news). It is only acceptable with
+  two safeguards that need no second model: the **fact-check gate** (10-year yield, VIX, any
+  just-reported earnings vs market data) and the **coverage gate** (every held ticker, ETFs
+  included). Treat its Action labels as non-independent and its un-linked claims as leads.
+- **Escalate to a second model (ChatGPT first) on the same day when any of these happens:**
+  an INITIATE, or an ACCUMULATE/TRIM changing a position by >20% (existing Gate 9); a binary event
+  within 7 days on a position being acted on; Grok fails the fact-check gate; Grok's view
+  conflicts with the brief's DCF/TA signal on a trade-relevant ticker; or a claim would change
+  a trade but has no source link.
+- **Weekly: run all available models** (Grok, ChatGPT, Gemini Flash, and Claude Opus when the
+  user supplies it) using the weekly template. This is also when the ratings above are re-scored:
+  record each model's fact-check pass/fail and any new verified strength or error, and revise
+  the table only when a pattern repeats across weeks.
+- **Learning cost is near zero:** every daily Grok run still records its fact-check result, so the
+  ratings keep accumulating evidence without a daily multi-model run.
+
 ## How the daily scan should use them
 
-1. **Default: run all three on the same prompt**, but never average them. Their errors differ,
+1. **When more than one model runs (weekly, or on escalation), use the same prompt** and never average them. Their errors differ,
    which is the value. Feed results into the existing `[CONFLUENCE] / [PARTIAL] / [CONFLICT]`
    verdicts. If only one can run, use ChatGPT for the filings/valuation view and Grok for
    news flow.

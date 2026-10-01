@@ -470,3 +470,6 @@ TradingView and Questrade MCP sync paths).
   nothing replaced them. The agent now requires a held-ticker coverage check and an ETF card/sector questions.
   Prompt-generator change (ETF section + coverage assertion) is a follow-up, not yet built.
 - Open: the brief shows DCF-style actions (`ACCUMULATE`, `pct_to_fv` 2.1/9.5/7.4) for the three ETFs; source not established.
+- **Cadence decision (user, 2026-10-01):** daily sweep = Grok alone with the fact-check and coverage gates;
+  escalate to ChatGPT on capital-gated actions, imminent binary events, failed gates, signal conflicts or
+  unsourced trade-relevant claims; weekly = all available models, which is also when model ratings are re-scored.

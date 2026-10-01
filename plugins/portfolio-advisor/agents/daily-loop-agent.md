@@ -205,7 +205,9 @@ itself is broken.
 **Multi-model sweep & ETF handling (2026-10-01).** Full detail, ratings and the ETF card live in
 `plugins/portfolio-advisor/references/news-sweep-model-assessment.md` — read it before building the
 sweep prompt or ingesting responses. Rules in brief:
-- **Run the sweep on Grok, Gemini and ChatGPT where possible; never average them.** Roles: ChatGPT =
+- **Cadence:** daily = Grok alone plus the fact-check and coverage gates; escalate to ChatGPT on the
+  triggers listed in the reference (capital-gated action, imminent binary event, failed gate, signal conflict,
+  unsourced trade-relevant claim); weekly = all available models. Never average models. Roles: ChatGPT =
   filings/valuation/prompt auditing; Grok = breaking news and X sentiment; Gemini = second opinion
   only after it passes the fact-check gate.
 - **Fact-check gate on ingest:** compare each model's 10-year yield, VIX and any "latest earnings"
