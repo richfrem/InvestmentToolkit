@@ -18,16 +18,31 @@ Rules
   and stamped as version 1 only if they match. A mismatch raises `SchemaError` and the
   file is left untouched.
 
-CLI:  python3 schema_migrator.py [--db PATH] [--status]
+Migration files must explain themselves. The FIRST line is a comment giving the file's
+number, name and a plain-English description of what changes and why:
+
+    -- 0002_valuation_model: add valuation_model to sub_strategy so the DCF skill can choose
+    -- the landlord, neocloud or operating-company method (further comment lines welcome).
+
+`discover()` rejects a file without one. Each application is written to `schema_migrations`
+as a version history: description, when, by whom, from which git commit, how long it took,
+which tables it touched (detected from the SQL), the backup that protects it, and whether it
+was applied fresh or adopted from a database that pre-dated the migrator.
+
+CLI:  python3 schema_migrator.py [--db PATH] [--status | --history [--json]]
 """
 
 from __future__ import annotations
 
 import argparse
+import getpass
 import hashlib
+import json
 import re
 import sqlite3
+import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -40,14 +55,33 @@ except ImportError:  # run as a script
 
 MIGRATIONS_DIR = Path(__file__).resolve().parents[2] / "schema" / "domain_model"
 _FILE_RE = re.compile(r"^(\d{4})_([a-z0-9_]+)\.sql$")
+# The version history. One row per migration, written in the same transaction that applies it.
+# Columns after `applied_at` are metadata for people; only version/name/checksum are enforced.
 _LEDGER_DDL = """
 CREATE TABLE IF NOT EXISTS schema_migrations (
-    version     INTEGER PRIMARY KEY,
-    name        TEXT NOT NULL,
-    checksum    TEXT NOT NULL,
-    applied_at  TEXT NOT NULL
+    version         INTEGER PRIMARY KEY,
+    name            TEXT NOT NULL,
+    description     TEXT NOT NULL DEFAULT '',
+    kind            TEXT NOT NULL DEFAULT 'applied',
+    checksum        TEXT NOT NULL,
+    applied_at      TEXT NOT NULL,
+    applied_by      TEXT,
+    git_commit      TEXT,
+    duration_ms     INTEGER,
+    tables_touched  TEXT,
+    backup_file     TEXT
 );
 """
+_LEDGER_COLUMNS = {
+    "description": "TEXT NOT NULL DEFAULT ''",
+    "kind": "TEXT NOT NULL DEFAULT 'applied'",
+    "applied_by": "TEXT",
+    "git_commit": "TEXT",
+    "duration_ms": "INTEGER",
+    "tables_touched": "TEXT",
+    "backup_file": "TEXT",
+}
+_MIN_DESCRIPTION = 15
 
 # Retired: the additive column list that used to be patched in on every open. Kept only so
 # a database file created before the migrator existed can be healed to the baseline shape
@@ -77,12 +111,57 @@ class SchemaError(RuntimeError):
 class Migration:
     version: int
     name: str
+    description: str
     sql: str
     checksum: str
+    tables: tuple[str, ...]
+
+
+_HEADER_RE = re.compile(r"^--\s*(?:(\d{4})_([a-z0-9_]+)\s*:\s*)?(.*\S)\s*$")
+_TABLE_REFS = [
+    re.compile(p, re.I)
+    for p in (
+        r"\bCREATE\s+(?:TEMP(?:ORARY)?\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[\"`]?(\w+)",
+        r"\bALTER\s+TABLE\s+[\"`]?(\w+)",
+        r"\bDROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?[\"`]?(\w+)",
+        r"\bCREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?\w+\s+ON\s+[\"`]?(\w+)",
+        r"\bINSERT\s+(?:OR\s+\w+\s+)?INTO\s+[\"`]?(\w+)",
+        r"\bUPDATE\s+[\"`]?(\w+)\s+SET\b",
+        r"\bDELETE\s+FROM\s+[\"`]?(\w+)",
+    )
+]
+
+
+def _describe(filename: str, version: int, name: str, text: str) -> str:
+    """The required one-line description from the file's first line."""
+    first = next((ln for ln in text.split("\n") if ln.strip()), "")
+    match = _HEADER_RE.match(first) if first.startswith("--") else None
+    if not match:
+        raise SchemaError(
+            f"{filename}: the first line must be a comment describing the change, e.g.\n"
+            f"  -- {version:04d}_{name}: what changes and why, in plain English"
+        )
+    if match.group(1) and (int(match.group(1)), match.group(2)) != (version, name):
+        raise SchemaError(
+            f"{filename}: header says {match.group(1)}_{match.group(2)} but the file is {version:04d}_{name}"
+        )
+    description = match.group(3).strip()
+    if len(description) < _MIN_DESCRIPTION:
+        raise SchemaError(
+            f"{filename}: description {description!r} is too short (need at least "
+            f"{_MIN_DESCRIPTION} characters). Say what changes and why."
+        )
+    return description
+
+
+def _tables_touched(sql: str) -> tuple[str, ...]:
+    code = "\n".join(ln for ln in sql.split("\n") if not ln.lstrip().startswith("--"))
+    found = {m.group(1) for rx in _TABLE_REFS for m in rx.finditer(code)}
+    return tuple(sorted(found - {"schema_migrations"}))
 
 
 def discover(directory: Path | None = None) -> list[Migration]:
-    """Load migration files, validating names, contiguity (1..N) and uniqueness."""
+    """Load migration files, validating names, descriptions, contiguity (1..N) and uniqueness."""
     directory = directory or MIGRATIONS_DIR
     found: list[Migration] = []
     for path in sorted(directory.glob("*.sql")):
@@ -90,12 +169,15 @@ def discover(directory: Path | None = None) -> list[Migration]:
         if not match:
             raise SchemaError(f"migration file {path.name!r} must be named NNNN_snake_case.sql")
         text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+        version, name = int(match.group(1)), match.group(2)
         found.append(
             Migration(
-                version=int(match.group(1)),
-                name=match.group(2),
+                version=version,
+                name=name,
+                description=_describe(path.name, version, name, text),
                 sql=text,
                 checksum=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+                tables=_tables_touched(text),
             )
         )
     versions = [m.version for m in found]
@@ -210,11 +292,64 @@ def _legacy_self_heal(conn: sqlite3.Connection) -> None:
                 conn.execute(f'ALTER TABLE "{table}" ADD COLUMN {column} {col_type};')
 
 
-def _record(conn: sqlite3.Connection, m: Migration) -> None:
+def _ensure_ledger(conn: sqlite3.Connection) -> None:
+    """Create the version-history table, or add any metadata column an older ledger lacks."""
+    conn.execute(_LEDGER_DDL)
+    existing = {r[1] for r in conn.execute("PRAGMA table_info(schema_migrations)")}
+    for column, ddl in _LEDGER_COLUMNS.items():
+        if column not in existing:
+            conn.execute(f"ALTER TABLE schema_migrations ADD COLUMN {column} {ddl}")
+
+
+def _git_commit() -> str | None:
+    """Short commit of the code doing the migrating; best effort, never an error."""
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(MIGRATIONS_DIR), "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, timeout=3,
+        )
+        return out.stdout.strip() or None if out.returncode == 0 else None
+    except Exception:
+        return None
+
+
+def _applied_by() -> str | None:
+    try:
+        return getpass.getuser()
+    except Exception:
+        return None
+
+
+def _record(
+    conn: sqlite3.Connection,
+    m: Migration,
+    *,
+    kind: str,
+    started: float,
+    backup_file: str | Path | None = None,
+) -> None:
     conn.execute(
-        "INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)",
-        (m.version, m.name, m.checksum, datetime.now(timezone.utc).isoformat()),
+        "INSERT INTO schema_migrations (version, name, description, kind, checksum, applied_at, "
+        "applied_by, git_commit, duration_ms, tables_touched, backup_file) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            m.version, m.name, m.description, kind, m.checksum,
+            datetime.now(timezone.utc).isoformat(), _applied_by(), _git_commit(),
+            int((time.monotonic() - started) * 1000), ", ".join(m.tables),
+            str(backup_file) if backup_file else None,
+        ),
     )
+
+
+def history(conn: sqlite3.Connection) -> list[dict]:
+    """The recorded version history, oldest first. Empty if the ledger does not exist yet."""
+    if not _has_table(conn, "schema_migrations"):
+        return []
+    conn.row_factory = sqlite3.Row
+    try:
+        return [dict(r) for r in conn.execute("SELECT * FROM schema_migrations ORDER BY version")]
+    finally:
+        conn.row_factory = None
 
 
 def current_version(conn: sqlite3.Connection) -> int:
@@ -267,6 +402,7 @@ def migrate(
     if not ledger and populated:
         # Created before the migrator existed. Heal, verify, then adopt as the baseline,
         # all in one transaction: a refusal leaves the file exactly as it was found.
+        started = time.monotonic()
         conn.execute("BEGIN IMMEDIATE")
         try:
             _create_missing_from_baseline(conn, migrations[0].sql)
@@ -277,8 +413,8 @@ def migrate(
                     "existing database does not match 0001_baseline.sql; refusing to adopt it "
                     "(nothing was changed):\n  " + "\n  ".join(problems)
                 )
-            conn.execute(_LEDGER_DDL)
-            _record(conn, migrations[0])
+            _ensure_ledger(conn)
+            _record(conn, migrations[0], kind="adopted", started=started)
             conn.execute(f"PRAGMA user_version = {migrations[0].version}")
             conn.commit()
         except BaseException:
@@ -288,33 +424,48 @@ def migrate(
         done.append(1)
 
     pending = [m for m in migrations if m.version not in ledger]
+    backup_file: Path | None = None
     if pending and populated and backup and db_path and str(db_path) != ":memory:":
-        backup_database(db_path, label=f"pre-migration-{pending[0].version:04d}")
+        backup_file = backup_database(db_path, label=f"pre-migration-{pending[0].version:04d}")
 
     if pending:
-        conn.execute(_LEDGER_DDL)
+        _ensure_ledger(conn)
         conn.commit()
 
     for m in pending:
-        # Version and name come from a validated filename; the checksum is hex. Safe to inline.
-        script = (
-            "BEGIN IMMEDIATE;\n"
-            + m.sql
-            + f"\nINSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES "
-            f"({m.version}, '{m.name}', '{m.checksum}', '{datetime.now(timezone.utc).isoformat()}');\n"
-            "COMMIT;\n"
-        )
+        started = time.monotonic()
         try:
-            conn.executescript(script)
+            # No COMMIT in the script: the transaction stays open so the migration, its
+            # history row and the new user_version land together or not at all.
+            conn.executescript("BEGIN IMMEDIATE;\n" + m.sql)
+            _record(conn, m, kind="applied", started=started, backup_file=backup_file)
+            conn.execute(f"PRAGMA user_version = {m.version}")
+            conn.commit()
         except Exception as exc:
             if conn.in_transaction:
                 conn.rollback()
             raise SchemaError(f"migration {m.version:04d}_{m.name}.sql failed and was rolled back: {exc}") from exc
-        conn.execute(f"PRAGMA user_version = {m.version}")
-        conn.commit()
         done.append(m.version)
 
     return done
+
+
+def _format_history(rows: list[dict]) -> str:
+    if not rows:
+        return "no version history recorded yet (database has not been migrated)"
+    lines = []
+    for r in rows:
+        lines += [
+            f"{r['version']:04d}  {r['name']}  [{r['kind']}]",
+            f"      {r['description']}",
+            f"      applied {r['applied_at']} by {r['applied_by'] or '?'}"
+            f" from commit {r['git_commit'] or '?'} in {r['duration_ms'] if r['duration_ms'] is not None else '?'} ms",
+            f"      tables: {r['tables_touched'] or '-'}",
+            f"      backup: {r['backup_file'] or '-'}",
+            f"      checksum: {r['checksum'][:12]}",
+            "",
+        ]
+    return "\n".join(lines).rstrip()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -324,15 +475,34 @@ def main(argv: list[str] | None = None) -> int:
         default=str(Path(__file__).resolve().parents[2] / "data" / "domain_model.sqlite"),
     )
     parser.add_argument("--status", action="store_true", help="show version and pending, change nothing")
+    parser.add_argument("--history", action="store_true", help="show the recorded version history, change nothing")
+    parser.add_argument("--json", action="store_true", help="with --history: machine-readable output")
     args = parser.parse_args(argv)
 
-    migrations = discover()
-    if args.status:
+    try:
+        migrations = discover()
+    except SchemaError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+
+    if args.status or args.history:
         conn = sqlite3.connect(f"file:{args.db}?mode=ro", uri=True)
-        at = current_version(conn)
-        conn.close()
-        pending = [f"{m.version:04d}_{m.name}" for m in migrations if m.version > at]
-        print(f"database at version {at}; newest available {migrations[-1].version}; pending: {pending or 'none'}")
+        try:
+            at = current_version(conn)
+            rows = history(conn)
+        finally:
+            conn.close()
+        if args.history:
+            print(json.dumps(rows, indent=2) if args.json else _format_history(rows))
+            return 0
+        pending = [m for m in migrations if m.version > at]
+        print(f"database at version {at}; newest available {migrations[-1].version}")
+        if pending:
+            print("pending:")
+            for m in pending:
+                print(f"  {m.version:04d}_{m.name}: {m.description}")
+        else:
+            print("pending: none")
         return 0
 
     conn = sqlite3.connect(args.db)
