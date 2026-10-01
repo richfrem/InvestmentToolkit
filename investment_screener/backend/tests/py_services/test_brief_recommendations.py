@@ -75,6 +75,66 @@ class TestSellRecommendations:
         assert recs[0]["proposedTrade"]["approxValueUSD"] == 736.0
 
 
+class TestReduceWithinTargetBand:
+    """2026-10-01: a REDUCE signal (DCF-score driven) on a position at or UNDER its target
+    fell through to ``trim_pct = actual / 2`` and proposed selling HALF the position.
+    RIOT (2.12% actual vs 2.23% target, +0.11pp) got "sell ~$365"; MU (4.33% vs a 3.99%
+    target, -0.34pp) jumped from ~$293 to ~$745 the moment its target moved. That
+    contradicts AGENTS rule 9 (DCF never silently overrides the user's targets): without a
+    material overweight there is no basis for sizing a sell, so no trade is proposed.
+    """
+
+    def test_reduce_under_target_proposes_no_sell(self):
+        recs = build_recommendations(
+            scores=[_score("RIOT", -1, "REDUCE",
+                           actual_weight=2.1184, target_weight=2.226, weight_gap=0.11)],
+            standing={}, earnings=[], macro=RISK_ON, total_equity=34414.0,
+        )
+        assert len(recs) == 1
+        r = recs[0]
+        assert r["recommendation"] == "HOLD"
+        assert r["proposedTrade"] is None
+        assert r["actionable"] is False
+        assert "target" in r["rationale"].lower()
+
+    def test_reduce_slightly_overweight_within_band_proposes_no_sell(self):
+        """MU after its target moved to ~4%: -0.34pp over target is inside the 0.5pp band."""
+        recs = build_recommendations(
+            scores=[_score("MU", -2, "REDUCE",
+                           actual_weight=4.333, target_weight=3.9893, weight_gap=-0.34)],
+            standing={}, earnings=[], macro=RISK_ON, total_equity=34414.0,
+        )
+        assert recs[0]["recommendation"] == "HOLD"
+        assert recs[0]["proposedTrade"] is None
+        assert recs[0]["actionable"] is False
+
+    def test_reduce_without_a_target_weight_proposes_no_sell(self):
+        recs = build_recommendations(
+            scores=[_score("ZZZZ", -1, "REDUCE",
+                           actual_weight=3.0, target_weight=None, weight_gap=None)],
+            standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
+        )
+        assert recs[0]["recommendation"] == "HOLD"
+        assert recs[0]["proposedTrade"] is None
+
+    def test_reduce_materially_overweight_still_trims_to_target(self):
+        recs = build_recommendations(
+            scores=[_score("DRAM", -1, "REDUCE",
+                           actual_weight=2.6, target_weight=2.0, weight_gap=-0.6)],
+            standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
+        )
+        assert recs[0]["recommendation"] == "TRIM"
+        assert recs[0]["proposedTrade"]["approxValueUSD"] == 192.0   # 0.6% of 32k
+
+    def test_exit_band_still_sells_the_full_position(self):
+        recs = build_recommendations(
+            scores=[_score("IONQ", -4, "EXIT", actual_weight=1.0)],
+            standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
+        )
+        assert recs[0]["recommendation"] == "SELL"
+        assert recs[0]["proposedTrade"]["approxValueUSD"] == 320.0
+
+
 class TestStandingDecisions:
 
     def test_standing_decision_downgrades_sell_to_hold(self):
