@@ -34,6 +34,15 @@ databases are gitignored and run in WAL mode, so there was also no recoverable c
 
 1. Add the next file: `investment_screener/backend/schema/domain_model/0002_<snake_case>.sql`.
    Plain SQL, no `BEGIN`/`COMMIT` (the runner wraps it). Numbers must be contiguous.
+   **The first line must be a comment that says what changes and why** (at least 15 characters;
+   the runner refuses a file without one). Further comment lines are encouraged:
+
+   ```sql
+   -- 0002_valuation_model: add valuation_model to sub_strategy so the DCF skill can choose the
+   -- landlord, neocloud or operating-company method for each holding.
+   -- Types: operating, colocation_landlord, neocloud_gpu, hybrid_sotp.
+   ALTER TABLE sub_strategy ADD COLUMN valuation_model TEXT;
+   ```
 2. Run `python3 investment_screener/backend/py_services/domain_model/schema_migrator.py --status`
    to see it pending, then the same command without `--status` to apply it.
 3. Add or update tests. Do **not** touch `0001_baseline.sql` or any applied migration.
@@ -42,6 +51,31 @@ databases are gitignored and run in WAL mode, so there was also no recoverable c
 
 `run_investment_toolkit.py` runs the migrator on every launch, after the backend build and before
 the servers start.
+
+## Version history
+
+The `schema_migrations` table is the database's own change log: one row per migration, written in
+the same transaction that applies it.
+
+| Column | Meaning |
+|---|---|
+| `version`, `name` | the file, e.g. `2`, `valuation_model` |
+| `description` | the plain-English first line of the file |
+| `kind` | `applied` (ran the SQL) or `adopted` (an older database stamped as the baseline) |
+| `applied_at`, `applied_by` | UTC time and the OS user that ran it |
+| `git_commit` | short commit of the code that ran it (best effort) |
+| `duration_ms` | how long it took |
+| `tables_touched` | detected from the SQL (`CREATE`/`ALTER`/`DROP TABLE`, `CREATE INDEX ... ON`, `INSERT`/`UPDATE`/`DELETE`) |
+| `backup_file` | the pre-migration backup that protects it, if one was taken |
+| `checksum` | SHA-256 of the file; a later edit is refused |
+
+```bash
+python3 investment_screener/backend/py_services/domain_model/schema_migrator.py --status            # version + pending, with descriptions
+python3 investment_screener/backend/py_services/domain_model/schema_migrator.py --history           # the recorded history
+python3 investment_screener/backend/py_services/domain_model/schema_migrator.py --history --json    # machine-readable
+```
+
+The same data is plain SQL: `SELECT version, name, description, applied_at FROM schema_migrations`.
 
 ## Databases that existed before the migrator
 

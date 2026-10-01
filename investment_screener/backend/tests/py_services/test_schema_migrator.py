@@ -13,8 +13,11 @@ from domain_model.schema_migrator import SchemaError, discover, migrate  # noqa:
 from legacy_db import make_legacy_db  # noqa: E402
 
 
-def _write(dir_: Path, name: str, sql: str) -> None:
-    (dir_ / name).write_text(sql)
+def _write(dir_: Path, name: str, sql: str, *, header: bool = True) -> None:
+    """Write a migration file; by default prepend the mandatory description line."""
+    stem = name[:-4]
+    prefix = f"-- {stem}: test migration for {stem.split('_', 1)[-1]}\n" if header else ""
+    (dir_ / name).write_text(prefix + sql)
 
 
 @pytest.fixture
@@ -149,10 +152,124 @@ def test_populated_database_is_backed_up_before_a_pending_migration(tmp_path):
     d = tmp_path / "migs"
     d.mkdir()
     base = (Path(schema_migrator.MIGRATIONS_DIR) / "0001_baseline.sql").read_text()
-    _write(d, "0001_baseline.sql", base)
+    _write(d, "0001_baseline.sql", base, header=False)  # byte-identical to the real baseline
     _write(d, "0002_marker.sql", "CREATE TABLE marker (id INTEGER PRIMARY KEY);\n")
     conn = sqlite3.connect(str(path))
     # Ledger holds the real baseline checksum, identical text, so this applies only 0002.
     migrate(conn, db_path=str(path), directory=d)
     found = list((tmp_path / "backups").glob("pop.*.pre-migration-0002.sqlite"))
     assert len(found) == 1
+
+
+# --- descriptions and version history -------------------------------------------------
+
+
+def test_migration_without_a_description_line_is_refused(mig_dir):
+    _write(mig_dir, "0002_nodesc.sql", "CREATE TABLE gadget (id INTEGER);\n", header=False)
+    with pytest.raises(SchemaError, match="first line must be a comment"):
+        discover(mig_dir)
+
+
+def test_too_short_description_is_refused(mig_dir):
+    (mig_dir / "0002_tiny.sql").write_text("-- 0002_tiny: stuff\nCREATE TABLE gadget (id INTEGER);\n")
+    with pytest.raises(SchemaError, match="too short"):
+        discover(mig_dir)
+
+
+def test_header_that_names_a_different_file_is_refused(mig_dir):
+    (mig_dir / "0002_real.sql").write_text(
+        "-- 0007_other: this header names a different migration entirely\nSELECT 1;\n"
+    )
+    with pytest.raises(SchemaError, match="header says 0007_other"):
+        discover(mig_dir)
+
+
+def test_header_without_number_prefix_is_accepted(mig_dir):
+    (mig_dir / "0002_plain.sql").write_text(
+        "-- Add a gadget table for the new gadget feature\nCREATE TABLE gadget (id INTEGER);\n"
+    )
+    assert discover(mig_dir)[1].description == "Add a gadget table for the new gadget feature"
+
+
+def test_tables_touched_is_detected_from_the_sql(mig_dir):
+    (mig_dir / "0002_many.sql").write_text(
+        "-- 0002_many: touches several tables in different ways\n"
+        "CREATE TABLE gadget (id INTEGER PRIMARY KEY, widget_id INTEGER);\n"
+        "ALTER TABLE widget ADD COLUMN size INTEGER;\n"
+        "CREATE UNIQUE INDEX idx_gadget_w ON gadget(widget_id);\n"
+        "INSERT INTO widget (label) VALUES ('x');\n"
+        "-- DROP TABLE not_real;  (a comment, must be ignored)\n"
+    )
+    assert discover(mig_dir)[1].tables == ("gadget", "widget")
+
+
+def test_history_on_a_fresh_database_has_full_metadata(tmp_path):
+    conn = initialize_db(str(tmp_path / "fresh.sqlite"))
+    rows = schema_migrator.history(conn)
+    assert [r["version"] for r in rows] == [m.version for m in discover()]
+    first = rows[0]
+    assert first["name"] == "baseline"
+    assert first["kind"] == "applied"
+    assert len(first["description"]) >= 15
+    assert first["applied_at"] and first["checksum"]
+    assert first["duration_ms"] >= 0
+    assert "account" in first["tables_touched"] and "investment" in first["tables_touched"]
+    assert first["backup_file"] is None  # empty database: nothing to back up
+
+
+def test_legacy_adoption_is_recorded_as_adopted(tmp_path):
+    path = str(tmp_path / "legacy.sqlite")
+    make_legacy_db(path)
+    rows = schema_migrator.history(initialize_db(path))
+    assert rows[0]["kind"] == "adopted"
+    assert rows[0]["description"]
+
+
+def test_pending_migration_on_populated_db_records_its_backup(tmp_path):
+    path = tmp_path / "pop2.sqlite"
+    initialize_db(str(path)).close()  # now at the real baseline, populated
+    d = tmp_path / "migs2"
+    d.mkdir()
+    (d / "0001_baseline.sql").write_text((Path(schema_migrator.MIGRATIONS_DIR) / "0001_baseline.sql").read_text())
+    _write(d, "0002_marker.sql", "CREATE TABLE marker (id INTEGER PRIMARY KEY);\n")
+    conn = sqlite3.connect(str(path))
+    migrate(conn, db_path=str(path), directory=d)
+    row = [r for r in schema_migrator.history(conn) if r["version"] == 2][0]
+    assert "pre-migration-0002" in row["backup_file"]
+    assert Path(row["backup_file"]).is_file()
+    assert row["tables_touched"] == "marker"
+    assert "test migration for marker" in row["description"]
+
+
+def test_description_with_quotes_round_trips(tmp_path, mig_dir):
+    (mig_dir / "0002_quote.sql").write_text(
+        "-- 0002_quote: add the table that 'quoted' text won't break\nCREATE TABLE gadget (id INTEGER);\n"
+    )
+    conn = sqlite3.connect(str(tmp_path / "q.sqlite"))
+    migrate(conn, directory=mig_dir)
+    assert schema_migrator.history(conn)[1]["description"] == "add the table that 'quoted' text won't break"
+
+
+def test_old_ledger_without_metadata_columns_is_upgraded(tmp_path, mig_dir):
+    conn = sqlite3.connect(str(tmp_path / "o.sqlite"))
+    conn.executescript(
+        "CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL, "
+        "checksum TEXT NOT NULL, applied_at TEXT NOT NULL);"
+    )
+    migrate(conn, directory=mig_dir)
+    columns = {r[1] for r in conn.execute("PRAGMA table_info(schema_migrations)")}
+    assert {"description", "kind", "applied_by", "git_commit", "duration_ms", "tables_touched", "backup_file"} <= columns
+
+
+def test_cli_status_and_history_show_descriptions(tmp_path, capsys):
+    import json as _json
+
+    path = str(tmp_path / "cli.sqlite")
+    initialize_db(path).close()
+    assert schema_migrator.main(["--db", path, "--history"]) == 0
+    out = capsys.readouterr().out
+    assert "0001  baseline  [applied]" in out and "tables:" in out and "checksum:" in out
+    assert schema_migrator.main(["--db", path, "--status"]) == 0
+    assert "pending: none" in capsys.readouterr().out
+    assert schema_migrator.main(["--db", path, "--history", "--json"]) == 0
+    assert _json.loads(capsys.readouterr().out)[0]["name"] == "baseline"
