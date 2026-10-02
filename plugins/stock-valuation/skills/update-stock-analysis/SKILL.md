@@ -433,13 +433,20 @@ Normalize weights if sum ≠ 1.0. Cast string numbers to actual numbers. Clamp o
 
 ---
 
-## Step 4.5: Red Team Review
+## Step 4.5: Red Team Review (Inline Default / Human-Gated Subagent)
 
-Dispatch `red-team-agent` via the Agent tool, passing the validated projection JSON (post-Step
-4, pre-persistence). Print its "Objections" and "What would change my mind" sections to the
-user, directly above whatever conversational summary this skill was about to present. This
-step is **mandatory, every `/update-stock-analysis` run** — never skipped, never made conditional on
-conviction level or user request.
+To ensure analytical rigor and prevent ungrounded models from skipping critical stress-testing, 
+the agent MUST conduct an adversarial self-audit:
+
+- **Default Execution (Inline)**: Synthesize the adversarial review **directly inline** within the primary turn:
+  1. At least 3 specific, falsifiable objections to the thesis (e.g. debt service, tenant concentration, execution delays).
+  2. A concrete "what would change my mind" list (both upside catalysts and downside thesis breakers).
+  3. Persist these objections into the research report and display them in the final summary.
+
+- **Subagent Gate (HITL Confirmation)**: Do NOT spawn an external subagent (`red-team-agent`) silently or autonomously. If deep independent cross-model review might be warranted (e.g., major thesis overhaul, complex capital structure, or high portfolio concentration), **ask the user first**:
+  > *"Would you like me to spawn an external `red-team-agent` to independently challenge this valuation, or proceed with the inline adversarial review?"*
+  - Only dispatch `red-team-agent` if the user explicitly confirms (`yes`).
+  - Otherwise, proceed immediately with the inline audit to preserve flow and prevent unrequested terminal approval prompts.
 
 ---
 
