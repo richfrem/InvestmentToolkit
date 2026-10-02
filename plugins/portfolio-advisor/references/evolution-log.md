@@ -481,4 +481,5 @@ TradingView and Questrade MCP sync paths).
 - **Correction (2026-10-01):** Opus 5.5's CRDO price (~$150-170) was wrong vs market ($202.66); assessment corrected and a price spot-check added to the fact-check gate.
 - **Post-merge corrections (2026-10-01):** target totals corrected to 17.5% / 112.5% (an earlier figure was an addition error); logged DEBT-20261001-04 (TA sweep writes null indicators but reports success), -05 (`update_targets.py` silent normalization), -06 (target over-allocation recurrence).
 - **Brief sizing bug (2026-10-01):** a REDUCE signal at or under target proposed selling half the position (RIOT ~$365, MU ~$745 after its target moved). Fixed test-first in `brief_recommendations.py` (REDUCE within 0.5pp of target now HOLDs with no trade). Logged as DEBT-20261001-07.
+- **Brief publish bug (2026-10-01):** the Daily Brief page read the first scan of each day only (fixed ledger idempotency key dropped re-runs). Fixed test-first with `brief_ledger_publisher.py`; a re-run now supersedes the earlier brief so the page shows the newest scan. DEBT-20261001-08; six unrelated pre-existing failing tests logged as DEBT-20261001-09.
 
