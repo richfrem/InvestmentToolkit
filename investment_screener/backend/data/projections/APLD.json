@@ -4,6 +4,186 @@
     "id": "e72f9104-51bc-4889-a212-094721543890",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
+    "version": 8,
+    "savedAt": "2026-10-02T15:30:00.000Z",
+    "updatedAt": "2026-10-02T15:30:00.000Z",
+    "name": "APLD AI HPC Infrastructure Valuation \u2014 75MW RFS Milestone",
+    "rationale": "Applied Digital (APLD) achieved Ready for Service (RFS) for 75 MW at Polaris Forge 1 Building 2 Phase 2, bringing operational critical IT load to 250 MW (62.5% of the 400 MW campus). This milestone adds approximately $85M to $100M per year in high-margin recurring base rent to Q4 FY26 base rent ($44.1M), directly validating management execution against sector-wide construction delays. At a 12.77% WACC, our updated 5-year DCF yields a probability-weighted fair value of $24.09 (Bear $2.78 at 25%, Base $21.32 at 55%, Bull $58.32 at 20%). Note: valuation lenses disagree by 110% (DCF $24.09 vs Comps $50.59 midpoint); comps are distorted by ramp-stage peer multiples and given low weight. With the stock surging +10.5% today into the $28.00 to $29.00 range, APLD trades at a ~16-20% premium to fair value. Recommendation: MAINTAIN (Core holding: 32 shares, 2.64% target weight). Do not chase the news pop; await Q1 FY27 earnings (Oct 9) for audited recurring cash flow trajectory and financing terms.",
+    "snapshot": {
+      "price": 25.42,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 299170185,
+      "revenue": 611311000,
+      "lastActualPS": 12.44
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 24,
+        "netMargin": 8,
+        "exitPE": 15,
+        "qualityMultiplier": 0.9,
+        "shareChange": 5.0,
+        "rationale": "Delays at Polaris Forge 2 / Delta Forge plus tenant concentration headwinds: revenue reaches $1.79B by FY31, interest on ~$9B debt keeps margin at 8%, and Series G conversion dilution reaches 5%/yr.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 1792.1,
+        "year5NetIncome": 143.4,
+        "year5EPS": 0.38,
+        "scenarioPrice": 2.78,
+        "risks": [
+          "Utility grid interconnect slippage and power substation delays in regional RTOs",
+          "High debt service burden (~$9B secured notes at 6.75-7.0%) burning liquidity before full campus ramp",
+          "Significant common share dilution from Series G convertible preferred conversions"
+        ]
+      },
+      "base": {
+        "weight": 0.55,
+        "growthRate": 35,
+        "netMargin": 18,
+        "exitPE": 28,
+        "qualityMultiplier": 1.0,
+        "shareChange": 3.5,
+        "rationale": "Polaris Forge 1 now 250 MW operational (62.5% of campus); signed leases ramp steadily to $2.74B by FY31. Net margin reaches 18% after D&A and interest; 28x exit multiple; 3.5%/yr share dilution.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 2741.1,
+        "year5NetIncome": 493.4,
+        "year5EPS": 1.39,
+        "scenarioPrice": 21.32,
+        "risks": [
+          "Tenant concentration with CoreWeave as primary anchor tenant at Polaris Forge 1",
+          "Execution risks across simultaneous builds as APLD expands toward 7-campus footprint"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 45,
+        "netMargin": 25,
+        "exitPE": 35,
+        "qualityMultiplier": 1.05,
+        "shareChange": 2.5,
+        "rationale": "Execution on 7-campus franchise model; new hyperscaler leases on unleased capacity scale revenue to $3.92B by FY31 at 25% net margin with debt refinancing at lower spreads.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 3918.3,
+        "year5NetIncome": 979.6,
+        "year5EPS": 2.89,
+        "scenarioPrice": 58.32,
+        "risks": [
+          "Regulatory caps on large-scale AI data center power allocations",
+          "Supply chain bottlenecks for liquid cooling manifolds and high-voltage gear"
+        ]
+      }
+    },
+    "analyticsLog": {
+      "shareCountMethod": "shares_diluted",
+      "marginAnchor": "Trending up to 18% Base (FY26 GAAP net margin -39.9% distorted by ramp/interest; 18% reflects normalized recurring rent NOI minus D&A and interest)",
+      "growthDerivation": "Base 35% CAGR from $611.3M TTM to $2.74B Year 5 (FY31), derived from contracted ~1.41 GW / ~$36B 15-year base lease backlog ramping steadily. 75 MW RFS delivered today completes 250 MW at Polaris Forge 1 (62.5% of 400 MW campus), adding ~$85M-$100M/yr in recurring high-margin base rent.",
+      "sectorBenchmarkRow": "Real Estate (REITs) \u2014 Data Center Landlords / HPC Infrastructure (P/E 15/28/35)",
+      "dataQualityFlags": [
+        "TTM revenue $611.3M includes ~$270.6M one-time tenant fit-out (FY26 10-K); recurring base rent was only $44.1M in Q4 FY26, but increases by ~$21M-$25M/quarter with today 75 MW RFS milestone.",
+        "Beta 2.829 outside standard range [0.2, 2.5] reflecting high operational leverage, debt financing (~$9B secured debt at 6.75-7.0%), and Series G preferred commitment.",
+        "Comps lens uses only CORZ and IREN; EV/Sales 29.3x distorted by ramp-stage peer multiples; low reliability."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": 406.6,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": 406.6,
+        "analystTargetMean": 66.43,
+        "analystCount": 15
+      },
+      "historicalRevenue": [
+        611311000
+      ],
+      "historicalNetMargins": [
+        -39.91
+      ],
+      "historicalEPS": [
+        -0.85
+      ],
+      "outlookAudit": {
+        "callsAnalyzed": [
+          "Q4 FY26 (2026-07-29)",
+          "CNBC CEO Squawk on Street (2026-05-27)",
+          "Oct 2 2026 75MW RFS Press Release"
+        ],
+        "guidanceDirection": "MAINTAINED",
+        "backlogPipeline": "$36B base lease value over 15 years; 1.41 GW contracted across 5 campuses; 1.7 GW total pipeline across 7 campuses.",
+        "strategicAssessment": "Polaris Forge 1 Building 2 Phase 2 (75 MW) achieves RFS bringing operational capacity to 250 MW (62.5% of campus), providing immediate high-margin recurring cash flow and validating APLD franchise execution model against sector-wide delay headwinds.",
+        "adversarialRisks": [
+          "CEO warned of 2026-2027 industry-wide delays",
+          "Debt burden: ~$9B secured notes at 6.75-7.0% plus $2B Series G preferred",
+          "CoreWeave tenant concentration at Polaris Forge 1"
+        ]
+      },
+      "dcf": {
+        "weightedFairValue": 24.09,
+        "upsidePct": -5.2,
+        "discountRate": 0.1277
+      },
+      "reverseDcf": {
+        "impliedGrowth": 31.79,
+        "impliedGrowthVsBaseCase": -3.21,
+        "verdict": "BETWEEN_BEAR_AND_BASE"
+      },
+      "monteCarlo": {
+        "p10": 12.96,
+        "p50": 20.45,
+        "p90": 29.91,
+        "probabilityOvervalued": 0.7514
+      },
+      "comps": {
+        "status": "ok",
+        "impliedPriceRange": {
+          "low": 45.53,
+          "high": 55.65
+        },
+        "peersUsed": [
+          "CORZ",
+          "IREN"
+        ],
+        "evSalesMedian": 29.267
+      },
+      "priorAnalysisReview": {
+        "priorModel": "Claude Opus 5.5 (v8 manual / v7 Grok-Gemini)",
+        "priorDate": "2026-09-28",
+        "priorPrice": "26.25",
+        "priorFairValue": "24.20",
+        "priorAction": "MAINTAIN",
+        "priceDelta": "Price traded from $26.25 to $25.42 before surging +10.5% today to ~$28.00-$29.00 on the 75 MW RFS announcement.",
+        "assumptionAudit": "Prior WACC 12.68% was confirmed at 12.77%. Scenario weights shifted from 30/50/20 to 25/55/20 reflecting derisking of near-term cash ramp as PF1 hits 250 MW operational.",
+        "modelQualityFlag": "Validated independently with fresh metrics, wacc.py, dcf_scenarios.py, and reverse_dcf.py.",
+        "thesisOutcome": "The thesis of high contracted backlog slowly converting into operational megawatts is playing out on schedule.",
+        "fundamentalChanges": "75 MW critical IT load brought online at Polaris Forge 1 Building 2 Phase 2; operational capacity reaches 250 MW (62.5% of 400 MW campus), adding ~$85M-$100M/yr in recurring base rent."
+      },
+      "confidenceBreakdown": "0.60/1.0 \u2014 Base 1.0. Contracted 15-year leases and 250 MW live (+0.10); heavy debt ($9B at ~7%) and Series G dilution risk (-0.25); beta 2.83 and revenue fit-out distortion (-0.15); comps peer sparsity (-0.10)."
+    },
+    "aiThesis": {
+      "model": "Gemini 3.8 Flash",
+      "rationale": "Applied Digital Corporation (APLD) achieved Ready for Service (RFS) for 75 MW at Polaris Forge 1 Building 2 Phase 2, expanding live operational capacity to 250 MW (62.5% of the 400 MW campus). This milestone adds roughly $85M to $100M in annual recurring base rent, significantly accelerating the ramp from Q4 FY26 recurring rent of $44.1M. While CEO Wes Cummins candidly warned on CNBC of sector-wide construction and power interconnect delays across 2026-2027, APLD's successful delivery in Ellendale, ND proves that its modular franchise model is executing. At a 12.77% WACC, our updated 5-year DCF yields a probability-weighted fair value of $24.09 (Bear $2.78 at 25%, Base $21.32 at 55%, Bull $58.32 at 20%). Note on lens divergence: valuation lenses disagree by 110% (DCF $24.09 vs Comps $50.59 midpoint). Comps are based on only two peers (CORZ, IREN) where ramp-stage EV/Sales multiples (29.3x) inflate implied valuations; we rely on DCF. Following today's +10.5% news surge to ~$28.00-$29.00, APLD trades at a ~16-20% premium to fair value. Recommendation: MAINTAIN (Core Holding: 32 shares, 2.64% target weight). We advise against chasing the gap up, as high debt service (~$9B at 6.75-7.0%) and Series G conversion dilution remain active risks. We will reassess following Q1 FY27 earnings on October 9.",
+      "fairValue": 24.09,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-10-02T15:30:00.000Z",
+      "researchReport": "APLD_2026-10-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 12.77,
+      "timeHorizon": 5
+    }
+  },
+  {
+    "ticker": "APLD",
+    "id": "e72f9104-51bc-4889-a212-094721543890",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
     "version": 7,
     "savedAt": "2026-09-22T04:30:00.000Z",
     "updatedAt": "2026-09-22T04:30:00.000Z",
