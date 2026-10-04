@@ -612,3 +612,77 @@ def test_main_ticker_universe_is_union_of_holdings_and_watchlist(tmp_path, monke
             universe.append(sym)
 
     assert universe == ["MSFT", "NVDA", "OKLO", "RKLB"]  # holdings first, no NVDA duplicate
+
+
+# ── Degenerate-batch guard (every row reading the same chart) ─────────────────
+
+from ta_sweep_batch import is_degenerate_batch, run_headless_sweep, sweep_with_fallback  # noqa: E402
+
+
+def test_is_degenerate_batch_true_when_all_rows_share_one_close():
+    rows = [{"ticker": t, "close": 195.13, "adx": 22.0} for t in ("AAA", "BBB", "CCC", "DDD")]
+    assert is_degenerate_batch(rows) is True
+
+
+def test_is_degenerate_batch_false_for_distinct_closes():
+    rows = [{"ticker": t, "close": c} for t, c in (("AAA", 10.0), ("BBB", 20.0), ("CCC", 30.0))]
+    assert is_degenerate_batch(rows) is False
+
+
+def test_is_degenerate_batch_false_for_tiny_batches():
+    assert is_degenerate_batch([{"ticker": "AAA", "close": 5.0}, {"ticker": "BBB", "close": 5.0}]) is False
+
+
+def test_run_headless_sweep_populates_close():
+    def fake_snapshot(ticker, tf, period, bench, anchor):
+        return {"rsi14": 55.0, "adx14": 25.0, "close": 123.45, "squeeze": "OFF", "volumeRatio20d": 1.1}
+
+    rows = run_headless_sweep(["AAA"], snapshot_fn=fake_snapshot)
+    assert rows[0]["close"] == 123.45
+
+
+def test_sweep_with_fallback_uses_headless_when_cdp_batch_is_degenerate():
+    cdp_rows = [{"ticker": t, "close": 195.13} for t in ("AAA", "BBB", "CCC")]
+    headless_rows = [{"ticker": t, "close": 10.0 * i} for i, t in enumerate(("AAA", "BBB", "CCC"), 1)]
+    out = sweep_with_fallback(
+        ["AAA", "BBB", "CCC"], delay_ms=0,
+        sweep_fn=lambda t, delay_ms: cdp_rows,
+        headless_fn=lambda t: headless_rows,
+    )
+    assert out == headless_rows
+
+
+def test_sweep_with_fallback_keeps_healthy_cdp_rows():
+    cdp_rows = [{"ticker": t, "close": 10.0 * i} for i, t in enumerate(("AAA", "BBB", "CCC"), 1)]
+    out = sweep_with_fallback(
+        ["AAA", "BBB", "CCC"], delay_ms=0,
+        sweep_fn=lambda t, delay_ms: cdp_rows,
+        headless_fn=lambda t: [],
+    )
+    assert out == cdp_rows
+
+
+def test_save_sweep_results_same_day_resweep_supersedes_bad_rows(tmp_path):
+    """A corrected same-day sweep must replace the earlier rows, not be dropped by idempotency."""
+    import sqlite3
+
+    from intelligence.db_client import initialize_db  # noqa: PLC0415
+    from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
+
+    jsonl_path = tmp_path / "observations.jsonl"
+    db_path = tmp_path / "intelligence.sqlite"
+    conn = initialize_db(str(db_path))
+    conn.execute("INSERT INTO instrument VALUES ('us-aapl', 'AAPL', 'NASDAQ', 'Apple', '2026-07-18', NULL);")
+    conn.commit()
+    conn.close()
+
+    save_sweep_results([{"ticker": "AAPL", "close": 195.13, "adx": 22.0}], jsonl_path=jsonl_path, db_path=db_path)
+    save_sweep_results([{"ticker": "AAPL", "close": 255.40, "adx": 31.5}], jsonl_path=jsonl_path, db_path=db_path)
+
+    conn = sqlite3.connect(str(db_path))
+    active = conn.execute(
+        "SELECT payload_json FROM intelligence_event WHERE event_type = 'TECHNICAL_SWEEP' AND status = 'ACTIVE';"
+    ).fetchall()
+    conn.close()
+    assert len(active) == 1
+    assert json.loads(active[0][0])["close"] == 255.40
