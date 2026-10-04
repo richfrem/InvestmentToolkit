@@ -615,7 +615,7 @@
     },
     {
       "src": "plugins/etf-analysis/assets/templates/etf_analysis_template.json",
-      "dst": "plugins/etf-analysis/skills/etf_analysis/assets/templates/etf_analysis_template.json",
+      "dst": "plugins/etf-analysis/skills/etf-analysis/assets/templates/etf_analysis_template.json",
       "strategy": "symlink",
       "description": "Official ETF analysis output JSON template"
     },

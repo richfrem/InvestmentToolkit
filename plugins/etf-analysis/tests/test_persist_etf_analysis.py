@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-SCRIPT_DIR = REPO_ROOT / "plugins/etf-analysis/skills/etf_analysis/scripts"
+SCRIPT_DIR = REPO_ROOT / "plugins/etf-analysis/scripts"
 sys.path.insert(0, str(SCRIPT_DIR))
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
