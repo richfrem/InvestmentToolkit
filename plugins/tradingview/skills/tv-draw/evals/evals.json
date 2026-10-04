@@ -1,0 +1,68 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "draw a horizontal support line on the tradingview chart at 120",
+    "expected_trigger": "tv-draw",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent draws horizontal line on the active chart via CDP.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/tv-draw",
+    "expected_trigger": "tv-draw",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes the chart drawing utility.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "annotate a buy pocket accumulation zone on my active chart",
+    "expected_trigger": "tv-draw",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent uses tv-draw to create price bands.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "change the chart symbol to MSFT",
+    "expected_trigger": "tv-change-symbol",
+    "expected_not_trigger": [
+      "tv-draw"
+    ],
+    "pass_condition": "Agent routes to tv-change-symbol, not tv-draw.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "switch the chart layout to agent-layout",
+    "expected_trigger": "tv-chart-setup",
+    "expected_not_trigger": [
+      "tv-draw"
+    ],
+    "pass_condition": "Agent routes to tv-chart-setup, not tv-draw.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "inject the AI thesis overlay pine script",
+    "expected_trigger": "tv-thesis-overlay",
+    "expected_not_trigger": [
+      "tv-draw"
+    ],
+    "pass_condition": "Agent routes to tv-thesis-overlay, not manual drawing.",
+    "should_trigger": false
+  }
+]

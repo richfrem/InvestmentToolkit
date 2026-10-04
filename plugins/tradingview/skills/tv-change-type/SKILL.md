@@ -1,61 +1,45 @@
 ---
 name: tv-change-type
 plugin: tradingview
-description: >
-  Change the active TradingView chart type (candle style). Supports candlestick,
-  Heikin Ashi, line, area, Renko, bars, and all other TV chart types.
-allowed-tools: Bash
+description: Change the active TradingView chart type (candlestick, Heikin Ashi, line, area, Renko). Trigger on /tv-change-type or 'change chart type to [TYPE]'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TV Change Chart Type Skill
+# TradingView Change Type
 
-**Trigger:** `/change-chart-type {TYPE}` — e.g. `/change-chart-type heikin-ashi`
+Change the active TradingView chart type (candlestick, Heikin Ashi, line, area, Renko).
 
----
+## Contents
 
-## Supported Types
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-| Alias | TV label |
-|---|---|
-| `candle` / `candlestick` | Candlestick |
-| `heikin-ashi` / `ha` | Heikin Ashi |
-| `bars` | Bars |
-| `hollow` / `hollow-candle` | Hollow candles |
-| `volume-candle` | Volume candles |
-| `line` | Line |
-| `line-markers` | Line with markers |
-| `step` | Step line |
-| `area` | Area |
-| `hlc` | HLC area |
-| `baseline` | Baseline |
-| `columns` | Columns |
-| `high-low` | High-low |
-| `renko` | Renko |
-| `line-break` | Line break |
-| `kagi` | Kagi |
-| `point-figure` | Point & figure |
-| `range` | Range |
+## Constraints
 
----
+- Supported types only: Candlestick (1), Bar (0), Line (2), Area (3), Heikin Ashi (8), Renko (4).
+- Port 9222 liveness: TradingView Desktop must be running on port 9222.
+- No layout disruption: Preserves existing indicators and drawings.
 
-## Execution
+## Quick start
 
 ```bash
-node tradingview-cdp/cli.js chart type {TYPE}
+node tradingview-cdp/cli.js chart style {STYLE_ID}
 ```
 
-Expected: `{ "success": true, "type": "Heikin Ashi" }`
+## Workflow
 
-On failure: the button with that aria-label wasn't visible. Check that no dialog is blocking the toolbar, then retry.
+1. Map user request to style ID (e.g. 'heikin-ashi' -> 8, 'candlestick' -> 1).
+2. Execute CLI command via CDP: `node tradingview-cdp/cli.js chart style {STYLE_ID}`.
+3. Confirm chart visual updates to requested presentation.
 
----
+## Verification
 
-## Notes
+- Confirm chart reflects requested candle style.
+- Validate routing cases against `evals/evals.json`.
 
-- After changing chart type, call `chart saveLayout --name agent-layout` to persist the change.
-- **Recommended Default**: Standard **Solid Candlesticks** (`candle`) on Daily (`1D`) or `4h` timeframe provides the cleanest visual baseline for multi-EMA ribbons and horizontal DCF/tier badges.
-- **Heikin Ashi** (`heikin-ashi`): Smooths price action and is useful for trend-following sweeps to evaluate EMA slope alignment.
-- **Volume Footprint** (`volume-candle`): Best suited for dedicated intraday order flow / bid-ask microstructure analysis.
-- **Renko / Kagi**: Filter out noise and focus purely on price breakout thresholds, removing the time dimension.
-- **Full Reference**: For in-depth comparison of all chart styles, indicator readability, and CDP automation notes, see [chart-types-reference.md](references/chart-types-reference.md).
+## References
 
+- [Chart Types Reference](references/chart-types-reference.md): Mapping of chart style names to internal TradingView numeric IDs.

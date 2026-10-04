@@ -1,0 +1,68 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "list all loaded indicators on my tradingview chart",
+    "expected_trigger": "tv-manage-indicators",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent queries active indicators via CDP.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/tv-indicators",
+    "expected_trigger": "tv-manage-indicators",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes indicator manager.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "remove the RSI indicator from my chart",
+    "expected_trigger": "tv-manage-indicators",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent removes the specified indicator.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "write a new pine script indicator for volume profile",
+    "expected_trigger": "tv-author-pine-script",
+    "expected_not_trigger": [
+      "tv-manage-indicators"
+    ],
+    "pass_condition": "Agent routes to authoring pine script, not managing loaded indicators.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "inject pine script code into the editor",
+    "expected_trigger": "tv-pine-inject",
+    "expected_not_trigger": [
+      "tv-manage-indicators"
+    ],
+    "pass_condition": "Agent routes to pine injection, not indicator listing/removal.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "fetch questrade account balance",
+    "expected_trigger": "questrade-get-balances",
+    "expected_not_trigger": [
+      "tv-manage-indicators"
+    ],
+    "pass_condition": "Agent routes to questrade skill, not indicator manager.",
+    "should_trigger": false
+  }
+]

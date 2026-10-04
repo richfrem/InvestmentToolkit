@@ -1,69 +1,41 @@
 ---
 name: tv-chart-setup
 plugin: tradingview
-description: >
-  Complete agent workspace setup: switch to agent-layout, change symbol, and
-  set timeframe in one shot. Always run this before any chart analysis work.
-allowed-tools: Bash
+description: Complete agent workspace setup: switch to agent-layout, change symbol, and set timeframe in one shot. Trigger on /tv-chart-setup or 'setup chart for [TICKER]'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TV Chart Setup Skill
+# TradingView Chart Setup
 
-**Trigger:** `/tv-chart-setup {SYMBOL} {TIMEFRAME}` — e.g. `/tv-chart-setup AAPL 1D`
+Complete agent workspace setup: switch to agent-layout, change symbol, and set timeframe in one shot.
 
-Sets up the agent's dedicated workspace in TradingView before any analysis.
+## Contents
 
----
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-## Step 1 — Switch to agent-layout
+## Constraints
 
-Always work in agent-layout. Never modify the user's main layout.
+- Layout authority: Uses designated `agent-layout` to avoid disrupting user custom layouts.
+- Standard timeframes: Supports 1D (daily), 1W (weekly), 1h (hourly), 15m.
+- Sequential execution: Switch layout -> switch symbol -> set timeframe.
+
+## Quick start
 
 ```bash
-node tradingview-cdp/cli.js chart saveLayout --name agent-layout
+node tradingview-cdp/cli.js chart symbol {TICKER} && node tradingview-cdp/cli.js chart timeframe 1D
 ```
 
-Expected: `{ "success": true, "action": "saved" | "switched" | "created" }`
+## Workflow
 
-On failure → stop and tell the user: *"Could not switch to agent-layout. Is TradingView Desktop running with `--remote-debugging-port=9222`?"*
+1. Switch to `agent-layout`: `node tradingview-cdp/cli.js chart saveLayout` / select layout.
+2. Set requested symbol: `node tradingview-cdp/cli.js chart symbol {TICKER}`.
+3. Set timeframe (default `1D`): `node tradingview-cdp/cli.js chart timeframe {TIMEFRAME}`.
+4. Verify layout is clean and ready for analysis.
 
----
+## Verification
 
-## Step 2 — Change Symbol
-
-```bash
-node tradingview-cdp/cli.js chart symbol {SYMBOL}
-```
-
-Expected: `{ "success": true, "symbol": "AAPL" }`
-
-If the user didn't provide a symbol, skip this step and use the current chart symbol.
-
----
-
-## Step 3 — Change Timeframe
-
-```bash
-node tradingview-cdp/cli.js chart timeframe {TIMEFRAME}
-```
-
-Common values: `1m`, `5`, `15`, `30`, `60`, `240`, `1D`, `D`, `W`, `M`
-
-If the user didn't provide a timeframe, skip this step.
-
----
-
-## Step 4 — Confirm Ready
-
-Report back:
-> "Chart workspace ready: **{SYMBOL}** on **{TIMEFRAME}** in agent-layout."
-
-If any step failed, report the failure and stop — do not silently continue with wrong state.
-
----
-
-## Notes
-
-- `saveLayout --name agent-layout` is idempotent: creates on first run, switches on subsequent runs.
-- After setup, the user's "main layout" is untouched.
-- Run `node tradingview-cdp/cli.js status` to verify CDP connection if setup fails.
+- Confirm symbol and timeframe reflect requested parameters.
+- Validate routing cases against `evals/evals.json`.

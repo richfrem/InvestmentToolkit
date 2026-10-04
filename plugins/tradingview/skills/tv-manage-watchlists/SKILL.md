@@ -1,47 +1,41 @@
 ---
 name: tv-manage-watchlists
 plugin: tradingview
-description: >
-  Synchronizes portfolio holdings and researched tickers from projections / watchlist.json
-  to TradingView watchlists.
-allowed-tools: Bash, Read
+description: Synchronizes portfolio holdings and researched tickers to TradingView watchlists. Trigger on /tv-manage-watchlists or 'sync watchlists'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TradingView Watchlist Manager Skill
+# TradingView Manage Watchlists
 
-## ⚠️ Pre-flight Check
-Before running this skill, verify the TradingView CDP connection is active and debug port 9222 is open:
-```bash
-python3 "$(find plugins/tradingview/scripts ~/.claude/plugins/cache -name tv_health_check.py -path "*/tradingview/*" 2>/dev/null | sort | tail -1)"
-```
-*If this check fails, run `/setup-tradingview` first. If using a non-standard install path, set `export TV_CDP_DIR=/path/to/tradingview-cdp` before executing.*
+Synchronizes portfolio holdings and researched tickers to TradingView watchlists.
 
-## What This Skill Does
+## Contents
 
-1. **Loads** active holdings from `investment_screener/backend/data/portfolio.json`
-2. **Loads** researched watchlists from `investment_screener/backend/data/watchlist.json` (falling back to scanning the projections directory if not found)
-3. **Translates** them into two standard watchlists in TradingView (BOATS/overnight watchlist
-   removed — TradingView charts now natively support 24h quoting):
-   - `TV-Full Watchlist` — All researched tickers (includes Canadian)
-   - `TV-Portfolio` — Active portfolio holdings
-4. **Maintains** alignment by adding missing tickers and pruning retired tickers dynamically.
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
----
+## Constraints
 
-## Dry Run Verification
+- Database authority: Source tickers are read directly from `domain_model.sqlite`.
+- Dry run first: Always support `--dry-run` to preview watchlist additions.
+- Section separation: Group by Strategy Pillar (Power, Compute, Data Infra, Software, Cash).
 
-Check what additions/removals are planned without applying changes:
+## Quick start
 
 ```bash
-python3 plugins/tradingview/scripts/watchlist_manager.py sync --dry-run
+python3 plugins/tradingview/scripts/manage_watchlists.py --sync
 ```
 
----
+## Workflow
 
-## Live Synchronisation
+1. Query portfolio and watchlisted tickers from `domain_model.sqlite`.
+2. Preview changes with `manage_watchlists.py --dry-run`.
+3. Execute synchronization: `manage_watchlists.py --sync`.
+4. Report added and removed tickers per watchlist section.
 
-Perform the actual update to TradingView Desktop watchlists:
+## Verification
 
-```bash
-python3 plugins/tradingview/scripts/watchlist_manager.py sync
-```
+- Verify tickers appear in TradingView Desktop watchlist panel.
+- Validate routing cases against `evals/evals.json`.

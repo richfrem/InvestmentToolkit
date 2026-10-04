@@ -1,74 +1,41 @@
 ---
 name: tv-add-indicator
 plugin: tradingview
-description: >
-  Add a built-in TradingView indicator or personal Pine Script to the active
-  chart. Opens the Indicators dialog, searches by name, and clicks the first result.
-allowed-tools: Bash
+description: Add a built-in TradingView indicator or personal Pine Script to the active chart via CDP. Trigger on /tv-add-indicator or 'add indicator [NAME]'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TV Add Indicator Skill
+# TradingView Add Indicator
 
-**Trigger:** `/add-indicator {NAME}` — e.g. `/add-indicator RSI`
+Add a built-in TradingView indicator or personal Pine Script to the active chart via CDP.
 
----
+## Contents
 
-## Common Built-in Indicators
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-```
-RSI                   — Relative Strength Index
-MACD                  — Moving Average Convergence Divergence
-Bollinger Bands       — BB with stddev bands
-Volume                — Volume histogram
-EMA                   — Exponential Moving Average
-SMA                   — Simple Moving Average
-Stochastic            — Stochastic oscillator
-ATR                   — Average True Range
-ADX                   — Average Directional Index
-OBV                   — On Balance Volume
-VWAP                  — Volume Weighted Average Price
-Ichimoku Cloud        — Ichimoku Kinko Hyo
-Supertrend            — Supertrend indicator
-```
+## Constraints
 
----
+- Active chart requirement: TradingView Desktop must be running with remote debugging on port 9222.
+- Avoid duplicates: Check loaded indicators with tv-manage-indicators before adding a new indicator.
+- Dialog overlay safety: Ensure Pine Editor is closed before searching indicators dialog to avoid click interception.
 
-## Execution
+## Quick start
 
 ```bash
-node tradingview-cdp/cli.js chart addIndicator "{NAME}"
+node tradingview-cdp/cli.js chart addIndicator "Relative Strength Index"
 ```
 
-Expected: `{ "success": true, "added": "Relative Strength Index (RSI)" }`
+## Workflow
 
----
+1. Confirm Port 9222 Reachability: Run `python3 plugins/tradingview/scripts/tv_health_check.py`.
+2. Open Indicators Dialog: Dispatch input event to open the indicator search modal via CDP.
+3. Search & Select: Type indicator name (e.g. 'Relative Strength Index', 'Volume Profile', or personal Pine name) and select matching row.
+4. Close Dialog: Dismiss the modal once indicator is rendered on chart.
 
-## Adding a Personal Pine Script
+## Verification
 
-Personal scripts appear under the **"My scripts"** tab in TV's Indicators dialog.
-The same `addIndicator` command works — just provide your script's exact display name:
-
-```bash
-node tradingview-cdp/cli.js chart addIndicator "My Custom MA"
-```
-
----
-
-## Loading Multiple Indicators
-
-Run the command once per indicator. Each call opens the dialog, clicks the first
-matching result, and closes the dialog.
-
-```bash
-node tradingview-cdp/cli.js chart addIndicator "RSI"
-node tradingview-cdp/cli.js chart addIndicator "MACD"
-node tradingview-cdp/cli.js chart addIndicator "Bollinger Bands"
-```
-
----
-
-## Notes
-
-- After adding indicators, save your workspace: `chart saveLayout --name agent-layout`
-- If `success: false, error: "No results found"` — the name didn't match any TV indicator. Try a shorter search term.
-- For removing an indicator: `pine remove --indicator "{NAME}"`
+- Confirm indicator appears in the chart legend via `node tradingview-cdp/cli.js chart read`.
+- Validate routing cases against `evals/evals.json`.

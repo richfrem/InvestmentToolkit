@@ -1,0 +1,68 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "connect tradingview desktop to the toolkit",
+    "expected_trigger": "tv-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent initiates TradingView Desktop onboarding and port 9222 check.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/tv-onboarding",
+    "expected_trigger": "tv-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent executes the diagnostic and setup guide for TradingView Desktop CDP.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "how do I configure remote debugging port 9222 for tradingview?",
+    "expected_trigger": "tv-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent explains and verifies the --remote-debugging-port=9222 launch argument.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "set up my questrade mcp connection",
+    "expected_trigger": "questrade-setup",
+    "expected_not_trigger": [
+      "tv-onboarding"
+    ],
+    "pass_condition": "Agent routes to Questrade setup, not TradingView onboarding.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "sync my portfolio holdings from tradingview broker panel",
+    "expected_trigger": "tv-portfolio-sync",
+    "expected_not_trigger": [
+      "tv-onboarding"
+    ],
+    "pass_condition": "Agent routes to tv-portfolio-sync, not onboarding.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "take a screenshot of the NVDA chart",
+    "expected_trigger": "tv-chart-snapshot",
+    "expected_not_trigger": [
+      "tv-onboarding"
+    ],
+    "pass_condition": "Agent routes to chart snapshot, not onboarding.",
+    "should_trigger": false
+  }
+]

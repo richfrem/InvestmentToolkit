@@ -1,76 +1,42 @@
 ---
 name: tv-modify-order
 plugin: tradingview
-description: >
-  Modify the limit price (and optionally quantity) of a Working or Inactive order
-  in TradingView via CDP. Uses keyboard events to fill the modify form so React's
-  onChange fires correctly. Requires TradingView Desktop with --remote-debugging-port=9222.
+description: Modify the limit price or quantity of a Working order in TradingView via CDP. Trigger on /tv-modify-order or 'modify order [UUID]'.
 allowed-tools: Bash, Read, Write
 ---
 
-## Trigger
+# TradingView Modify Order
 
-Invoked when the user wants to change the price of an open limit order, or when
-the Trade Log ✏ (pencil) button is clicked on a Working/Inactive row.
+Modify the limit price or quantity of a Working order in TradingView via CDP.
 
-## Prerequisites
+## Contents
 
-- TradingView Desktop running with `--remote-debugging-port=9222`
-- Order must be visible in TV's broker panel (Working or Inactive tab)
-- Trade-log entry should have a `tvOrderId` (populated on submission)
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-## Method 1: Python script (direct)
+## Constraints
+
+- Human confirmation: Require user confirmation before dispatching price/quantity modifications.
+- React input simulation: Form fields must use keyboard events to trigger React onChange handlers.
+- Working orders only: Confirm order is still open before modifying.
+
+## Quick start
 
 ```bash
-python3 plugins/tradingview/scripts/tv_modify_order.py \
-    --order-id 292b5304-0c3d-42c2-02c0-290f6d322c12 \
-    --new-price 47.00 \
-    --ticker INTC --action buy
+python3 plugins/tradingview/scripts/place_order.py --modify <UUID> --price <NEW_PRICE>
 ```
 
-Optional `--new-shares N` to change quantity.
+## Workflow
 
-## Method 2: Via Trade Log UI
+1. Locate order by UUID or ticker using `tv-get-orders`.
+2. Display proposed modification table (Old Price -> New Price, Old Qty -> New Qty).
+3. On user approval, click Modify in TradingView broker panel.
+4. Fill new values using simulated keyboard inputs and submit.
+5. Confirm updated order state.
 
-The ✏ button on Working/Inactive rows opens the ModifyModal, which calls
-`PUT /api/trading/modify` → `place_order.py --modify`.
+## Verification
 
-## How It Works
-
-Two-step process in `tradingview-cdp/core/trading.js`:
-
-### Step 1: `modifyOrder({ orderId, ticker, action, newPrice, newShares })`
-
-1. Finds the order row by UUID (search-first, no tab navigation)
-2. Clicks the ✏ pencil button (`buttonIndex: -2`, second-to-last in the row)
-3. Waits for the modify form to appear
-4. Uses CDP keyboard events to fill the price field:
-   - `Ctrl+A` to select all existing text
-   - `Input.insertText` to type the new value
-   - `Tab` to commit (triggers React's `onChange`)
-5. Returns `{ modified: true, formBefore: [...], orderId }`
-
-**Why keyboard events?** Setting `input.value` via React's property setter shows
-the new value visually but does NOT trigger `onChange` — TV's React state keeps
-the old price and submits it on Confirm. Keyboard events properly fire `onChange`.
-
-### Step 2: `submitModify({ ticker, action, newPrice, orderId })`
-
-1. Finds and clicks the first visible "Confirm" / "Send Order" / "Save" / "Modify" button
-2. Waits for a secondary TV confirmation dialog and clicks it
-3. Reads the broker panel to verify the new price is reflected
-4. Returns `{ clicked, secondaryConfirm, priceMatch, text }`
-
-## Error Handling
-
-- **Form not appearing**: Row not found or pencil click missed — retry or check UUID
-- **priceMatch: false**: TV broker panel may take a moment to refresh; the order
-  was submitted but the panel hasn't updated yet. Verify manually in TV.
-
-## Implementation Status
-
-✅ **FULLY IMPLEMENTED**
-
-- `modifyOrder()` — `tradingview-cdp/core/trading.js`
-- `submitModify()` — `tradingview-cdp/core/trading.js`
-- `tv_modify_order.py` — `plugins/tradingview/scripts/tv_modify_order.py`
+- Confirm order in broker panel reflects new price/quantity.
+- Validate routing cases against `evals/evals.json`.

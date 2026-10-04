@@ -1,54 +1,43 @@
 ---
 name: tv-onboarding
 plugin: tradingview
-description: >
-  Deep-dive TradingView Desktop setup and CDP diagnostic guide.
-  Walks users through installing TradingView Desktop, connecting their broker,
-  and establishing remote debugging port 9222.
-  Trigger on /tv-onboarding, "set up tradingview", or "connect tradingview".
-allowed-tools: Bash, Read
+description: Setup and diagnostic guide for TradingView Desktop and remote debugging port 9222. Trigger on /tv-onboarding or 'connect tradingview'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TradingView Desktop Onboarding Guide
+# TradingView Onboarding
 
-**Trigger:** `/tv-onboarding` or `connect tradingview`
+Setup and diagnostic guide for TradingView Desktop and remote debugging port 9222.
 
----
+## Contents
 
-## Purpose
-TradingView Desktop with remote debugging port `9222` is the primary data and execution layer for InvestmentToolkit. It enables live portfolio sync, real-time prices, and automated order execution.
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
----
+## Constraints
 
-## Step 1 — Check Installation
-Check if TradingView Desktop is installed:
+- Port 9222 requirement: TradingView Desktop must launch with `--remote-debugging-port=9222`.
+- Broker login prerequisite: Broker panel must be connected to enable portfolio sync.
+- Read-only diagnostic: Health checks do not mutate user settings.
+
+## Quick start
+
 ```bash
-ls /Applications/TradingView.app 2>/dev/null && echo "Installed" || echo "Not found"
+python3 plugins/tradingview/scripts/tv_health_check.py
 ```
 
-If not found, download and install TradingView Desktop:
-`https://www.tradingview.com/desktop/`
+## Workflow
 
----
+1. Check if TradingView Desktop is installed.
+2. Launch TradingView with debugging enabled:
+   `open -a 'TradingView' --args --remote-debugging-port=9222`
+3. Run automated health check:
+   `python3 plugins/tradingview/scripts/tv_health_check.py`
+4. Report connectivity status across chart engine and broker panel.
 
-## Step 2 — Launch with Remote Debugging Port 9222
-Launch TradingView Desktop with CDP debugging enabled:
-```bash
-open -a "TradingView" --args --remote-debugging-port=9222
-```
+## Verification
 
----
-
-## Step 3 — Confirm CDP Port Reachability
-Verify port 9222 is active:
-```bash
-curl -s http://localhost:9222/json/version | head -n 5
-```
-
----
-
-## Step 4 — Run Live Health Check
-Run the CDP engine health check:
-```bash
-node tradingview-cdp/cli.js health
-```
+- Confirm `tv_health_check.py` outputs 'OK (port 9222 open)'.
+- Validate routing cases against `evals/evals.json`.
