@@ -9,7 +9,7 @@
             "type": "positive",
             "category": "trigger",
             "prompt": "/run-advisor",
-            "setup": "A /13f-analyze or /x-news-sweep session just completed with new recommendations",
+            "setup": "A /13f-analyze or /news-sweep session just completed with new recommendations",
             "expected_trigger": "portfolio-advisor-orchestrator",
             "expected_not_trigger": [],
             "pass_condition": "Agent begins Phase 1 (Catalyst Ingestion & Interactive Q&A) by reviewing the generated recommendations and applying the confluence gate before any individual holding card is presented."

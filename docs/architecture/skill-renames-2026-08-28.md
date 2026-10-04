@@ -65,7 +65,7 @@ were fixed without needing to collapse the plugin boundary.
 - `plugin.json` skill lists (both plugins) updated.
 - SKILL.md frontmatter (`name:`) and body text updated in both renamed skills, plus every
   cross-referencing skill/agent/eval file found via repo-wide grep (`stock-research`, `stock-intake`,
-  `calibrate-targets`, `portfolio-health`, `red-team-agent`, `etf_analysis`, `x-news-sweep`,
+  `calibrate-targets`, `portfolio-health`, `red-team-agent`, `etf_analysis`, `news-sweep`,
   `adversarial-review`, both plugins' `README.md`/`CONNECTORS.md`, root `architecture.md`).
 - Legacy trigger phrases (`/evaluate-stock`, `/perform-stock-valuation`, `/bundle-thesis-review`)
   intentionally left working as documented aliases — this is a rename, not a breaking change.

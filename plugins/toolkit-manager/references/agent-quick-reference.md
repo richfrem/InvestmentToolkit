@@ -50,8 +50,8 @@ Outputs:
 
 ---
 
-### `/x-news-sweep`
-**Daily Grok/X.com news sweep.** Generates a structured prompt from your live thesis, posts it to Grok, and gates every recommendation against DCF fair values + 8 hard gates before applying changes. Run at the start of each trading day.
+### `/news-sweep`
+**Multi-model news sweep.** Generates a structured prompt from your live thesis, runs across frontier models (Grok, Claude, ChatGPT, Gemini), and gates findings against DCF fair values + hard gates before applying changes. Run at the start of each trading day.
 
 ---
 
@@ -184,7 +184,7 @@ python3 plugins/tradingview/scripts/tv_launch.py
 
 | Cadence | Command | Follow-up |
 |---|---|---|
-| Daily | `/x-news-sweep` | Gate recs against DCF + 8 hard gates |
+| Daily | `/news-sweep` | Gate recs against DCF + 8 hard gates |
 | Weekly | `/review-portfolio` | `/rebalance` if pillar >5pp off target |
 | Monthly | `/update-stock-analysis {TICKER}` | Re-run for stale or missing AI projections |
 | Quarterly | `/strategic-review` | Review MD, approve, apply formula patch |

@@ -1,28 +1,33 @@
 # Portfolio News Sweep — {{DATE}}
 **Thesis:** {{THESIS_NAME}}  |  **Portfolio value:** ~${{PORTFOLIO_VALUE}}  |  **Date:** {{DATE}}
 
-## Core Portfolio Thesis Background (Context for Grok)
-You are analyzing a highly concentrated, institutional-grade AI infrastructure portfolio focused on two civilizational-scale macro pillars:
+## Core Portfolio Thesis Background
+You are analyzing a highly concentrated, institutional-grade AI infrastructure portfolio focused on key civilizational-scale macro pillars:
 
 1. **The ASI Race (Primary: Infrastructure & Compute Buildout)**:
-   - **GPU Cloud & Memory Infrastructure**: Captures GPU supply chains and HBM/NAND scarcity. Tickers include `CRWV` (GPU cloud), `SNDK` (NAND), and `SKHY` (HBM memory proxy).
-   - **AI Power Infrastructure**: Datacenters require massive power grids. Tickers include `CEG`, `VST` (nuclear/merchant power), `OKLO` (micro-nuclear commercialization), `BE` (fuel cells), and `PSIX` (power generation).
-   - **AI Data Center Infrastructure (Bitcoin Miner Pivot)**: High-performance computing (HPC) landlords pivoting from BTC mining to AI compute. Tickers include `CORZ`, `IREN`, `APLD`, and `BTDR` (Bitdeer).
-   - **Compute Moats & Foundries**: Foundations of silicon manufacturing. Tickers include `SHAZ` (SharonAI), `MU` (Micron).
+   - **GPU Cloud & Neoclouds**: Captures GPU infrastructure supply and sovereign compute capacity. Tickers include `CRWV` (CoreWeave), `NBIS` (Nebius), and `SHAZ` (SharonAI).
+   - **HBM & Memory Scarcity**: Critical silicon storage bottlenecks for AI training and inference. Tickers include `MU` (Micron), `SNDK` (SanDisk/WDC), and `SKHY` (SK Hynix proxy: 000660.KS / OTC: HXSCF).
+   - **Foundries, Lithography & EDA**: Foundations of silicon design and manufacturing. Tickers include `TSM` (TSMC), `ASML`, `AMAT` (Applied Materials), `TSEM` (Tower Semi), `SNPS` (Synopsys), and `CDNS` (Cadence).
+   - **High-Speed Networking & Optical Interconnects**: Chip-to-chip, server-to-server 800G/1.6T fabrics. Tickers include `CRDO` (Credo), `LITE` (Lumentum), `COHR` (Coherent), `CIEN` (Ciena), and `VIAV` (Viavi).
+   - **AI Power Infrastructure**: Baseload power generation, nuclear, fuel cells, and micro-grid prime power for massive gigawatt-scale clusters. Tickers include `VST` (Vistra), `BE` (Bloom Energy), `PSIX` (Power Solutions Intl), `CEG`, and `OKLO`.
+   - **AI Data Center Infrastructure (Bitcoin Miner Pivot)**: Power landlords converting energized substation capacity into high-performance compute (HPC) colocation. Tickers include `CORZ` (Core Scientific), `IREN` (Iris Energy), `APLD` (Applied Digital), `BTDR` (Bitdeer), and `CLSK` (CleanSpark).
 
-2. **Sovereign Finance (Secondary: Rails for Autonomous AI Agents)**:
-   - Digital rails built for machine-to-machine autonomous settlement. Tickers include `COIN` and `CRCL`.
+2. **Ontological AI & Operating Systems**:
+   - Institutional ontologies, enterprise AI agent platforms, and operational data execution layers. Core Holding: `PLTR` (Palantir AIP).
 
 3. **Space Infrastructure & Defense AI**:
-   - Government modernization, defense contracts, and space infrastructure. Ticker includes `SPCX` (SpaceX).
+   - Government modernization, tactical edge intelligence, and orbital communications. Tickers include `SPCX` (SpaceX private equity proxy), `CACI` (Defense IT/SIGINT), and `RKLB` (Rocket Lab).
 
-4. **Ontological AI & Operating Systems**:
-   - Institutional ontologies and operational data execution platforms. Ticker: `PLTR` (Palantir AIP).
+4. **Sovereign Finance & Digital Rails**:
+   - Institutional infrastructure for automated machine-to-machine settlement. Tickers include `COIN` and `CRCL`.
+
+5. **Legacy / Non-Core Watchlist (Consumer & Discretionary)**:
+   - Names on observation or legacy holdover outside the primary thesis: `CAKE`, `CELH`, `NKE`, `NFLX`, `SHOP`.
 
 ---
 
-## Instructions for Grok
-Please search X posts, earnings releases, SEC filings, and analyst notes for **material updates only** from the **last 7–14 days**.
+## Instructions for the Model (Grok / Claude / ChatGPT / Gemini)
+Please review SEC filings, earnings releases, financial news, X posts, and analyst notes for **material updates only** from the **last 7–14 days**.
 
 > **NOTE:** This is Round 1 of our interaction. After analyzing your response, I will send up to 3 rounds of detailed, clarifying follow-up questions to flush out quantitative metrics, deal specifics, and technical values. Please structure your answers clearly to facilitate this process.
 

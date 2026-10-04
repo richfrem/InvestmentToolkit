@@ -228,7 +228,7 @@ InvestmentToolkit/                         ← repo root
 #### Domain Plugins (Local to InvestmentToolkit)
 | Plugin | Key Skills | Key Scripts |
 |--------|-----------|-------------|
-| `portfolio-advisor` | `/daily`, `/weekly-review`, `/run-advisor`, `/x-news-sweep`, `/rebalance` | `daily_brief.py`, `update_targets.py` |
+| `portfolio-advisor` | `/daily`, `/weekly-review`, `/run-advisor`, `/news-sweep`, `/rebalance` | `daily_brief.py`, `update_targets.py` |
 | `stock-valuation` | `/update-stock-analysis`, `/stock-research` | `validate_projection.py`, `dcf_scenarios.py` |
 | `tradingview` | `/tv-place-order`, `/tv-ta-daily-sweep`, `/tv-portfolio-sync`, `/tv-pine-inject` | `ta_sweep_batch.py`, `place_order.py`, `tv_launch.py` |
 | `etf-analysis` | `/etf_analysis` | `persist_etf_analysis.py` |

@@ -267,43 +267,43 @@
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
       "strategy": "symlink",
-      "description": "ADR-003: x-news-sweep canonical script \u2014 generates live Grok prompt from target-portfolio.json"
+      "description": "ADR-003: news-sweep canonical script \u2014 generates live Grok prompt from target-portfolio.json"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/portfolio_action.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/portfolio_action.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/update_targets.py",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
@@ -315,7 +315,7 @@
     },
     {
       "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "strategy": "symlink",
       "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
     },
@@ -345,7 +345,7 @@
     },
     {
       "src": "plugins/portfolio-advisor/scripts/grok_sweep.py",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/grok_sweep.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -1065,9 +1065,15 @@
     },
     {
       "src": "plugins/portfolio-advisor/references/news-sweep-model-assessment.md",
-      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/references/news-sweep-model-assessment.md",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/references/news-sweep-model-assessment.md",
       "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for news sweep model assessment in x-news-sweep"
+      "description": "Hub-and-spoke symlink for news sweep model assessment in news-sweep"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/news-sweep-model-assessment.md",
+      "dst": "plugins/portfolio-advisor/skills/weekly-review/references/news-sweep-model-assessment.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

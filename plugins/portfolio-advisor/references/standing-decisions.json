@@ -6,7 +6,7 @@
     "CORZ": {
       "type": "ALLOWLISTED_CONFLICT",
       "reason": "SA LP holds CORZ long but DCF rates SELL — user allowlisted this conflict; thesis target is ACCUMULATE 8.4%. Do not propose EXIT without explicit user direction.",
-      "source": "x-news-sweep allowlist, start_here.md 2026-06",
+      "source": "news-sweep allowlist, start_here.md 2026-06",
       "review": "Re-challenge at next /strategic-review or if SA LP exits the position."
     },
     "PANW": {

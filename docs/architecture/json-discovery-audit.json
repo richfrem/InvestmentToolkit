@@ -5043,142 +5043,142 @@
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
           "line": 3,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
           "line": 38,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
           "line": 48,
           "confidence": "probable"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
           "line": 258,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
           "line": 295,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
           "line": 33,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
           "line": 51,
           "confidence": "probable"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
           "line": 123,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
           "line": 9,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
           "line": 14,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
           "line": 21,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
           "line": 31,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
           "line": 69,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
           "line": 115,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
           "line": 6,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
           "line": 22,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
           "line": 47,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
           "line": 48,
           "confidence": "probable"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
           "line": 8,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
           "line": 21,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
           "line": 41,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
           "line": 160,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
           "line": 403,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
           "line": 32,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
           "line": 100,
           "confidence": "probable"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
           "line": 44,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
           "line": 249,
           "confidence": "probable"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
           "line": 258,
           "confidence": "exact"
         },
@@ -6390,7 +6390,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/commands/x-news-sweep.md",
+          "referencing_file": "plugins/portfolio-advisor/commands/news-sweep.md",
           "line": 3,
           "confidence": "mention_only"
         },
@@ -6445,42 +6445,42 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
           "line": 5,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
           "line": 16,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
           "line": 124,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
           "line": 139,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
           "line": 153,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
           "line": 350,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
           "line": 387,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
           "line": 403,
           "confidence": "mention_only"
         },
@@ -27082,7 +27082,7 @@
       "migration_status": "n/a"
     },
     {
-      "path": "plugins/portfolio-advisor/skills/x-news-sweep/evals/evals.json",
+      "path": "plugins/portfolio-advisor/skills/news-sweep/evals/evals.json",
       "extension": ".json",
       "size_bytes": 4472,
       "line_count": 76,
@@ -78973,616 +78973,616 @@
       "line_text": "with open(out_path, \"w\") as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
       "line": 3,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "update_targets.py \u2014 Precision target-weight editor for target-portfolio.json."
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
       "line": 38,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "TARGET_JSON   = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
       "line": 48,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "return json.loads(TARGET_JSON.read_text())"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
       "line": 233,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "description=\"Precision target-weight editor for target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
       "line": 258,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "help=\"Write changes to target-portfolio.json (auto-normalizes)\")"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
       "line": 295,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "print(f\"\\n\u2705 Wrote target-portfolio.json  (sum={total:.4f}%)\")"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
       "line": 47,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open({prompt_file!r}) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
       "line": 62,
       "matched_text": "json.dumps(",
       "operation": "write",
       "line_text": "prompt_escaped = json.dumps(prompt)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
       "line": 102,
       "matched_text": "open(",
       "operation": "write",
       "line_text": "with open({output_file!r}, \"w\") as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
       "line": 113,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "data = json.load(resp)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
       "line": 155,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(output_file) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "line": 7,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "Generates a dated `PortfolioAnalysisRecommendations.json` by comparing the current thesis targets"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "line": 23,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- investment_screener/backend/data/portfolio.json (Internal state database)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "line": 33,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "THESIS_JSON = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "line": 34,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "PORTFOLIO   = REPO_ROOT / \"investment_screener/backend/data/portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "line": 51,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "thesis        = json.loads(THESIS_JSON.read_text())"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "line": 123,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "\"targetPortfolioFile\":    \"investment_screener/backend/data/theses/target-portfolio.json\","
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "line": 155,
       "matched_text": "json.dumps(",
       "operation": "write",
       "line_text": "print(json.dumps(review, indent=2))"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "line": 158,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "out = REVIEWS_DIR / f\"{args.date}-PortfolioAnalysisRecommendations.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
       "line": 166,
       "matched_text": "json.dumps(",
       "operation": "write",
       "line_text": "out.write_text(json.dumps(review, indent=2) + \"\\n\")"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 6,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "--mode current  \u2192 reads portfolio.json (actual broker holdings)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 9,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "--mode target   \u2192 reads target-portfolio.json (thesis targets)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 14,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "--normalize     \u2192 rescale targetWeight values in target-portfolio.json"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 21,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "python3 validate_weights.py --normalize --write     # fix and write target-portfolio.json"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 30,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "PORTFOLIO_JSON   = REPO_ROOT / \"investment_screener/backend/data/portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 31,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "TARGET_JSON      = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 35,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "# Current holdings \u2014 computed from portfolio.json (market_value / total)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 44,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(portfolio_path) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 45,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "raw = json.load(f)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 69,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "# Target weights \u2014 summed from target-portfolio.json targetWeight fields"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 72,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(target_path) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 73,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "data = json.load(f)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 90,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(target_path) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 91,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "data = json.load(f)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 115,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "parser.add_argument(\"--write\",     action=\"store_true\", help=\"Write normalised weights back to target-portfolio.json\")"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 125,
       "matched_text": "open(",
       "operation": "write",
       "line_text": "with open(args.target, \"w\") as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 126,
       "matched_text": "json.dump(",
       "operation": "write",
       "line_text": "json.dump(normalised_data, f, indent=2)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
       "line": 136,
       "matched_text": "json.dumps(",
       "operation": "write",
       "line_text": "print(json.dumps(output))"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/portfolio_action.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/portfolio_action.py",
       "line": 21,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- investment_screener/backend/data/portfolio.json (Internal state database)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/portfolio_action.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/portfolio_action.py",
       "line": 69,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "proj_path = Path(projections_dir) / f\"{ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/portfolio_action.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/portfolio_action.py",
       "line": 72,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(proj_path) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/portfolio_action.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/portfolio_action.py",
       "line": 73,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "projs = json.load(f)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/portfolio_action.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/portfolio_action.py",
       "line": 115,
       "matched_text": "json.dumps(",
       "operation": "write",
       "line_text": "print(json.dumps(result))"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 6,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "1. target-portfolio.json  (ground truth)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 22,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "THESIS_JSON = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 24,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "PORTFOLIO   = REPO_ROOT / \"investment_screener/backend/data/portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 47,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "print(\"\\n\u2500\u2500 1. target-portfolio.json \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\")"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 48,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(THESIS_JSON) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 49,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "thesis = json.load(f)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 117,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "if f.suffix == \".json\" and re.match(r\"\\d{4}-\\d{2}-\\d{2}\", f.name)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 126,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(latest_json) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 127,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "review = json.load(f)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 172,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "proj_file = PROJ_DIR / f\"{ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 175,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(proj_file) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 176,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "data = json.load(f)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 198,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "proj_file = PROJ_DIR / f\"{ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 201,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(proj_file) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
       "line": 202,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "data = json.load(f)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 8,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "Synthesizes target-portfolio.json (thesis targets) with portfolio.json (live holdings) to"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 21,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "python3 generate_portfolio_blueprint.py --write --thesis-json data/theses/target-portfolio.json"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 29,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- investment_screener/backend/data/portfolio.json (Internal state database)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 41,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "THESIS_JSON   = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 42,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "PORTFOLIO_JSON = REPO_ROOT / \"investment_screener/backend/data/portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 64,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open(path) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 65,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "return json.load(f)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 69,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "\"\"\"Build actual-position map from portfolio.json."
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 84,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "tmp = Path(tempfile.mktemp(suffix=\".json\"))"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 85,
       "matched_text": "json.dumps(",
       "operation": "write",
       "line_text": "tmp.write_text(json.dumps({\"holdings\": data, \"totals\": total_ref}))"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 160,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*\")"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 199,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "proj_path = REPO_ROOT / f\"investment_screener/backend/data/projections/{ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 279,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "proj_path = REPO_ROOT / f\"investment_screener/backend/data/projections/{ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
       "line": 403,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "# 4. Sync header metadata from target-portfolio.json"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
       "line": 22,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- investment_screener/backend/data/portfolio.json (Internal state database)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
       "line": 32,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "THESIS_JSON = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
       "line": 33,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "PORTFOLIO   = REPO_ROOT / \"investment_screener/backend/data/portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
       "line": 46,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "for p in ETF_ANALYSIS_DIR.glob('*.json'):"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
       "line": 53,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "path = PROJ_DIR / f\"{ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
       "line": 57,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "data = json.loads(path.read_text())"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
       "line": 100,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "thesis       = json.loads(THESIS_JSON.read_text())"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "line": 31,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- investment_screener/backend/data/portfolio.json (Internal state database)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "line": 44,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "THESIS_JSON = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "line": 126,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "help=\"Append catalyst note to agentRationale in target-portfolio.json\")"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "line": 134,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "proj_path = PROJ_DIR / f\"{args.ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "line": 138,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "raw = json.loads(proj_path.read_text())"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "line": 164,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "proj_path = PROJ_DIR / f\"{args.ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "line": 169,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "raw = json.loads(proj_path.read_text())"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "line": 249,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "thesis = json.loads(THESIS_JSON.read_text())"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "line": 258,
       "matched_text": ".json",
       "operation": "mention",
@@ -91164,7 +91164,7 @@
       "line": 82,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "- `/ta-daily-sweep`: **Batch TA scan of all portfolio holdings in one CDP session** via `ta_sweep_batch.py`. Reads Data Window (RSI, Vol Bias %, ADX, Squeeze) per ticker. Flags momentum extremes, distribution signals, squeeze setups, DCF proximity. Outputs ranked REDUCE / MONITOR / ACCUMULATE / HOLD report. Auto-saves to `investment_screener/backend/data/ta-sweep-results.json`. Complements `/x-news-sweep`. Note: ADX values outside 0\u2013100 are auto-nulled (`validate_adx()` inside `enrich_results()` \u2014 the nulled copy is what gets persisted); volume ratios use K/M-scaled parsing to prevent false VOLUME_SPIKE flags; `pctToFV` is price-denominated (`(FV \u2212 price) / price`) \u2014 values below \u2212100% indicate the old FV-denominated bug."
+      "line_text": "- `/ta-daily-sweep`: **Batch TA scan of all portfolio holdings in one CDP session** via `ta_sweep_batch.py`. Reads Data Window (RSI, Vol Bias %, ADX, Squeeze) per ticker. Flags momentum extremes, distribution signals, squeeze setups, DCF proximity. Outputs ranked REDUCE / MONITOR / ACCUMULATE / HOLD report. Auto-saves to `investment_screener/backend/data/ta-sweep-results.json`. Complements `/news-sweep`. Note: ADX values outside 0\u2013100 are auto-nulled (`validate_adx()` inside `enrich_results()` \u2014 the nulled copy is what gets persisted); volume ratios use K/M-scaled parsing to prevent false VOLUME_SPIKE flags; `pctToFV` is price-denominated (`(FV \u2212 price) / price`) \u2014 values below \u2212100% indicate the old FV-denominated bug."
     },
     {
       "referencing_file": "AGENTS.md",
@@ -95028,7 +95028,7 @@
       "line": 166,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "plugins/portfolio-advisor/skills/x-news-sweep/evals/evals.json \\"
+      "line_text": "plugins/portfolio-advisor/skills/news-sweep/evals/evals.json \\"
     },
     {
       "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-eval-coverage-backfill.md",
@@ -98689,7 +98689,7 @@
       "line": 168,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "| `plugins/portfolio-advisor/skills/x-news-sweep/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |"
+      "line_text": "| `plugins/portfolio-advisor/skills/news-sweep/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |"
     },
     {
       "referencing_file": "docs/superpowers/audits/json-discovery-audit.md",
@@ -100201,7 +100201,7 @@
       "line": 1786,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "### plugins/portfolio-advisor/skills/x-news-sweep/evals/evals.json"
+      "line_text": "### plugins/portfolio-advisor/skills/news-sweep/evals/evals.json"
     },
     {
       "referencing_file": "docs/superpowers/audits/json-discovery-audit.md",
@@ -101552,7 +101552,7 @@
       "line": 146,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "| `plugins/portfolio-advisor/skills/x-news-sweep/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | (none detected) | (none detected) | |"
+      "line_text": "| `plugins/portfolio-advisor/skills/news-sweep/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | (none detected) | (none detected) | |"
     },
     {
       "referencing_file": "docs/superpowers/audits/allowed-json-register.md",
@@ -104082,7 +104082,7 @@
       "line_text": "1. Check if `data/rebalance_plan.json` exists and its `generatedAt` is within the last 24h."
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/commands/x-news-sweep.md",
+      "referencing_file": "plugins/portfolio-advisor/commands/news-sweep.md",
       "line": 3,
       "matched_text": ".json",
       "operation": "mention",
@@ -104236,91 +104236,91 @@
       "line_text": "- thesis.json current state: [\u2705 Loaded v{N} / \u274c File missing]"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 5,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "Generates a live Grok/X.com prompt from the current target-portfolio.json,"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 16,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "1. **Generates** a Grok prompt from live `target-portfolio.json` \u2014 always reflects current targets, actions, and DCF signals (never stale)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 35,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "curl -s http://127.0.0.1:9223/json/version | python3 -c \"import sys,json; d=json.load(sys.stdin); print('Chrome ready:', d.get('Browser','?'))\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 123,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "--portfolio investment_screener/backend/data/portfolio.json \\"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 124,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "--target investment_screener/backend/data/theses/target-portfolio.json"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 139,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "If ticker not in `target-portfolio.json` holdings at all:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 153,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "Flag any SA LP claim that contradicts known Q4 2025 13F data in `target-portfolio.json`."
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 294,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "This re-reads the updated `projections/{TICKER}.json` (just written by `apply_catalyst.py`)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 323,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "\u2705 Review JSON generated: PortfolioAnalysis/strategic-reviews/{date}-*.json"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 350,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "3. **Never add** a ticker not in `target-portfolio.json` without Gate 2 user confirmation"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 387,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "Prompt generated:    {timestamp} from target-portfolio.json (v{version}, {N} holdings)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 390,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "portfolio.json:      {timestamp} ({source: TradingView CDP | cache})"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/SKILL.md",
       "line": 403,
       "matched_text": ".json",
       "operation": "mention",
@@ -104926,7 +104926,7 @@
       "line": 20,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "5. **Integrates** with x-news-sweep Gate 5 (SA LP cross-check uses `{CIK}_diff.json` as authoritative source)"
+      "line_text": "5. **Integrates** with news-sweep Gate 5 (SA LP cross-check uses `{CIK}_diff.json` as authoritative source)"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/13f-tracker/SKILL.md",

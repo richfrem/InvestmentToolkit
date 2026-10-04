@@ -100,7 +100,7 @@ An adversarial suite that acts as a hedge fund auditor. It challenges your bull 
 
 * **Daily command**: `/daily` — one interactive loop: portfolio sync → morning brief (macro + TA + DCF + earnings) → ranked triage cards → trade execution → self-evolution log.
 * **Intake & Audit**: `/stock-intake` (automated 5-in-1 discovery & intake), `/portfolio-coverage-audit` (audit analysis gaps across watchlist), `/data-quality-audit` (database integrity checks).
-* **Research & Rebalancing**: `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/x-news-sweep`, `/weekly-review`, `/bundle-thesis-review`, `/13f-tracker`, `/13f-analyze`, `/norberts-gambit`, `/ytd-return`, `/run-advisor` (post-catalyst orchestrator).
+* **Research & Rebalancing**: `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/news-sweep`, `/weekly-review`, `/bundle-thesis-review`, `/13f-tracker`, `/13f-analyze`, `/norberts-gambit`, `/ytd-return`, `/run-advisor` (post-catalyst orchestrator).
 
 ### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
 

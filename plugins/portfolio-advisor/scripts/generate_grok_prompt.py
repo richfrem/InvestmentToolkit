@@ -57,7 +57,7 @@ def _compute_current_from_db() -> dict:
 
 def get_dynamic_exclusions():
     """Build exclusion list dynamically by scanning etf_analysis directory and cash reserves."""
-    exclusions = {'USD_CASH', 'PSU-U.TO', 'PSU.U.TO'}
+    exclusions = {'USD_CASH', 'PSU-U.TO', 'PSU.U.TO', 'CASH_USD'}
     if ETF_ANALYSIS_DIR.exists():
         for p in ETF_ANALYSIS_DIR.glob('*.json'):
             exclusions.add(p.stem.upper())

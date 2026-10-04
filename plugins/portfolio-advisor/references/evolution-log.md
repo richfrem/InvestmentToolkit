@@ -28,7 +28,7 @@ regressions. This is the memory that makes the loop smarter over time.
 
 ## 2026-09-02 — Grok News Sweep Model-Intelligence Synthesis & Review Fixes (Tier 0/1 Evolution)
 
-**Trigger:** Enhancement to `/x-news-sweep` prompt generation to inject deep model intelligence (scenario risks, standing decision anchors, SA/DCF tension) into the Grok prompt with mandatory Phase 1.5 agent review.
+**Trigger:** Enhancement to `/news-sweep` prompt generation to inject deep model intelligence (scenario risks, standing decision anchors, SA/DCF tension) into the Grok prompt with mandatory Phase 1.5 agent review.
 
 **Tier 0/1 Friction & Fixes Landed:**
 1. **`portfolio_io.py` Omission (`standing_decision_*`)**:
@@ -37,7 +37,7 @@ regressions. This is the memory that makes the loop smarter over time.
 2. **Markdown Table Cell Sanitization & Token Bounding**:
    - *Friction:* Raw scenario risks contained unbounded 200–300+ character strings, and inter-item join used `" | "` which created pipe-count mismatches (corrupting 26% of table rows).
    - *Fix:* Added `_clean_markdown_text()` with safe character bounding and whitespace normalization; changed join separator to `"; "` to strictly preserve Markdown table columns. Added automated pipe-count validation.
-3. **Phase 1.5 Mandatory Protocol (`x-news-sweep/SKILL.md`)**:
+3. **Phase 1.5 Mandatory Protocol (`news-sweep/SKILL.md`)**:
    - *Friction:* Prompt generation previously relied on static script output without live context review.
    - *Fix:* Codified Phase 1.5 in `SKILL.md` requiring the AI Agent to inspect recent repository context (daily briefs, macro regime, earnings alerts) and directly synthesize surgical inquiries prior to Grok dispatch.
 4. **Upstream Rule Enforcement (`agent-plugins-skills` PR #489)**:
@@ -47,7 +47,7 @@ regressions. This is the memory that makes the loop smarter over time.
 **Artifacts Updated:**
 - `plugins/portfolio-advisor/scripts/generate_grok_prompt.py`
 - `plugins/portfolio-advisor/assets/templates/daily_sweep.md.template`
-- `plugins/portfolio-advisor/skills/x-news-sweep/SKILL.md`
+- `plugins/portfolio-advisor/skills/news-sweep/SKILL.md`
 - `investment_screener/backend/py_services/portfolio_io.py`
 - `references/map-debt.md` (`DEBT-20260902-01`)
 - `.agent/rules/self-evolution-policy.md` & `.agent/rules/graph-planning-superpowers-policy.md`
@@ -476,7 +476,7 @@ TradingView and Questrade MCP sync paths).
 - **User observation (2026-10-01):** Gemini needed 3+ rounds of user call-outs to reach correct figures (it never self-checked). Recorded in `news-sweep-model-assessment.md` as a cost dimension; weekly-only for such a model.
 - **Skill/agent merge (user decision, 2026-10-01):** `daily-loop-agent` folded into the `daily-loop` skill (one interactive skill; no persona switch). Interactive-run verification gap logged as DEBT-20261001-01. After merge: resync `.agents` with plugin-syncer and remove the old agent artifact.
 - **Opus 5.5 comparison and SA LP (2026-10-01):** Opus was accurate on all checked figures and caught the 2026-07-30 SA LP liquidation that
-  ChatGPT and Gemini missed. Prompt fixed (generator + weekly template, test added), x-news-sweep gates annotated, ETF note added to
+  ChatGPT and Gemini missed. Prompt fixed (generator + weekly template, test added), news-sweep gates annotated, ETF note added to
   `daily-brief-methodology.md`, model assessment addendum written.
 - **Correction (2026-10-01):** Opus 5.5's CRDO price (~$150-170) was wrong vs market ($202.66); assessment corrected and a price spot-check added to the fact-check gate.
 - **Post-merge corrections (2026-10-01):** target totals corrected to 17.5% / 112.5% (an earlier figure was an addition error); logged DEBT-20261001-04 (TA sweep writes null indicators but reports success), -05 (`update_targets.py` silent normalization), -06 (target over-allocation recurrence).

@@ -269,7 +269,7 @@ tradingview-cdp/
 ```
 1. run_investment_toolkit.py   → launches screener + TradingView Desktop automatically
 2. /tv-price-refresh           → check where all positions are right now
-3. /x-news-sweep               → daily news sweep
+3. /news-sweep                 → daily news sweep
 ```
 
 **After a stock evaluation:**
