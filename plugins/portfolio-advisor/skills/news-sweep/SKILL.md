@@ -32,6 +32,7 @@ python3 plugins/portfolio-advisor/scripts/generate_news_prompt.py --output temp/
 3. **Fact-Check Gate**: Verify stated macro yields (10Y), VIX, and quoted prices against live market data before trusting findings.
 4. **Triangulate & Present**: Cross-check findings across models, categorize as CONFLUENCE, PARTIAL, or CONFLICT, and flag required user confirmations.
 5. **Apply & Refresh**: Update scenario weights with `apply_catalyst.py --write` or targets with `update_targets.py --write --blueprint`.
+6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Multi-Model Roles
 - **Grok**: Primary for breaking catalysts, real-time X news flow, and fast corporate partnership tracking.

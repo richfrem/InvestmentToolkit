@@ -38,6 +38,7 @@ python3 plugins/tradingview/scripts/fetch_broker_data.py --snapshot
 4. Present diff table to user and await explicit confirmation.
 5. Commit snapshot to `domain_model.sqlite`.
 6. Run invariant audit: `verify_portfolio_invariants.py`.
+7. Closing refresh: run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 

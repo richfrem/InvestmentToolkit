@@ -28,7 +28,7 @@ Conducts an end-to-end adversarial evaluation of your portfolio, absorbing live 
 - **Position Sizing Caps**: No holding may exceed 15.00% and no strategy pillar may exceed 40.00% of total portfolio.
 - **Standing Decision Anchor**: Require >15% Fair Value delta or confirmed fundamental catalysts to revisit standing decisions.
 - **Capital Sourcing Invariant**: All buy proposals must identify `PSU-U.TO` shares to sell in the same account first (Rule 17).
-- **Refresh Chain**: Write target changes with `update_targets.py --write --blueprint`, then always finish with the Closing Refresh in Phase 4.
+- **Refresh Chain**: Write target changes with `update_targets.py --write --blueprint`, then always finish with the Closing Refresh in Phase 4 (`refresh_all.py --publish`).
 
 ## Quick start
 ```bash
@@ -65,7 +65,7 @@ Present a structured, interactive menu of prioritized next steps:
 - **Target Calibration**: If adjusting weights, seamlessly transition into `/calibrate-targets` with 100% normalization.
 - **Rebalancing Execution**: If generating orders, invoke `rebalancer.py --pretty` (`/rebalance-portfolio`), apply `risk_officer.py`, and draft account-level orders with PSU-U.TO funding.
 - **Persist Dossier**: Scaffold `PortfolioAnalysis/strategic-reviews/YYYY-MM-DD-PortfolioAnalysisRecommendations.md` with `generate_review.py` and fill in every pending section, including the Priority Action List.
-- **Closing Refresh**: Finish exactly as `/daily` and `/weekly-review` do, so the Portfolio Advisor and Daily Brief pages match the review: `refresh_all.py`, then `printf 'y\n' | generate_review_json.py`, then `daily_brief.py --skip-ta`, then `verify_refresh.py` (all under `plugins/portfolio-advisor/scripts/`).
+- **Closing Refresh**: Always finish with `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 ```bash

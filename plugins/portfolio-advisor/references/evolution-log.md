@@ -15,13 +15,13 @@ regressions. This is the memory that makes the loop smarter over time.
 **Root cause:** Each workflow ended differently and none republished the brief or regenerated the review JSON after its decisions, so the pages drifted from what the session concluded.
 
 **Actions Taken:**
-1. All three skills now end with the same Closing Refresh, using existing scripts only: `refresh_all.py`, `generate_review_json.py`, `daily_brief.py --skip-ta`, `verify_refresh.py`.
-2. Only `/strategic-review` scaffolds the narrative review with `generate_review.py`; running it daily would replace "Latest Review" with an empty scaffold.
+1. One standard function: `refresh_all.py --publish` (`run_refresh(publish=True)`). `refresh_all.py` was already the shared post-change orchestrator (called by `update_targets.py`, `update_thesis.py` and both broker syncs) but stopped at roles and the thesis blueprint. `--publish` adds the review JSON, the brief republish and `verify_refresh.py`. Default behaviour is unchanged so the frequent callers stay fast. `generate_review_json.py` gained `--yes` so the chain runs unattended.
+2. 13 skills now end with that one call: strategic-review, daily-loop, weekly-review, calibrate-targets, update-portfolio-targets, news-sweep, thesis-review, 13f-analyze, set-thesis-breakers, stock-intake, update-stock-analysis, tv-portfolio-sync, questrade-sync-portfolio. Not added: portfolio-health (read-only), rebalance-portfolio (plan only), norberts-gambit (manual broker steps). Only `/strategic-review` scaffolds the narrative review with `generate_review.py`; running it daily would replace "Latest Review" with an empty scaffold.
 3. Targets re-based (user decision): targets = actual holdings; RIOT, PANW, BE, IREN and MU cut by one third with 6.2pp moved to cash (12.8%); NVDA, META, VST, PSIX to 0%; GEV 0% to 1.7%. Total 100.00% (was 97.40%). Written with `update_targets.py --write --blueprint`.
 
 **Open:**
 - The Daily Brief's recommendations come from conviction bands, so it shows MU, PANW and RIOT but not BE or IREN (their stored DCF action is MAINTAIN). It also proposes selling all of MU, not a third. Refreshing BE and IREN valuations is the existing route to fix that.
-- `generate_review_json.py` and `generate_review.py` prompt before overwriting a same-day file; the closing step pipes `y` to the JSON generator.
+- `generate_review.py` still prompts before overwriting a same-day narrative review.
 - `daily_brief.py` reported "Prediction harvest skipped: unable to open database file" (non-blocking, not investigated).
 - Lifecycle labels were not changed: GEV still `exit`, INTC/NVDA/META/VST/PSIX still `initiate` at 0% targets.
 - `strategy_pillar` targets still disagree with the sum of holding targets.

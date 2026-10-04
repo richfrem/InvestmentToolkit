@@ -47,6 +47,7 @@ Use `--dry-run` to preview changes without committing to SQLite.
 4. **Trigger Refresh & Invariant Check**:
    - Run `python3 investment_screener/backend/py_services/verify_portfolio_invariants.py`.
    - Remove temporary JSON payload and display sync summary.
+   - Closing refresh: run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 

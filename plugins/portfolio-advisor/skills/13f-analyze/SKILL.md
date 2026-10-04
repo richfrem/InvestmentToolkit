@@ -29,6 +29,7 @@ python3 plugins/portfolio-advisor/scripts/fetch_13f.py --cik 0002045724 --poll
 3. **Gate Signals**: Evaluate gates A through E (INTC call options, weight ceilings, conviction exceptions).
 4. **Present Gated Table**: Display approved, conflict, and blocked actions with rationale.
 5. **Apply Targets**: Apply approved targets using `update_targets.py --set ... --write --blueprint` or `lock_and_normalize_targets.py`. Update metadata in `investment_thesis.md`.
+6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 ```bash

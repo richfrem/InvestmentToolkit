@@ -13,6 +13,7 @@ Layer: Backend / Python Services / Rebalancing
 Usage Examples:
     python3 generate_review_json.py --date 2026-05-11
     python3 generate_review_json.py --dry-run
+    python3 generate_review_json.py --yes        # overwrite today's file without prompting
 
 Key Functions:
     - generate() - Primary orchestrator that computes deltas, assigns action urgency, and structures the final JSON payload
@@ -190,6 +191,8 @@ def main():
                         help="Review date (YYYY-MM-DD). Defaults to today.")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print JSON to stdout instead of writing to file.")
+    parser.add_argument("--yes", action="store_true",
+                        help="Overwrite an existing same-day review without prompting.")
     args = parser.parse_args()
 
     review = generate(args.date)
@@ -199,7 +202,7 @@ def main():
         return
 
     out = REVIEWS_DIR / f"{args.date}-PortfolioAnalysisRecommendations.json"
-    if out.exists():
+    if out.exists() and not args.yes:
         print(f"⚠️  File already exists: {out}")
         answer = input("Overwrite? [y/N] ").strip().lower()
         if answer != "y":

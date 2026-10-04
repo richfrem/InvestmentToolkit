@@ -31,6 +31,7 @@ python3 investment_screener/backend/py_services/fetch_financials.py NVDA
 4. **Valuation Modeling**: Execute 5-year scenario DCF model via `dcf_scenarios.py` to establish fair value.
 5. **Capital Sourcing**: Calculate target weight, share tranche sizing, and account allocation (TFSA/RRSP).
 6. **Persist & Overlay**: Present summary card, obtain approval, persist to database, and inject chart levels.
+7. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 ```bash

@@ -31,13 +31,7 @@ python3 plugins/portfolio-advisor/scripts/weekly_review.py --prompt-output temp/
 3. **Multi-Model Dispatch**: Ingest responses from multiple frontier models leveraging their distinct strengths.
 4. **Fact-Check Gate**: Validate macro yield, VIX, and quoted prices against live market data before accepting findings.
 5. **Calibrate & Apply**: Review triangulated findings and apply catalyst adjustments via `apply_catalyst.py` or target weights via `update_targets.py`.
-6. **Closing Refresh**: Run the same four commands at the end of `/strategic-review`, `/daily` and `/weekly-review` so the Portfolio Advisor and Daily Brief pages match what the session decided: roles and thesis blueprint, today's review JSON, the republished brief, then the consistency check.
-```bash
-python3 plugins/portfolio-advisor/scripts/refresh_all.py
-printf 'y\n' | python3 plugins/portfolio-advisor/scripts/generate_review_json.py
-python3 plugins/portfolio-advisor/scripts/daily_brief.py --skip-ta
-python3 plugins/portfolio-advisor/scripts/verify_refresh.py
-```
+6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Multi-Agent Protocol
 Leverage complementary agent capabilities across the weekly research sweep:
