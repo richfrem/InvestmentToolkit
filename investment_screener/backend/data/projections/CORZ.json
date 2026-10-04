@@ -89,6 +89,7 @@
     "globalSettings": {
       "discountRate": 8.09,
       "timeHorizon": 5
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

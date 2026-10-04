@@ -92,7 +92,8 @@
       "rationale": "Sandisk Corporation (SNDK) is a primary core holding in the Data Infra / Storage pillar. TTM revenue surged to $20.25B with GAAP net income of $11.43B (56.46% net margin). 5-year DCF yields a fair value of $1,720.21 (+9.8% upside vs $1,566.70 market price). Reverse DCF indicates the market is pricing in a 19.14% 5-year CAGR, well within achievable enterprise flash growth rates. Recommendation: MAINTAIN (Core Holding). Accumulate on dips <$1,290, trim Tier 1 at $1,720.21.",
       "fairValue": 1720.21,
       "action": "MAINTAIN",
-      "analyzedAt": "2026-08-31T22:18:00.000Z"
-    }
+      "analyzedAt": "2026-08-31T22:36:00.000Z"
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

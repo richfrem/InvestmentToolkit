@@ -45,7 +45,7 @@
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 38.0,
         "netMargin": 42.0,
         "exitPE": 50.0,
@@ -76,7 +76,7 @@
         "year5Revenue": 36312.3,
         "year5NetIncome": 17429.9,
         "year5EPS": 7.58,
-        "scenarioPrice": 393.70,
+        "scenarioPrice": 393.7,
         "risks": [
           "Regulatory inquiries into public sector data sovereignty and private AI monopolization",
           "Geopolitical escalations forcing rapid export control adjustments"
@@ -93,6 +93,7 @@
       "fairValue": 178.93,
       "action": "MAINTAIN",
       "analyzedAt": "2026-09-01T06:53:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

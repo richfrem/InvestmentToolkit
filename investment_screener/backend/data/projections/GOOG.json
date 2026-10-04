@@ -93,6 +93,7 @@
       "fairValue": 350.08,
       "action": "MAINTAIN",
       "analyzedAt": "2026-08-31T22:39:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

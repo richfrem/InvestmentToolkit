@@ -113,6 +113,11 @@ export async function connect() {
       await client.Page.enable();
       await client.DOM.enable();
 
+      if (target.url && target.url.includes('new-tab')) {
+        await client.Page.navigate({ url: 'https://www.tradingview.com/chart/' });
+        await new Promise(r => setTimeout(r, 4000));
+      }
+
       return client;
     } catch (err) {
       lastError = err;

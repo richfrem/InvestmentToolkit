@@ -26,7 +26,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.30,
+        "weight": 0.3,
         "growthRate": 18.0,
         "netMargin": 10.0,
         "exitPE": 16.0,
@@ -45,7 +45,7 @@
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 36.0,
         "netMargin": 22.0,
         "exitPE": 26.0,
@@ -64,7 +64,7 @@
         ]
       },
       "bull": {
-        "weight": 0.20,
+        "weight": 0.2,
         "growthRate": 55.0,
         "netMargin": 28.0,
         "exitPE": 35.0,
@@ -93,6 +93,7 @@
       "fairValue": 249.87,
       "action": "ACCUMULATE",
       "analyzedAt": "2026-09-01T06:49:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

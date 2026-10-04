@@ -23,7 +23,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.2,
+        "weight": 0.25,
         "growthRate": 22.0,
         "netMargin": 15.0,
         "exitPE": 20.0,
@@ -41,7 +41,7 @@
         "scenarioPrice": 28.95
       },
       "bull": {
-        "weight": 0.3,
+        "weight": 0.25,
         "growthRate": 52.0,
         "netMargin": 30.0,
         "exitPE": 35.0,
@@ -96,14 +96,15 @@
     "aiThesis": {
       "model": "Antigravity Reasoning Agent",
       "rationale": "### MP Materials Corp. (MP) \u2014 Comprehensive Sovereign Rare Earth Valuation\n\n**1. Upstream & Midstream Refining Scale (Stage 2)**:\n- Separated NdPr production reached 840 MT in Q2 2026 (+41% YoY), progressing toward ~6,000 MT/yr annualized run-rate (~500 MT/mo) by year-end.\n- DoD Price Protection Agreement establishes a solid $110/kg floor (generating $17.6M in Q2), lifting effective realized economics above commodity spot prices.\n\n**2. Downstream Magnetics Inflection (Stage 3)**:\n- **Independence (Fort Worth)**: Magnets delivered to General Motors for qualification; commercial EV shipments commence in Q4 2026. Fully contracted between GM and Apple.\n- **10X Facility (Northlake)**: 7,000 MT magnet capacity under construction for 2028 commissioning with a 10-year 100% DoD offtake agreement guaranteeing a minimum $140M/year EBITDA floor.\n\n**3. Sovereign Moat & Chinese Restrictions**:\n- China's MOFCOM export restrictions reinforce Western supply-chain urgency and premium pricing power for MP as the sole scaled Western producer.\n\n**4. Valuation & Position Guidance**:\n- **5-Year Valuation Target**: **$65.51 USD** (Base Target $46.62 / Bull Target $134.20).\n- **Action**: **INITIATE** on 200 EMA support at $55.38 (Starter Allocation: 2.00%).",
-      "fairValue": 65.51,
-      "action": "INITIATE",
-      "analyzedAt": "2026-08-25T14:41:00Z",
+      "fairValue": 44.64,
+      "action": "WATCHLIST",
+      "analyzedAt": "2026-08-20T13:45:31.900835+00:00",
       "researchReport": "MP_2026-08-25.md"
     },
     "globalSettings": {
       "discountRate": 10.0,
       "timeHorizon": 5
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

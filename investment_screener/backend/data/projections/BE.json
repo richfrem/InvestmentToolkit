@@ -37,15 +37,15 @@
         "managementScore": 3,
         "year5Revenue": 6176.7,
         "year5NetIncome": 617.7,
-        "year5EPS": 1.90,
-        "scenarioPrice": 21.80,
+        "year5EPS": 1.9,
+        "scenarioPrice": 21.8,
         "risks": [
           "Natural gas interconnection and pipeline capacity constraints",
           "Competition from modular nuclear reactors and large-scale battery storage"
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 48.0,
         "netMargin": 16.0,
         "exitPE": 28.0,
@@ -93,6 +93,7 @@
       "fairValue": 191.34,
       "action": "MAINTAIN",
       "analyzedAt": "2026-09-01T06:43:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

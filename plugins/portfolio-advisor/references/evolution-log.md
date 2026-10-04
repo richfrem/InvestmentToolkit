@@ -8,6 +8,54 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-04 — Daily Brief Technical Telemetry Backfill & Ownership-Aware Conviction Logic (Tier 1 Evolution)
+
+**Trigger:** Technical momentum cards on `/daily-brief` were rendering blank (null RSI/ADX/Vol Bias) and conviction score tables exhibited logical incoherence by showing `HOLD` / `REDUCE` on watchlist assets that the portfolio does not own. In addition, 15 decommissioned tickers were requested for permanent removal.
+
+**Root Causes & Friction:**
+1. **TradingView Headless Failure**: When TradingView Desktop was offline or resting on `app/new-tab`, CDP sweeps skipped or failed, leaving `intelligence_event` rows for TA null.
+2. **Missing Indicator Plots**: `ai-ta-levels.pine` lacked explicit `plot(..., display=display.data_window)` for RSI and RSI-based MA, causing Data Window queries to return null for these indicators.
+3. **Band & DCF Ownership Agnosticism**: `_band()` and `_normalize_dcf_action()` in `compute_conviction_scores.py` scored all tickers solely on numerical points without verifying whether the asset was held (`actual_weight > 0`).
+
+**Actions Taken:**
+1. **Watchlist Purge**: Permanently purged 15 tickers (`KRC`, `PUMP`, `TSEM`, `LBRT`, `RKLB`, `DXYZ`, `AXTI`, `PLUG`, `DRAM`, `DDOG`, `IBIT`, `ETHA`, `HUMN`, `NKE`, `AAOI`) across `domain_model.sqlite`, `intelligence.sqlite`, and `observations.jsonl`.
+2. **Pine Script Telemetry**: Added `rsi_val = ta.rsi(close, rsi_len)` and Data Window plots (`"RSI"`, `"RSI-based MA"`) to `ai-ta-levels.pine`.
+3. **CDP Auto-Navigation & Local Fallback**: Enhanced `tradingview-cdp/connection.js` to navigate from `new-tab` to chart automatically. Added `backfill_missing_technicals()` and `run_headless_sweep()` via `technicals.py` in `ta_sweep_batch.py` and `daily_brief.py`.
+4. **Ownership-Aware Actions**:
+   - Held assets (`actual_weight > 0`): Bands limited to `ACCUMULATE`, `HOLD`, `REDUCE`, `EXIT`; DCF actions limited to `ACCUMULATE`, `HOLD`, `TRIM`, `EXIT`.
+   - Non-held assets (`actual_weight == 0` / watchlist): Bands limited to `INITIATE`, `WATCH`, `AVOID`; DCF actions limited to `INITIATE`, `WATCHLIST`, `AVOID`.
+5. **Frontend Alignment**: Updated `DailyBriefPage.tsx` types and styling for `INITIATE` and `AVOID`, prioritized held positions in Technical Momentum Cards, and confirmed zero TypeScript build errors.
+
+---
+
+## 2026-10-04 — Weekly News Sweep Multi-Model Catalyst Integration & Projection Sync (Tier 1 Evolution)
+
+**Trigger:** Applied multi-agent triangulated news catalysts (Claude, ChatGPT, Gemini, Grok) across core portfolio and watchlist holdings via `apply_catalyst.py`, synchronized SQLite domain model with projection JSON files, and generated refreshed daily brief snapshot.
+
+**Actions Taken:**
+1. **Material Catalyst Ingestion (`domain_model.sqlite`)**:
+   - Applied calibrated probability shifts and updated `agent_rationale` across 12 tickers:
+     - `MU`: FQ4 beat & raise ($54.2B rev, $32B LT agreements) $\rightarrow$ FV $764.85 $\rightarrow$ $829.45.
+     - `AMD`: World Labs $8.2B acquisition $\rightarrow$ FV $391.28 $\rightarrow$ $421.20.
+     - `AVGO`: Anthropic $42B financing deal / TPU lease $\rightarrow$ FV $395.25 $\rightarrow$ $420.89.
+     - `LITE`: FQ4 revenue doubling (+109% y/y to $1B), optical switch ramp $\rightarrow$ FV $271.61 $\rightarrow$ $290.32.
+     - `COHR`: PhotonLink launch with 20+ active engagements $\rightarrow$ FV $201.88 $\rightarrow$ $229.64.
+     - `APLD`: Polaris Forge 1 energized 75 MW (250 MW live) $\rightarrow$ FV $24.09 $\rightarrow$ $27.97.
+     - `CLSK`: $2.276B senior notes (7.875%) for Meta Sandersville lease $\rightarrow$ FV $16.72 $\rightarrow$ $20.17.
+     - `ORCL`: Force majeure notice on Project Jupiter power delays $\rightarrow$ FV $305.48 $\rightarrow$ $252.61.
+     - `CBRS`: Gimlet Labs 100 MW systems agreement $\rightarrow$ FV $237.56 $\rightarrow$ $287.22.
+     - `NVDA`: $150B buyback authorization addition ($235B remaining) $\rightarrow$ FV $429.89 $\rightarrow$ $471.57.
+     - `SPCX`: Starship orbital flight & Google Suncatcher in orbit $\rightarrow$ FV $287.12 $\rightarrow$ $329.08.
+     - `CACI`: ICE tactical communications task order ($150M ceiling) $\rightarrow$ FV $770.49 $\rightarrow$ $829.25.
+2. **Weekly Sweep Stamping**:
+   - Stamped 81 remaining tickers with `--record-sweep --date 2026-10-04`.
+3. **Projection JSON Synchronization**:
+   - Synchronized 22 `investment_screener/backend/data/projections/{TICKER}.json` files with latest SQLite scenario weights, fair values, and catalyst histories.
+4. **Daily Brief Snapshot Published**:
+   - Re-ran `daily_brief.py --skip-ta` to update `data/daily-briefs/2026-10-04.json` and sync with `intelligence.sqlite` so the web app `/daily-brief` page reflects fresh macro and DCF data.
+
+---
+
 ## 2026-10-04 — Watchlist Pruning: Complete Removal of Nike (NKE) (Tier 0/1 Evolution)
 
 **Trigger:** Pruned non-core consumer discretionary broken thesis (NKE) completely from active watchlist, thesis definitions, and sweep templates following multi-agent review consensus.

@@ -478,30 +478,26 @@ def run(
     ran_ta = False
     ta_skip_reason = ""
     if not skip_ta and (age is None or age > 4):
-        if _tv_running():
-            age_str = "never" if age is None else f"{age:.1f}h ago"
-            print(f"▶ TA sweep (last: {age_str})...", file=sys.stderr)
-            result = subprocess.run(
-                [sys.executable, str(TA_SWEEP_SCRIPT)],
-                capture_output=True, text=True,
-            )
-            if result.returncode == 0:
-                # save_sweep_results() already replayed this run's events to SQLite
-                # synchronously before the subprocess exited (Wave 5B) — read the count
-                # back from there instead of re-opening the file it also used to write.
-                scan_count = _load_latest_ta_sweep_count(db_path=db_path)
-                if scan_count is not None:
-                    ran_ta = True
-                    print(f"  Scanned {scan_count} holdings.", file=sys.stderr)
-                else:
-                    ta_skip_reason = "TA sweep produced no events"
+        tv_up = _tv_running()
+        age_str = "never" if age is None else f"{age:.1f}h ago"
+        mode_str = "via TradingView CDP" if tv_up else "headless fallback (TradingView offline)"
+        print(f"▶ TA sweep {mode_str} (last: {age_str})...", file=sys.stderr)
+        result = subprocess.run(
+            [sys.executable, str(TA_SWEEP_SCRIPT)],
+            capture_output=True, text=True,
+        )
+        if result.returncode == 0:
+            # save_sweep_results() already replayed this run's events to SQLite
+            # synchronously before the subprocess exited (Wave 5B) — read the count
+            # back from there instead of re-opening the file it also used to write.
+            scan_count = _load_latest_ta_sweep_count(db_path=db_path)
+            if scan_count is not None:
+                ran_ta = True
+                print(f"  Scanned {scan_count} holdings.", file=sys.stderr)
             else:
-                ta_skip_reason = "TA sweep exited with error"
+                ta_skip_reason = "TA sweep produced no events"
         else:
-            ta_skip_reason = "TradingView not running (port 9222)"
-            age_str = "never" if age is None else f"{age:.1f}h ago"
-            print(f"▶ TA sweep skipped — {ta_skip_reason} (using data from {age_str})",
-                  file=sys.stderr)
+            ta_skip_reason = "TA sweep exited with error"
     else:
         if age is not None and age <= 4:
             print(f"▶ TA sweep fresh ({age:.1f}h ago) — skipping rescan.", file=sys.stderr)

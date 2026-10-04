@@ -23,7 +23,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.25,
+        "weight": 0.2,
         "growthRate": 24,
         "netMargin": 8,
         "exitPE": 15,
@@ -43,7 +43,7 @@
         ]
       },
       "base": {
-        "weight": 0.55,
+        "weight": 0.52,
         "growthRate": 35,
         "netMargin": 18,
         "exitPE": 28,
@@ -62,7 +62,7 @@
         ]
       },
       "bull": {
-        "weight": 0.2,
+        "weight": 0.28,
         "growthRate": 45,
         "netMargin": 25,
         "exitPE": 35,
@@ -169,15 +169,31 @@
     "aiThesis": {
       "model": "Gemini 3.8 Flash",
       "rationale": "Applied Digital Corporation (APLD) achieved Ready for Service (RFS) for 75 MW at Polaris Forge 1 Building 2 Phase 2, expanding live operational capacity to 250 MW (62.5% of the 400 MW campus). This milestone adds roughly $85M to $100M in annual recurring base rent, significantly accelerating the ramp from Q4 FY26 recurring rent of $44.1M. While CEO Wes Cummins candidly warned on CNBC of sector-wide construction and power interconnect delays across 2026-2027, APLD's successful delivery in Ellendale, ND proves that its modular franchise model is executing. At a 12.77% WACC, our updated 5-year DCF yields a probability-weighted fair value of $24.09 (Bear $2.78 at 25%, Base $21.32 at 55%, Bull $58.32 at 20%). Note on lens divergence: valuation lenses disagree by 110% (DCF $24.09 vs Comps $50.59 midpoint). Comps are based on only two peers (CORZ, IREN) where ramp-stage EV/Sales multiples (29.3x) inflate implied valuations; we rely on DCF. Following today's +10.5% news surge to ~$28.00-$29.00, APLD trades at a ~16-20% premium to fair value. Recommendation: MAINTAIN (Core Holding: 32 shares, 2.64% target weight). We advise against chasing the gap up, as high debt service (~$9B at 6.75-7.0%) and Series G conversion dilution remain active risks. We will reassess following Q1 FY27 earnings on October 9.",
-      "fairValue": 24.09,
-      "action": "MAINTAIN",
-      "analyzedAt": "2026-10-02T15:30:00.000Z",
+      "fairValue": 27.97,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-10-04T17:51:39Z",
       "researchReport": "APLD_2026-10-02.md"
     },
     "globalSettings": {
       "discountRate": 12.77,
       "timeHorizon": 5
-    }
+    },
+    "lastGrokSweep": "2026-10-04",
+    "catalystUpdates": [
+      {
+        "date": "2026-10-04",
+        "source": "apply_catalyst.py",
+        "type": "major_contract",
+        "events": [
+          "Polaris Forge 1 energized 75 MW reaching 250 MW operational; 400 MW campus fully leased"
+        ],
+        "weightShifts": {
+          "bull": 8,
+          "bear": -5
+        },
+        "thesisImpact": "Bull probability +8pp; bear -5pp. FV $24.09\u2192$27.97. Action: MAINTAIN\u2192ACCUMULATE."
+      }
+    ]
   },
   {
     "ticker": "APLD",
