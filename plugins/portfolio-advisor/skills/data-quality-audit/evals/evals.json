@@ -1,0 +1,50 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/data-quality-audit",
+    "expected_trigger": "data_quality_audit",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Audit data quality across our sqlite databases",
+    "expected_trigger": "data_quality_audit",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Check db integrity for domain_model and intelligence databases",
+    "expected_trigger": "data_quality_audit",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Can you write a SQL query to select all holdings from domain_model.sqlite?",
+    "expected_trigger": "none",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Run the frontend linter and fix any typescript formatting issues",
+    "expected_trigger": "none",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Rebalance the portfolio toward our target weights",
+    "expected_trigger": "rebalance_portfolio",
+    "should_trigger": false
+  }
+]

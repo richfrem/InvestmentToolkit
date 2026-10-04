@@ -14,6 +14,14 @@ Code is the authority for numbers; this document is the authority for **policy**
 
 ---
 
+## Contents
+- [Where the brief lives](#where-the-brief-lives)
+- [What the brief contains](#what-the-brief-contains)
+- [Macro gate protocol](#macro-gate--hard-rules)
+- [Binary-event protocol](#binary-event-protocol)
+
+---
+
 ## Where the brief lives
 
 A run writes the brief to the Intelligence Ledger (`intelligence_event`,
@@ -82,7 +90,7 @@ drift or valuation logic.
 |---|---|
 | Trim / exit a ticker | `/rebalance` or `/place-order sell` |
 | Accumulate a ticker | Check its `TARGET_ENTRY` price level (domain_model `price_level_tier`) first, then `/place-order buy` |
-| News context | `/x-news-sweep` (model roles, fact-check gate and ETF handling: `references/news-sweep-model-assessment.md`) |
+| News context | `/x-news-sweep` (model roles, fact-check gate and ETF handling: news-sweep-model-assessment) |
 | Re-evaluate the thesis | `/strategic-review` |
 | Update DCF | `/update-stock-analysis TICKER` |
 

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/stock-intake PLTR",
+    "expected_trigger": "stock_intake",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Onboard PLTR into our portfolio and run baseline valuation",
+    "expected_trigger": "stock_intake",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Run an automated stock intake for new watchlist ticker NET",
+    "expected_trigger": "stock_intake",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Update the DCF valuation model for our existing core holding AAPL",
+    "expected_trigger": "update_stock_analysis",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Conduct a qualitative research sweep on recent news and earnings for AMZN",
+    "expected_trigger": "stock_research",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Calibrate target weights across all existing holdings one by one",
+    "expected_trigger": "calibrate_targets",
+    "should_trigger": false
+  }
+]

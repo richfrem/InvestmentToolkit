@@ -1,1 +1,1 @@
-/Users/richardfremmerlid/Projects/InvestmentToolkit/plugins/portfolio-advisor/assets/templates/thesis-challenge-prompt.md
+../../../../assets/templates/thesis-challenge-prompt.md

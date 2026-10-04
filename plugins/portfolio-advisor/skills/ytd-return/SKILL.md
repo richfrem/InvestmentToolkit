@@ -1,27 +1,34 @@
 ---
 name: ytd-return
 plugin: portfolio-advisor
-description: >
-  Calculate Simple and Time-Weighted YTD returns, adjusting for cash flows (deposits/withdrawals)
-  to measure true investment performance. Trigger on "calculate YTD return", "show my return",
-  "TWR performance", or "/ytd-return".
-allowed-tools: Bash, Read, Write
+description: Calculates Simple and Time-Weighted YTD returns, adjusting for cash flows (deposits/withdrawals) to measure true investment performance.
 ---
 
-# YTD Performance Tracker (TWR)
+# YTD Return Tracker
 
-This skill tracks and computes your portfolio's performance from Jan 1 through the current date, adjusting for deposits and withdrawals using Time-Weighted Rate of Return (TWR) linking.
+## Contents
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-## Usage
+## Constraints
+- Performance calculations must adjust for deposits and withdrawals using Time-Weighted Return (TWR) linking.
+- Historical cash flow records are sourced strictly from `investment_screener/backend/data/cash_flows.json`.
+- Invariant: Simple return and TWR must be computed from inception date (Jan 1 of active year).
 
-Run the canonical script:
+## Quick start
 ```bash
 python3 plugins/portfolio-advisor/scripts/ytd_return.py
 ```
 
-## Data Input
+## Workflow
+1. **Ingest Cash Flows**: Load cash transactions (deposits/withdrawals) from `cash_flows.json`.
+2. **Fetch Valuations**: Retrieve portfolio starting valuation and current total portfolio equity plus cash.
+3. **Compute Returns**: Calculate simple return and time-weighted return linking all cash flow periods.
+4. **Display Report**: Present YTD performance summary table including net deposits and period gains.
 
-All cash flow history (deposits and withdrawals) is stored in:
-`investment_screener/backend/data/cash_flows.json`
-
-Feel free to append new deposits or withdrawals to that file to update your performance metrics.
+## Verification
+```bash
+python3 plugins/portfolio-advisor/scripts/ytd_return.py --json
+```

@@ -1,5 +1,11 @@
 # Investment Thesis Challenge — Adversarial Review
 
+## Contents
+- [Your Role](#your-role)
+- [Focus Area](#focus-area)
+- [Rules of Engagement](#rules-of-engagement)
+- [Required Output Format](#required-output-format)
+
 ## Your Role
 
 You are a **senior adversarial buy-side analyst** hired to stress-test this portfolio

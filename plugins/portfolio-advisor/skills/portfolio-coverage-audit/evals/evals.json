@@ -1,0 +1,50 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/portfolio-coverage-audit",
+    "expected_trigger": "portfolio_coverage_audit",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Audit screener coverage across our portfolio holdings and watchlist",
+    "expected_trigger": "portfolio_coverage_audit",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Which tickers in our portfolio are missing DCF projections or valuation data?",
+    "expected_trigger": "portfolio_coverage_audit",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Audit the entire portfolio-advisor plugin structure using audit-plugin",
+    "expected_trigger": "audit_plugin",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Check active TradingView price alerts on NVDA",
+    "expected_trigger": "tv_alert_list",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Run an automated intake and valuation model on TSLA",
+    "expected_trigger": "stock_intake",
+    "should_trigger": false
+  }
+]

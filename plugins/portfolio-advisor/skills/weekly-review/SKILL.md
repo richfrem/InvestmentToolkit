@@ -1,33 +1,34 @@
 ---
 name: weekly-review
 plugin: portfolio-advisor
-description: >
-  Run range-based weekly review sweep, calculate week-over-week price moves across holdings,
-  and generate the weekly research sweep prompt for Grok.
-  Trigger on /weekly-review, "run weekly review", or "generate weekly grok prompt".
-allowed-tools: Bash, Read, Write
+description: Runs weekend drift audits, calculates week-over-week performance moves across holdings, and generates weekly research sweep prompts for Grok.
 ---
 
-# Weekly Review Skill
+# Weekly Review
 
-**Trigger:** `/weekly-review` or `run weekly review`
+## Contents
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
----
+## Constraints
+- Weekend drift audit evaluates holdings against target weights and DCF signals.
+- Prompt output file must be written to `temp/weekly_grok_prompt.md`.
+- Never execute live trade orders during weekly reviews; review is strictly analytical.
 
-## Purpose
-Runs a comprehensive weekend drift audit, analyzes week-over-week performance deltas, and prepares the custom weekly news prompt for Grok/X.com.
-
----
-
-## Execution
-Run the canonical weekly review script:
+## Quick start
 ```bash
 python3 plugins/portfolio-advisor/scripts/weekly_review.py --prompt-output temp/weekly_grok_prompt.md
 ```
 
----
+## Workflow
+1. **Drift Audit**: Evaluate week-over-week price changes and allocation drift across all active holdings.
+2. **Compile Prompt**: Generate structured Grok research prompt covering high-drift holdings and emerging macro catalysts.
+3. **Export Prompt**: Save prompt output to `temp/weekly_grok_prompt.md` for external evaluation.
+4. **Calibrate**: Review Grok findings and flag candidate weight or pillar adjustments for user consideration.
 
-## Next Steps
-1. Inspect the generated Grok prompt in `temp/weekly_grok_prompt.md`.
-2. Paste into Grok for catalytic event analysis.
-3. Review any suggested target weight or pillar calibrations.
+## Verification
+```bash
+test -s temp/weekly_grok_prompt.md && head -n 20 temp/weekly_grok_prompt.md
+```

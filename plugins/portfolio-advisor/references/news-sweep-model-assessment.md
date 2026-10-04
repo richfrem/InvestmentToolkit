@@ -8,6 +8,11 @@ starting prior, and update this file after each sweep that produces new evidence
 
 Models as named by the user: **Grok**, **Gemini 3.8 Flash**, **ChatGPT GPT-6.1 SOL**.
 
+## Contents
+- [What was actually verified on 2026-10-01](#what-was-actually-verified-on-2026-10-01)
+- [Ratings](#ratings-judgement-one-session)
+- [Maintenance](#maintenance)
+
 ## What was actually verified on 2026-10-01
 
 Checked against market data / primary sources by the agent, not taken from any model:

@@ -1,36 +1,34 @@
 ---
 name: portfolio-coverage-audit
 plugin: portfolio-advisor
-description: >
-  Audits analysis coverage across all portfolio holdings and watchlist tickers.
-  Identifies unanalyzed tickers ($0.00 price, missing DCF projections, missing TA levels),
-  ranks them by priority, and queues them for automated intake via /stock-intake.
-  Trigger with /portfolio-coverage-audit or "audit screener coverage".
-allowed-tools: Bash, Read, Write
+description: Audits analysis coverage across all portfolio holdings and watchlist tickers, identifying unanalyzed tickers and missing DCF or technical models.
 ---
 
-# Portfolio Coverage Audit Skill
+# Portfolio Coverage Audit
 
-**Trigger:** `/portfolio-coverage-audit` or `audit screener coverage`
+## Contents
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
----
+## Constraints
+- Query coverage exclusively from `domain_model.sqlite` and local projection JSON files.
+- Categorize holdings into Fully Analyzed, Partial, and Needs Analysis.
+- Exclude cash-equivalent positions (`PSU-U.TO`, `CASH_USD`) from missing valuation alerts.
 
-## Purpose
-Scans `domain_model.sqlite` to identify:
-1. **Fully Analyzed**: Live price + DCF Scenario Model + Technical levels.
-2. **Partial**: Price available but lacking AI scenario projections.
-3. **Gaps / Needs Analysis**: Zero/stale price, no DCF projections, unanalyzed watchlist tickers.
-
----
-
-## Execution Instructions
-
-Run the coverage auditor script:
+## Quick start
 ```bash
-python3 scripts/audit_coverage.py
+python3 plugins/portfolio-advisor/scripts/audit_coverage.py
 ```
 
-To list only the gap tickers for batch intake:
+## Workflow
+1. **Scan Holdings**: Retrieve all active portfolio holdings and watchlist tickers from SQLite.
+2. **Evaluate Valuations**: Verify existence of valid 5-year DCF scenario projections in `data/projections/`.
+3. **Evaluate Technicals**: Check availability of current support/resistance levels and EMA regimes.
+4. **Generate Queue**: Output prioritized gap list ready for batch onboarding via `/stock-intake`.
+
+## Verification
 ```bash
-python3 scripts/audit_coverage.py --gaps-only
+python3 plugins/portfolio-advisor/scripts/audit_coverage.py --gaps-only
 ```
