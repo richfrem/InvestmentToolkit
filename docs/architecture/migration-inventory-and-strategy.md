@@ -283,7 +283,7 @@ ARCHIVE/investment_screener/backend/data/projections/` as one commit, full git h
 | `update_price_levels.py` | `json.load` (+ write, see producers) | repository call | not yet written | not yet run | NOT STARTED |
 | `generate_portfolio_blueprint.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
 | `apply_catalyst.py` (as consumer half of its dual role) | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
-| `generate_grok_prompt.py` | `json.loads(path.read_text())` in `load_dcf()` — confirmed real read, was flagged "unconfirmed" in the prior version of this document | repository call | not yet written | not yet run | NOT STARTED |
+| `generate_news_prompt.py` | `json.loads(path.read_text())` in `load_dcf()` — confirmed real read, was flagged "unconfirmed" in the prior version of this document | repository call | not yet written | not yet run | NOT STARTED |
 | `peer_bench.py` | reads `peers` field via `--projections-dir` CLI arg — confirmed real read | repository call | not yet written | not yet run | NOT STARTED |
 | `local_api.py` | **not a real consumer** — `api_get("/api/projections/NVDA")` appears only in this file's own usage docstring and in `stock_valuation/SKILL.md` as agent-facing documentation, never as an executed call in the repo. Removed from the consumer count. | — | — | — | N/A |
 

@@ -1,1 +1,0 @@
-../../../plugins/portfolio-advisor/scripts/generate_grok_prompt.py

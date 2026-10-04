@@ -1,1 +1,0 @@
-../../../scripts/grok_sweep.py

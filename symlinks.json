@@ -266,12 +266,6 @@
       "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
     },
     {
-      "src": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
-      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
-      "strategy": "symlink",
-      "description": "ADR-003: news-sweep canonical script \u2014 generates live Grok prompt from target-portfolio.json"
-    },
-    {
       "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
       "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/portfolio_action.py",
       "strategy": "symlink",
@@ -308,12 +302,6 @@
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
-      "src": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
-      "dst": "investment_screener/backend/py_services/generate_grok_prompt.py",
-      "strategy": "symlink",
-      "description": "generate_grok_prompt.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
-    },
-    {
       "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
       "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
       "strategy": "symlink",
@@ -342,12 +330,6 @@
       "dst": "plugins/portfolio-advisor/skills/external-review/assets/templates/thesis-challenge-prompt.md",
       "strategy": "symlink",
       "description": "Hub-and-spoke symlink for thesis-challenge-prompt in external-review"
-    },
-    {
-      "src": "plugins/portfolio-advisor/scripts/grok_sweep.py",
-      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
-      "strategy": "symlink",
-      "description": ""
     },
     {
       "src": "plugins/portfolio-advisor/scripts/fetch_13f.py",
