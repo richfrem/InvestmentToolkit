@@ -92,7 +92,7 @@
 
 | Source | Status |
 |--------|--------|
-| Portfolio holdings (`portfolio.json`) | {{SOURCE_PORTFOLIO}} |
+| Portfolio holdings (`domain_model.sqlite`) | {{SOURCE_PORTFOLIO}} |
 | Thesis (`target-portfolio.json`) | {{SOURCE_THESIS}} |
 | AI Projections | {{SOURCE_PROJECTIONS}} |
 | Missing valuations | {{SOURCE_MISSING}} |

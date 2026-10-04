@@ -172,3 +172,28 @@ def test_scan_initiate_excludes_held_tickers(tmp_path, monkeypatch):
     results = scan_opportunities.scan_initiate(portfolio, {}, top=5)
 
     assert results == []
+
+
+def test_enrich_with_scores_populates_technicals():
+    class DummyScore:
+        def __init__(self, ticker, rsi, adx, vol_bias, band, total, flags):
+            self.ticker = ticker
+            self.rsi = rsi
+            self.adx = adx
+            self.vol_bias = vol_bias
+            self.band = band
+            self.total = total
+            self.flags = flags
+
+    scores = {
+        "NVDA": DummyScore("NVDA", 62.4, 28.1, 15.0, "ACCUMULATE", 3, ["ADX_STRONG"])
+    }
+    item = {"ticker": "NVDA"}
+    scan_opportunities._enrich_with_scores(item, "NVDA", scores)
+
+    assert item["rsi"] == 62.4
+    assert item["adx"] == 28.1
+    assert item["volBias"] == 15.0
+    assert item["band"] == "ACCUMULATE"
+    assert item["convictionScore"] == 3
+    assert item["flags"] == ["ADX_STRONG"]

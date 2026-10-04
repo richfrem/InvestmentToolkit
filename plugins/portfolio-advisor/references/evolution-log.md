@@ -8,6 +8,28 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-04 — Strategic Review Upgrade: Master Portfolio Coordinator & Technical Ingestion (Tier 1 Evolution)
+
+**Trigger:** User identified that `/strategic-review` description and workflow were overly academic/narrow, disconnected from the interactive needs of the user (options 1-5, ranked priorities to trim, exit, accumulate, initiate), and isolated from the live technical momentum and conviction scoring engines.
+
+**Root Causes & Friction:**
+1. **Academic Scoping**: `SKILL.md` framed `/strategic-review` as an abstract "formula improvement" tool rather than an executive review of what to sell, trim, accumulate, and initiate.
+2. **Misleading Quickstart**: Pointed to `update_targets.py --show` rather than `scan_opportunities.py` or `generate_review.py`.
+3. **Technicals & Conviction Silo**: `scan_opportunities.py` and `generate_review.py` did not incorporate RSI, ADX, or composite conviction bands from `compute_conviction_scores.py` / `intelligence.sqlite`.
+4. **Disjointed Workflow**: Strategic review, target calibration, and portfolio rebalancing were siloed into disconnected commands requiring manual user bridging.
+
+**Actions Taken:**
+1. **Engine Enhancement (`scan_opportunities.py`)**: Added `load_conviction_scores` with smart sibling DB resolution and `_enrich_with_scores` so every opportunity table (EXIT, TRIM, ACCUMULATE, INITIATE, CONFLICTS) outputs live RSI, ownership-aware conviction bands, and composite scores.
+2. **Template Modernization**: Replaced legacy `portfolio.json` mentions with `domain_model.sqlite`.
+3. **Interactive Coordinator Architecture (`SKILL.md`)**: Re-architected `/strategic-review` into a 4-phase master coordinator:
+   - Phase 1: Multi-source opportunity scan across live SQLite, DCF, and technicals.
+   - Phase 2: Executive critical review of capital trapped, pillar stress, and strategic conflicts.
+   - Phase 3: Interactive Socratic menu (Options 1–5) guiding user focus.
+   - Phase 4: Downstream handoff directly into `/calibrate-targets` and `/rebalance-portfolio`.
+4. **Verification**: Added unit tests in `test_scan_opportunities.py` (9/9 pass) and verified `audit_skill.py` (PASS, 0 warnings).
+
+---
+
 ## 2026-10-04 — Daily Brief Technical Telemetry Backfill & Ownership-Aware Conviction Logic (Tier 1 Evolution)
 
 **Trigger:** Technical momentum cards on `/daily-brief` were rendering blank (null RSI/ADX/Vol Bias) and conviction score tables exhibited logical incoherence by showing `HOLD` / `REDUCE` on watchlist assets that the portfolio does not own. In addition, 15 decommissioned tickers were requested for permanent removal.
