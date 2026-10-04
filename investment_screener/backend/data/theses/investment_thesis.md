@@ -173,7 +173,6 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **CAKE** | 👁️ WATCHLIST | SELL | — | — | — | CAKE |
 | **CELH** | 👁️ WATCHLIST | SELL | — | — | — | CELH |
 | **KRC** | 👁️ WATCHLIST | SELL | — | — | — | KRC |
-| **NKE** | 👁️ WATCHLIST | HOLD | — | — | — | NKE |
 | **ORCL** | 👁️ WATCHLIST | BUY | — | — | — | ORCL |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
