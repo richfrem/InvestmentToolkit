@@ -317,12 +317,23 @@ def run_weekly_review(write_prompt_path=None, db_path=None):
         out_path.write_text(prompt_content)
         print(f"\n[Prompt Written to {out_path}]")
 
-        # Create weekly response placeholder
-        placeholder_path = REPO_ROOT / f"temp/news-sweep-responses/grok/weekly-{datetime.now().strftime('%b%d-%Y').lower()}.md"
-        placeholder_path.parent.mkdir(parents=True, exist_ok=True)
-        if not placeholder_path.exists():
-            placeholder_path.write_text(f"# Grok Weekly Sweep Response — {datetime.now().strftime('%Y-%m-%d')}\n\nPlease paste the raw Grok response below:\n\n---\n")
-            print(f"[Response Placeholder Created at {placeholder_path}]")
+        # Maintain legacy mirrors for backward compatibility
+        legacy_mirror1 = REPO_ROOT / "temp/grok-prompts/weekly_grok_prompt.md"
+        legacy_mirror1.parent.mkdir(parents=True, exist_ok=True)
+        legacy_mirror1.write_text(prompt_content)
+
+        legacy_mirror2 = REPO_ROOT / "temp/weekly_grok_prompt.md"
+        legacy_mirror2.write_text(prompt_content)
+
+        # Create weekly response placeholders across models
+        date_str = datetime.now().strftime('%b%d-%Y').lower()
+        today_iso = datetime.now().strftime('%Y-%m-%d')
+        for model in ["grok", "gemini", "claude", "chatgpt"]:
+            placeholder_path = REPO_ROOT / f"temp/news-sweep-responses/{model}/weekly-{date_str}.md"
+            placeholder_path.parent.mkdir(parents=True, exist_ok=True)
+            if not placeholder_path.exists():
+                placeholder_path.write_text(f"# {model.capitalize()} Weekly Sweep Response — {today_iso}\n\nPlease paste the raw {model.capitalize()} response below:\n\n---\n")
+                print(f"[{model.capitalize()} Placeholder Created at {placeholder_path}]")
 
     # ── Evolution events correlation report (G4 — non-blocking) ──────────────
     if generate_evolution_correlation_report:
@@ -355,7 +366,7 @@ def run_weekly_review(write_prompt_path=None, db_path=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--prompt-output", default=str(REPO_ROOT / "temp/grok-prompts/weekly_grok_prompt.md"))
+    parser.add_argument("--prompt-output", default=str(REPO_ROOT / "temp/news-prompts/weekly_news_prompt.md"))
     parser.add_argument("--db", default=str(DOMAIN_DB), help="Path to domain_model.sqlite")
     args = parser.parse_args()
     run_weekly_review(write_prompt_path=args.prompt_output, db_path=args.db)

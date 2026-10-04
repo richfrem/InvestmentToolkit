@@ -1,0 +1,1 @@
+../../../scripts/generate_news_prompt.py

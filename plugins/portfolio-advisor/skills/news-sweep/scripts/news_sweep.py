@@ -1,0 +1,1 @@
+../../../scripts/news_sweep.py
