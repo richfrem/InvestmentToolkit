@@ -382,11 +382,93 @@ def validate_adx(result: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def backfill_missing_technicals(
+    result: dict[str, Any],
+    snapshot_fn: Any = None,
+) -> None:
+    """Backfill missing RSI or ADX from local computation when CDP scrape returned null."""
+    if snapshot_fn is None:
+        return
+    ticker = result.get("ticker")
+    if not ticker:
+        return
+    need_rsi = result.get("rsi") is None
+    need_adx = result.get("adx") is None
+    if not (need_rsi or need_adx):
+        return
+    try:
+        snap = snapshot_fn(ticker, "D", "3mo", "SPY", None)
+        if need_rsi and snap.get("rsi14") is not None:
+            result["rsi"] = float(round(snap["rsi14"], 1))
+        if need_adx and snap.get("adx14") is not None:
+            result["adx"] = float(round(snap["adx14"], 1))
+        if result.get("close") is None and snap.get("asOf"):
+            # If close was missing, we could supply close
+            pass
+        flags = result.setdefault("flags", [])
+        rsi = result.get("rsi")
+        if rsi is not None:
+            if rsi > 72 and "RSI_OB" not in flags:
+                flags.append("RSI_OB")
+            elif rsi < 30 and "RSI_OS" not in flags:
+                flags.append("RSI_OS")
+        adx = result.get("adx")
+        if adx is not None:
+            if adx > 30 and "ADX_STRONG" not in flags:
+                flags.append("ADX_STRONG")
+            elif adx < 20 and "ADX_WEAK" not in flags:
+                flags.append("ADX_WEAK")
+    except Exception:
+        pass
+
+
+def run_headless_sweep(
+    tickers: list[str],
+    snapshot_fn: Any = compute_technical_snapshot,
+) -> list[dict[str, Any]]:
+    """Fallback headless scan using technicals.py when TradingView CDP is unreachable."""
+    results = []
+    for ticker in tickers:
+        try:
+            snap = snapshot_fn(ticker, "D", "3mo", "SPY", None)
+            rsi = snap.get("rsi14")
+            adx = snap.get("adx14")
+            flags = []
+            if rsi is not None:
+                if rsi > 72:
+                    flags.append("RSI_OB")
+                elif rsi < 30:
+                    flags.append("RSI_OS")
+            if adx is not None:
+                if adx > 30:
+                    flags.append("ADX_STRONG")
+                elif adx < 20:
+                    flags.append("ADX_WEAK")
+            results.append({
+                "ticker": ticker,
+                "close": snap.get("close"),
+                "changePct": None,
+                "rsi": float(round(rsi, 1)) if rsi is not None else None,
+                "rsima": None,
+                "volBias": None,
+                "adx": float(round(adx, 1)) if adx is not None else None,
+                "squeezeOn": snap.get("squeeze") == "ON",
+                "vol": None,
+                "volMA": None,
+                "volumeRatio": snap.get("volumeRatio20d"),
+                "flags": flags,
+            })
+        except Exception as e:
+            results.append({"ticker": ticker, "error": str(e), "flags": []})
+    return results
+
+
 def enrich_results(
     scan_results: list[dict[str, Any]],
     target_map: dict[str, dict[str, Any]],
     dcf_loader: Any = None,
     levels_loader: Any = None,
+    snapshot_fn: Any = None,
 ) -> list[dict[str, Any]]:
     """Apply DCF flags, visual price level reminders, ADX validation, and action derivation to sweep rows.
 
@@ -400,6 +482,7 @@ def enrich_results(
         target_map:   target-portfolio holdings keyed by ticker.
         dcf_loader:   Callable ticker → DCF dict or None (defaults to load_dcf).
         levels_loader: Callable ticker → price levels dict or None (defaults to load_levels).
+        snapshot_fn:  Optional callable for local technical snapshot fallback.
 
     Returns:
         New list of fully enriched rows.
@@ -412,6 +495,8 @@ def enrich_results(
     for res in scan_results:
         ticker = res["ticker"]
         target = target_map.get(ticker)
+        if snapshot_fn is not None:
+            backfill_missing_technicals(res, snapshot_fn=snapshot_fn)
         add_dcf_flags(res, dcf_loader(ticker))
         add_price_level_alerts(res, levels_loader(ticker))
         res = validate_adx(res)
@@ -513,6 +598,11 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--holdings-only",
+        action="store_true",
+        help="Scan only held portfolio positions, skipping watchlist",
+    )
+    parser.add_argument(
         "--validate",
         action="store_true",
         help="Cross-check TV rsi/adx against technicals.py's local computation, flag >2pt divergence",
@@ -523,7 +613,7 @@ def main() -> None:
     skip = DEFAULT_SKIP | extra_skip
 
     holdings = load_portfolio()
-    watchlisted = load_watchlisted_tickers()
+    watchlisted = [] if args.holdings_only else load_watchlisted_tickers()
     seen: set[str] = set()
     tickers: list[str] = []
     for sym in [h["symbol"] for h in holdings] + watchlisted:
@@ -534,9 +624,14 @@ def main() -> None:
 
     print(f"Scanning {len(tickers)} holdings...", file=sys.stderr)
 
-    scan_results = run_sweep(tickers, delay_ms=delay_ms)
+    try:
+        scan_results = run_sweep(tickers, delay_ms=delay_ms)
+    except Exception as exc:
+        print(f"TradingView CDP sweep unavailable ({exc}); falling back to headless TA sweep...", file=sys.stderr)
+        scan_results = run_headless_sweep(tickers)
+
     target_map   = load_target_portfolio()
-    scan_results = enrich_results(scan_results, target_map)
+    scan_results = enrich_results(scan_results, target_map, snapshot_fn=compute_technical_snapshot)
 
     if args.validate:
         scan_results = [add_local_validation(r) for r in scan_results]

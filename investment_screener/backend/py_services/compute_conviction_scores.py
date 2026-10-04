@@ -258,24 +258,73 @@ def _resolve_pct_to_fv(
 
 # ── Band classification ────────────────────────────────────────────────────────
 
-def _band(total: int) -> str:
-    """Map numeric score to action band.
+def _band(total: int, is_held: bool = True) -> str:
+    """Map numeric score to action band, respecting ownership status.
+
+    Held positions (>0 shares) can only be:
+        ACCUMULATE, HOLD, REDUCE, or EXIT.
+    Non-held positions (0 shares / watchlist) can only be:
+        INITIATE, WATCH, or AVOID.
 
     Args:
         total: Summed conviction score.
+        is_held: True if the portfolio currently owns shares of this holding.
 
     Returns:
         Action band string.
     """
-    if total >= 3:
-        return "ACCUMULATE"
-    if total >= 1:
-        return "HOLD"
-    if total == 0:
-        return "WATCH"
-    if total >= -2:
-        return "REDUCE"
-    return "EXIT"
+    if is_held:
+        if total >= 3:
+            return "ACCUMULATE"
+        if total >= 0:
+            return "HOLD"
+        if total >= -2:
+            return "REDUCE"
+        return "EXIT"
+    else:
+        if total >= 2:
+            return "INITIATE"
+        if total >= 0:
+            return "WATCH"
+        return "AVOID"
+
+
+def _normalize_dcf_action(action: str | None, is_held: bool = True) -> str | None:
+    """Normalize DCF action to be logically coherent with portfolio ownership.
+
+    Held positions (>0 shares) can only be:
+        ACCUMULATE, HOLD, TRIM, EXIT.
+    Non-held positions (0 shares / watchlist) can only be:
+        INITIATE, WATCHLIST, AVOID.
+
+    Args:
+        action: Raw action string from projection or TA sweep.
+        is_held: True if the portfolio currently owns shares of this holding.
+
+    Returns:
+        Normalized action string.
+    """
+    if not action:
+        return "HOLD" if is_held else "WATCHLIST"
+    act = action.upper().strip()
+    if is_held:
+        if act in ("BUY", "ACCUMULATE", "INITIATE"):
+            return "ACCUMULATE"
+        if act in ("HOLD", "MAINTAIN", "WATCHLIST", "WATCH"):
+            return "HOLD"
+        if act in ("TRIM", "REDUCE"):
+            return "TRIM"
+        if act in ("SELL", "EXIT", "AVOID"):
+            return "EXIT"
+        return act
+    else:
+        if act in ("BUY", "ACCUMULATE", "INITIATE"):
+            return "INITIATE"
+        if act in ("HOLD", "MAINTAIN", "WATCHLIST", "WATCH"):
+            return "WATCHLIST"
+        if act in ("TRIM", "SELL", "EXIT", "AVOID", "REDUCE"):
+            return "AVOID"
+        return act
 
 
 # ── Data loaders ───────────────────────────────────────────────────────────────
@@ -447,26 +496,30 @@ def compute_all(db_path: str | None = None) -> list[ConvictionScore]:
         if act_w is None and not ta and not dcf:
             continue
 
+        is_held = (act_w is not None and act_w > 0.0)
+
         gap = round(tgt_w - act_w, 2) if tgt_w is not None and act_w is not None else None
         flags      = ta.get("flags", [])
 
         # Prefer TA sweep's enriched DCF over raw projection file when available
-        dcf_action = ta.get("dcf", {}).get("action") or dcf.get("action")
+        raw_dcf_action = ta.get("dcf", {}).get("action") or dcf.get("action")
+        dcf_action = _normalize_dcf_action(raw_dcf_action, is_held=is_held)
         pct_to_fv  = _resolve_pct_to_fv(ta, dcf)
         rsi        = ta.get("rsi")
         adx        = ta.get("adx")
         vol_bias   = ta.get("volBias")
 
-        dcf_pts  = _score_dcf(dcf_action)
+        dcf_pts  = _score_dcf(raw_dcf_action)
         ta_pts   = _score_ta(rsi, vol_bias, flags)
-        gap_pts  = _score_weight_gap(gap, dcf_action)
+        gap_pts  = _score_weight_gap(gap, raw_dcf_action)
         mom_pts  = _score_momentum(adx, flags, rsi)
         total    = dcf_pts + ta_pts + gap_pts + mom_pts
+        band     = _band(total, is_held=is_held)
 
         scores.append(ConvictionScore(
             ticker=ticker,
             total=total,
-            band=_band(total),
+            band=band,
             dcf_pts=dcf_pts,
             ta_pts=ta_pts,
             weight_gap_pts=gap_pts,

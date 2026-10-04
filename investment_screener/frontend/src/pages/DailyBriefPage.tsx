@@ -30,7 +30,7 @@ interface MacroRegime {
 interface ConvictionScore {
     ticker: string;
     total: number;
-    band: 'ACCUMULATE' | 'HOLD' | 'WATCH' | 'REDUCE' | 'EXIT';
+    band: 'INITIATE' | 'ACCUMULATE' | 'HOLD' | 'WATCH' | 'REDUCE' | 'EXIT' | 'AVOID';
     dcf_pts: number;
     ta_pts: number;
     weight_gap_pts: number;
@@ -106,10 +106,13 @@ interface DailyBrief {
 
 const BAND_STYLES: Record<string, { bg: string; text: string; border: string }> = {
     ACCUMULATE: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+    INITIATE:   { bg: 'bg-teal-500/10',    text: 'text-teal-400',    border: 'border-teal-500/30' },
+    BUY:        { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
     HOLD:       { bg: 'bg-sky-500/10',     text: 'text-sky-400',     border: 'border-sky-500/30' },
     WATCH:      { bg: 'bg-amber-500/10',   text: 'text-amber-400',   border: 'border-amber-500/30' },
     REDUCE:     { bg: 'bg-orange-500/10',  text: 'text-orange-400',  border: 'border-orange-500/30' },
     EXIT:       { bg: 'bg-red-500/10',     text: 'text-red-400',     border: 'border-red-500/30' },
+    AVOID:      { bg: 'bg-rose-500/10',    text: 'text-rose-400',    border: 'border-rose-500/30' },
 };
 
 const REGIME_STYLES: Record<string, { bg: string; text: string; label: string }> = {
@@ -183,12 +186,14 @@ export default function DailyBriefPage() {
     const filtered = activeFilter === 'all' ? scores :
         scores.filter(s => s.band === activeFilter.toUpperCase());
 
-    const bandCounts = {
+    const bandCounts: Record<string, number> = {
         ACCUMULATE: scores.filter(s => s.band === 'ACCUMULATE').length,
+        INITIATE:   scores.filter(s => s.band === 'INITIATE').length,
         HOLD:       scores.filter(s => s.band === 'HOLD').length,
         WATCH:      scores.filter(s => s.band === 'WATCH').length,
         REDUCE:     scores.filter(s => s.band === 'REDUCE').length,
         EXIT:       scores.filter(s => s.band === 'EXIT').length,
+        AVOID:      scores.filter(s => s.band === 'AVOID').length,
     };
 
     return (
@@ -280,7 +285,10 @@ export default function DailyBriefPage() {
                         </h2>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {scores.slice(0, 8).map(s => (
+                        {(scores.filter(s => (s.actual_weight ?? 0) > 0).length > 0
+                            ? scores.filter(s => (s.actual_weight ?? 0) > 0)
+                            : scores
+                        ).slice(0, 8).map(s => (
                             <TABriefCard
                                 key={s.ticker}
                                 ticker={s.ticker}
@@ -404,20 +412,22 @@ export default function DailyBriefPage() {
                 {/* Filter bar */}
                 <div className="flex items-center gap-2 p-4 border-b border-zinc-800 flex-wrap">
                     <span className="text-xs text-zinc-500 mr-1">Filter:</span>
-                    {(['all', 'ACCUMULATE', 'HOLD', 'WATCH', 'REDUCE', 'EXIT'] as const).map(f => {
-                        const style = f === 'all' ? { text: 'text-zinc-300', bg: 'bg-zinc-700' } :
-                                      BAND_STYLES[f] ?? { text: 'text-zinc-400', bg: 'bg-zinc-800' };
-                        const count = f === 'all' ? scores.length : bandCounts[f as keyof typeof bandCounts];
-                        const isActive = activeFilter === f;
-                        return (
-                            <button key={f}
-                                    onClick={() => setActiveFilter(f)}
-                                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-all
-                                        ${isActive ? `${style.bg} ${style.text} border-transparent` :
-                                                     `bg-transparent ${style.text} border-zinc-700 opacity-60 hover:opacity-100`}`}>
-                                {f === 'all' ? `All (${count})` : `${f} (${count})`}
-                            </button>
-                        );
+                    {(['all', 'ACCUMULATE', 'INITIATE', 'HOLD', 'WATCH', 'REDUCE', 'EXIT', 'AVOID'] as const)
+                        .filter(f => f === 'all' || (bandCounts[f] ?? 0) > 0)
+                        .map(f => {
+                            const style = f === 'all' ? { text: 'text-zinc-300', bg: 'bg-zinc-700' } :
+                                          BAND_STYLES[f] ?? { text: 'text-zinc-400', bg: 'bg-zinc-800' };
+                            const count = f === 'all' ? scores.length : (bandCounts[f] ?? 0);
+                            const isActive = activeFilter === f;
+                            return (
+                                <button key={f}
+                                        onClick={() => setActiveFilter(f)}
+                                        className={`px-3 py-1 rounded-full text-xs font-medium border transition-all
+                                            ${isActive ? `${style.bg} ${style.text} border-transparent` :
+                                                         `bg-transparent ${style.text} border-zinc-700 opacity-60 hover:opacity-100`}`}>
+                                    {f === 'all' ? `All (${count})` : `${f} (${count})`}
+                                </button>
+                            );
                     })}
                 </div>
 

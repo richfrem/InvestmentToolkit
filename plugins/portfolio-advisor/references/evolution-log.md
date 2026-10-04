@@ -8,6 +8,26 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-04 — Daily Brief Technical Telemetry Backfill & Ownership-Aware Conviction Logic (Tier 1 Evolution)
+
+**Trigger:** Technical momentum cards on `/daily-brief` were rendering blank (null RSI/ADX/Vol Bias) and conviction score tables exhibited logical incoherence by showing `HOLD` / `REDUCE` on watchlist assets that the portfolio does not own. In addition, 15 decommissioned tickers were requested for permanent removal.
+
+**Root Causes & Friction:**
+1. **TradingView Headless Failure**: When TradingView Desktop was offline or resting on `app/new-tab`, CDP sweeps skipped or failed, leaving `intelligence_event` rows for TA null.
+2. **Missing Indicator Plots**: `ai-ta-levels.pine` lacked explicit `plot(..., display=display.data_window)` for RSI and RSI-based MA, causing Data Window queries to return null for these indicators.
+3. **Band & DCF Ownership Agnosticism**: `_band()` and `_normalize_dcf_action()` in `compute_conviction_scores.py` scored all tickers solely on numerical points without verifying whether the asset was held (`actual_weight > 0`).
+
+**Actions Taken:**
+1. **Watchlist Purge**: Permanently purged 15 tickers (`KRC`, `PUMP`, `TSEM`, `LBRT`, `RKLB`, `DXYZ`, `AXTI`, `PLUG`, `DRAM`, `DDOG`, `IBIT`, `ETHA`, `HUMN`, `NKE`, `AAOI`) across `domain_model.sqlite`, `intelligence.sqlite`, and `observations.jsonl`.
+2. **Pine Script Telemetry**: Added `rsi_val = ta.rsi(close, rsi_len)` and Data Window plots (`"RSI"`, `"RSI-based MA"`) to `ai-ta-levels.pine`.
+3. **CDP Auto-Navigation & Local Fallback**: Enhanced `tradingview-cdp/connection.js` to navigate from `new-tab` to chart automatically. Added `backfill_missing_technicals()` and `run_headless_sweep()` via `technicals.py` in `ta_sweep_batch.py` and `daily_brief.py`.
+4. **Ownership-Aware Actions**:
+   - Held assets (`actual_weight > 0`): Bands limited to `ACCUMULATE`, `HOLD`, `REDUCE`, `EXIT`; DCF actions limited to `ACCUMULATE`, `HOLD`, `TRIM`, `EXIT`.
+   - Non-held assets (`actual_weight == 0` / watchlist): Bands limited to `INITIATE`, `WATCH`, `AVOID`; DCF actions limited to `INITIATE`, `WATCHLIST`, `AVOID`.
+5. **Frontend Alignment**: Updated `DailyBriefPage.tsx` types and styling for `INITIATE` and `AVOID`, prioritized held positions in Technical Momentum Cards, and confirmed zero TypeScript build errors.
+
+---
+
 ## 2026-10-04 — Weekly News Sweep Multi-Model Catalyst Integration & Projection Sync (Tier 1 Evolution)
 
 **Trigger:** Applied multi-agent triangulated news catalysts (Claude, ChatGPT, Gemini, Grok) across core portfolio and watchlist holdings via `apply_catalyst.py`, synchronized SQLite domain model with projection JSON files, and generated refreshed daily brief snapshot.
