@@ -4,6 +4,13 @@
 **Target Audience:** AI Developer Agents / Code Generators
 **Purpose:** Comprehensive reference material for generating, debugging, and optimizing Pine Script v6 code.
 Referemce: https://www.tradingview.com/pine-script-reference/v6/
+
+---
+
+## Contents
+- [1. What's New in Pine Script v6](#1--whats-new-in-pine-script-v6-critical-for-ai-agents)
+- [2. Script Structure & Declarations](#2-️-script-structure--declarations)
+
 ---
 
 ## 1. 🚀 What's New in Pine Script v6 (Critical for AI Agents)

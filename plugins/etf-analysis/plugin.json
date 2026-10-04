@@ -10,21 +10,21 @@
     "architecture": "supercharged",
     "skills": [
         {
-            "name": "etf_analysis",
-            "path": "skills/etf_analysis/SKILL.md",
+            "name": "etf-analysis",
+            "path": "skills/etf-analysis/SKILL.md",
             "trigger": "/analyze-etf"
         }
     ],
     "external_dependencies": [
         {
             "name": "fetch_fund_data.py",
-            "canonical_path": "plugins/etf-analysis/skills/etf_analysis/scripts/fetch_fund_data.py",
+            "canonical_path": "plugins/etf-analysis/scripts/fetch_fund_data.py",
             "owned_by": "etf-analysis",
             "purpose": "Fetches fund metadata, NAV, and holdings from yfinance"
         },
         {
             "name": "persist_etf_analysis.py",
-            "canonical_path": "plugins/etf-analysis/skills/etf_analysis/scripts/persist_etf_analysis.py",
+            "canonical_path": "plugins/etf-analysis/scripts/persist_etf_analysis.py",
             "owned_by": "etf-analysis",
             "purpose": "Saves ETF analysis JSON to data/etf_analysis/ with versioning"
         }

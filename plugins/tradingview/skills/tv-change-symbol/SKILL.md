@@ -1,40 +1,40 @@
 ---
 name: tv-change-symbol
 plugin: tradingview
-description: >
-  Change the active TradingView chart symbol. Clicks the symbol button in the
-  chart header, types the ticker, and confirms with Enter.
-allowed-tools: Bash
+description: Change the active TradingView chart symbol via CDP. Trigger on /tv-change-symbol or 'switch chart to [TICKER]'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TV Change Symbol Skill
+# TradingView Change Symbol
 
-**Trigger:** `/change-symbol {TICKER}` — e.g. `/change-symbol NVDA`
+Change the active TradingView chart symbol via CDP.
 
----
+## Contents
 
-## Execution
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+
+## Constraints
+
+- Exact ticker format: Use exchange-appropriate symbols (e.g. `NVDA`, `PSU.U.TO`).
+- Port 9222 liveness: TradingView Desktop must be connected on port 9222.
+- Single chart target: Commands modify the active chart layout only.
+
+## Quick start
 
 ```bash
 node tradingview-cdp/cli.js chart symbol {TICKER}
 ```
 
-Expected: `{ "success": true, "symbol": "NVDA" }`
+## Workflow
 
----
+1. Verify CDP connection with `tv_health_check.py`.
+2. Dispatch chart symbol command: `node tradingview-cdp/cli.js chart symbol {TICKER}`.
+3. Await DOM settlement and confirm active header shows new ticker.
 
-## Troubleshooting
+## Verification
 
-| Symptom | Fix |
-|---|---|
-| `Symbol button not found` | TV might have an overlay open (Pine Editor, dialog). Close it first. |
-| Symbol changed but wrong ticker shown | TV fuzzy-matched to a different symbol. Provide the full exchange-qualified symbol: `NASDAQ:NVDA` |
-| No response after 1s | TV search dialog may have not opened. Run again. |
-
----
-
-## Notes
-
-- TV uses the first autocomplete result. For ambiguous symbols (e.g. `MA`), prefix with exchange: `NYSE:MA`.
-- After changing symbol, run `chart saveLayout --name agent-layout` to persist.
-- The `/tv-chart-setup` skill combines symbol + timeframe + workspace in one call.
+- Confirm active chart header matches requested ticker.
+- Validate routing cases against `evals/evals.json`.

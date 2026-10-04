@@ -1,619 +1,79 @@
 ---
 name: update-stock-analysis
-description: >
-  Perform autonomous stock valuation for a ticker you already hold or track --
-  the "augment/update an existing stake's analysis" counterpart to stock-intake
-  (which is for net-new tickers). Produces a Projection object saved to
-  backend/data/projections/{TICKER}.json AND a deep-dive research report saved
-  to backend/data/research/{TICKER}_{DATE}.md. Summarizes findings
-  conversationally and supports interactive Q&A. Trigger when user asks to
-  value, analyse, re-evaluate, or price a stock, or uses /update-stock-analysis
-  (primary), /update-stock-analysis (alias), or /update-stock-analysis (alias).
-  Renamed 2026-08-28 from stock_valuation -- see
-  docs/architecture/skill-renames-2026-08-28.md for the full old->new mapping.
-has_tools: true
+plugin: stock-valuation
+description: Perform autonomous stock valuation for a ticker you already hold or track. Produces a 5-year scenario DCF projection persisted to SQLite domain model, updates price levels, and writes a qualitative research report. Trigger on /update-stock-analysis or "value [TICKER]".
 allowed-tools: Bash, Read, Write
 ---
 
-# Update Stock Analysis Skill
+# Update Stock Analysis
 
-*(Renamed 2026-08-28 from "Stock Valuation Skill" / `stock_valuation` — same skill, clearer name.
-See `docs/architecture/skill-renames-2026-08-28.md` for the full mapping. Old triggers
-`/update-stock-analysis` and `/update-stock-analysis` still work as aliases.)*
+Autonomous multi-lens valuation engine for existing holdings and tracked equities.
 
-## Quick Reference
-- **Trigger**: `/update-stock-analysis {TICKER}` (primary) · `/update-stock-analysis {TICKER}` or `/update-stock-analysis {TICKER}` (legacy aliases, still work)
-- **Output (JSON)**: `backend/data/projections/{TICKER}.json`
-- **Output (Research)**: `backend/data/research/{TICKER}_{YYYY-MM-DD}.md`
-- **Schema + Examples**: `references/examples/` ← Real validated projections (schemaVersion 1.2):
-  - `example_GOOG_2026-05-02.json` — large-cap Internet/Platform, trending margins, multi-class shares
-  - `example_NVDA_2026-05-02.json` — hypergrowth semiconductor, 73% near-term consensus, CAGR derivation
-  - `example_PANW_2026-05-02.json` — SaaS/cybersecurity, volatile GAAP margins, one-time item handling, SELL result
-  - `example_NVDA_placeholder.json` — **⚠️ DO NOT use as reference** (legacy placeholder, missing fields)
-- **Benchmarks**: `references/valuation-benchmarks.md` ← Load for P/E + margin anchoring
-- **Templates**: `assets/templates/projection_template.json` ← Official output schema
-- **Fallbacks**: `references/fallback-tree.md` ← Load on ANY step failure
-- **API Docs**: `references/api_reference.md`
-- **Canonical Scripts** (in `scripts/` via symlink from `plugins/stock-valuation/scripts/`):
-  - `persist_valuation.py` — Atomic multi-table SQLite persistence (`domain_model.sqlite` + `intelligence.sqlite` + TV price levels) with automated version increments
-  - `dcf_scenarios.py` — 5-year scenario DCF math calculator (bear/base/bull)
-  - `standardize_metrics.py` — Metrics standardization from raw yfinance data
-  - `validate_projection.py` — Schema validation & multi-lens gate check
-  - `comps_valuation.py` — Peer multiple valuation
-  - `reverse_dcf.py` — Market implied growth calculator
+## Contents
 
-## ⚠️ Adversarial Objectivity Constraint
-> **L4 Pattern**: Adversarial Objectivity Constraint — anti-sycophancy enforcement.
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-You are an **independent analyst**, not a stock promoter. Before generating scenarios:
-- ❌ NEVER anchor fair value to current market price. Derive independently from fundamentals, then compare.
-- ❌ NEVER set all three scenarios as minor variations of each other. Bear must reference a historical trough or named risk. Bull MUST name ≥1 specific catalyst.
-- ❌ NEVER assign `qualityMultiplier > 1.1` without citing a specific structural moat from the company profile.
-- ❌ NEVER inherit prior model's assumptions without independent re-derivation from fresh data. Prior analysis is **context only** — not a starting point to copy from.
-- ❌ If the prior model was GPT-5 mini, Gemini, or any flagged non-Sonnet model, treat ALL its assumptions as unvalidated. Re-derive everything from scratch.
-- ✅ If fair value < current price, output SELL or HOLD regardless of user sentiment about the stock.
-- ✅ `exitPE` MUST be benchmarked against sector median from `references/valuation-benchmarks.md`.
-- ✅ If prior thesis said BUY and price has since surged significantly, the new analysis MUST independently re-evaluate whether thesis still holds — do not carry forward the prior bullish stance.
+## Constraints
 
-## ⚠️ Local API Auth — Required for All Backend Calls
-All `/api/*` routes on the Express backend require a bearer token. Two patterns:
+- **Adversarial objectivity**: Never anchor fair value to current market price. Derive scenarios independently from fundamentals.
+- **Scenario differentiation**: Bear must cite structural risk or historical trough; Bull must name $\ge 1$ specific catalyst; Base must reflect normalized operating leverage.
+- **Single source of truth**: Persist all valuations atomically into `domain_model.sqlite` and `intelligence.sqlite` via `persist_valuation.py`; never write to retired JSON targets.
+- **Standing decision anchor**: Check existing `standing_decision_type` before recommending an action change; never flip BUY $\rightarrow$ SELL on $<15\%$ variance.
+- **Local API authentication**: Express `/api/*` endpoints require Bearer token loaded from `.runtime/api-token`.
 
-**Shell / curl** — read the token file and pass it as a header:
-```bash
-API_TOKEN=$(cat .runtime/api-token)
-# Then pass: -H "Authorization: Bearer $API_TOKEN"
-```
+## Quick start
 
-**Python scripts** — import the shared utility (handles token loading automatically):
-```python
-from utils.local_api import api_get, api_post, health_check
-data = api_get("/api/projections/NVDA")
-api_post("/api/projections", payload)
-```
-`utils/local_api.py` lives at `investment_screener/backend/py_services/utils/local_api.py`.
-
-The token is auto-generated on first boot and stored at `.runtime/api-token` (gitignored). The `/health` endpoint is exempt. Missing this header returns `401 Unauthorized — missing or invalid local API token.`
-
-## Dual-Mode Operation
-See `CONNECTORS.md` for full degradation contract.
-
-| Mode | Condition | Action |
-|------|-----------|--------|
-| **Full** | `~~financial-data-fetcher` + `~~projection-store` available | Full pipeline below |
-| **Standalone** | Backend down or data unavailable | Announce degraded mode → request raw JSON paste → complete analysis → write to `temp/evaluations/` → skip persistence |
-
-If health check fails → immediately invoke **FB-02** from `references/fallback-tree.md`.
-
----
-
-## Step 0: Freshness Check (Skip Analysis If Recent)
-```bash
-# Check for existing AI projection within the last 30 days
-API_TOKEN=$(cat .runtime/api-token)
-curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/projections/{TICKER} | python3 -c "
-import json, sys
-from datetime import datetime, timezone, timedelta
-data = json.load(sys.stdin)
-ai = [p for p in data if p.get('source') == 'AI_AGENT']
-if not ai:
-    print('NO_CACHE')
-    sys.exit(0)
-latest = max(ai, key=lambda p: p.get('savedAt',''))
-age = datetime.now(timezone.utc) - datetime.fromisoformat(latest['savedAt'].replace('Z','+00:00'))
-model = (latest.get('aiThesis',{}).get('model') or 'UNKNOWN')
-flagged = [f for f in ('GPT-5 mini','Gemini','Grok','Antigravity','UNKNOWN') if f.lower() in model.lower()]
-if flagged:
-    print(f'STALE (flagged model: {model}) — {age.days}d old — re-analyze')
-elif age < timedelta(days=30):
-    print(f'CACHED — analyzed {age.days}d ago — fair value \${latest[\"aiThesis\"][\"fairValue\"]}')
-else:
-    print(f'STALE — {age.days}d old — re-analyze')
-"
-```
-- If output starts with `CACHED` → **STOP**. Report the cached fair value and action to the user. Offer to force-refresh if they explicitly ask.
-- A projection from a flagged model (GPT-5 mini, Gemini, Grok, Antigravity, UNKNOWN) is never `CACHED` — its assumptions are unvalidated per the Adversarial Objectivity Constraint, so it prints `STALE (flagged model: …)`.
-- If `NO_CACHE` → continue to Step 0.1.
-- If `STALE` → continue to Step 0.1 before Step 0.5.
-
----
-
-## Step 0.1: Holdings Verification & Lifecycle Anchor (Mandatory Single Source of Truth Check)
-> **Rule #15 & #21 Invariant**: Before setting any action, lifecycle status, or target weight, query `domain_model.sqlite` via the canonical CLI `portfolio_io.py --ticker {TICKER}`. Never execute ad-hoc inline Python or raw SQL.
+Execute full automated pipeline for a ticker:
 
 ```bash
-python3 investment_screener/backend/py_services/portfolio_io.py --ticker {TICKER}
-```
-* If holding status is `HELD` (`shares > 0`): Security is an active position. **Never classify as WATCHLIST.** Action enum MUST be chosen from `MAINTAIN | ACCUMULATE | TRIM | EXIT`.
-* If holding status is `NOT HELD` (`shares == 0`): Security is not currently held. Action enum MUST be chosen from `WATCHLIST | INITIATE`.
-
-To verify valid foreign keys for `pillar_id` and `sub_strategy_id`:
-```bash
-python3 investment_screener/backend/py_services/portfolio_io.py --pillars
+python3 plugins/stock-valuation/scripts/fetch_financials.py {TICKER} > temp/evaluations/{TICKER}_raw.json
 ```
 
----
-
-## Step 0.5: Prior Analysis Review (Build-On Mode)
-> Only runs when a STALE prior projection exists. Purpose: extract the prior thesis for **context and fact-checking** — NOT to inherit its assumptions.
-
-```bash
-API_TOKEN=$(cat .runtime/api-token)
-curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/projections/{TICKER} | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-ai = [p for p in data if p.get('source') == 'AI_AGENT']
-if not ai: sys.exit(0)
-p = max(ai, key=lambda x: x.get('savedAt',''))
-snap = p.get('snapshot', {})
-s = p.get('scenarios', {})
-print(json.dumps({
-  'id': p.get('id'),
-  'version': p.get('version', 1),
-  'model': p.get('aiThesis', {}).get('model'),
-  'date': p.get('savedAt','')[:10],
-  'prior_price': snap.get('price'),
-  'prior_fv': p.get('aiThesis', {}).get('fairValue'),
-  'prior_action': p.get('aiThesis', {}).get('action'),
-  'bear': {k: s.get('bear',{}).get(k) for k in ['growthRate','netMargin','exitPE','qualityMultiplier','weight']},
-  'base': {k: s.get('base',{}).get(k) for k in ['growthRate','netMargin','exitPE','qualityMultiplier','weight']},
-  'bull': {k: s.get('bull',{}).get(k) for k in ['growthRate','netMargin','exitPE','qualityMultiplier','weight']},
-  'prior_rationale': p.get('aiThesis', {}).get('rationale','')[:300]
-}, indent=2))
-"
-```
-
-After reading the output, **explicitly answer each of these questions in your reasoning** before touching any scenario parameters:
-
-1. **Price delta**: Current price vs prior price — did the thesis play out, overshoot, or miss?
-2. **Assumption audit**: Were prior `growthRate`, `netMargin`, `exitPE`, `qualityMultiplier` grounded, or were they inflated? Compare each against sector benchmarks now.
-3. **Model quality flag**: If prior model was GPT-5 mini, Gemini, Antigravity, or "UNKNOWN" → mark all assumptions as **unvalidated**. Re-derive everything independently.
-4. **Thesis outcome**: If prior said BUY and stock surged, the thesis may have been correct *then* but irrelevant *now* — evaluate current entry, not past entry.
-5. **What changed fundamentally**: New revenue data, margin trend reversal, competitive shift, regulatory news.
-
-Record findings in `analyticsLog.priorAnalysisReview`. Then fetch fresh data and build scenarios **entirely from the new data** — prior assumptions inform but never constrain.
-
-**Version continuity**: Preserve the prior projection's `id`. Set `version` = prior `version` + 1.
-
----
-
-## Step 1: Fetch Financial Data
-```bash
-# Health check first
-curl -sf http://localhost:3001/health || echo "DEGRADED — invoke FB-02"
-
-# Fetch data
-python3 investment_screener/backend/py_services/fetch_financials.py {TICKER} > temp/evaluations/{TICKER}_raw.json
-```
-**If fetch fails** → invoke **FB-01** from `references/fallback-tree.md`. Do NOT hallucinate data.
-
-## Step 2: Build Snapshot Object + Seed analyticsLog
-```bash
-# Standardize metrics using the canonical calculation engine
-# NOTE: standardize_metrics.py requires a file path argument — do NOT pipe via stdin
-python3 plugins/stock-valuation/skills/update-stock-analysis/scripts/standardize_metrics.py \
-  temp/evaluations/{TICKER}_raw.json > temp/evaluations/{TICKER}_metrics.json
-```
-Read `temp/evaluations/{TICKER}_metrics.json` and use the `snapshot` and `ratios` blocks. 
-
-> ⚠️ **The Canonical Calculation Policy**: Never compute P/E, P/S, CAGR, or Share Count derivations inline. Use the outputs from `standardize_metrics.py` to ensure consistency with the web dashboard.
-
-**Also, begin building `analyticsLog` now** — record these facts as you read them so nothing is lost:
-- `shareCountMethod`: copy from `snapshot.share_source` in the metrics JSON.
-- `analystInputs`: capture Y1/Y2 revenue estimates, Y1/Y2 growth %, blended consensus, target mean, analyst count from the raw JSON.
-- `historicalRevenue` + `historicalNetMargins` + `historicalEPS`: copy raw arrays from `financials.*` for durable record.
-- `dataQualityFlags`: begin flagging anomalies immediately (outlier years, declining EPS estimates, zero-gap years, etc.).
-
-This is a **live working document** — add to it throughout Steps 2 and 3, not just at the end.
-
----
-
-## Step 2.5: Strategic Outlook & Transcript Verification Checklist (Mandatory Gate)
-> ⚠️ **MANDATORY CONTRACT GATE**: Never anchor a DCF to backward-looking trailing data without auditing the last 2–4 earnings calls and contracted backlogs.
-> The agent **MUST** output this standardized checklist in chat before proceeding to Step 3:
-
-```markdown
-### 📋 Strategic Outlook & Transcript Verification Checklist
-- [x] **Recent Earnings Calls Reviewed**: [e.g. Q1 2026, Q2 2026] (Dates: YYYY-MM-DD)
-- [x] **Guidance Trajectory**: [RAISED / MAINTAINED / LOWERED / WITHDRAWN / NOT_PROVIDED]
-  - *Details*: [1-2 sentences on management commentary and full-year revisions]
-- [x] **Contracted Backlog & Pipeline**:
-  - *Firm Backlog*: [e.g. $2.6B (+533% YoY)]
-  - *Forward Pipeline*: [e.g. $14B+ multi-year pipeline]
-- [x] **Strategy Alignment Lens**: [{PILLAR_NAME} - e.g. Power Infrastructure / AI Datacenters]
-  - *Solution / Architecture*: [e.g. Solid oxide fuel cells / Behind-the-meter turbines]
-  - *Tier-1 Customers / Counterparties*: [e.g. Oracle, AWS, Microsoft]
-- [x] **Adversarial Risk & Counterparty Audit**:
-  - *Counterparty Credit Quality*: [e.g. Investment-grade hyperscaler vs speculative startup]
-  - *Cash Conversion & Liquidity*: [e.g. Positive FCF vs cash burn and dilution risk]
-- [x] **Strategic Stance & Forward Outlook**:
-  - [Substantive judgment on whether guidance + backlog justify forward CAGR assumptions]
-```
-
-**Mechanical Enforcement Requirement:**
-Record this audit inside `analyticsLog.outlookAudit` in the projection JSON:
-```json
-"outlookAudit": {
-  "callsAnalyzed": ["Q1 2026", "Q2 2026"],
-  "guidanceDirection": "RAISED",
-  "backlogPipeline": "$2.6B backlog, $14B pipeline",
-  "strategicAssessment": "Hyperscaler adoption accelerating; FastPower platform expanding.",
-  "adversarialRisks": ["Counterparty financing risks", "Working capital cash burn"]
-}
-```
-`validate_projection.py` will programmatically reject and block any projection missing `analyticsLog.outlookAudit`.
-
----
-
-## Step 3: Cognitive Analysis — Define Scenarios, Then Run DCF Calculator
-
-> ⚠️ **NEVER compute DCF math by hand or inline.** After deciding scenario parameters,
-> write them to `temp/evaluations/{TICKER}_scenarios.json` and run the canonical calculator.
-> The script validates constraints, computes all intermediates, and outputs `presentValue`
-> for each scenario. See `plugins/stock-valuation/references/ADR-dcf-calculator.md`.
-
-Use `references/analysis_prompt.md` for full methodology. Key constraints for choosing parameters:
-
-1. **Forward Run-Rate Anchoring**: For stocks with massive committed but unrealized growth (e.g. data center buildouts, contracted backlog), do NOT anchor `base.growthRate` to trailing revenue (TTM). Instead:
-   - Identify the "Locked-In" project value (e.g. $1B GPU cluster deployment).
-   - Use the `optionalityAdjustment` field in the scenario JSON to represent the terminal value of these projects.
-   - Set growth rates based on the *execution of the backlog*, not historical performance.
-2. **Weights**: `bear.weight + base.weight + bull.weight` MUST equal **1.0** (±0.01)
-3. **Growth ordering**: `bear.growthRate < base.growthRate < bull.growthRate`
-3. **Price ordering**: `bear.scenarioPrice < base.scenarioPrice < bull.scenarioPrice`
-4. **Margins**: Realistic (-100% to 100%); see sector benchmarks in `references/valuation-benchmarks.md`
-5. **Large caps** (>$50B revenue): growth >30% requires named catalyst citation
-6. **`shareChange`**: -5.0 to +5.0; **Scores**: integers 0–5
-7. **Base anchoring — standard**: `base.growthRate` must be within ±3pp of analyst consensus growth, with explicit justification for any deviation
-8. **Base anchoring — hypergrowth exception** (analyst Y1 consensus >40%): Do NOT use Y1 consensus directly as the 5-year CAGR. Instead derive a realistic CAGR from the analyst trajectory:
-   - Collect Y1 and Y2 analyst revenue estimates from the data
-   - Project years 3-5 using natural deceleration (typically halving the growth rate increment each year)
-   - Compute the 5-year CAGR from `(Y5_revenue / TTM_revenue)^(1/5) - 1`
-   - State this derivation explicitly in the scenario `rationale`
-   - See `references/examples/example_NVDA_2026-05-02.json` for a worked example (73% Y1 consensus → 27% 5-yr CAGR base)
-9. **Margin anchoring — trending vs mean-reverting**: The `analysis_prompt.md` rule of ±5pp from 4-year average applies to **mean-reverting** margins. For companies with a consistent multi-year expansion trend (every year higher), use the TTM margin as the anchor instead, and justify any projected expansion or compression relative to TTM:
-   - ✅ Mean-reverting: volatile margins with no clear trend → use 4-year average
-   - ✅ Trending: margin improving every year for 3+ years → use TTM as anchor; deviations >5pp from TTM require justification
-   - See `references/examples/example_GOOG_2026-05-02.json` (4yr avg 26.7% vs TTM 37.9% — TTM used as anchor)
-10. **Sector classification**: Match the company's `profile.industry` to the nearest row in `references/valuation-benchmarks.md`. When `profile.sector` is ambiguous (e.g. "Communication Services" for Alphabet), use the industry string to resolve: `Internet Content & Information` → "Technology — Internet / Platforms" benchmark row.
-
-**Unit convention — `growthRate` and `netMargin` are PERCENTAGE units, not decimals**: use `8` for 8% growth, `26` for 26% margin — never `0.08`/`0.26`. The calculator divides both by 100.0 internally. `validate_scenarios()` rejects any value strictly between 0 and 1 as a decimal-fraction mistake (added 2026-08-28 after this exact error silently produced a -99.6% fair value on AMAT with no validation error).
-
-**After deciding parameters, run the calculator:**
-```bash
-# Write scenario params to temp file
-cat > temp/evaluations/{TICKER}_scenarios.json << 'EOF'
-{
-  "bear": { "weight": 0.XX, "growthRate": X, "netMargin": X, "exitPE": X, "qualityMultiplier": X.XX, "shareChange": X.X },
-  "base": { "weight": 0.XX, "growthRate": X, "netMargin": X, "exitPE": X, "qualityMultiplier": X.XX, "shareChange": X.X },
-  "bull": { "weight": 0.XX, "growthRate": X, "netMargin": X, "exitPE": X, "qualityMultiplier": X.XX, "shareChange": X.X }
-}
-EOF
-# NOTE: growthRate/netMargin above are percentage units (X = 8 means 8%, not 0.08)
-
-# Run canonical DCF calculator — validates + computes all intermediates
-python3 investment_screener/backend/py_services/dcf_scenarios.py \
-  --raw temp/evaluations/{TICKER}_raw.json \
-  --scenarios temp/evaluations/{TICKER}_scenarios.json \
-  --pretty | tee temp/evaluations/{TICKER}_dcf_result.json
-```
-- If exit code 1 → fix the validation errors reported to stderr before proceeding
-- Use `year5Revenue`, `year5NetIncome`, `year5EPS`, `presentValue` from output to populate the projection JSON in Step 5
-- `weightedFairValue` and `action` from output are the canonical fair value and recommendation
-
-**Populate `analyticsLog` while reasoning** — record your decisions as you make them:
-- `marginAnchor`: state TTM or 4yr avg, which value, and the exact rule applied (trending/mean-reverting)
-- `growthDerivation`: state blended analyst consensus and how you derived the base CAGR (especially for hypergrowth — show the deceleration path)
-- `sectorBenchmarkRow`: name the exact benchmark row used and the P/E range it provides
-- `confidenceBreakdown`: document each positive/negative factor and its score impact
-
-## Step 3.5: Valuation Committee — Additional Lenses (Phase 2a)
-
-After the canonical DCF calculator runs (Step 3), run the four additional
-valuation-committee scripts before persisting. Each one is optional to run
-standalone but all four are required before Step 4's validator, since the
-2-of-3 ACCUMULATE gate needs their output in `analyticsLog`.
-
-```bash
-# 1. Per-company discount rate (replaces the flat 10% default)
-python3 investment_screener/backend/py_services/wacc.py \
-  --ticker TICKER --market-cap <market_cap_from_metrics> --cik <cik_or_omit> --pretty
-# -> analyticsLog.wacc
-
-# 2. Re-run DCF with the computed WACC (instead of the default --discount-rate)
-python3 investment_screener/backend/py_services/dcf_scenarios.py \
-  --raw <raw_financials.json> --scenarios <scenarios.json> --wacc-file <wacc_output.json> --pretty
-# -> analyticsLog.dcf (persist weightedFairValue, upsidePct, and the full
-# scenario breakdown from this re-run's output — this is lens #1 the gate reads)
-
-# 3. Reverse-DCF implied growth
-python3 investment_screener/backend/py_services/reverse_dcf.py \
-  --price <current_price> --revenue <base_revenue> --shares <base_shares> \
-  --margin <base_margin> --exit-pe <base_exit_pe> \
-  --bear-growth <bear_growth> --base-growth <base_growth> --bull-growth <bull_growth> --pretty
-# -> analyticsLog.reverseDcf
-
-# 4. Sensitivity grid + Monte Carlo
-python3 investment_screener/backend/py_services/dcf_sensitivity.py \
-  --scenarios <scenarios.json> --revenue <base_revenue> --shares <base_shares> \
-  --price <current_price> --mode grid --pretty
-python3 investment_screener/backend/py_services/dcf_sensitivity.py \
-  --scenarios <scenarios.json> --revenue <base_revenue> --shares <base_shares> \
-  --price <current_price> --mode montecarlo --pretty
-# -> analyticsLog.sensitivity, analyticsLog.monteCarlo
-
-# 5. Comps cross-check (only if the ticker's latest projection already has a peers list)
-python3 investment_screener/backend/py_services/comps_valuation.py \
-  --ticker TICKER --peers <comma_separated_peers> \
-  --db-path investment_screener/backend/data/domain_model.sqlite --pretty
-# -> analyticsLog.comps ; {"status": "insufficient_peer_data"} is expected and fine
-# for any ticker without a curated peers list yet — do not fabricate one.
-```
-
-Merge all six outputs (`dcf`, `wacc`, `reverseDcf`, `sensitivity`, `monteCarlo`, `comps`) into the
-projection's `analyticsLog` object before Step 4. If DCF upside, comps upside,
-and implied-growth-vs-base disagree by more than 25%, say so explicitly in the
-conversational summary (Step 8) and in `rationale` — never average the
-disagreement away.
-
-**Data-quality check (mandatory, after merging):** For `wacc` (single-ticker `dataQuality`
-dict) and `comps` (per-ticker `dataQuality` dict, check the target ticker's own entry), if
-`dataQuality.staleness` is `true` or `dataQuality.dataConflicts` is non-empty, dispatch
-`data-quality-agent` via the Agent tool with: which script flagged it (`wacc` or `comps`), the
-specific detail, and the fact that both feed `aiThesis.action`'s 2-of-3 gate. Its response is
-one of:
-- `DEGRADE: {note}` — append `{note}` to `analyticsLog.dataQualityFlags` and continue to Step 4.
-- `HALT: {reason}` — stop before Step 4. Report `{reason}` to the user. Leave whatever is
-  currently in `temp/evaluations/{TICKER}_projection.json` as-is (don't delete it, don't
-  persist it to `data/projections/`) so the user can inspect what was gathered before the halt.
-
-*Note: `comps_valuation.py` does not pass a `cik` argument to `get_fundamentals()`, so its `dataQuality.dataConflicts` is structurally always empty; comps can only contribute a DEGRADE on staleness, while only wacc can trigger a HALT via a data conflict.*
-
-## Step 3.6: Fundamental Framework Score + Peer Benchmarking + Local TA (Phase 2b)
-
-After Step 3.5's valuation-committee lenses, run these three additional scripts. Unlike
-Step 3.5, none of these gate `aiThesis.action` — they are informational, surfaced in
-`/update-stock-analysis` output and `analyticsLog` for context.
-
-```bash
-# 1. Sector-aware weighted composite score (requires a `sector` field on the
-#    projection — set it once, agent-curated, same pattern as `peers`)
-python3 investment_screener/backend/py_services/framework_score.py \
-  --ticker TICKER --sector {saas_cyber,chips_ai,energy_infra} \
-  --db-path investment_screener/backend/data/domain_model.sqlite \
-  [--qualitative-file <qualitative.json>] --pretty
-# -> analyticsLog.framework
-
-# 2. Peer benchmarking table (only if projections/{TICKER}.json already has peers)
-python3 investment_screener/backend/py_services/peer_bench.py \
-  --ticker TICKER --peers <comma_separated_peers> --sector <same_sector_as_above> \
-  --db-path investment_screener/backend/data/domain_model.sqlite --pretty
-# -> analyticsLog.peerBench ; {"status": "insufficient_peer_data"} is expected and fine
-
-# 3. Local TA snapshot (independent of TV CDP — works headless)
-python3 investment_screener/backend/py_services/technicals.py \
-  --ticker TICKER --timeframe D --period 1y --benchmark SPY --pretty
-# -> analyticsLog.technicals
-```
-
-Merge all three outputs (`framework`, `peerBench`, `technicals`) into the projection's
-`analyticsLog` object before Step 4. If `--qualitative-file` isn't supplied,
-`framework_score.py`'s output will show `excludedMetrics: ["competitiveMoat",
-"newsImpact"]` — this is expected, not an error; fill the file in only when you have
-sourced, dated research for those fields (never guess a moat/news rating).
-
-**Data-quality check (mandatory, after merging):** For `peerBench` (per-ticker `dataQuality`
-dict, check the target ticker's own entry) and `technicals` (single `dataQuality` dict), if
-`dataQuality.staleness` is `true` or `dataQuality.dataConflicts` is non-empty, dispatch
-`data-quality-agent` via the Agent tool with: which script flagged it (`peerBench` or
-`technicals`), the specific detail, and the fact that neither feeds `aiThesis.action`'s gate
-(informational-only, per the framework doc's own Step 3.6 boundary). Per the agent's decision
-tree, this always resolves to `DEGRADE` for an informational-only lens — append the note to
-`analyticsLog.dataQualityFlags` and continue. `framework_score.py` doesn't call
-`get_fundamentals()`/`get_prices()` directly (it reads persisted projection snapshots), so it
-has no `dataQuality` output to check here.
-
-## Step 4: Validate & Repair
-
-Run the pre-persistence validator. This now also enforces the Phase 2a
-valuation-committee gate: `aiThesis.action = ACCUMULATE` requires at least 2
-of the 3 lenses (DCF upside, comps upside, implied-growth-below-base-case)
-to agree — a validation error if fewer than 2 agree, forcing either the
-action to be revised or a re-check of the underlying lens data before
-persistence. A pre-Phase-2a projection re-validated without lens data will
-correctly fail this gate if its action is ACCUMULATE — re-run it through
-Step 3.5 first rather than treating the failure as a bug.
-```bash
-# Run pre-persistence validator
-cat temp/evaluations/{TICKER}_projection.json | python3 plugins/stock-valuation/skills/update-stock-analysis/scripts/validate_projection.py --verbose
-# Exit 0 = valid | Exit 1 = errors to fix
-```
-Fix all reported errors before proceeding. If math inconsistency detected → invoke **FB-05** from `references/fallback-tree.md`.
-
-Normalize weights if sum ≠ 1.0. Cast string numbers to actual numbers. Clamp out-of-range values.
-
----
-
-## Step 4.5: Red Team Review (Inline Default / Human-Gated Subagent)
-
-To ensure analytical rigor and prevent ungrounded models from skipping critical stress-testing, 
-the agent MUST conduct an adversarial self-audit:
-
-- **Default Execution (Inline)**: Synthesize the adversarial review **directly inline** within the primary turn:
-  1. At least 3 specific, falsifiable objections to the thesis (e.g. debt service, tenant concentration, execution delays).
-  2. A concrete "what would change my mind" list (both upside catalysts and downside thesis breakers).
-  3. Persist these objections into the research report and display them in the final summary.
-
-- **Subagent Gate (HITL Confirmation)**: Do NOT spawn an external subagent (`red-team-agent`) silently or autonomously. If deep independent cross-model review might be warranted (e.g., major thesis overhaul, complex capital structure, or high portfolio concentration), **ask the user first**:
-  > *"Would you like me to spawn an external `red-team-agent` to independently challenge this valuation, or proceed with the inline adversarial review?"*
-  - Only dispatch `red-team-agent` if the user explicitly confirms (`yes`).
-  - Otherwise, proceed immediately with the inline audit to preserve flow and prevent unrequested terminal approval prompts.
-
----
-
-## Step 5: Assemble Projection Object
-Construct the projection object using the official template provided in:
-`assets/templates/projection_template.json`
-
-Read this template, fill in the fields based on your analysis, and use the exact schema structure.
-
-> **Model name**: Use human-readable names (`"Claude Sonnet 4.6"` not `"claude-sonnet-4-6"`).
-> **analyticsLog is mandatory** in schemaVersion 1.2+. Every field must be populated — no null strings. `dataQualityFlags` must be a non-empty array (at minimum note "No anomalies detected" if clean).
-
-## Step 6: Persist Projection JSON
-> ⚠️ **Thesis text must survive the shell.** Never pass rationale text through double quotes or an unquoted heredoc — `$35.76` becomes `.76` (shell expands `$35`). Build payloads with a quoted heredoc (`<< 'EOF'`) or from Python/`--file`. `validate_projection.py` rejects stripped-currency artifacts (`~B`, ` .76`, `( PT)`).
-> Re-posting with the prior projection's `id` appends a new version (`MAX(version)+1`); it never replaces an earlier row (fixed 2026-09-28, DEBT-20260928-08).
-```bash
-cat > temp/evaluations/{TICKER}_valuation_payload.json << 'EOF'
-<JSON_PAYLOAD>
-EOF
-
-# Canonical atomic persistence engine (domain_model.sqlite + intelligence.sqlite + TV levels)
-python3 plugins/stock-valuation/scripts/persist_valuation.py \
-  --file temp/evaluations/{TICKER}_valuation_payload.json \
-  --json
-
-# Optional: Persist via REST API for Express backend runtime sync if backend running
-API_TOKEN=$(cat .runtime/api-token 2>/dev/null || echo "")
-if [ -n "$API_TOKEN" ]; then
-  curl -s -X POST http://localhost:3001/api/projections \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $API_TOKEN" \
-    -d @temp/evaluations/{TICKER}_projection.json
-fi
-```
-- Success response: `{"status": "success", "symbol": "...", "version": N, ...}`
-- The script automatically checks existing versions in SQLite and assigns `MAX(version) + 1` atomically.
-- If any other failure → invoke **FB-03** from `references/fallback-tree.md`
-
-## Step 7: Generate Deep-Dive Research Report
-**Shared Intelligence Ledger**: Append to the event ledger and regenerate the canonical views
-(never write dated markdown directly — per ADR-028's anti-duplication rule).
-```bash
-mkdir -p temp
-cat > temp/research_body.md << 'REPORT_EOF'
-<MARKDOWN_CONTENT>
-REPORT_EOF
-PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.event_store \
-  --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
-  --status ACTIVE --title "{TICKER} research update" --body-file temp/research_body.md
-PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.view_generator {TICKER}
-```
-If write fails → invoke **FB-04** from `references/fallback-tree.md`.
-
-**Report must include** (template in full at `references/analysis_prompt.md`):
-- TL;DR (2-3 sentences, verdict + why)
-- Company Snapshot table
-- Investment Thesis (3-5 paragraphs, data-grounded)
-- Scenario Analysis — for each scenario (Bear/Base/Bull): one narrative paragraph **plus** an assumption table in this exact format:
-
-  | Assumption | Value | Rationale |
-  |-----------|-------|-----------|
-  | 5-yr Revenue CAGR | X% | ... |
-  | Year 5 Revenue | $XB | ... |
-  | Net Margin (Yr 5) | X% | ... |
-  | Exit P/E | Xx | ... |
-  | Quality Multiplier | X.XX | ... |
-  | Share Change | X%/yr | ... |
-  | **Year 5 EPS** | **$X.XX** | — |
-  | **Year 5 Price** | **$XXX** | — |
-  | **Present Value** | **$XXX** | — |
-
-- Valuation Math section showing full arithmetic for all three scenarios and the weighted average
-- Key Risks (numbered list, 3-5 items), What to Watch, Comparables table
-- Data Quality & Confidence Score with explicit flags
-- Discussion Log (initially empty, appended during Q&A)
-
-## Step 8: Conversational Summary in Chat
-```
-**{TICKER}: {ACTION} — Fair value ${fair_value} vs ${price} ({+/-X%})**
-
-{2-3 sentences: plain-English thesis. No jargon.}
-
-**Scenarios:**
-🐻 Bear ({weight}%): ${price} — {one sentence why}
-⚖️  Base ({weight}%): ${price} — {one sentence why}
-🚀 Bull ({weight}%): ${price} — {one sentence, name the catalyst}
-
-**Biggest risk**: {Single most important risk.}
-**Confidence**: {X}/1.0
-
-> **Prior analysis** ({prior_model}, {prior_date}): {prior_action} at ${prior_price} → now ${current_price} ({delta}%). {One sentence: thesis outcome — played out / overshot / missed / N/A}
-
-I've saved the projection and a full deep-dive research report.
-Want me to stress-test an assumption, adjust the model, or dig deeper?
-```
-> ⚠️ Be conversational. Do NOT just output a table.
-
-## Step 9: Interactive Q&A Loop
-Remain in analyst mode. Handle:
-- **Assumption Challenges**: Recalculate, show fair value delta, offer to save revised version
-- **Sensitivity Probes**: Recalculate all scenario PVs at new rate
-- **Deep Dives**: Discuss qualitatively, connect back to model parameters
-- **Cross-Stock Comparisons**: Load both projections from `data/projections/`
-- **Scenario What-Ifs**: Model with adjusted parameters, show impact on weighted fair value
-
-**Persisting Q&A Changes**: If material changes → bump `version` + `updatedAt` → re-persist → append to Discussion Log section of research report.
-
----
-
-## Step 10: 5-Surface UI Synchronization & Verification Gate
-After completing any valuation and saving the projection, verify that all 5 UI surfaces defined in `docs/architecture/stock-analysis-surface-checklist.md` have been updated cleanly:
-1. **Overview & Strategy**: `domain_model.sqlite` (`investment`)
-2. **Technicals**: `intelligence.sqlite` & `domain_model.sqlite` (`price_level_tier`)
-3. **Valuation Modeler**: `/api/projections` & `data/projections/{TICKER}.json`
-4. **Research Deep-Dive**: `intelligence_event` / `data/research/{TICKER}_{DATE}.md`
-5. **TradingView Overlay**: Run `/tv-thesis-overlay {TICKER}` to refresh chart price rays.
-
----
-
-## Error Handling
-| Condition | Action |
-|:---|:---|
-| Data Fetch Fail | **STOP** → FB-01 |
-| Backend Down | Standalone mode → FB-02 |
-| Validation (400) | Fix payload → retry once → FB-03 |
-| Conflict (409) | Increment `version` → retry once |
-| Research dir missing | `mkdir -p` → retry → FB-04 |
-| Math inconsistency | Recompute from scratch → FB-05 |
-
----
-
-## Step N — Write Price Levels from DCF Output
-
-After the projection JSON is saved to `backend/data/projections/{TICKER}.json`,
-automatically derive and write structured buy/sell tiers:
-
-```bash
-python3 plugins/portfolio-advisor/scripts/update_price_levels.py \
-  --ticker {TICKER} \
-  --source dcf \
-  --note "Auto-derived from /update-stock-analysis $(date +%Y-%m-%d)" \
-  --write
-```
-
-This populates `priceLevels` in `target-portfolio.json` and `priceLevelSnapshot` in
-`portfolio.json` using the bear/base/bull `scenarioPrice` values from the projection.
-
-**Skip silently** if the ticker is not in `target-portfolio.json` holdings
-(e.g. watchlist-only or new ticker not yet added to thesis).
-
-If successful, print the summary so the user can review the derived levels.
-
----
-
-## Sources Checked Declaration
-> **L4 Pattern**: Source Transparency Declaration. Every completed run MUST end with:
-
-```
-## Sources Checked
-- Financial data: [✅ fetch_financials.py / ⚠️ Manual input / ❌ Unavailable]
-- Projection persistence: [✅ Saved / ⚠️ Skipped (standalone) / ❌ Failed]
-- Research report: [✅ Saved to {path} / ❌ Failed]
-- Valuation benchmarks: [✅ references/valuation-benchmarks.md]
-- Analysis prompt: [✅ references/analysis_prompt.md]
-- Thesis synchronization: [✅ verify_thesis_sync.py passed / ❌ Failed]
-
-## Sources Unavailable
-- [any that failed or were skipped and why]
-```
-
+## Workflow
+
+1. **Check Freshness & Context**:
+   Query existing projection age and thesis standing decision from `domain_model.sqlite`.
+2. **Fetch Financials & Multi-Lens Data**:
+   - Run `fetch_financials.py {TICKER}` for yfinance fundamentals and consensus metrics.
+   - Run `comps_valuation.py` for peer EV/EBITDA and P/E multiples.
+   - Run `reverse_dcf.py` to calculate the market-implied growth rate.
+3. **Construct 3-Scenario DCF Model**:
+   - Model Bear (20%), Base (60%), Bull (20%) revenue CAGR, operating margins, exit multiples, and dilution.
+   - Run `dcf_scenarios.py` to compute probability-weighted fair value.
+   - Benchmark exit multiples against `references/valuation-benchmarks.md`.
+4. **Adversarial Review Gate**:
+   - Validate that scenario spread ratio is reasonable ($<50\times$).
+   - Ensure Bear case does not breach contracted revenue floor.
+   - Dispatch `red-team-agent` to challenge assumptions before finalizing.
+5. **Validate & Persist**:
+   ```bash
+   cat temp/evaluations/{TICKER}_projection.json | python3 plugins/stock-valuation/scripts/validate_projection.py --verbose
+   python3 plugins/stock-valuation/scripts/persist_valuation.py --input temp/evaluations/{TICKER}_projection.json
+   ```
+6. **Compile Research Report**:
+   Write Markdown deep dive to `investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md`.
+
+## Verification
+
+- Confirm `validate_projection.py` passes with zero schema errors.
+- Confirm SQLite record insertion:
+  ```bash
+  python3 investment_screener/backend/py_services/portfolio_io.py --ticker {TICKER} --json
+  ```
+- Run unit test suite:
+  ```bash
+  pytest plugins/stock-valuation/tests/
+  ```
+- Validate routing cases against `evals/evals.json`.
+
+## References
+
+- [Valuation Benchmarks](references/valuation-benchmarks.md): Sector P/E multiples and net margin baseline tables.
+- [Analysis Prompt Guide](references/analysis_prompt.md): Prompt templates and research synthesis guidelines.
+- [API Reference](references/api_reference.md): Express backend routes and authentication schemas.
+- [Fallback Tree](references/fallback-tree.md): Operational degradation procedures when data sources fail.
+- [ADR DCF Calculator](references/ADR-dcf-calculator.md): Mathematical specification for discounted cash flow engine.

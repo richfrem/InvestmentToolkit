@@ -1,52 +1,41 @@
 ---
 name: tv-alert-list
 plugin: tradingview
-description: >
-  Fetches, analyzes, and lists active TradingView price alerts, saving the snapshot
-  to the backend data folder for offline caching and verification.
-  Trigger on /tv-alert-list, "list tradingview alerts", or "show active alerts".
-allowed-tools: Bash, Read
+description: Fetches, analyzes, and lists active TradingView price alerts, saving the snapshot to the backend data folder for offline caching. Trigger on /tv-alert-list or 'list tradingview alerts'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TradingView Alert List Skill
+# TradingView Alert List
 
-## What This Skill Does
+Fetches, analyzes, and lists active TradingView price alerts, saving the snapshot to the backend data folder for offline caching.
 
-1. **Checks** if TradingView Desktop is reachable on port 9222.
-2. **Runs** the python listing script to scrape all current active alerts.
-3. **Persists** the output to `investment_screener/backend/data/tradingview_alerts_actual.json` so that other scripts and agents can read it offline.
-4. **Displays** a clean markdown summary table of active alerts to the user.
+## Contents
 
----
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-## Execution Step
+## Constraints
 
-Run the following Python script to execute the listing and generate the offline snapshot:
+- CDP liveness: Requires TradingView Desktop running on port 9222.
+- Single source of alerts: Persists offline snapshot to `investment_screener/backend/data/tradingview_alerts_actual.json`.
+- Read-only query: Does not delete, modify, or trigger alerts.
+
+## Quick start
 
 ```bash
 python3 plugins/tradingview/scripts/tv_list_alerts.py
 ```
 
----
+## Workflow
 
-## Output Location
+1. Verify CDP connection on port 9222.
+2. Execute listing script: `python3 plugins/tradingview/scripts/tv_list_alerts.py`.
+3. Cache snapshot to `investment_screener/backend/data/tradingview_alerts_actual.json`.
+4. Render formatted Markdown table with columns: `Ticker`, `Price`, `Condition`, `Label/Message`.
 
-The list is persisted directly to the web app backend database folder at:
-*   [tradingview_alerts_actual.json](investment_screener/backend/data/tradingview_alerts_actual.json)
+## Verification
 
----
-
-## Expected Results Format
-
-The command output will print a summary of active alerts directly in the console:
-
-```
-Active TradingView Alerts Summary:
-Ticker       Price        Condition       Label/Message
-----------   ----------   -------------   -------------
-CRWV         $163.00      crossing        CRWV DCF Fair Value $163
-NVDA         $374.00      crossing        NVDA DCF Fair Value $374
-INTC         $22.00       crossing        INTC Base Alert $22
-```
-
-Use this cached snapshot in downstream deduplication and correlation logic to avoid redundant browser CDP calls.
+- Confirm JSON snapshot is written to `investment_screener/backend/data/tradingview_alerts_actual.json`.
+- Validate routing cases against `evals/evals.json`.

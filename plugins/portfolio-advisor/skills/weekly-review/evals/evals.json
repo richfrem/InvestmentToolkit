@@ -1,0 +1,50 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/weekly-review",
+    "expected_trigger": "weekly_review",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Run the weekly review and calculate week-over-week price moves",
+    "expected_trigger": "weekly_review",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Generate the weekly Grok research sweep prompt",
+    "expected_trigger": "weekly_review",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Run the morning daily loop and scan macro catalysts",
+    "expected_trigger": "daily_loop",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Reconcile active TradingView price alerts against our target prices",
+    "expected_trigger": "tv_alert_reconcile",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Check new 13F institutional filings from SA LP",
+    "expected_trigger": "13f_tracker",
+    "should_trigger": false
+  }
+]

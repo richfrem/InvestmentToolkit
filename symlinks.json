@@ -341,7 +341,7 @@
       "src": "plugins/portfolio-advisor/assets/templates/thesis-challenge-prompt.md",
       "dst": "plugins/portfolio-advisor/skills/external-review/assets/templates/thesis-challenge-prompt.md",
       "strategy": "symlink",
-      "description": "ADR-003: adversarial prompt template canonical in plugin assets; skill symlink"
+      "description": "Hub-and-spoke symlink for thesis-challenge-prompt in external-review"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/grok_sweep.py",
@@ -615,7 +615,7 @@
     },
     {
       "src": "plugins/etf-analysis/assets/templates/etf_analysis_template.json",
-      "dst": "plugins/etf-analysis/skills/etf_analysis/assets/templates/etf_analysis_template.json",
+      "dst": "plugins/etf-analysis/skills/etf-analysis/assets/templates/etf_analysis_template.json",
       "strategy": "symlink",
       "description": "Official ETF analysis output JSON template"
     },
@@ -990,6 +990,84 @@
       "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/repo_root.py",
       "strategy": "symlink",
       "description": "daily-loop skill: shared repo-root finder"
+    },
+    {
+      "src": "plugins/stock-valuation/references/analysis_prompt.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/analysis_prompt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/api_reference.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/api_reference.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/fallback-tree.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-benchmarks.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/valuation-benchmarks.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/ADR-dcf-calculator.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/ADR-dcf-calculator.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/fallback-tree.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/fallback-tree.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for fallback tree in portfolio-health"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/strategic_review_prompt.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/strategic_review_prompt.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for strategic review prompt in portfolio-health"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/rebalance_prompt.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/rebalance_prompt.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for rebalance prompt in portfolio-health"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/fallback-tree.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for fallback tree in strategic-review"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/strategic_review_prompt.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/strategic_review_prompt.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for strategic review prompt in strategic-review"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/questrade.md",
+      "dst": "plugins/portfolio-advisor/skills/norberts-gambit/references/questrade.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for questrade submission steps in norberts-gambit"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/news-sweep-model-assessment.md",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/references/news-sweep-model-assessment.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for news sweep model assessment in x-news-sweep"
     }
   ]
 }

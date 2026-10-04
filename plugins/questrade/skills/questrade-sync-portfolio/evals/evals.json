@@ -1,0 +1,68 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "sync my questrade portfolio into the database",
+    "expected_trigger": "questrade-sync-portfolio",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent queries Questrade MCP balances and positions and stages payload for questrade_sync.py.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/questrade:questrade-sync-portfolio",
+    "expected_trigger": "questrade-sync-portfolio",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises slash command to sync holdings and cash.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "update my sqlite holdings from questrade accounts",
+    "expected_trigger": "questrade-sync-portfolio",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent initiates Questrade direct sync flow.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "refresh live prices from questrade quotes",
+    "expected_trigger": "questrade-refresh-prices",
+    "expected_not_trigger": [
+      "questrade-sync-portfolio"
+    ],
+    "pass_condition": "Agent routes to questrade-refresh-prices, not portfolio sync.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "show me my cash flow ledger and dividend history for the last 30 days",
+    "expected_trigger": "questrade-activities",
+    "expected_not_trigger": [
+      "questrade-sync-portfolio"
+    ],
+    "pass_condition": "Agent routes to questrade-activities, not portfolio sync.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "set up the questrade mcp integration",
+    "expected_trigger": "questrade-setup",
+    "expected_not_trigger": [
+      "questrade-sync-portfolio"
+    ],
+    "pass_condition": "Agent routes to questrade-setup, not portfolio sync.",
+    "should_trigger": false
+  }
+]

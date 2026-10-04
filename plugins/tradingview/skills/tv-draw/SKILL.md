@@ -1,31 +1,40 @@
 ---
 name: tv-draw
 plugin: tradingview
-description: >
-  Draws and annotates horizontal level lines, entry/exit price zones, and text tags
-  directly onto the active TradingView Desktop chart via CDP.
-  Trigger on /tv-draw, "draw horizontal line", "draw buy pocket", or "annotate chart".
-allowed-tools: Bash, Read
+description: Draws and annotates horizontal level lines, entry/exit price zones, and text tags directly onto the active TradingView chart. Trigger on /tv-draw or 'draw horizontal line'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TradingView Chart Drawing Skill
+# TradingView Draw
 
-## What This Skill Does
+Draws and annotates horizontal level lines, entry/exit price zones, and text tags directly onto the active TradingView chart.
 
-1. **Draws Horizontal Price Levels**: Injects persistent horizontal lines at key support, resistance, and DCF targets.
-2. **Creates Price Accumulation Bands**: Draws top/bottom boundaries for buy pockets and accumulation ranges.
-3. **Adds Chart Annotations**: Labels key levels with descriptive text badges.
+## Contents
 
----
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-## Execution Examples
+## Constraints
 
-### Draw a single horizontal support line:
+- Active chart boundary: Operates on active TradingView chart layout via CDP.
+- Color convention: Support/Buy zones (Green), Resistance/Trim zones (Orange/Red), Fair Value (Blue).
+- Coordinate precision: Price levels must use decimal float values.
+
+## Quick start
+
 ```bash
-python3 plugins/tradingview/scripts/tv_draw.py --horizontal 48.56 --label "200 EMA Support" --color green
+node tradingview-cdp/cli.js chart draw horizontal --price {PRICE} --color "#00FF00"
 ```
 
-### Draw a buy pocket accumulation zone:
-```bash
-python3 plugins/tradingview/scripts/tv_draw.py --box-top 50.56 --box-bottom 48.50 --label "Primary Buy Pocket"
-```
+## Workflow
+
+1. Resolve target price level and drawing type (line, zone, annotation).
+2. Execute drawing command via CDP dispatch.
+3. Confirm drawing object appears on active chart canvas.
+
+## Verification
+
+- Confirm drawing rendered on chart viewport.
+- Validate routing cases against `evals/evals.json`.

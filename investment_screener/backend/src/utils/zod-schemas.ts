@@ -163,7 +163,7 @@ export const ProjectionSchema = z.object({
     }).optional().default({ discountRate: 10, timeHorizon: 5 }),
     // v1.2: full analytical decision log — preserved but not rigidly typed so schema
     // changes to analyticsLog don't require backend deploys.
-    analyticsLog: z.record(z.unknown()).optional(),
+    analyticsLog: z.record(z.string(), z.unknown()).optional(),
 }).passthrough();
 
 export type Projection = z.infer<typeof ProjectionSchema>;

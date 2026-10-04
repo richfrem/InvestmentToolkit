@@ -3,32 +3,32 @@
     "id": "EVAL-001",
     "type": "positive",
     "category": "trigger",
-    "prompt": "Run a full valuation for Bloom Energy (BE) \u2014 fuel cell / behind-the-meter power for AI data centers",
-    "expected_trigger": "forward_valuation_challenge",
+    "prompt": "Run a forward valuation challenge for Bloom Energy (BE) — fuel cell power for AI data centers",
+    "expected_trigger": "forward-valuation-challenge",
     "expected_not_trigger": [],
-    "pass_condition": "Skill activates because BE falls under 'AI data center power (fuel cells, gas turbines, SMRs, behind-the-meter generation)' per the 'When This Skill Activates' list. Output includes the Forward Context Box, Assumption Transparency Table, Sanity Check Log, and Confidence Qualifier.",
+    "pass_condition": "Skill activates for AI data center power provider, enforcing backlog revenue floors and forward capex integration.",
     "should_trigger": true
   },
   {
     "id": "EVAL-002",
     "type": "positive",
     "category": "trigger",
-    "prompt": "Value Vertiv (VRT) \u2014 data center cooling and electrical/MEP infrastructure provider",
-    "expected_trigger": "forward_valuation_challenge",
+    "prompt": "Challenge Vertiv (VRT) valuation — data center cooling and electrical infrastructure",
+    "expected_trigger": "forward-valuation-challenge",
     "expected_not_trigger": [],
-    "pass_condition": "Skill activates because Vertiv falls under 'AI data center infrastructure (cooling, electrical, construction, MEP)'. Rule 1 (backlog-based revenue floor) and Rule 5 (exit multiple sector re-rating) must be applied.",
+    "pass_condition": "Skill activates to stress-test data center cooling infrastructure multiples against forward hyperscaler demand.",
     "should_trigger": true
   },
   {
     "id": "EVAL-003",
     "type": "negative",
-    "category": "trigger",
-    "prompt": "Value Procter & Gamble (PG) \u2014 a consumer staples company with no AI infrastructure, data center, or grid exposure",
+    "category": "trigger_exclusion",
+    "prompt": "Value Procter & Gamble (PG) — a consumer staples company with no AI infrastructure or data center exposure",
     "expected_trigger": null,
     "expected_not_trigger": [
-      "forward_valuation_challenge"
+      "forward-valuation-challenge"
     ],
-    "pass_condition": "Skill does NOT activate \u2014 PG does not fall under any of the 'When This Skill Activates' categories (AI power, AI infra, AI compute hardware, AI data center REITs, or grid/utility with AI exposure). Valuation proceeds without the Forward Context Box or backlog-floor rules applied.",
+    "pass_condition": "Skill does not activate for non-infrastructure consumer staples companies.",
     "should_trigger": false
   },
   {
@@ -36,26 +36,32 @@
     "type": "positive",
     "category": "rule_enforcement",
     "prompt": "Value Bloom Energy: TTM revenue ~$2B, product backlog ~$6B, service backlog ~$14B, and the raw model wants to set bear case target price to $4 with 35% base CAGR",
-    "expected_trigger": "forward_valuation_challenge",
-    "pass_condition": "Per Rule 1 (revenue visibility must reflect backlog) and Rule 4 (bear floor formula), agent rejects the $4 bear case as an unlabeled bankruptcy scenario and recomputes a bear floor using bear_floor = (contracted_backlog * delivery_probability * margin) / shares_outstanding, landing in the documented $80-120 range rather than near-zero. Base case CAGR must not remain capped at 35% CAGR when backlog is 3x TTM revenue.",
+    "expected_trigger": "forward-valuation-challenge",
+    "pass_condition": "Rejects the $4 bear case as an unvalidated bankruptcy scenario and recomputes a bear floor using contracted backlog.",
     "should_trigger": true
   },
   {
     "id": "EVAL-005",
-    "type": "near_miss",
-    "category": "rule_enforcement",
-    "prompt": "Value an AI compute hardware company where bull target is $323 and bear target is $4 (spread ratio ~80x)",
-    "expected_trigger": "forward_valuation_challenge",
-    "pass_condition": "Per Rule 7 (Scenario Spread Sanity Check), agent flags the >50x spread ratio as indicating a units/scale bug or an unlabeled bankruptcy assumption in the bear case, and requires the bear case be re-examined against Rule 4's contracted-revenue floor before the valuation is finalized.",
-    "should_trigger": true
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "Calculate the YTD simple and time-weighted return of my portfolio",
+    "expected_trigger": "ytd-return",
+    "expected_not_trigger": [
+      "forward-valuation-challenge"
+    ],
+    "pass_condition": "Agent routes to portfolio-advisor ytd-return, not forward-valuation-challenge.",
+    "should_trigger": false
   },
   {
     "id": "EVAL-006",
-    "type": "positive",
-    "category": "output_requirements",
-    "prompt": "Value Oracle (ORCL) given its ~$50B 2026 AI/cloud infrastructure capex guidance and cloud backlog growth",
-    "expected_trigger": "forward_valuation_challenge",
-    "pass_condition": "Output includes all four required sections: (1) Forward Context Box with 3-5 bullets on capex cycle/demand signals, (2) Assumption Transparency Table labeling each scenario input as Forward or Backward with source, (3) Sanity Check Log with spread ratio, bear floor check, backlog incorporation, and market-implied growth comparison, (4) a HIGH/MEDIUM/LOW Confidence Qualifier.",
-    "should_trigger": true
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "Sync broker orders from TradingView via CDP",
+    "expected_trigger": "tv-portfolio-sync",
+    "expected_not_trigger": [
+      "forward-valuation-challenge"
+    ],
+    "pass_condition": "Agent routes to tv-portfolio-sync, not forward-valuation-challenge.",
+    "should_trigger": false
   }
 ]

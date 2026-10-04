@@ -1,0 +1,68 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "reconcile tradingview price alerts against my sqlite target levels",
+    "expected_trigger": "tv-alert-reconcile",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent compares active alerts against database price levels.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/tv-alert-reconcile",
+    "expected_trigger": "tv-alert-reconcile",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent executes the reconciliation script across portfolio holdings.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "check if my tradingview alerts match current fair value targets",
+    "expected_trigger": "tv-alert-reconcile",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes alert reconciliation.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "list all active price alerts from tradingview",
+    "expected_trigger": "tv-alert-list",
+    "expected_not_trigger": [
+      "tv-alert-reconcile"
+    ],
+    "pass_condition": "Agent routes to tv-alert-list, not reconciliation.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "create dcf price alerts in tradingview for all holdings",
+    "expected_trigger": "tv-alert-sync",
+    "expected_not_trigger": [
+      "tv-alert-reconcile"
+    ],
+    "pass_condition": "Agent routes to tv-alert-sync, not reconcile.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "place a limit buy order for 10 shares of PLTR",
+    "expected_trigger": "tv-place-order",
+    "expected_not_trigger": [
+      "tv-alert-reconcile"
+    ],
+    "pass_condition": "Agent routes to tv-place-order, not alert reconciliation.",
+    "should_trigger": false
+  }
+]

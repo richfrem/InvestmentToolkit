@@ -1,30 +1,38 @@
 ---
 name: thesis-review
 plugin: portfolio-advisor
-description: >
-  The interactive entry point for pitching a new investment thesis or challenging
-  an existing one. Triggers the Investment Committee agent to systematically intake 
-  the document, run adversarial research (DCF + Grok), calibrate capital allocation, 
-  and update targets.
-  Trigger on /pitch-thesis, "propose new thesis", "I have a new idea", or
-  "let's add a new strategy".
-allowed-tools: Bash, Read, Write
+description: Interactive entry point for pitching a new investment thesis or challenging an existing one, delegating analysis to the thesis-review-agent.
 ---
 
-## Thesis Review Workflow
+# Thesis Review
 
-This skill is a delegator. When triggered, your primary job is to hand off control to the `thesis-review-agent`.
+## Contents
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-### Step 1: Delegate to Agent
-You should invoke the Agentic OS sub-agent system to run the `thesis-review-agent`.
-Inform the user that the Investment Committee is ready to hear their pitch.
+## Constraints
+- Acts as a delegator; hands off execution to `thesis-review-agent`.
+- Scripts and reference files must remain unexecuted until invoked by the agent.
+- Target portfolio adjustments must preserve the 100.00% allocation invariant.
 
-### Scripts & References
-The agent will need access to these canonical files and scripts. They are provided as file-level symlinks in this skill's `scripts/` and `references/` directories:
+## Quick start
+```bash
+python3 plugins/portfolio-advisor/scripts/update_targets.py --show
+```
 
-- `references/investment_thesis.md` (The canonical thesis document)
-- `scripts/update_targets.py` (Updates target-portfolio.json)
-- `scripts/validate_weights.py` (Ensures targets sum to 100%)
-- `scripts/generate_portfolio_blueprint.py` (Regenerates the markdown tables)
+## Workflow
+1. **Intake Pitch**: Receive the user's thesis pitch, macro theme, or proposed pillar adjustment.
+2. **Delegate Agent**: Launch `thesis-review-agent` via sub-agent orchestration.
+3. **Committee Review**: Agent conducts adversarial research, DCF valuations, and weight calibrations.
+4. **Apply Blueprint**: Finalized target updates are written using canonical scripts and blueprint generators.
 
-Do NOT run these scripts yourself. The `thesis-review-agent` will use them in Phase 4 of its workflow.
+## Verification
+```bash
+python3 plugins/portfolio-advisor/scripts/validate_weights.py --target investment_screener/backend/data/theses/target-portfolio.json
+```
+
+## References
+- [Investment Thesis](references/investment_thesis.md) - Canonical portfolio thesis and sub-strategy definitions.

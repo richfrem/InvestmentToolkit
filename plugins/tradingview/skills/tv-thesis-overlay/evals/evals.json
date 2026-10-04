@@ -1,0 +1,68 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "inject the AI thesis levels onto the active tradingview chart",
+    "expected_trigger": "tv-thesis-overlay",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent compiles and injects dynamic thesis overlay Pine script from SQLite.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/tv-thesis-overlay",
+    "expected_trigger": "tv-thesis-overlay",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent executes the thesis overlay generator and injector.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "overlay my DCF fair value and bear/bull scenario levels on tradingview",
+    "expected_trigger": "tv-thesis-overlay",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent generates thesis overlay Pine script.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "run a technical analysis sweep across all holdings",
+    "expected_trigger": "tv-ta-daily-sweep",
+    "expected_not_trigger": [
+      "tv-thesis-overlay"
+    ],
+    "pass_condition": "Agent routes to technical analysis daily sweep, not thesis overlay.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "draw a horizontal support line on the chart",
+    "expected_trigger": "tv-draw",
+    "expected_not_trigger": [
+      "tv-thesis-overlay"
+    ],
+    "pass_condition": "Agent routes to tv-draw, not automated thesis overlay.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "update target portfolio weights in thesis",
+    "expected_trigger": "update-portfolio-targets",
+    "expected_not_trigger": [
+      "tv-thesis-overlay"
+    ],
+    "pass_condition": "Agent routes to update-portfolio-targets, not chart overlay.",
+    "should_trigger": false
+  }
+]

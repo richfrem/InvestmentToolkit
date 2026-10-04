@@ -1,37 +1,55 @@
 ---
 name: questrade-order-draft
-description: "Draft an equity or options order in Questrade via MCP and request Human-in-the-Loop (HITL) mobile push approval."
-argument-hint: "[--ticker TICKER --action BUY|SELL --shares SHARES --price PRICE --account TFSA|RRSP|Cash]"
+plugin: questrade
+description: Draft an equity or options order in Questrade via MCP and request Human-in-the-Loop (HITL) mobile push approval. Trigger on /questrade-order-draft or "draft an order in questrade".
 allowed-tools: Bash, Read, Write
 ---
 
-# Questrade Order Draft & HITL Push Approval Skill
+# Questrade Order Draft
 
-## Purpose
-Enforces **Rule #17 (No Autonomous Execution)** by formatting structured trade drafts using Questrade MCP tools `Preview Order Instruction` and `Create Order Instruction`.
+Drafts equity and options orders using Questrade MCP with mandatory Human-in-the-Loop (HITL) mobile approval.
 
-## Prerequisites & Pre-Flight Check
-1. Verify Questrade MCP session is active via `List Accounts`.
-2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
+## Contents
 
-## Schema Reference
-See `references/questrade-tool-schemas.md` for the exact `preview_order_instruction`/`create_order_instruction` param names, the mobile-push-only approval behavior and its confirmed recovery path, the Day/GTC default (pitfall #22), and the success response shape (`{"status":"placed","orderId":...}`).
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Skill-Specific Behavior
-- **Account Selection**: If `--account` (e.g. `TFSA`, `RRSP`, or specific account number) is provided, target that account directly. If not specified, or the ticker is already held in more than one account (common: TFSA + RRSP mirror positions), **ask the user explicitly** which account before previewing — don't guess. Show existing holdings per account (via `get_positions`) as context.
-- **Always preview before create**: `preview_order_instruction` is side-effect-free and desktop-safe — always call it and show the user the economics table before touching `create_order_instruction`, which is a real, phone-approved trade action.
+## Constraints
+
+- **No autonomous trade execution**: Strictly adheres to Rule #17; agents never execute live trades autonomously.
+- **Mandatory preview first**: Always call `preview_order_instruction` and display economics before invoking `create_order_instruction`.
+- **Account confirmation**: If account is unspecified or held in multiple accounts, explicitly prompt user for target account.
+- **Explicit user consent**: Require explicit user confirmation in chat before dispatching push notification to mobile device.
+
+## Quick start
+
+Preview order economics:
+
+```text
+Call Questrade Preview Order Instruction(accountId, instrument, qty, side, type, limitPrice?)
+```
 
 ## Workflow
-1. **Resolve Account**: Identify target account (ask explicitly if ambiguous — see above).
-2. **Staging & Economics Preview**:
-   - Call `preview_order_instruction(accountId, instrument, qty, side, type, limitPrice?, stopPrice?, duration?)`.
-   - Display economics table (Commission, Trade Value, New Buying Power, Errors).
-3. **Draft Order Confirmation**:
-   - Prompt user to confirm sending the draft to their phone — this is a real trade action, always confirm explicitly first.
-   - On confirmation, call `create_order_instruction(operation:"create", accountId, instrument, qty, side, type, limitPrice?, stopPrice?, duration?)`.
-   - On mobile-device error: instruct the user to open the app / enroll a trusted device, then retry the identical call once they confirm.
-4. **Execution Gate**: On `{"status":"placed","orderId":...}`, confirm the order is live, report the `orderId`, and explicitly flag Day-vs-GTC duration.
 
-## Continuous Self-Evolution Policy
-Per `.agent/rules/self-evolution-policy.md`:
-Whenever actual MCP tool schema responses reveal unexpected parameter names, response fields, or missing attributes during live execution, agents MUST immediately refine this `SKILL.md` to document the exact parameter shapes and optimize subsequent agent executions.
+1. **Resolve Account & Order Parameters**:
+   Identify `accountId`, `instrument`, `qty`, `side` (BUY/SELL), and `type` (Limit/Market).
+2. **Preview Economics**:
+   Call MCP tool `preview_order_instruction` and present Commission, Total Value, and New Buying Power.
+3. **HITL Authorization Gate**:
+   Ask user for explicit confirmation to dispatch order draft to mobile device.
+4. **Dispatch Mobile Instruction**:
+   Call MCP tool `create_order_instruction` to send push notification to user's registered phone.
+5. **Report Status**:
+   Report `orderId` and order status to user upon successful submission.
+
+## Verification
+
+- Confirm user explicitly confirmed before `create_order_instruction` was dispatched.
+- Validate test cases against `evals/evals.json`.
+
+## References
+
+- [Questrade Tool Schemas](references/questrade-tool-schemas.md): Parameter shapes for preview and create order instructions.

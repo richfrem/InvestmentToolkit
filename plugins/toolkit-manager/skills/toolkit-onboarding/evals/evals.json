@@ -1,0 +1,68 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "help me set up the toolkit from scratch",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent initiates the 5-step onboarding wizard covering runtime verification, accounts/pillars, broker sync, DCF baseline, and dashboard launch.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/toolkit-onboarding",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and begins the pre-flight checks.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "bootstrap my portfolio into InvestmentToolkit",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent routes to the master onboarding coordinator to seed accounts, pillars, and sync positions.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "what is my YTD return for this year?",
+    "expected_trigger": "ytd-return",
+    "expected_not_trigger": [
+      "toolkit-onboarding"
+    ],
+    "pass_condition": "Agent delegates to ytd-return, not the full onboarding wizard.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "just start the dashboard and backend servers",
+    "expected_trigger": "run-screener",
+    "expected_not_trigger": [
+      "toolkit-onboarding"
+    ],
+    "pass_condition": "Agent executes run-screener directly rather than running the multi-step onboarding wizard.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "run a technical analysis sweep across my portfolio",
+    "expected_trigger": "tv-ta-daily-sweep",
+    "expected_not_trigger": [
+      "toolkit-onboarding"
+    ],
+    "pass_condition": "Agent routes to tv-ta-daily-sweep instead of onboarding.",
+    "should_trigger": false
+  }
+]

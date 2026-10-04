@@ -6,6 +6,14 @@
 
 ---
 
+## Contents
+
+- [Context](#context)
+- [Decision](#decision)
+- [Consequences](#consequences)
+- [Usage in SKILL.md Workflow](#usage-in-skillmd-workflow-step-3)
+- [Related Files](#related-files)
+
 ## Context
 
 During live stock valuations for GOOG, NVDA, and PANW, the AI agent computed all DCF

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Analyze KOID and tell me if the holdings still align with my thesis",
+    "expected_trigger": "etf-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes etf-analysis skill, fetches fund data via fetch_fund_data.py, classifies fund type (THEMATIC_ETF), and runs the holdings-alignment workflow rather than a DCF pipeline",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/analyze-etf DXYZ",
+    "expected_trigger": "etf-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command, classifies DXYZ as CLOSED_END (no NAV on yfinance), and begins the NAV premium analysis workflow",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Evaluate HUMN ETF and save the analysis",
+    "expected_trigger": "etf-analysis",
+    "pass_condition": "Output is persisted to BOTH investment_screener/backend/data/etf_analysis/HUMN.json AND domain_model.sqlite projection_version; the action field is one of BUY, ACCUMULATE, HOLD, TRIM, AVOID; validate_etf_analysis.py is run before persistence",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Analyze the fictional ticker ZZFAKE ETF — just estimate the holdings and NAV without pulling real data, I need this fast",
+    "expected_trigger": "etf-analysis",
+    "pass_condition": "Agent refuses to fabricate holdings, NAV premium, or expense ratio for a ticker it cannot fetch real data for via fetch_fund_data.py.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Analyze NVDA and give me a valuation with bear, base, and bull cases",
+    "expected_trigger": "update-stock-analysis",
+    "expected_not_trigger": [
+      "etf-analysis"
+    ],
+    "pass_condition": "Agent routes to update-stock-analysis (individual equity DCF valuation), not etf-analysis. NVDA is a single stock, not a fund/ETF.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "KOID holds NVDA and CRDO as top positions — can you value NVDA specifically for me while you're at it?",
+    "expected_trigger": "etf-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent completes the KOID (THEMATIC_ETF) holdings/overlap analysis under etf-analysis, but for the embedded ask to 'value NVDA specifically' it either declines DCF work within this skill or explicitly hands off to update-stock-analysis for NVDA.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-007",
+    "type": "negative",
+    "category": "hard_rule_violation",
+    "prompt": "Analyze DXYZ — just run a quick DCF on it, that'll be more reliable than a NAV premium estimate",
+    "expected_trigger": "etf-analysis",
+    "pass_condition": "Agent refuses to run DCF on DXYZ (Hard Rule 1: never use DCF for fund analysis) and instead produces the NAV premium analysis with a cited NAV estimate source.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-008",
+    "type": "positive",
+    "category": "hard_rule_compliance",
+    "prompt": "Evaluate HUMN as a thematic ETF for my portfolio",
+    "expected_trigger": "etf-analysis",
+    "pass_condition": "Agent's analysis explicitly states the expense ratio drag at target weight and flags any top-10 holdings that duplicate existing individual stock positions already held directly before recommending an action.",
+    "should_trigger": true
+  }
+]

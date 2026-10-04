@@ -1,48 +1,43 @@
 ---
 name: tv-setup
 plugin: tradingview
-description: Diagnoses and guides setup of the TradingView CDP dependency and debugging port.
-allowed-tools: Bash, Read
+description: Diagnoses and guides setup of TradingView CDP dependency and debugging port. Trigger on /tv-setup or 'diagnose tradingview connection'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TradingView CDP Setup & Diagnostic Skill
+# TradingView Setup
 
-## What This Skill Does
+Diagnoses and guides setup of TradingView CDP dependency and debugging port.
 
-1. **Checks** if the `tradingview-cdp` dependency folder exists.
-2. **Checks** if `npm ci` has been run inside it (validates `node_modules`).
-3. **Checks** if TradingView Desktop is running on debug port `9222`.
-4. **Guides** the user to automatically resolve any issues.
+## Contents
 
----
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-## Diagnostics Check
+## Constraints
 
-To run the full suite of programmatic diagnostics:
+- Port 9222 check: Verifies HTTP connectivity to `http://localhost:9222/json/version`.
+- Node CDP dependency: Ensures `tradingview-cdp/` has node modules installed.
+- Read-only diagnostic: Does not alter system network configuration.
+
+## Quick start
 
 ```bash
-python3 "$(find plugins/tradingview/scripts ~/.claude/plugins/cache -name tv_health_check.py -path "*/tradingview/*" 2>/dev/null | sort | tail -1)"
+python3 plugins/tradingview/scripts/tv_health_check.py
 ```
 
----
+## Workflow
 
-## Action Plan for Common Issues
+1. Check if Node.js runtime and `tradingview-cdp/` packages exist.
+2. Test HTTP response on `http://localhost:9222`.
+3. Provide actionable remediation steps if connection fails:
+   - Launch TradingView with `--remote-debugging-port=9222`.
+   - Run `npm ci` in `tradingview-cdp/`.
+4. Report diagnostic status.
 
-### 1. Missing `tradingview-cdp` folder or `node_modules`
-If the folder is missing or dependencies are not installed, run:
-```bash
-cd tradingview-cdp && npm ci
-```
+## Verification
 
-### 2. TradingView Desktop not running on Port 9222
-If the health check fails due to the port not being reachable:
-- On macOS:
-  ```bash
-  python3 plugins/tradingview/scripts/tv_launch.py
-  ```
-- Or run manually:
-  - Close all instances of TradingView Desktop.
-  - Launch from command line:
-    ```bash
-    open -a TradingView --args --remote-debugging-port=9222
-    ```
+- Confirm `tv_health_check.py` returns OK.
+- Validate routing cases against `evals/evals.json`.

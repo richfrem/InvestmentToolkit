@@ -1,0 +1,50 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/screener-audit",
+    "expected_trigger": "screener_integrity_audit",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Audit screener integrity and check dashboard table rules",
+    "expected_trigger": "screener_integrity_audit",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Verify screener invariants across the portfolio table and intelligence feed",
+    "expected_trigger": "screener_integrity_audit",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Start the investment screener web server and vite frontend",
+    "expected_trigger": "run_screener",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Draft a limit buy order for 10 shares of MSFT in my TFSA",
+    "expected_trigger": "questrade_order_draft",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Convert CAD cash to USD using Norbert's Gambit",
+    "expected_trigger": "norberts_gambit",
+    "should_trigger": false
+  }
+]

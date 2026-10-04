@@ -1,72 +1,40 @@
 ---
 name: tv-save-indicator
 plugin: tradingview
-description: >
-  Save the current Pine Script in the editor to TradingView's personal library.
-  Handles the "Save as" naming dialog on first save. After saving, the script
-  appears under "My scripts" in the Indicators dialog for future loading.
-allowed-tools: Bash
+description: Saves current Pine Script in editor to TradingView personal script library. Trigger on /tv-save-indicator or 'save pine script to library'.
+allowed-tools: Bash, Read, Write
 ---
 
-# TV Save Indicator Skill
+# TradingView Save Indicator
 
-**Trigger:** `/save-indicator {NAME}` — e.g. `/save-indicator "My RSI Strategy"`
+Saves current Pine Script in editor to TradingView personal script library.
 
----
+## Contents
 
-## Two Operations — Know Which You Need
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-| Goal | Command |
-|---|---|
-| Save Pine Script to **TV personal library** (reuse later via Indicators dialog) | `pine save --name "{NAME}"` |
-| Save the **chart layout** with current indicators to agent-layout | `chart saveLayout --name agent-layout` |
+## Constraints
 
-Use **both** after creating a new indicator: save to library first, then save the layout.
+- Editor state: Pine Editor must contain valid compiled script code.
+- Modal handling: Handle first-save 'Save Script As' dialog automatically.
+- Library availability: Saved script appears under 'My scripts' in Indicators dialog.
 
----
-
-## Save Pine Script to Library
+## Quick start
 
 ```bash
-node tradingview-cdp/cli.js pine save --name "{NAME}"
+node tradingview-cdp/cli.js pine save --name "AI TA Levels"
 ```
 
-Expected: `{ "success": true, "name": "My RSI Strategy", "action": "saved" }`
+## Workflow
 
-On first save: `action: "named-and-saved"` — TV showed a naming dialog, name was filled in.
-On subsequent saves: `action: "saved"` — Cmd+S overwrote the existing script.
+1. Verify Pine Script is compiled without errors in editor.
+2. Dispatch save command via CDP: `node tradingview-cdp/cli.js pine save --name "{NAME}"`.
+3. Confirm script name is registered in personal library.
 
----
+## Verification
 
-## Full Workflow: Inject → Save to Library → Save Layout
-
-```bash
-# 1. Generate script and inject it
-node tradingview-cdp/cli.js pine inject -f temp/my_indicator.pine
-
-# 2. Save script to personal library
-node tradingview-cdp/cli.js pine save --name "My Custom Indicator"
-
-# 3. Save chart state to agent-layout
-node tradingview-cdp/cli.js chart saveLayout --name agent-layout
-```
-
----
-
-## Loading a Saved Script Later
-
-After a script is saved to the library, load it onto any chart via:
-
-```bash
-node tradingview-cdp/cli.js chart addIndicator "My Custom Indicator"
-```
-
-This searches TV's Indicators dialog (including "My scripts") and adds it.
-
----
-
-## Notes
-
-- Scripts saved to TV library persist across sessions in your TV account.
-- The naming dialog only appears on the **first save** of a new script. Subsequent saves overwrite silently.
-- If `success: false` after injecting — the Pine Editor might not be open. Re-inject the script first.
+- Confirm script appears in Indicators dialog under 'My scripts'.
+- Validate routing cases against `evals/evals.json`.
