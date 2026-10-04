@@ -28,7 +28,7 @@ Conducts an end-to-end adversarial evaluation of your portfolio, absorbing live 
 - **Position Sizing Caps**: No holding may exceed 15.00% and no strategy pillar may exceed 40.00% of total portfolio.
 - **Standing Decision Anchor**: Require >15% Fair Value delta or confirmed fundamental catalysts to revisit standing decisions.
 - **Capital Sourcing Invariant**: All buy proposals must identify `PSU-U.TO` shares to sell in the same account first (Rule 17).
-- **Refresh Chain**: When targets or theses are modified, execute `update_targets.py --blueprint`, `generate_review_json.py`, and `verify_refresh.py`.
+- **Refresh Chain**: Write target changes with `update_targets.py --write --blueprint`, then always finish with the Closing Refresh in Phase 4.
 
 ## Quick start
 ```bash
@@ -64,13 +64,13 @@ Present a structured, interactive menu of prioritized next steps:
 ### Phase 4: Downstream Calibration & Rebalancing Handoff
 - **Target Calibration**: If adjusting weights, seamlessly transition into `/calibrate-targets` with 100% normalization.
 - **Rebalancing Execution**: If generating orders, invoke `rebalancer.py --pretty` (`/rebalance-portfolio`), apply `risk_officer.py`, and draft account-level orders with PSU-U.TO funding.
-- **Persist Dossier**: Save findings to `PortfolioAnalysis/strategic-reviews/YYYY-MM-DD-PortfolioAnalysisRecommendations.md` and refresh web app modal data via `generate_review_json.py`.
+- **Persist Dossier**: Scaffold `PortfolioAnalysis/strategic-reviews/YYYY-MM-DD-PortfolioAnalysisRecommendations.md` with `generate_review.py` and fill in every pending section, including the Priority Action List.
+- **Closing Refresh**: Finish exactly as `/daily` and `/weekly-review` do, so the Portfolio Advisor and Daily Brief pages match the review: `refresh_all.py`, then `printf 'y\n' | generate_review_json.py`, then `daily_brief.py --skip-ta`, then `verify_refresh.py` (all under `plugins/portfolio-advisor/scripts/`).
 
 ## Verification
 ```bash
 python3 -m pytest plugins/portfolio-advisor/tests/test_scan_opportunities.py
 python3 -m pytest plugins/portfolio-advisor/tests/test_generate_review.py
-python3 plugins/portfolio-advisor/scripts/verify_refresh.py
 ```
 
 ## References

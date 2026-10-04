@@ -8,6 +8,26 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-04 — One closing refresh for strategic, daily and weekly reviews; targets re-based to holdings
+
+**Trigger:** After a strategic review, the Daily Brief and Portfolio Advisor pages still showed the old picture: a 3-day-old brief with blank momentum cards, GEV as EXIT, four INITIATE names, and none of the review's trims. User direction (2026-10-04): use existing code, and have `/strategic-review`, `/daily` and `/weekly-review` all run the same code at the end.
+
+**Root cause:** Each workflow ended differently and none republished the brief or regenerated the review JSON after its decisions, so the pages drifted from what the session concluded.
+
+**Actions Taken:**
+1. All three skills now end with the same Closing Refresh, using existing scripts only: `refresh_all.py`, `generate_review_json.py`, `daily_brief.py --skip-ta`, `verify_refresh.py`.
+2. Only `/strategic-review` scaffolds the narrative review with `generate_review.py`; running it daily would replace "Latest Review" with an empty scaffold.
+3. Targets re-based (user decision): targets = actual holdings; RIOT, PANW, BE, IREN and MU cut by one third with 6.2pp moved to cash (12.8%); NVDA, META, VST, PSIX to 0%; GEV 0% to 1.7%. Total 100.00% (was 97.40%). Written with `update_targets.py --write --blueprint`.
+
+**Open:**
+- The Daily Brief's recommendations come from conviction bands, so it shows MU, PANW and RIOT but not BE or IREN (their stored DCF action is MAINTAIN). It also proposes selling all of MU, not a third. Refreshing BE and IREN valuations is the existing route to fix that.
+- `generate_review_json.py` and `generate_review.py` prompt before overwriting a same-day file; the closing step pipes `y` to the JSON generator.
+- `daily_brief.py` reported "Prediction harvest skipped: unable to open database file" (non-blocking, not investigated).
+- Lifecycle labels were not changed: GEV still `exit`, INTC/NVDA/META/VST/PSIX still `initiate` at 0% targets.
+- `strategy_pillar` targets still disagree with the sum of holding targets.
+
+---
+
 ## 2026-10-04 — Test suite repair: 49 failing tests, and tests that wrote to real data
 
 **Trigger:** After PR #237 the Python suites had ~50 failures on `main`. User asked for them to be fixed.
