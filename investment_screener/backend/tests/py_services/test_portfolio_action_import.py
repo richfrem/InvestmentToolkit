@@ -22,6 +22,9 @@ CANONICAL_PATH = REPO_ROOT / "plugins/portfolio-advisor/scripts/portfolio_action
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
+from domain_model.account_repository import upsert_account  # noqa: E402
+from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
 from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
 
 
@@ -82,13 +85,20 @@ def test_portfolio_action_reads_target_weight_from_sqlite_not_json(tmp_path):
         msft_id = resolve_investment(conn, "MSFT")
         update_investment_fields(conn, aapl_id, target_weight=10)
         update_investment_fields(conn, msft_id, target_weight=90)
+        # Holdings live in the same --db: 60 x $1 AAPL, 40 x $1 MSFT -> 60% / 40%.
+        upsert_account(conn, "tfsa", "TFSA", "TFSA")
+        for investment_id, quantity in ((aapl_id, 60), (msft_id, 40)):
+            upsert_account_investment(
+                conn, "tfsa", investment_id, quantity, None, None, "USD", "2026-01-01T00:00:00Z",
+            )
+            upsert_investment_price(conn, investment_id, 1.0, "USD", "2026-01-01T00:00:00Z")
     finally:
         conn.close()
 
     r = _run(CANONICAL_PATH, db_path)
     assert r.returncode == 0, f"Non-zero exit: {r.stderr}"
     data = json.loads(r.stdout)
-    # AAPL: current 60% (from portfolio.test.json fixture) vs target 10% -> ratio 6 -> TRIM
+    # AAPL: current 60% (seeded above) vs target 10% -> ratio 6 -> TRIM
     # MSFT: current 40% vs target 90% -> ratio 0.44 -> ACCUMULATE
     assert data["AAPL"] == "TRIM"
     assert data["MSFT"] == "ACCUMULATE"

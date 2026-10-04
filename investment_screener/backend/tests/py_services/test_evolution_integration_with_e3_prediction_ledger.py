@@ -90,16 +90,24 @@ class TestEvolutionIntegrationRoundTrip:
             "ticker": "AAPL",
             "type": "action_rating",
         }
-        append_prediction(pred, predictions_path, jsonl_path=tmp_path / "observations.jsonl")
+        ledger_path = tmp_path / "observations.jsonl"
+        append_prediction(pred, predictions_path, jsonl_path=ledger_path)
 
-        # Both systems should have their own files
+        # Both systems keep their own files: evolution events in their JSONL,
+        # predictions as PREDICTION_CLAIM events in the intelligence ledger
+        # (predictions.jsonl is no longer written since Wave 5D).
         events = load_events(events_path)
-        preds = load_predictions(predictions_path)
+        claims = [
+            json.loads(json.loads(line)["payload_json"])
+            for line in ledger_path.read_text().splitlines()
+            if json.loads(line)["event_type"] == "PREDICTION_CLAIM"
+        ]
 
         assert len(events) == 1
         assert events[0]["event_id"] == "AAPL:earnings_catalyst:2026-01-15"
-        assert len(preds) == 1
-        assert preds[0]["id"] == "AAPL:action_rating:2026-01-15"
+        assert len(claims) == 1
+        assert claims[0]["id"] == "AAPL:action_rating:2026-01-15"
+        assert not predictions_path.exists()
 
     def test_weekly_report_with_multiple_events(self, tmp_path, monkeypatch):
         """Generate weekly report aggregating multiple event types."""

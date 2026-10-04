@@ -1,5 +1,8 @@
-"""Regression test: harvest_earnings_expectations() must never write to the real,
-tracked predictions.jsonl unless explicitly told to.
+"""Regression test: harvest_earnings_expectations() must never write to the real
+ledger unless explicitly told to.
+
+Since Wave 5D the write lands in the intelligence ledger (observations.jsonl,
+overridden via jsonl_path); predictions.jsonl is archived and must not reappear.
 
 Root cause (logged in .agent/map-debt.md as OPEN before this fix): the function
 had no path-override parameter at all, so any test that forgot to mock
@@ -16,18 +19,29 @@ from unittest.mock import patch, MagicMock
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
-REAL_PREDICTIONS_PATH = REPO_ROOT / "investment_screener/backend/data/predictions.jsonl"
+DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
+REAL_PREDICTIONS_PATH = DATA_DIR / "predictions.jsonl"
+REAL_LEDGER_PATH = DATA_DIR / "observations.jsonl"
 
 sys.path.insert(0, str(PY_SERVICES))
 
 from earnings_expectations import harvest_earnings_expectations  # noqa: E402
 
 
+def _real_files_state():
+    """(exists, mtime, size) per real data file — gitignored, so absent in a fresh worktree."""
+    return [
+        (p.exists(), p.stat().st_mtime, p.stat().st_size) if p.exists() else (False, None, None)
+        for p in (REAL_PREDICTIONS_PATH, REAL_LEDGER_PATH)
+    ]
+
+
 def test_harvest_writes_to_overridden_path_not_the_real_ledger(tmp_path):
-    """A fully-mocked harvest call, given an explicit predictions_path, must
-    read/write only the tmp_path file and leave the real ledger untouched."""
+    """A fully-mocked harvest call, given explicit path overrides, must
+    read/write only tmp_path files and leave the real ledger untouched."""
     fake_path = tmp_path / "predictions.jsonl"
-    real_mtime_before = REAL_PREDICTIONS_PATH.stat().st_mtime
+    fake_ledger = tmp_path / "observations.jsonl"
+    real_before = _real_files_state()
 
     new_consensus = {
         "consensus_eps": 1.05,
@@ -45,13 +59,14 @@ def test_harvest_writes_to_overridden_path_not_the_real_ledger(tmp_path):
         result = harvest_earnings_expectations(
             ["AAPL"], predictions_path=fake_path,
             intel_db_path=tmp_path / "intelligence.sqlite",
-            jsonl_path=tmp_path / "observations.jsonl",
+            jsonl_path=fake_ledger,
         )
 
     assert len(result) == 1
-    assert fake_path.exists(), "expected the override path to receive the write"
-    assert REAL_PREDICTIONS_PATH.stat().st_mtime == real_mtime_before, \
-        "real predictions.jsonl must never be touched when predictions_path is overridden"
+    assert "AAPL:earnings_expectation:2026-07-12" in fake_ledger.read_text(), \
+        "expected the override ledger to receive the write"
+    assert _real_files_state() == real_before, \
+        "real ledger files must never be touched when paths are overridden"
 
 
 def test_harvest_missing_predictions_file_does_not_touch_real_ledger_even_without_full_mocks(tmp_path):
@@ -59,7 +74,7 @@ def test_harvest_missing_predictions_file_does_not_touch_real_ledger_even_withou
     (to simulate a missing/corrupt file) must not silently fall through to a real
     network call and a real write, just because predictions_path was overridden."""
     fake_path = tmp_path / "predictions.jsonl"
-    real_mtime_before = REAL_PREDICTIONS_PATH.stat().st_mtime
+    real_before = _real_files_state()
 
     with patch("earnings_expectations._load_predictions",
                side_effect=FileNotFoundError("predictions.jsonl not found")), \
@@ -67,4 +82,4 @@ def test_harvest_missing_predictions_file_does_not_touch_real_ledger_even_withou
         result = harvest_earnings_expectations(["AAPL"], predictions_path=fake_path)
 
     assert result == []
-    assert REAL_PREDICTIONS_PATH.stat().st_mtime == real_mtime_before
+    assert _real_files_state() == real_before

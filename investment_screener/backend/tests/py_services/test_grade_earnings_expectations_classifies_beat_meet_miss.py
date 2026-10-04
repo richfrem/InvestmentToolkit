@@ -5,6 +5,7 @@ BEAT (>2% EPS surprise), MEET (±2%), or MISS (<-2%).
 """
 import json
 import sys
+from datetime import date
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
@@ -16,6 +17,14 @@ PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(PY_SERVICES))
 
 from earnings_expectations import grade_earnings_expectations  # noqa: E402
+
+
+class _FixedDate(date):
+    """A real date whose today() is pinned, so past/future comparisons still work."""
+
+    @classmethod
+    def today(cls):
+        return cls(2026, 7, 16)
 
 
 class TestGradeEarningsExpectationsClassification:
@@ -56,10 +65,9 @@ class TestGradeEarningsExpectationsClassification:
              patch("earnings_expectations._load_graded", return_value=[]), \
              patch("earnings_expectations.yf.Ticker") as mock_ticker, \
              patch("earnings_expectations._append_grade") as mock_append, \
-             patch("earnings_expectations.date") as mock_date_class, \
+             patch("earnings_expectations.date", _FixedDate), \
              patch("earnings_expectations._grade_claim", return_value="correct"):
 
-            mock_date.today.return_value.isoformat.return_value = "2026-07-16"
 
             # Mock ticker data
             mock_ticker_inst = MagicMock()
@@ -71,7 +79,8 @@ class TestGradeEarningsExpectationsClassification:
         # Verify grade was appended
         mock_append.assert_called_once()
         graded = mock_append.call_args[0][0]
-        # Check that eps_surprise_pct is ~3%
+        assert graded["earningsGrade"] == "BEAT"
+        assert graded["epsSurprisePct"] == pytest.approx(3.0, abs=0.01)
         assert graded.get("tickerReturn") is not None
 
     def test_grade_classifies_miss_on_eps_below_minus_2_percent(self):
@@ -109,10 +118,9 @@ class TestGradeEarningsExpectationsClassification:
              patch("earnings_expectations._load_graded", return_value=[]), \
              patch("earnings_expectations.yf.Ticker") as mock_ticker, \
              patch("earnings_expectations._append_grade") as mock_append, \
-             patch("earnings_expectations.date") as mock_date_class, \
+             patch("earnings_expectations.date", _FixedDate), \
              patch("earnings_expectations._grade_claim", return_value="incorrect"):
 
-            mock_date.today.return_value.isoformat.return_value = "2026-07-16"
 
             mock_ticker_inst = MagicMock()
             mock_ticker_inst.info = actual_consensus
@@ -121,6 +129,7 @@ class TestGradeEarningsExpectationsClassification:
             result = grade_earnings_expectations()
 
         mock_append.assert_called_once()
+        assert mock_append.call_args[0][0]["earningsGrade"] == "MISS"
 
     def test_grade_classifies_meet_on_eps_within_2_percent(self):
         """When EPS surprise ±2%, classify as MEET."""
@@ -157,10 +166,9 @@ class TestGradeEarningsExpectationsClassification:
              patch("earnings_expectations._load_graded", return_value=[]), \
              patch("earnings_expectations.yf.Ticker") as mock_ticker, \
              patch("earnings_expectations._append_grade") as mock_append, \
-             patch("earnings_expectations.date") as mock_date_class, \
+             patch("earnings_expectations.date", _FixedDate), \
              patch("earnings_expectations._grade_claim", return_value="inconclusive"):
 
-            mock_date.today.return_value.isoformat.return_value = "2026-07-16"
 
             mock_ticker_inst = MagicMock()
             mock_ticker_inst.info = actual_consensus
@@ -169,6 +177,7 @@ class TestGradeEarningsExpectationsClassification:
             result = grade_earnings_expectations()
 
         mock_append.assert_called_once()
+        assert mock_append.call_args[0][0]["earningsGrade"] == "MEET"
 
     def test_grade_appends_to_predictions_graded_jsonl(self):
         """Grade record is appended to predictions_graded.jsonl."""
@@ -202,10 +211,9 @@ class TestGradeEarningsExpectationsClassification:
              patch("earnings_expectations._load_graded", return_value=[]), \
              patch("earnings_expectations.yf.Ticker") as mock_ticker, \
              patch("earnings_expectations._append_grade") as mock_append, \
-             patch("earnings_expectations.date") as mock_date_class, \
+             patch("earnings_expectations.date", _FixedDate), \
              patch("earnings_expectations._grade_claim", return_value="correct"):
 
-            mock_date.today.return_value.isoformat.return_value = "2026-07-16"
 
             mock_ticker_inst = MagicMock()
             mock_ticker_inst.info = actual_data
@@ -252,10 +260,9 @@ class TestGradeEarningsExpectationsClassification:
              patch("earnings_expectations._load_graded", return_value=[]), \
              patch("earnings_expectations.yf.Ticker") as mock_ticker, \
              patch("earnings_expectations._append_grade") as mock_append, \
-             patch("earnings_expectations.date") as mock_date_class, \
+             patch("earnings_expectations.date", _FixedDate), \
              patch("earnings_expectations._grade_claim", return_value="correct"):
 
-            mock_date.today.return_value.isoformat.return_value = "2026-07-16"
 
             def ticker_side_effect(sym):
                 inst = MagicMock()

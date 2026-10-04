@@ -31,13 +31,14 @@ from ticker_aliases import normalize_ticker
 _DB_PATH = str(_HERE / ".." / "data" / "domain_model.sqlite")
 _PROJ_DIR = _HERE / ".." / "data" / "projections"
 
-def persist_intake_payload(payload: dict) -> dict:
+def persist_intake_payload(payload: dict, db_path: str | None = None) -> dict:
     raw_symbol = payload.get("symbol")
     if not raw_symbol:
         raise ValueError("Payload missing required symbol")
         
     canonical = normalize_ticker(raw_symbol)
-    conn = initialize_db(_DB_PATH)
+    # db_path override exists so tests never write to the real domain_model.sqlite.
+    conn = initialize_db(db_path or _DB_PATH)
     
     # 1. Begin explicit transaction for atomic multi-table integrity
     conn.execute("BEGIN IMMEDIATE")
@@ -151,6 +152,8 @@ def main():
     parser.add_argument("--payload", "-p", type=str, help="JSON string of intake metadata")
     parser.add_argument("--file", "-f", type=str, help="Path to JSON file containing intake metadata")
     parser.add_argument("--json", action="store_true", help="Output JSON result")
+    parser.add_argument("--db-path", type=str, default=None,
+                        help="Override domain_model.sqlite path (tests must pass a temp file)")
     args = parser.parse_args()
 
     payload_data = None
@@ -163,7 +166,7 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    result = persist_intake_payload(payload_data)
+    result = persist_intake_payload(payload_data, db_path=args.db_path)
     if args.json:
         print(json.dumps(result, indent=2))
     else:

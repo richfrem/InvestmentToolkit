@@ -66,7 +66,7 @@ ROLE_LABEL: dict[str, str] = {
 
 # ── portfolio state loading ──────────────────────────────────────────────────
 
-def load_portfolio_state(portfolio_path: Path) -> dict[str, Any]:
+def load_portfolio_state(portfolio_path: Path, db_path: str | None = None) -> dict[str, Any]:
     """Read the portfolio state from domain_model.sqlite (Wave 3 cutover).
 
     ``portfolio_path`` is accepted for call-site compatibility with the 7+
@@ -78,6 +78,8 @@ def load_portfolio_state(portfolio_path: Path) -> dict[str, Any]:
 
     Args:
         portfolio_path: Retained for signature compatibility; unused.
+        db_path: Override for domain_model.sqlite (tests and callers with
+            their own --db); None reads the real database.
 
     Returns:
         Dict with keys:
@@ -90,7 +92,7 @@ def load_portfolio_state(portfolio_path: Path) -> dict[str, Any]:
     from domain_model.db_client import initialize_db
     from domain_model.portfolio_repository import load_portfolio_state_from_db
 
-    conn = initialize_db(_DB_PATH)
+    conn = initialize_db(str(db_path) if db_path else _DB_PATH)
     try:
         return load_portfolio_state_from_db(conn)
     finally:

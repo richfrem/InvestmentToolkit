@@ -316,4 +316,7 @@ class TestEarningsExpectationSchemaCompliance:
         data = grade.model_dump()
         required_fields = {"v", "predictionId", "gradedAt", "tickerReturn",
                           "spyReturn", "relativeReturn", "verdict"}
-        assert set(data.keys()) == required_fields
+        # B4 enrichment: optional, None unless the earnings grader sets them.
+        optional_fields = {"earningsGrade", "epsSurprisePct"}
+        assert set(data.keys()) == required_fields | optional_fields
+        assert all(data[field] is None for field in optional_fields)

@@ -199,33 +199,26 @@ def test_find_matching_trade_log_entry_returns_none_when_no_match():
 
 
 # --- get_trade_log_entries() ----------------------------------------------
+# Reading real entries from the trade_log_entry table is covered in
+# test_order_risk_gates_trade_log_sqlite.py; these keep the degrade-to-[]
+# contract that the post-trade validation path relies on.
 
 
-def test_get_trade_log_entries_returns_none_when_file_missing(tmp_path):
-    missing_path = tmp_path / "trade-log.json"
+def test_get_trade_log_entries_returns_empty_when_db_unreachable(tmp_path):
+    missing_path = tmp_path / "no_such_dir" / "domain_model.sqlite"
 
-    result = get_trade_log_entries(trade_log_path=missing_path)
-
-    assert result == []
-
-
-def test_get_trade_log_entries_returns_empty_on_malformed_json(tmp_path):
-    trade_log_file = tmp_path / "trade-log.json"
-    trade_log_file.write_text("{not valid json")
-
-    result = get_trade_log_entries(trade_log_path=trade_log_file)
+    result = get_trade_log_entries(db_path=str(missing_path))
 
     assert result == []
 
 
-def test_get_trade_log_entries_reads_real_entries(tmp_path):
-    trade_log_file = tmp_path / "trade-log.json"
-    entries = [_log_entry(), _log_entry(ticker="NVDA")]
-    trade_log_file.write_text(json.dumps(entries))
+def test_get_trade_log_entries_returns_empty_on_corrupt_db(tmp_path):
+    corrupt_db = tmp_path / "domain_model.sqlite"
+    corrupt_db.write_text("{not a sqlite database")
 
-    result = get_trade_log_entries(trade_log_path=trade_log_file)
+    result = get_trade_log_entries(db_path=str(corrupt_db))
 
-    assert result == entries
+    assert result == []
 
 
 # --- wait_for_trade_log_entry() -------------------------------------------

@@ -284,7 +284,8 @@ def build_portfolio_state_for_order(
     }
 
     try:
-        state = load_portfolio_state(Path(portfolio_path or PORTFOLIO_PATH))
+        # Holdings come from the same database as the pillar map above.
+        state = load_portfolio_state(Path(portfolio_path or PORTFOLIO_PATH), db_path=db_path)
     except (OSError, json.JSONDecodeError):
         return {"holdings": {}, "total_value": 0.0}
 

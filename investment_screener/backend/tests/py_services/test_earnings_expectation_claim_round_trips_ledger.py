@@ -5,6 +5,7 @@ prediction ledger (append → read → grade).
 """
 import json
 import sys
+from datetime import date
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
@@ -27,6 +28,14 @@ from prediction_ledger import (  # noqa: E402
     load_predictions,
     load_graded,
 )
+
+
+class _DateBetweenEarnings(date):
+    """Pins today() between the two fixtures' earnings dates (07-05 past, 07-15 future)."""
+
+    @classmethod
+    def today(cls):
+        return cls(2026, 7, 10)
 
 
 class TestEarningsExpectationLedgerIntegration:
@@ -144,7 +153,7 @@ class TestEarningsExpectationLedgerIntegration:
              patch("earnings_expectations._append_prediction") as mock_harvest_append, \
              patch("earnings_expectations._make_prediction_id",
                    return_value="AAPL:earnings_expectation:2026-07-12"), \
-             patch("earnings_expectations.date") as mock_date_class, \
+             patch("earnings_expectations.date") as mock_date, \
              patch("earnings_expectations.yf.Ticker") as mock_ticker:
 
             mock_date.today.return_value.isoformat.return_value = "2026-07-12"
@@ -222,6 +231,7 @@ class TestEarningsExpectationLedgerIntegration:
              patch("earnings_expectations._load_graded", return_value=[]), \
              patch("earnings_expectations.yf.Ticker") as mock_ticker, \
              patch("earnings_expectations._append_grade") as mock_append, \
+             patch("earnings_expectations.date", _DateBetweenEarnings), \
              patch("earnings_expectations._grade_claim", return_value="correct"):
 
             mock_ticker_inst = MagicMock()

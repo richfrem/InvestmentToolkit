@@ -40,6 +40,14 @@ def _seed_holding(db_path, ticker, target_weight, lifecycle_status):
     conn.close()
 
 
+@pytest.fixture(autouse=True)
+def _isolated_domain_db(tmp_path, monkeypatch):
+    """Default every test to an empty temp database. Tests that need a holding
+    seed their own and re-point _DB_PATH; none may read the real, gitignored
+    domain_model.sqlite (a real NVDA weight made the degrade test fail)."""
+    monkeypatch.setattr(earnings_expectations, "_DB_PATH", tmp_path / "empty.sqlite")
+
+
 class TestGetEarningsContext:
     """Verify context aggregator returns prior beat rate and portfolio data."""
 
@@ -92,13 +100,17 @@ class TestGetEarningsContext:
             ]
         }
 
-        # Mock graded records showing 3 BEAT, 2 MISS out of 5 total
+        # 3 BEAT, 2 MISS for AAPL; other tickers' grades must not count —
+        # including one whose symbol merely contains "AAPL".
         graded = [
-            {"predictionId": "AAPL:earnings_expectation:2026-06-01"},
-            {"predictionId": "AAPL:earnings_expectation:2026-05-01"},
-            {"predictionId": "AAPL:earnings_expectation:2026-04-01"},
-            {"predictionId": "AAPL:earnings_expectation:2026-03-01"},
-            {"predictionId": "AAPL:earnings_expectation:2026-02-01"},
+            {"predictionId": "AAPL:earnings_expectation:2026-06-01", "earningsGrade": "BEAT"},
+            {"predictionId": "AAPL:earnings_expectation:2026-05-01", "earningsGrade": "BEAT"},
+            {"predictionId": "AAPL:earnings_expectation:2026-04-01", "earningsGrade": "MISS"},
+            {"predictionId": "AAPL:earnings_expectation:2026-03-01", "earningsGrade": "BEAT"},
+            {"predictionId": "AAPL:earnings_expectation:2026-02-01", "earningsGrade": "MISS"},
+            {"predictionId": "NVDA:earnings_expectation:2026-06-01", "earningsGrade": "BEAT"},
+            {"predictionId": "AAPLX:earnings_expectation:2026-06-01", "earningsGrade": "BEAT"},
+            {"predictionId": "AAPL:fair_value:2026-06-01", "verdict": "correct"},
         ]
 
         with patch("earnings_expectations._fetch_consensus_for_ticker",
@@ -109,8 +121,7 @@ class TestGetEarningsContext:
             result = get_earnings_context("AAPL")
 
         assert result is not None
-        assert result["prior_beat_pct"] == 100.0  # All 5 contain ticker in predictionId
-        # Note: simplified — actual implementation counts BEAT verdicts
+        assert result["prior_beat_pct"] == 60.0  # 3 BEAT of AAPL's 5 graded earnings
 
     def test_get_earnings_context_returns_none_outside_window(self):
         """Get earnings context returns None when earnings > days_ahead."""
@@ -179,7 +190,7 @@ class TestGetEarningsContext:
         assert result["target_action"] == "unknown"
 
     def test_get_earnings_context_gracefully_degrades_on_missing_target_file(self):
-        """Get earnings context gracefully handles missing target-portfolio.json."""
+        """Get earnings context gracefully handles a ticker with no investment row."""
         earnings_date = (date.today() + timedelta(days=3)).isoformat()
 
         consensus = {
