@@ -15,6 +15,7 @@ Master workflow for authoring, researching, and linting custom Pine Script v6 in
 - [Quick start](#quick-start)
 - [Workflow](#workflow)
 - [Verification](#verification)
+- [References](#references)
 
 ## Constraints
 
@@ -42,3 +43,9 @@ python3 plugins/tradingview/scripts/pine_linter.py <script.pine>
 - Confirm `pine_linter.py` returns exit code 0.
 - Confirm chart compiles without runtime errors in TradingView.
 - Validate routing cases against `evals/evals.json`.
+
+## References
+
+- [Pine Script Overview](references/pinescript_overview.md) - Pine Script architecture and indicators reference.
+- [Pine Script Agent Skill Rules](references/PineScript_Agent_Skill_Rules.md) - Rules and best practices for authoring Pine Script.
+- [Top TradingView Indicators Reference](references/Top_TradingView_Indicators_Reference.md) - Reference catalog of top TradingView community indicators.

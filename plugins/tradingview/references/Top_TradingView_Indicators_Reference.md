@@ -7,6 +7,12 @@
 
 ---
 
+## Contents
+- [Verified TV Popularity Ranking](#-verified-tv-popularity-ranking-as-of-2026-06-live-from-tv-top-list)
+- [Trending Indicators](#-trending-indicators-as-of-2026-06)
+
+---
+
 ## 🏆 Verified TV Popularity Ranking (as of 2026-06, live from TV Top list)
 
 | Rank | Indicator | Boosts | Pine | Key Pattern |

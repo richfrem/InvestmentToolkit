@@ -33,3 +33,8 @@ appear, then click the matching resolution row. Close the dropdown after selecti
 **Tier: 1 (Gap)** — TA sweep did not alert when a ticker's fundamental DCF was over 90 days old (past a quarterly earnings release).
 **Fix:** Added `analyzedAt` and `daysSinceDCF` tracking to `load_dcf` in `ta_sweep_batch.py`, triggering an `EARNINGS_DCF_DUE` flag and HITL reminder when `daysSinceDCF >= 90`.
 
+## 2026-10-04 — Skill Retrofit: Align tv-author-pine-script references and TOCs
+
+**Tier: 0 (Routine Evolution)** — Connected managed symlinks in `tv-author-pine-script/references/` to canonical references (`pinescript_overview.md`, `PineScript_Agent_Skill_Rules.md`, `Top_TradingView_Indicators_Reference.md`), added early Contents TOCs, and achieved 100% audit pass across all 27 TradingView skills (0 errors, 0 warnings).
+
+
