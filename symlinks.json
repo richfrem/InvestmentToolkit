@@ -990,6 +990,42 @@
       "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/repo_root.py",
       "strategy": "symlink",
       "description": "daily-loop skill: shared repo-root finder"
+    },
+    {
+      "src": "plugins/stock-valuation/references/analysis_prompt.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/analysis_prompt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/api_reference.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/api_reference.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/fallback-tree.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-benchmarks.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/valuation-benchmarks.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/ADR-dcf-calculator.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/ADR-dcf-calculator.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/fallback-tree.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
