@@ -23,11 +23,11 @@ description: Generates multi-agent news sweep prompts, gates cross-model finding
 
 ## Quick start
 ```bash
-python3 plugins/portfolio-advisor/scripts/generate_grok_prompt.py --output temp/grok-prompts/daily_grok_prompt.md --clipboard
+python3 plugins/portfolio-advisor/scripts/generate_news_prompt.py --output temp/news-prompts/daily_news_prompt.md --clipboard
 ```
 
 ## Workflow
-1. **Generate Prompt**: Compile model-agnostic sweep prompt from `domain_model.sqlite` with live baseline anchors.
+1. **Generate Prompt**: Compile model-agnostic sweep prompt from `domain_model.sqlite` with live baseline anchors using `generate_news_prompt.py`.
 2. **Multi-Model Sweep**: Run prompt across frontier models according to schedule (Grok daily default; escalate to ChatGPT/Claude on major moves or binary events).
 3. **Fact-Check Gate**: Verify stated macro yields (10Y), VIX, and quoted prices against live market data before trusting findings.
 4. **Triangulate & Present**: Cross-check findings across models, categorize as CONFLUENCE, PARTIAL, or CONFLICT, and flag required user confirmations.

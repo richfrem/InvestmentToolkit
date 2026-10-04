@@ -1074,6 +1074,24 @@
       "dst": "plugins/portfolio-advisor/skills/weekly-review/references/news-sweep-model-assessment.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
+      "strategy": "symlink",
+      "description": "news-sweep canonical script \u2014 generates live multi-model prompt from domain_model.sqlite"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
+      "dst": "investment_screener/backend/py_services/generate_news_prompt.py",
+      "strategy": "symlink",
+      "description": "generate_news_prompt.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/news_sweep.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/news_sweep.py",
+      "strategy": "symlink",
+      "description": "news-sweep canonical script \u2014 posts prompt to browser automation and captures response"
     }
   ]
 }

@@ -1,19 +1,29 @@
 ---
 trigger: always_on
-description: Universal Execution Policy — Pre-Planning Intake Bookend, Native Plan Sandboxing, Worktree Isolation (.worktrees/task-<id>), Superpowers TDD, and Deterministic Exit Gates.
+description: Universal Execution Policy — Pre-Planning Intake Bookend, Native Plan Sandboxing, Worktree Isolation (.worktrees/task-<id>), Test-Driven Development, and Deterministic Exit Gates.
 globs: ["**/*"]
 ---
 
-# Policy Deprecation Notice: Graph Planning & Superpowers Policy
+# Engineering Lifecycle & Execution Discipline Policy
 
-> **THE SUPREME LAW: HUMAN GATE**
-> You MUST NOT execute ANY state-changing operation (code writes, commits, external commands) without EXPLICIT user approval.
-> "Sounds good" or "Looks right" is NOT approval.
-> Only **"Proceed"**, **"Go"**, or **"Execute"** constitutes authorization.
-> Explicit approval transitions task state to `APPROVED` in `context/control_plane.db`.
+> **THE SUPREME LAW: CRYPTOGRAPHIC HUMAN GATE**
+> You MUST NOT execute ANY state-changing operation (code writes, commits, external commands) without EXPLICIT signed human authorization.
+> Chat confirmations like "Sounds good", "Looks right", "Proceed", "Go", or "Execute" are NOT parsed by the agent to self-approve Gate 1.
+> Gate 1 is a signed transition (`AWAITING_APPROVAL` -> `APPROVED`). The human signs the content-bound challenge with their enrolled OpenSSH key via `agent_control.py approve-transition --request-id <id>` (or simulation key in simulation mode).
+> Explicit signed approval advances task state to `APPROVED` in `context/control_plane.db`.
 > **VIOLATION = SYSTEM FAILURE**
 
-This stub is retained as a zero-downtime bridge for backward compatibility with active worktrees, pinned prompts, and cached manifests. Refer directly to `engineering-lifecycle-policy.md` for normative requirements, the Cryptographic Human Gate, and the 4-phase lifecycle.
+---
+
+## Contents
+- [1. Overview & 4-Phase Lifecycle](#1-overview--4-phase-lifecycle)
+- [2. Phase 0: Pre-Planning Intake Bookend & Socratic Gate](#2-phase-0-pre-planning-intake-bookend--socratic-gate)
+- [3. Phase 1: Native Plan Mode, Topology Strategy & Adversarial Review](#3-phase-1-native-plan-mode-topology-strategy--adversarial-review)
+- [4. Phase 2: Worktree Isolation & TDD Execution](#4-phase-2-worktree-isolation--tdd-execution)
+- [5. Phase 3: Deterministic Exit Gates & Asymmetric Persistence](#5-phase-3-deterministic-exit-gates--asymmetric-persistence)
+- [6. Git & Environment Invariants](#6-git--environment-invariants)
+
+---
 
 ## 1. Overview & 4-Phase Lifecycle
 
@@ -44,9 +54,9 @@ Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
    │
    └─ STANDARD classification: continue below.
    │
-Phase 1: Native Plan Mode & Adversarial Review (critical-auditor + Human Gate)
+Phase 1: Native Plan Mode, Strategy & Adversarial Review (critical-auditor + select-loop-strategy + Human Gate)
    │
-Phase 2: Worktree Isolation & Superpowers TDD (.worktrees/task-<id> + Red-Green-Refactor)
+Phase 2: Worktree Isolation & TDD Execution (.worktrees/task-<id> + worktree-manager + pattern runner)
    │
 Phase 3: Deterministic Exit Gates & Asymmetric Persistence (6-State Vocabulary + Wiki)
 ```
@@ -84,23 +94,31 @@ rest of this phase and into Phase 1:
 
 ---
 
-## 3. Phase 1: Native Plan Mode & Adversarial Review
+## 3. Phase 1: Native Plan Mode, Topology Strategy & Adversarial Review
 
-1. **Native Plan Sandboxing:**
-   - Enforce host-native Plan Mode (Claude `/plan`, Copilot `@plan`, Antigravity plan mode) where available. Defer to Superpowers graph planning *only* when native host planning is absent or when executing complex multi-agent DAGs.
-   - While in Plan Mode, filesystem mutations outside plan artifacts are strictly prohibited.
-2. **Pre-Execution Critic Review:**
+1. **Two-Step Native Plan Sandboxing:**
+   - Enforce host-native Plan Mode (Claude `/plan`, Copilot `@plan`, Antigravity plan mode) where available.
+   - Host Plan Mode is strictly read-only and blocks filesystem mutations.
+   - Two-step planning sequence: (1) author the plan natively in read-only plan mode; (2) exit plan mode to persist the plan artifacts (`TASK_PLAN.md` or implementation plan and pattern-owned artifacts).
+2. **Execution Strategy Selection & Pattern Peerage (`select-loop-strategy`):**
+   - Evaluate execution topology among the 6 peer patterns (`direct`, `dual-loop`, `graph`, `agent-swarm`, `red-team-review`, `learning-loop` / `triple-loop-learning`).
+   - `graph-execution` is an equal peer pattern, chosen only when genuine structural dependency exists (parallel read fan-out, barrier synchronization, sequential ordered mutations). It is never chosen merely because a task needs human approval or rollback.
+   - The control-plane plan records `strategy=<pattern>, rationale=<why>`.
+   - **Pattern-Owned Plan Artifacts:** Each pattern owns its plan artifact (`graph-manifest.json` for graph, task packets for dual-loop, job files for agent-swarm). Never embed large execution manifests inside `TASK_PLAN.md`.
+   - When `strategy=graph`, invoke `graph-planner` to author and compile `graph-manifest.json`, and run `validate_manifest.py` before submitting to `PLAN_REVIEW`.
+3. **Pre-Execution Critic Review:**
    - Run clean-context adversarial review via `critical-auditor` (max 2–3 rounds) probing failure domains and cross-plugin boundaries before human presentation.
-3. **The Supreme Law Human Gate:**
-   - Present plan and require explicit user approval ("Proceed", "Go", "Execute").
-   - On approval, transition task to `APPROVED` in `context/control_plane.db`.
+4. **The Supreme Law Cryptographic Human Gate:**
+   - Request transition to `APPROVED` (`coordinate-transition --to APPROVED`), binding the reviewed spec, plan, and pattern artifact hashes into the challenge snapshot.
+   - Human verifies the challenge snapshot and executes `agent_control.py approve-transition --request-id <id>` with their enrolled OpenSSH key.
+   - The verified signature commits the transition to `APPROVED` in `context/control_plane.db`.
 
 ---
 
-## 4. Phase 2: Worktree Isolation & Superpowers TDD
+## 4. Phase 2: Worktree Isolation & TDD Execution
 
-1. **Standard Worktree Topology:**
-   - Implementation MUST execute in dedicated isolated worktrees at `.worktrees/task-<task_id>/` (governed by `issue_worktree_manage.py`). Never use sibling directories (`../worktree-...`).
+1. **Standard Worktree Topology (`worktree-manager`):**
+   - Implementation MUST execute in dedicated isolated worktrees at `.worktrees/task-<task_id>/` (governed by `worktree-manager` and `issue_worktree_manage.py`). Never use sibling directories (`../worktree-...`).
    - Update `worktree_state` in `context/control_plane.db` to `written_in_worktree`.
    - **This convention applies to `agent_control.py`-tracked tasks only.** `self-evolution`
      cycles use their own separate, documented convention — sibling directories under
@@ -108,8 +126,9 @@ rest of this phase and into Phase 1:
      `self-evolution-policy.md`. This is not a violation of the rule above; it's a
      different, independently-governed system (see Section 1's scope note and
      [#537](https://github.com/richfrem/agent-plugins-skills/issues/537)).
-2. **Superpowers TDD Deferral Rule:**
-   - Invoke Superpowers execution loops only where native execution lacks automated TDD or DAG management.
+2. **Deterministic Orchestration & TDD Execution:**
+   - The execution pattern selected during Phase 1 (`direct`, `dual-loop`, `graph`, `agent-swarm`, `red-team-review`, `learning-loop`) executes inside the isolated worktree sandbox.
+   - For graph-planned tasks, `graph-execution` consumes `graph-manifest.json` inside the isolated worktree sandbox, dispatching parallel reads and sequential mutations with strict receipt verification.
    - Enforce strict Red-Green-Refactor:
      - **Red:** Author concrete unit/integration tests matching the contract. Verify they FAIL.
      - **Green:** Implement minimum functional code to make tests pass.

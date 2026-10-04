@@ -8,6 +8,26 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-04 — Multi-Agent Generic Sweep Scripts & News-Sweep Modernization (Tier 1 Evolution)
+
+**Trigger:** Renamed skill `x-news-sweep` to `news-sweep` and generalized underlying prompt generation and sweep execution scripts to support multi-frontier models (Grok, Claude, ChatGPT, Gemini).
+
+**Tier 1 Evolution:**
+1. **Generic Prompt Generator (`generate_news_prompt.py`)**:
+   - Replaces `generate_grok_prompt.py` with multi-model prompt generation, baseline anchor injection, and multi-model response placeholder scaffolding (`temp/news-sweep-responses/{grok,gemini,claude,chatgpt}/`).
+   - Retains `generate_grok_prompt.py` as a transparent, monkeypatch-safe proxy for 100% backward compatibility.
+2. **Generic Sweep Script (`news_sweep.py`)**:
+   - Replaces `grok_sweep.py` with automated fallback discovery across `temp/news-prompts/` and `temp/grok-prompts/`.
+   - Retains `grok_sweep.py` as a backward-compatible proxy.
+3. **Weekly Review Alignment**:
+   - `weekly_review.py` outputs prompts to `temp/news-prompts/weekly_news_prompt.md` with legacy mirroring.
+4. **Symlink and Lock Registry Sync**:
+   - Registered canonical symlinks in `symlinks.json` (`generate_news_prompt.py` and `news_sweep.py` into `py_services/` and `skills/news-sweep/scripts/`).
+   - Audited via `symlink_manager.py audit` (182 links verified OK).
+   - Added unit test coverage in `test_generate_news_prompt.py` (84 tests passing).
+
+---
+
 ## 2026-09-06 — Daily Loop Deterministic Checklist Verifier (Tier 1 Evolution)
 
 **Trigger:** Added independent, deterministic Python verification to `/daily` and `daily-loop-agent` to eliminate shortcut execution and self-attestation.
