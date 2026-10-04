@@ -762,8 +762,8 @@ No `.json`/`.jsonl` files currently exist under `temp/` (which is gitignored scr
 - investment_screener/backend/py_services/verify_thesis_sync.py:88
 - investment_screener/backend/py_services/verify_thesis_sync.py:94
 - investment_screener/backend/py_services/verify_thesis_sync.py:96
-- investment_screener/backend/py_services/generate_grok_prompt.py:32
-- investment_screener/backend/py_services/generate_grok_prompt.py:100
+- investment_screener/backend/py_services/generate_news_prompt.py:32
+- investment_screener/backend/py_services/generate_news_prompt.py:100
 - investment_screener/backend/py_services/backtest_harness.py:23
 - investment_screener/backend/py_services/backtest_harness.py:24
 - investment_screener/backend/py_services/backtest_harness.py:102
@@ -873,8 +873,8 @@ No `.json`/`.jsonl` files currently exist under `temp/` (which is gitignored scr
 - plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py:41
 - plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py:160
 - plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py:403
-- plugins/portfolio-advisor/scripts/generate_grok_prompt.py:32
-- plugins/portfolio-advisor/scripts/generate_grok_prompt.py:100
+- plugins/portfolio-advisor/scripts/generate_news_prompt.py:32
+- plugins/portfolio-advisor/scripts/generate_news_prompt.py:100
 - plugins/portfolio-advisor/scripts/sync_portfolio_roles.py:1
 - plugins/portfolio-advisor/scripts/sync_portfolio_roles.py:16
 - plugins/portfolio-advisor/scripts/sync_portfolio_roles.py:84
@@ -1009,8 +1009,8 @@ No `.json`/`.jsonl` files currently exist under `temp/` (which is gitignored scr
 - plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py:41
 - plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py:160
 - plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py:403
-- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py:32
-- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py:100
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py:32
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py:100
 - plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py:44
 - plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py:249
 - plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py:258

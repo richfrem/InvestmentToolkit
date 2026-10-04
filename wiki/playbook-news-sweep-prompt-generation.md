@@ -10,7 +10,7 @@ Defines the architectural invariants for generating, reviewing, and sanitizing L
 ## Core Invariants
 
 ### Invariant A: Live Context Synthesis in Phase 1.5
-- **Rule**: Raw outputs from `generate_grok_prompt.py` MUST NOT be dispatched to Grok without explicit model review and editing.
+- **Rule**: Raw outputs from `generate_news_prompt.py` MUST NOT be dispatched to Grok without explicit model review and editing.
 - **Requirement**: In Phase 1.5, the Agent must inspect `domain_model.sqlite`, recent daily briefs, binary earnings events (within 1–7 days), macro regime flags, and active standing decision anchors. The Agent then uses `replace_file_content` to synthesize specific, tailored inquiries (e.g. cluster delivery milestones, exact earnings dates, regulatory PPA terms) directly into the prompt file.
 
 ### Invariant B: Markdown Table Cell Sanitization & Delimiter Integrity

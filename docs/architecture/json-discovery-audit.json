@@ -3923,12 +3923,12 @@
           "confidence": "exact"
         },
         {
-          "referencing_file": "investment_screener/backend/py_services/generate_grok_prompt.py",
+          "referencing_file": "investment_screener/backend/py_services/generate_news_prompt.py",
           "line": 32,
           "confidence": "exact"
         },
         {
-          "referencing_file": "investment_screener/backend/py_services/generate_grok_prompt.py",
+          "referencing_file": "investment_screener/backend/py_services/generate_news_prompt.py",
           "line": 100,
           "confidence": "probable"
         },
@@ -4478,12 +4478,12 @@
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+          "referencing_file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
           "line": 32,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+          "referencing_file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
           "line": 100,
           "confidence": "probable"
         },
@@ -5158,12 +5158,12 @@
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
           "line": 32,
           "confidence": "exact"
         },
         {
-          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
+          "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
           "line": 100,
           "confidence": "probable"
         },
@@ -68368,49 +68368,49 @@
       "line_text": "proj_path = proj_dir_path / f\"{ticker}.json\""
     },
     {
-      "referencing_file": "investment_screener/backend/py_services/generate_grok_prompt.py",
+      "referencing_file": "investment_screener/backend/py_services/generate_news_prompt.py",
       "line": 22,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- investment_screener/backend/data/portfolio.json (Internal state database)"
     },
     {
-      "referencing_file": "investment_screener/backend/py_services/generate_grok_prompt.py",
+      "referencing_file": "investment_screener/backend/py_services/generate_news_prompt.py",
       "line": 32,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "THESIS_JSON = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "investment_screener/backend/py_services/generate_grok_prompt.py",
+      "referencing_file": "investment_screener/backend/py_services/generate_news_prompt.py",
       "line": 33,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "PORTFOLIO   = REPO_ROOT / \"investment_screener/backend/data/portfolio.json\""
     },
     {
-      "referencing_file": "investment_screener/backend/py_services/generate_grok_prompt.py",
+      "referencing_file": "investment_screener/backend/py_services/generate_news_prompt.py",
       "line": 46,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "for p in ETF_ANALYSIS_DIR.glob('*.json'):"
     },
     {
-      "referencing_file": "investment_screener/backend/py_services/generate_grok_prompt.py",
+      "referencing_file": "investment_screener/backend/py_services/generate_news_prompt.py",
       "line": 53,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "path = PROJ_DIR / f\"{ticker}.json\""
     },
     {
-      "referencing_file": "investment_screener/backend/py_services/generate_grok_prompt.py",
+      "referencing_file": "investment_screener/backend/py_services/generate_news_prompt.py",
       "line": 57,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "data = json.loads(path.read_text())"
     },
     {
-      "referencing_file": "investment_screener/backend/py_services/generate_grok_prompt.py",
+      "referencing_file": "investment_screener/backend/py_services/generate_news_prompt.py",
       "line": 100,
       "matched_text": "json.loads(",
       "operation": "read",
@@ -74752,35 +74752,35 @@
       "line_text": "with open(out_path, \"w\") as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/news_sweep.py",
       "line": 47,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open({prompt_file!r}) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/news_sweep.py",
       "line": 62,
       "matched_text": "json.dumps(",
       "operation": "write",
       "line_text": "prompt_escaped = json.dumps(prompt)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/news_sweep.py",
       "line": 102,
       "matched_text": "open(",
       "operation": "write",
       "line_text": "with open({output_file!r}, \"w\") as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/news_sweep.py",
       "line": 113,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "data = json.load(resp)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/news_sweep.py",
       "line": 155,
       "matched_text": "open(",
       "operation": "read",
@@ -76068,49 +76068,49 @@
       "line_text": "# 4. Sync header metadata from target-portfolio.json"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
       "line": 22,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- investment_screener/backend/data/portfolio.json (Internal state database)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
       "line": 32,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "THESIS_JSON = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
       "line": 33,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "PORTFOLIO   = REPO_ROOT / \"investment_screener/backend/data/portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
       "line": 46,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "for p in ETF_ANALYSIS_DIR.glob('*.json'):"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
       "line": 53,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "path = PROJ_DIR / f\"{ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
       "line": 57,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "data = json.loads(path.read_text())"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
       "line": 100,
       "matched_text": "json.loads(",
       "operation": "read",
@@ -79015,35 +79015,35 @@
       "line_text": "print(f\"\\n\u2705 Wrote target-portfolio.json  (sum={total:.4f}%)\")"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/news_sweep.py",
       "line": 47,
       "matched_text": "open(",
       "operation": "read",
       "line_text": "with open({prompt_file!r}) as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/news_sweep.py",
       "line": 62,
       "matched_text": "json.dumps(",
       "operation": "write",
       "line_text": "prompt_escaped = json.dumps(prompt)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/news_sweep.py",
       "line": 102,
       "matched_text": "open(",
       "operation": "write",
       "line_text": "with open({output_file!r}, \"w\") as f:"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/news_sweep.py",
       "line": 113,
       "matched_text": "json.load(",
       "operation": "read",
       "line_text": "data = json.load(resp)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/grok_sweep.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/news_sweep.py",
       "line": 155,
       "matched_text": "open(",
       "operation": "read",
@@ -79477,49 +79477,49 @@
       "line_text": "# 4. Sync header metadata from target-portfolio.json"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
       "line": 22,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- investment_screener/backend/data/portfolio.json (Internal state database)"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
       "line": 32,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "THESIS_JSON = REPO_ROOT / \"investment_screener/backend/data/theses/target-portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
       "line": 33,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "PORTFOLIO   = REPO_ROOT / \"investment_screener/backend/data/portfolio.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
       "line": 46,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "for p in ETF_ANALYSIS_DIR.glob('*.json'):"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
       "line": 53,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "path = PROJ_DIR / f\"{ticker}.json\""
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
       "line": 57,
       "matched_text": "json.loads(",
       "operation": "read",
       "line_text": "data = json.loads(path.read_text())"
     },
     {
-      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py",
+      "referencing_file": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
       "line": 100,
       "matched_text": "json.loads(",
       "operation": "read",
@@ -104324,7 +104324,7 @@
       "line": 403,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "- generate_grok_prompt.py:     [\u2705 Generated from live target-portfolio.json]"
+      "line_text": "- generate_news_prompt.py:     [\u2705 Generated from live target-portfolio.json]"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/calibrate-targets/SKILL.md",

@@ -96,8 +96,8 @@ def test_generate_review_json_current_from_db(db_backed):
     assert data["total_value"] == pytest.approx(2500.0)
 
 
-def test_generate_grok_prompt_current_from_db(db_backed):
-    import generate_grok_prompt
-    importlib.reload(generate_grok_prompt)
-    data = generate_grok_prompt._compute_current_from_db()
+def test_generate_news_prompt_current_from_db(db_backed):
+    import generate_news_prompt
+    importlib.reload(generate_news_prompt)
+    data = generate_news_prompt._compute_current_from_db()
     assert data["holdings"]["MSFT"] == pytest.approx(40.0)

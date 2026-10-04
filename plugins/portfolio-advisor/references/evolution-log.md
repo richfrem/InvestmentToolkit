@@ -8,6 +8,23 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-04 — Retirement of Legacy Grok Script Names & Symlinks (Tier 1 Evolution)
+
+**Trigger:** Completed retirement of legacy script filenames (`generate_grok_prompt.py`, `grok_sweep.py`, `test_generate_grok_prompt.py`) and their symlinks in favor of `generate_news_prompt.py` and `news_sweep.py`.
+
+**Tier 1 Evolution:**
+1. **Permanent Script Retirement**:
+   - Removed `plugins/portfolio-advisor/scripts/generate_grok_prompt.py` and `grok_sweep.py`.
+   - Removed legacy test `plugins/portfolio-advisor/tests/test_generate_grok_prompt.py` (superseded by `test_generate_news_prompt.py`).
+2. **Symlink and Registry Cleanup**:
+   - Removed legacy destination symlinks in `plugins/portfolio-advisor/skills/news-sweep/scripts/` and `investment_screener/backend/py_services/`.
+   - Cleaned `symlinks.json` of the 3 legacy entries, verified with `symlink_manager.py audit`.
+3. **Reference Updates**:
+   - Updated test imports in `test_wave3_portfolio_json_closure.py` to import `generate_news_prompt`.
+   - Updated architecture references in `docs/architecture/`, skill evals, and playbook.
+
+---
+
 ## 2026-10-04 — Multi-Agent Generic Sweep Scripts & News-Sweep Modernization (Tier 1 Evolution)
 
 **Trigger:** Renamed skill `x-news-sweep` to `news-sweep` and generalized underlying prompt generation and sweep execution scripts to support multi-frontier models (Grok, Claude, ChatGPT, Gemini).
