@@ -29,6 +29,7 @@ python3 -c "import sqlite3; conn = sqlite3.connect('investment_screener/backend/
 3. **Interview User**: Present proposals in plain English, explaining trade-offs and monitoring frequency.
 4. **Refine**: Incorporate user feedback or adjustments to thresholds and evaluation types.
 5. **Persist**: Update breaker definitions via `update_thesis.py` or domain model repositories.
+6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 ```bash

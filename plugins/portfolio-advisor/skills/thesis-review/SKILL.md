@@ -28,6 +28,7 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py --show
 2. **Delegate Agent**: Launch `thesis-review-agent` via sub-agent orchestration.
 3. **Committee Review**: Agent conducts adversarial research, DCF valuations, and weight calibrations.
 4. **Apply Blueprint**: Finalized target updates are written using canonical scripts and blueprint generators.
+5. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 ```bash

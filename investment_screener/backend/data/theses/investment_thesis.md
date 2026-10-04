@@ -5,7 +5,7 @@
 | **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
 | **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-09-02 |
+| **Last Updated** | 2026-10-04 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
 | **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
 | **Portfolio Data** | Live — synced from Broker via app or `python3 investment_screener/backend/src/BrokerDataEngine.py` |
@@ -87,100 +87,84 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 ## IV. Portfolio Blueprint
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
-*Generated 2026-09-02 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
-*Portfolio value: $31,820. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
+*Generated 2026-10-04 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
+*Portfolio value: $35,025. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **TSM** | ⚪ MAINTAIN | ACCUMULATE | 3.92% | 3.78% | +58.6% | The foundry backbone of the AI compute stack. |
-| **STM** | ⚪ MAINTAIN | ACCUMULATE | 3.82% | 3.62% | +83.8% | STM |
-| **CBRS** | ⚪ MAINTAIN | ACCUMULATE | 2.61% | 2.69% | +28.7% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
-| **AMAT** | ⚪ MAINTAIN | ACCUMULATE | 2.07% | 2.20% | +24.0% | AMAT |
-| **ALAB** | 👁️ WATCHLIST | SELL | — | — | — | ALAB |
+| **TSM** | ⚪ MAINTAIN | ACCUMULATE | 4.04% | 4.04% | +39.7% | Foundational AI hardware monopoly: wide margin of safety vs $658 DCF fair value. Accumulate at 21/50 EMA support. |
+| **STM** | ⚪ MAINTAIN | MAINTAIN | 3.90% | 3.90% | +63.9% | Hold core: Cyclical troughing underway, but maintain position discipline until SiC margin expansion proves durable. |
+| **AMAT** | ⚪ MAINTAIN | ACCUMULATE | 2.30% | 2.30% | +1.3% | AMAT |
+| **CBRS** | ⚪ MAINTAIN | BUY | 2.13% | 2.13% | +73.3% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
+| **ALAB** | 👁️ WATCHLIST | HOLD | — | — | — | Dominant fabless semiconductor provider of PCIe Gen 6/7 retimers, CXL memory controllers (Leo), and smart connectivity switches (Scorpio) for AI accelerators. |
 | **AMD** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Hedge against NVDA dominance. |
-| **ASML** | 👁️ WATCHLIST | SELL | — | — | — | Absolute monopoly on EUV lithography. |
-| **AVGO** | 👁️ WATCHLIST | INITIATE | — | — | — | Custom ASIC + networking moat. |
-| **DRAM** | 👁️ WATCHLIST | HOLD | — | — | — | Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure — Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating. |
-| **INTC** | 🟢 INITIATE | HOLD | — | 1.96% | — | EXIT: Position closed 2026-06. Semis sector overextended — waiting for pullback before re-entry. Terafab JV (Intel + Tesla + SpaceX/xAI) thesis intact long-term but valuation stretched. |
-| **NVDA** | 👁️ WATCHLIST | INITIATE | — | — | — | Highest-conviction BUY. Target increased to absorb freed capital from IREN, COHR, and EQT exits. |
-| **TSEM** | 👁️ WATCHLIST | SELL | — | — | — | TSEM |
-| **ARM** | 👁️ WATCHLIST | — | — | — | — | ARM |
-| **SNPS** | 👁️ WATCHLIST | — | — | — | — | SNPS |
-| **CDNS** | 👁️ WATCHLIST | — | — | — | — | CDNS |
-| **IBM** | 👁️ WATCHLIST | — | — | — | — | IBM |
-| **QCOM** | 👁️ WATCHLIST | — | — | — | — | QCOM |
-| **Subtotal** | | **12.42%** | **14.24%** | +1.82pp | |
+| **ASML** | 👁️ WATCHLIST | HOLD | — | — | — | Absolute monopoly on EUV lithography. |
+| **AVGO** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Custom ASIC + networking moat. |
+| **INTC** | 👁️ WATCHLIST | SELL | — | — | — | EXIT: Position closed 2026-06. Semis sector overextended — waiting for pullback before re-entry. Terafab JV (Intel + Tesla + SpaceX/xAI) thesis intact long-term but valuation stretched. |
+| **NVDA** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Highest-conviction BUY. Target increased to absorb freed capital from IREN, COHR, and EQT exits. |
+| **ARM** | 👁️ WATCHLIST | SELL | — | — | — | ARM |
+| **SNPS** | 👁️ WATCHLIST | BUY | — | — | — | SNPS |
+| **CDNS** | 👁️ WATCHLIST | BUY | — | — | — | CDNS |
+| **IBM** | 👁️ WATCHLIST | HOLD | — | — | — | IBM |
+| **QCOM** | 👁️ WATCHLIST | BUY | — | — | — | QCOM |
+| **Subtotal** | | **12.36%** | **12.36%** | 0.00pp | |
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.51% | 6.37% | +51.2% | Leading cloud-native Zero Trust SASE architecture (ZIA/ZPA) securing distributed enterprise cloud traffic, data protection (DSPM/AI-SPM), and AI workloads. Mission-critical enterprise cybersecurity infrastructure. |
-| **PANW** | ⚪ MAINTAIN | MAINTAIN | 2.58% | 2.63% | -21.1% | AI-native platform consolidation leader. |
-| **CRWD** | 👁️ WATCHLIST | EXIT | — | — | — | EXIT: DCF -66% downside. |
-| **FTNT** | 👁️ WATCHLIST | — | — | — | — | FTNT |
-| **DDOG** | 👁️ WATCHLIST | — | — | — | — | DDOG |
-| **NET** | 👁️ WATCHLIST | — | — | — | — | NET |
-| **Subtotal** | | **9.09%** | **9.00%** | -0.09pp | |
+| **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.75% | 6.75% | +32.7% | Core Zero Trust compounder: Accumulate at 200 EMA retest ($176-$178) with +47% DCF margin of safety. |
+| **PANW** | 🟡 TRIM | TRIM | 2.86% | 1.91% | -35.4% | Tactical trim 0.5 shares @ $355 resistance to liberate capital into deeper discount infrastructure. |
+| **CRWD** | 👁️ WATCHLIST | SELL | — | — | — | Q2 FY27 revenue $1.47B (+26% YoY), ARR $5.84B (+25%), record net new ARR $333M (+51%). Falcon Flex ARR $2.29B (+101% YoY). Full recovery from July outage with strong customer retention and net expansion. |
+| **FTNT** | 👁️ WATCHLIST | SELL | — | — | — | FTNT |
+| **NET** | 👁️ WATCHLIST | SELL | — | — | — | NET |
+| **Subtotal** | | **9.61%** | **8.66%** | -0.95pp | |
 
 ### Sub-Strategy 3 — Sovereign Finance
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **COIN** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents. |
-| **CRCL** | 👁️ WATCHLIST | MAINTAIN | — | — | — | USDC issuer and stablecoin infrastructure for AI agents. |
-| **ETHA** | 👁️ WATCHLIST | HOLD | — | — | — | Ethereum as programmable settlement layer. |
-| **IBIT** | 👁️ WATCHLIST | HOLD | — | — | — | Bitcoin as sovereign reserve asset. |
-| **SOLZ** | 👁️ WATCHLIST | — | — | — | — | EXIT: Solana ETF. |
-| **SOFI** | 👁️ WATCHLIST | — | — | — | — | SOFI |
-| **HOOD** | 👁️ WATCHLIST | — | — | — | — | HOOD |
-| **PYPL** | 👁️ WATCHLIST | — | — | — | — | PYPL |
+| **SOFI** | 👁️ WATCHLIST | BUY | — | — | — | SOFI |
+| **HOOD** | 👁️ WATCHLIST | BUY | — | — | — | HOOD |
+| **PYPL** | 👁️ WATCHLIST | BUY | — | — | — | PYPL |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Sub-Strategy 4 — Quality SaaS Resilience
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CRM** | 👁️ WATCHLIST | BUY | — | — | — | Agentforce AI platform. |
-| **NOW** | 👁️ WATCHLIST | BUY | — | — | — | AI workflow automation. |
-| **TEAM** | 👁️ WATCHLIST | BUY | — | — | — | Human-agentic collaboration platform. |
-| **SHOP** | 👁️ WATCHLIST | — | — | — | — | SHOP |
+| **CAKE** | 👁️ WATCHLIST | SELL | — | — | — | Q2 2026 revenue $1.03B (+7.7% YoY), comps +5.8%, restaurant-level margins reached decade-high ~20%. FY26 revenue ~$4B expected with 26 new restaurant openings and sustained traffic growth across brands. |
+| **CRM** | 👁️ WATCHLIST | BUY | — | — | — | Q2 FY27 revenue $11.35B (+11% YoY), cRPO $33.5B (+14% CC). Agentforce and Data 360 ARR surged 210% YoY to ~$3.9B. Full-year FY27 revenue guide raised to $46.1-46.4B with ~34% non-GAAP operating margin. |
+| **NOW** | 👁️ WATCHLIST | BUY | — | — | — | Q2 2026 subscription revenue $3.877B (+23% CC), cRPO $13.2B (+21.5% CC). Pro Plus and agentic AI deployments up 9x in 9 months. FY26 subscription revenue guide raised to $15.77B midpoint with 31.5% operating margin. |
+| **TEAM** | 👁️ WATCHLIST | BUY | — | — | — | Q4 FY26 revenue $1.766B (+28% YoY), Cloud revenue $1.213B (+31%). Subscription ARR $6.6B (+23%), RPO $4.8B (+44%). Enterprise large-deal records and Rovo AI assistant adoption driving Cloud migration. |
+| **SHOP** | 👁️ WATCHLIST | HOLD | — | — | — | SHOP |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Sub-Strategy 6 — Metabolic Reprogramming & Genetic Editing
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **CELH** | 👁️ WATCHLIST | BUY | — | — | — | Q2 2026 revenue $817.9M (+11% YoY), gross margin 48.1%, EBITDA $184M. Multi-brand portfolio scale (Celsius + Alani Nu + Rockstar), PepsiCo distribution, and international expansion (+10%). |
 | **CRSP** | 👁️ WATCHLIST | WATCHLIST | — | — | — | In-vivo liver/epigenetic editing core of the sub-strategy. Lead asset CTX310 targets ANGPTL3 for permanent LDL/triglyceride reduction - a genetic alternative to continuous GLP-1 maintenance. $2.4B cash runway funds clinical readouts. Structural target 23.5% of the biohealth pillar (1.059% of total portfolio) once initiated; held at watchlist for now. Milestone gate: CTX310 Phase 1/2a cardiotoxicity and durability data. |
 | **LLY** | 👁️ WATCHLIST | HOLD | — | — | — | Core cash-flow aggregator for the Metabolic Reprogramming sub-strategy. GLP-1 franchise (Zepbound/Mounjaro) generates tech-like margins (>81% gross margin, Rule of 40 ~90%), funding M&A into gene-editing delivery vectors as a hedge against continuous-maintenance obsolescence. Structural target 76.5% of the biohealth pillar (3.441% of total portfolio) once initiated; held at watchlist for now. Accumulate on pullbacks; do not chase above ~50x forward P/E. |
-| **TEM** | 👁️ WATCHLIST | HOLD | — | — | — | TEM |
+| **TEM** | 👁️ WATCHLIST | BUY | — | — | — | Q2 2026 revenue $382.5M (+22% YoY), oncology diagnostics +31%, data licensing +36%. FY26 revenue guidance raised to $1.595-1.605B (~25% growth). Multimodal healthcare AI dataset licensing agreements with global pharma. |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Strategic Reserve
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CASH_USD** | 🟡 TRIM | — | 12.65% | 9.61% | — | CASH_USD |
+| **CASH_USD** | 🔵 ACCUMULATE | — | 6.59% | 12.80% | — | CASH_USD |
 | **PSU-U.TO** | 👁️ WATCHLIST | — | — | — | — | USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date). |
-| **Subtotal** | | **12.65%** | **9.61%** | -3.04pp | |
-
-### Untracked / Thesis Pending
-
-| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
-| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CAKE** | 👁️ WATCHLIST | SELL | — | — | — | CAKE |
-| **CELH** | 👁️ WATCHLIST | SELL | — | — | — | CELH |
-| **KRC** | 👁️ WATCHLIST | SELL | — | — | — | KRC |
-| **ORCL** | 👁️ WATCHLIST | BUY | — | — | — | ORCL |
-| **Subtotal** | | **0.00%** | **0.00%** | — | |
+| **Subtotal** | | **6.59%** | **12.80%** | +6.22pp | |
 
 ### Portfolio Totals
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **34.16%** | **32.85%** | -1.31pp |
+| **All holdings** | **28.56%** | **33.82%** | +5.26pp |
 | *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
 <!-- AUTO_UPDATE_END: portfolio_blueprint -->
 

@@ -30,6 +30,7 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 3. **Triage (Step 2)**: Present urgent holding alerts, thesis breaker breaches, and price catalysts one ticker at a time.
 4. **Action Cards (Step 3)**: Formulate actionable trade proposals with tranche sizing and PSU-U.TO capital sourcing.
 5. **Evolution & Summary (Steps 4-5)**: Log operational friction, record execution receipts, and display final session status.
+6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 ```bash

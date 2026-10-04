@@ -52,10 +52,11 @@ python3 plugins/stock-valuation/scripts/fetch_financials.py {TICKER} > temp/eval
 5. **Validate & Persist**:
    ```bash
    cat temp/evaluations/{TICKER}_projection.json | python3 plugins/stock-valuation/scripts/validate_projection.py --verbose
-   python3 plugins/stock-valuation/scripts/persist_valuation.py --input temp/evaluations/{TICKER}_projection.json
+   python3 plugins/stock-valuation/scripts/persist_valuation.py --file temp/evaluations/{TICKER}_valuation_payload.json
    ```
 6. **Compile Research Report**:
    Write Markdown deep dive to `investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md`.
+7. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 

@@ -29,6 +29,7 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py --show
 3. **Sequential Review**: For each holding, present current %, target %, DCF upside, and rationale. Solicit user agreement or adjusted target.
 4. **Rebalance Sum**: If calibrated weights do not sum to 100.00%, offer proportional normalization or specific adjustments.
 5. **Persist**: Write finalized targets via `update_targets.py --write --blueprint` to update JSON and thesis documentation.
+6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 ```bash

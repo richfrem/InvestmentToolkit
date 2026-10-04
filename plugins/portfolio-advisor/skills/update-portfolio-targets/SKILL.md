@@ -28,8 +28,7 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py --set NVDA=6.5 META=
 1. **Inspect Targets**: Load existing target allocations using `update_targets.py --show`.
 2. **Apply Changes**: Execute `update_targets.py --set TICKER=WEIGHT --write --blueprint` (or `--add` for new tickers).
 3. **Re-Lock Holdings**: Re-apply fixed allocations for unchanged positions if proportional scaling caused drift.
-4. **Generate Review**: Run `generate_review_json.py` to update frontend modal caches.
-5. **Verify**: Execute verification scripts to ensure full thesis and table synchronization.
+4. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session (regenerates the review JSON and runs `verify_refresh.py`).
 
 ## Verification
 ```bash
