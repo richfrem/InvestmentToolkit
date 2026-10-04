@@ -245,3 +245,16 @@ def test_compute_technical_snapshot_empty_data_defaults_data_quality_not_stale()
     with patch("technicals.get_prices", return_value={}):
         result = compute_technical_snapshot("NVDA", "D", "1y", "SPY", None)
     assert result["dataQuality"] == {"staleness": False}
+
+
+def test_compute_technical_snapshot_exposes_last_close():
+    rows = [
+        {"date": f"2026-01-{i+1:02d}", "open": 100 + i, "high": 102 + i,
+         "low": 98 + i, "close": 100 + i, "volume": 1000.0}
+        for i in range(60)
+    ]
+    fake_prices = {"NVDA": {"data": rows}, "SPY": {"data": rows}}
+    with patch("technicals.get_prices", return_value=fake_prices), \
+         patch("technicals.get_earnings_calendar", return_value=[]):
+        snapshot = compute_technical_snapshot("NVDA", "D", "1y", "SPY", anchor_date=None)
+    assert snapshot["close"] == 159

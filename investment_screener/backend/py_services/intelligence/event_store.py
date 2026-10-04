@@ -129,6 +129,74 @@ def append_event(
     return event_id
 
 
+def _latest_in_idempotency_chain(jsonl_path: str, idempotency_key: str):
+    """Return (record, chain_length) for the newest event written under a key.
+
+    A chain is the original event (``key``) plus any corrections
+    (``key#r2``, ``key#r3``, ...) appended by ``append_or_supersede_event``.
+
+    Args:
+        jsonl_path: Path to the JSONL ledger file.
+        idempotency_key: Base (un-suffixed) idempotency key.
+
+    Returns:
+        ``(latest_record, chain_length)``, or ``(None, 0)`` if no event has
+        been written under the key yet.
+    """
+    path = Path(jsonl_path)
+    if not path.exists():
+        return None, 0
+    latest, count = None, 0
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        record = json.loads(line)
+        key = record.get("idempotency_key") or ""
+        if key == idempotency_key or key.startswith(f"{idempotency_key}#r"):
+            latest, count = record, count + 1
+    return latest, count
+
+
+def append_or_supersede_event(
+    jsonl_path: str,
+    *,
+    idempotency_key: str,
+    payload: dict,
+    **event_fields,
+) -> str:
+    """Append an event, or correct the one already written under its key.
+
+    ``append_event`` treats an existing ``idempotency_key`` as "already
+    written" and drops the new payload, so a same-key re-run can never fix
+    bad data. This keeps true retries idempotent but lets a changed payload
+    through as a correction that supersedes the previous event, which the
+    replay then flips to ``SUPERSEDED``.
+
+    Args:
+        jsonl_path: Path to the JSONL ledger file (created if missing).
+        idempotency_key: Base dedup key for the logical event.
+        payload: Structured payload; compared against the latest event in
+            the key's chain to tell a retry from a correction.
+        **event_fields: Remaining ``append_event`` arguments.
+
+    Returns:
+        The ``event_id`` of the event now current for the key — the existing
+        one when the payload is unchanged, else the newly appended one.
+    """
+    latest, chain_length = _latest_in_idempotency_chain(jsonl_path, idempotency_key)
+    if latest is None:
+        return append_event(jsonl_path, payload=payload, idempotency_key=idempotency_key, **event_fields)
+    if latest.get("payload_json") == json.dumps(payload):
+        return latest["event_id"]
+    return append_event(
+        jsonl_path,
+        payload=payload,
+        supersedes_event_id=latest["event_id"],
+        idempotency_key=f"{idempotency_key}#r{chain_length + 1}",
+        **event_fields,
+    )
+
+
 def _default_jsonl_path() -> Path:
     """Return the canonical ``observations.jsonl`` location.
 

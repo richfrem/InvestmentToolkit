@@ -369,6 +369,7 @@ def compute_technical_snapshot(
         "ticker": ticker,
         "timeframe": timeframe,
         "asOf": df["date"].iloc[-1] if not df.empty else None,
+        "close": float(df["close"].iloc[-1]),
         "rsi14": compute_rsi(df["close"]),
         "ema21": compute_ema(df["close"], 21),
         "ema50": compute_ema(df["close"], 50),

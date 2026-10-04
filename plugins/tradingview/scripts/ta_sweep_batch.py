@@ -463,6 +463,38 @@ def run_headless_sweep(
     return results
 
 
+def is_degenerate_batch(rows: list[dict[str, Any]], min_rows: int = 3) -> bool:
+    """True when every scanned row carries one identical close.
+
+    That pattern means the CDP data-window read never followed the symbol
+    switch (every row is a copy of whatever chart was active), so close, ADX and
+    volume bias are untrustworthy for the whole batch.
+    """
+    closes = [r.get("close") for r in rows if r.get("close") is not None]
+    return len(closes) >= min_rows and len(set(closes)) == 1
+
+
+def sweep_with_fallback(
+    tickers: list[str],
+    delay_ms: int,
+    sweep_fn: Any = None,
+    headless_fn: Any = None,
+) -> list[dict[str, Any]]:
+    """Run the CDP sweep; fall back to the headless sweep on failure or a degenerate batch."""
+    sweep_fn = sweep_fn or run_sweep
+    headless_fn = headless_fn or run_headless_sweep
+    try:
+        rows = sweep_fn(tickers, delay_ms=delay_ms)
+    except Exception as exc:  # noqa: BLE001
+        print(f"TradingView CDP sweep unavailable ({exc}); falling back to headless TA sweep...", file=sys.stderr)
+        return headless_fn(tickers)
+    if is_degenerate_batch(rows):
+        print("CDP sweep returned identical closes for every ticker (chart did not follow symbol "
+              "switches); discarding and using headless TA sweep...", file=sys.stderr)
+        return headless_fn(tickers)
+    return rows
+
+
 def enrich_results(
     scan_results: list[dict[str, Any]],
     target_map: dict[str, dict[str, Any]],
@@ -542,7 +574,7 @@ def save_sweep_results(
         with open(json_export_path, "w") as f:
             json.dump(payload, f, indent=2)
 
-    from intelligence.event_store import append_event, _default_jsonl_path
+    from intelligence.event_store import append_or_supersede_event, _default_jsonl_path
     from intelligence.replay_ledger import replay_events_to_db
     from intelligence.db_client import initialize_db
     import sys
@@ -558,7 +590,9 @@ def save_sweep_results(
         ticker = res["ticker"]
         # Convert any negative or invalid ADX/RSI values to string or omit if not matching bounds,
         # but the payload_json will contain the full dict cleanly.
-        append_event(
+        # A same-day re-sweep with different readings supersedes the earlier event
+        # (plain idempotency would silently keep a bad batch for the rest of the day).
+        append_or_supersede_event(
             str(resolved_jsonl_path),
             event_type="TECHNICAL_SWEEP",
             effective_at=scan_date,
@@ -624,11 +658,7 @@ def main() -> None:
 
     print(f"Scanning {len(tickers)} holdings...", file=sys.stderr)
 
-    try:
-        scan_results = run_sweep(tickers, delay_ms=delay_ms)
-    except Exception as exc:
-        print(f"TradingView CDP sweep unavailable ({exc}); falling back to headless TA sweep...", file=sys.stderr)
-        scan_results = run_headless_sweep(tickers)
+    scan_results = sweep_with_fallback(tickers, delay_ms=delay_ms)
 
     target_map   = load_target_portfolio()
     scan_results = enrich_results(scan_results, target_map, snapshot_fn=compute_technical_snapshot)
