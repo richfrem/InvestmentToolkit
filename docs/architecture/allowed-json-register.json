@@ -4,7 +4,7 @@
     {
       "path_or_pattern": "skills-lock.json",
       "classification": "ALLOWED_CONFIGURATION_JSON",
-      "git_tracked": true,
+      "git_tracked": false,
       "producers": [],
       "consumers": []
     },

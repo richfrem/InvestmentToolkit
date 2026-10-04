@@ -8,7 +8,7 @@ This register identifies JSON and JSONL files that are allowed to remain after t
 
 | File / pattern | Status | Producers | Consumers | Notes |
 |---|---|---|---|---|
-| `skills-lock.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `skills-lock.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | Gitignored since 2026-10-04: machine-local skill install state, written by the plugin manager. |
 | `plugin-sources.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
 | `symlinks.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | run_tests.py:18 | |
 | `context/events.jsonl` | ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL | (none detected) | investment_screener/backend/py_services/evolution_events.py:9, investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:108, investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:124, investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:148, investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:152, investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:175, investment_screener/backend/tests/py_services/test_audit_json_usage.py:34, investment_screener/backend/tests/py_services/test_audit_json_usage.py:40, investment_screener/backend/tests/py_services/test_audit_json_usage.py:47, investment_screener/backend/tests/py_services/test_audit_json_usage.py:50, investment_screener/backend/tests/py_services/test_alert_metadata_round_trips_jsonl.py:7 | |

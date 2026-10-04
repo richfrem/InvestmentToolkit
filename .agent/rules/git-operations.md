@@ -42,16 +42,10 @@ git push origin --delete chore/feature-name
 Never run `git stash`, `git stash pop`, or `git stash apply` unless the user explicitly says to.
 **Reason:** Stashing risks applying stale edits onto new branches and causing silent regressions.
 
-### 2. Lockfile Conflict Protocol (`skills-lock.json`)
-`skills-lock.json` contains machine-generated timestamps. When a branch or PR has conflicts in `skills-lock.json`:
-- **NEVER** edit conflict markers by hand (`<<<<<<<`, `=======`, `>>>>>>>`).
-- **NEVER** leave a PR in conflict state after pushing.
-- **ALWAYS** resolve immediately via:
-  ```bash
-  git checkout --ours skills-lock.json
-  python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y
-  git add skills-lock.json
-  ```
+### 2. `skills-lock.json` is not tracked
+`skills-lock.json` is gitignored. It is machine-local install state: content hashes and timestamps for skills installed under the (also gitignored) `.agents/` directory, rewritten by the plugin manager on every sync. `plugin-sources.json` is the tracked declaration of what is installed.
+- **NEVER** commit it or force-add it (`git add -f`).
+- If it shows up in a conflict on an old branch, drop it from the index: `git rm --cached skills-lock.json`.
 
 ### 3. Pre-Push Freshness & Quality Gate
 Before **explicitly pushing** changes to GitHub (i.e., only when the user has issued a direct push command):
@@ -60,7 +54,6 @@ Before **explicitly pushing** changes to GitHub (i.e., only when the user has is
    git fetch origin main
    git merge origin/main
    ```
-   If `skills-lock.json` conflicts occur, apply Rule 2 immediately.
 
 2. **Pre-Push Quality Audits (Mandatory)**:
    Run standard compliance, coding conventions, and structural audits on all modified plugins and skills from the repository root:
@@ -87,8 +80,7 @@ Before **explicitly pushing** changes to GitHub (i.e., only when the user has is
 ### 4. When a push is rejected
 If `git push` is rejected because the remote is ahead:
 1. Run `git fetch origin` and `git merge origin/<branch>` or `git pull --rebase` (no stash).
-2. If conflicts occur in `skills-lock.json`, resolve via Rule 2.
-3. Push once clean. Never force-push around a rejected push.
+2. Push once clean. Never force-push around a rejected push.
 
 ### 5. No force push to main/master
 Never `git push --force` to main or master under any circumstances.
