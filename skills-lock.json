@@ -340,9 +340,9 @@
     "daily-loop": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
       "sourceType": "local",
-      "computedHash": "2e6f85c8ab196865fe8bb4347da9dbf3a35bc5f32418282142f3a8c14eeadf88",
+      "computedHash": "b786156f0a29a079ed244e845149c22f5a2361c58bbe0428274c29c3138f2ec9",
       "installedAt": "2026-06-10T16:13:44.545695Z",
-      "updatedAt": "2026-10-04T17:29:49.386066Z"
+      "updatedAt": "2026-10-04T18:15:31.813478Z"
     },
     "data-quality-audit": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
@@ -711,9 +711,9 @@
     "news-sweep": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
       "sourceType": "local",
-      "computedHash": "101ea512802a5404ef86d2187e98ace702798e3df4d5068229ba6e42263e2000",
+      "computedHash": "3721ab15293e91a205a114cd6be54ba16504a6743b9333b393217ffbb7ae81a9",
       "installedAt": "2026-05-04T05:31:08.316771Z",
-      "updatedAt": "2026-10-04T17:29:49.386066Z"
+      "updatedAt": "2026-10-04T18:15:31.813478Z"
     },
     "norberts-gambit": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
@@ -998,9 +998,9 @@
     "portfolio-health": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
       "sourceType": "local",
-      "computedHash": "8fd7b5328eae9656096d5ad227b7f7140eb2b0d9581e3999862067be293d2434",
+      "computedHash": "3d9bc13da71fb13c8786b2305060fdd81e25491d00cc476f33c2c3afca0d8abc",
       "installedAt": "2026-05-03T15:16:12.401761Z",
-      "updatedAt": "2026-10-04T17:29:49.386066Z"
+      "updatedAt": "2026-10-04T18:15:31.813478Z"
     },
     "pre-trade-analysis": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
@@ -1376,9 +1376,9 @@
     "strategic-review": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
       "sourceType": "local",
-      "computedHash": "337d8d1b690f1946a2699c51377fbb74169792d2d2b345aab2817003b5f8f7db",
+      "computedHash": "fd05b176b150ab186a308488b4dc661c68f6dac7507ca620da5c7b18e2d70dda",
       "installedAt": "2026-05-02T22:24:56.857430Z",
-      "updatedAt": "2026-10-04T17:29:49.386066Z"
+      "updatedAt": "2026-10-04T18:15:31.813478Z"
     },
     "subagent-driven-development": {
       "source": "https://github.com/obra/superpowers",
@@ -1467,9 +1467,9 @@
     "thesis-review": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
       "sourceType": "local",
-      "computedHash": "d14205d3bba6456389e9223604ed228b23325a83a806e82477aa7caac9e7840b",
+      "computedHash": "9127bd851a6173c214d07019e42626af6e9e0fe2be4c4b3c2b4cf0a462d12308",
       "installedAt": "2026-05-31T15:15:25.139235Z",
-      "updatedAt": "2026-10-04T17:29:49.386066Z"
+      "updatedAt": "2026-10-04T18:15:31.813478Z"
     },
     "todo-check": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1656,9 +1656,9 @@
     "tv-ta-daily-sweep": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
       "sourceType": "local",
-      "computedHash": "03ebcf79753a91ecc60e6b8ab31210cbb4be061c8d8f62062dcb475f666eab57",
+      "computedHash": "472ad5eba60adb578147685d371d7b44fa639229ae2aa793ba75d38a022b6944",
       "installedAt": "2026-08-23T22:40:05.870606Z",
-      "updatedAt": "2026-10-04T17:05:00.506950Z"
+      "updatedAt": "2026-10-04T18:15:32.234579Z"
     },
     "tv-ta-red-team": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
@@ -1705,9 +1705,9 @@
     "update-portfolio-targets": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
       "sourceType": "local",
-      "computedHash": "bd3ce86abc2ec343546015e406f7686a4b032e2b78061c06381a783aae3ff775",
+      "computedHash": "2f8e600892207229f6244c000df11ef85557af73fea5cf0f946f308664b442cd",
       "installedAt": "2026-05-03T02:39:20.203477Z",
-      "updatedAt": "2026-10-04T17:29:49.386066Z"
+      "updatedAt": "2026-10-04T18:15:31.813478Z"
     },
     "update-stock-analysis": {
       "source": "https://github.com/richfrem/InvestmentToolkit",
