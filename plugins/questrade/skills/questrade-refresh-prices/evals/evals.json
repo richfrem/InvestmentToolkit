@@ -1,0 +1,68 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "refresh prices via questrade",
+    "expected_trigger": "questrade-refresh-prices",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes questrade-refresh-prices to batch quotes and update investment_price.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/questrade:questrade-refresh-prices --full-watchlist",
+    "expected_trigger": "questrade-refresh-prices",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognizes slash command with --full-watchlist flag.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "pull live market quotes for my held stocks using questrade mcp",
+    "expected_trigger": "questrade-refresh-prices",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent identifies intent to refresh prices via Questrade.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "sync my questrade holdings and account balances into sqlite",
+    "expected_trigger": "questrade-sync-portfolio",
+    "expected_not_trigger": [
+      "questrade-refresh-prices"
+    ],
+    "pass_condition": "Agent routes to questrade-sync-portfolio, not price refresh.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "draft an order to buy 10 shares of NVDA in my TFSA",
+    "expected_trigger": "questrade-order-draft",
+    "expected_not_trigger": [
+      "questrade-refresh-prices"
+    ],
+    "pass_condition": "Agent routes to questrade-order-draft, not price refresh.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "calculate YTD time-weighted returns for my portfolio",
+    "expected_trigger": "ytd-return",
+    "expected_not_trigger": [
+      "questrade-refresh-prices"
+    ],
+    "pass_condition": "Agent routes to ytd-return, not Questrade price refresh.",
+    "should_trigger": false
+  }
+]

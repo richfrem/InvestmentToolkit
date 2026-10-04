@@ -1,51 +1,58 @@
 ---
 name: questrade-sync-portfolio
-description: "Directly syncs Questrade account balances, holdings, and cash splits into domain_model.sqlite."
-argument-hint: "[--dry-run]"
+plugin: questrade
+description: Directly syncs Questrade account balances, holdings, and cash splits into domain_model.sqlite. Trigger on /questrade-sync-portfolio or "sync questrade portfolio".
 allowed-tools: Bash, Read, Write
 ---
 
-# Questrade Direct Portfolio Sync Skill
+# Questrade Sync Portfolio
 
-## Purpose
-Directly queries the Questrade MCP tools (`List Accounts`, `Get Balances`, `Get Positions`) and syncs account metadata, uninvested cash (`CASH_USD`), exchange rates, and open security quantities directly into `domain_model.sqlite`.
+Directly queries Questrade MCP balances and positions tools to synchronize holdings and cash into SQLite domain model.
 
-Triggers `refresh_all.py` upon completion to update target weights and thesis role badges.
+## Contents
 
-## Prerequisites & Pre-Flight Check
-1. Verify Questrade MCP session is active via `List Accounts`.
-2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Schema Reference
-See `references/questrade-tool-schemas.md` — specifically the "domain_model.sqlite account_id convention" section. `questrade_sync.py` resolves each Questrade account to the canonical `"TFSA"`/`"RRSP"`/`"CASH"` account_id itself (never the Questrade uuid) and clears any stale position no longer present in the sync — you do not need to do either of those manually when staging the payload.
+## Constraints
+
+- **Scope boundaries**: Syncs holdings, quantities, cash splits, and exchange rates; does not update market prices.
+- **Account resolution**: Canonical account identifiers (`TFSA`, `RRSP`, `CASH`) are mapped automatically by `questrade_sync.py`.
+- **Atomic sync**: Stale positions no longer present in the Questrade account snapshot are cleared automatically.
+
+## Quick start
+
+Execute full portfolio ingestion from Questrade:
+
+```bash
+python3 plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_sync.py --help
+```
+
+Use `--dry-run` to preview changes without committing to SQLite.
 
 ## Workflow
 
-1. **Query MCP Data**:
-   - Call `List Accounts` to get active account IDs.
-   - For each account, call `Get Balances(accountId=...)` and `Get Positions(accountId=...)`.
-2. **Stage Payload**:
-   - Construct a temporary JSON payload at `temp/questrade_sync_payload.json` containing:
-     ```json
-     {
-       "accounts": [...],
-       "balances": { "accountId": {...} },
-       "positions": { "accountId": [...] }
-     }
-     ```
+1. **Query MCP Account Data**:
+   - Call MCP tool `List Accounts` to enumerate active accounts.
+   - For each account, call `Get Balances` and `Get Positions`.
+2. **Stage Intermediate Payload**:
+   Construct payload at `temp/questrade_sync_payload.json` containing `accounts`, `balances`, and `positions`.
 3. **Execute Persistence Script**:
-   - Run the canonical Python service:
-     ```bash
-     python3 plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_sync.py --payload temp/questrade_sync_payload.json
-     ```
-4. **Clean up & Verify**:
-   - Remove temporary JSON payload.
-   - Run `python3 investment_screener/backend/py_services/verify_portfolio_invariants.py` to confirm invariant totals match.
-   - Display a summary of updated accounts, cash balances, and holdings in chat.
+   ```bash
+   python3 plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_sync.py --payload temp/questrade_sync_payload.json
+   ```
+4. **Trigger Refresh & Invariant Check**:
+   - Run `python3 investment_screener/backend/py_services/verify_portfolio_invariants.py`.
+   - Remove temporary JSON payload and display sync summary.
 
-## See also
-This skill only syncs holdings/balances/cash — it never writes current market prices (`investment_price` is untouched). For a live market price refresh, use the separate `questrade-refresh-prices` skill.
+## Verification
 
-## Continuous Self-Evolution Policy
-Per `.agent/rules/self-evolution-policy.md`:
-Whenever actual MCP tool schema responses reveal unexpected parameter names, response fields, or missing attributes during live execution, agents MUST immediately refine this `SKILL.md` to document the exact parameter shapes and optimize subsequent agent executions.
+- Confirm portfolio invariants match via `verify_portfolio_invariants.py`.
+- Validate test cases against `evals/evals.json`.
+
+## References
+
+- [Questrade Tool Schemas](references/questrade-tool-schemas.md): Schema reference for `list_accounts`, `get_balances`, and `get_positions`.

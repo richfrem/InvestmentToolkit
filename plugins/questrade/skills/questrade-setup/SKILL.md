@@ -1,86 +1,55 @@
 ---
 name: questrade-setup
-description: "Diagnose and guide setup of the Questrade Brokerage MCP connection in Claude Code or other supported AI environments."
-argument-hint: "[command]"
+plugin: questrade
+description: Diagnose and guide setup of the Questrade Brokerage MCP connection across Claude Code, Cursor, VS Code Copilot, and Codex CLI. Trigger on /questrade-setup or "set up questrade mcp".
 allowed-tools: Bash, Read, Write
 ---
 
-# Questrade Multi-Agent Setup & Diagnostic Skill
+# Questrade Setup
 
-## Purpose
-Configures and verifies the official Questrade Model Context Protocol (MCP) server across supported AI environments (Antigravity / Gemini, Cursor, VS Code Copilot, Codex CLI, and Claude Code).
+Setup and diagnostic wizard for the official Questrade Model Context Protocol (MCP) server.
 
----
+## Contents
 
-## 🛠️ Universal Setup Across Environments
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-### 1. Antigravity IDE (AGY) / Standard MCP Config
-This repository provides a top-level `.mcp.json` and `plugins/questrade/.mcp.json`:
-```json
-{
-  "mcpServers": {
-    "questrade": {
-      "url": "https://mcp.questrade.com/v1/brokerage/mcp",
-      "transport": "http"
-    }
-  }
-}
-```
-If your IDE supports MCP Server auto-discovery, it reads `.mcp.json` upon launch.
+## Constraints
 
----
+- **Endpoint invariant**: Official MCP endpoint is `https://mcp.questrade.com/v1/brokerage/mcp` using `http` transport.
+- **Credential isolation**: Never request or persist raw Questrade API tokens directly in repository files; authentication uses Questrade's OAuth browser flow.
+- **Tool boundary**: MCP provides broker querying and order staging; core analytics and database operations remain in `InvestmentToolkit`.
 
-### 2. VS Code / GitHub Copilot Chat
-1. Open Command Palette: `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows).
-2. Type `MCP: Add Server`.
-3. Select `HTTP`.
-4. Enter URL: `https://mcp.questrade.com/v1/brokerage/mcp`.
-5. Name: `questrade`.
-6. Complete browser sign-in.
+## Quick start
 
----
+Add server to MCP configuration:
 
-### 3. Cursor
-1. `Settings` -> `Tools & Integrations` -> `MCP`.
-2. Select `New MCP Server`.
-3. Name: `questrade`, Type: `sse`/`http`, URL: `https://mcp.questrade.com/v1/brokerage/mcp`.
-4. Save and toggle **On**.
-
----
-
-### 4. Codex CLI
 ```bash
-codex mcp add questrade --url https://mcp.questrade.com/v1/brokerage/mcp
-codex mcp login questrade
+claude mcp add questrade --url https://mcp.questrade.com/v1/brokerage/mcp
 ```
 
----
+Trigger browser login via `/mcp` or `codex mcp login questrade`.
 
-### 5. Claude Code (CLI)
+## Workflow
 
-#### Step A: Register Marketplace & Install Plugin
-In your Claude Code terminal, run:
-```text
-/plugin marketplace add richfrem/InvestmentToolkit
-/plugin install questrade@investment-toolkit-plugins
-```
+1. **Configure Environment**:
+   - Claude Code: `claude mcp add questrade --url https://mcp.questrade.com/v1/brokerage/mcp`
+   - Codex CLI: `codex mcp add questrade --url https://mcp.questrade.com/v1/brokerage/mcp`
+   - VS Code / Cursor: Add server entry with URL `https://mcp.questrade.com/v1/brokerage/mcp`
+2. **Authenticate Session**:
+   Initiate browser OAuth sign-in flow.
+3. **Verify Connectivity**:
+   Call MCP tool `List Accounts` to confirm live connection.
 
-#### Step B: Add MCP Server & Log In
-```bash
-claude mcp add --transport http questrade https://mcp.questrade.com/v1/brokerage/mcp
-```
-*In Claude Code: `/mcp` -> `questrade` -> `Log in` to complete the browser OAuth handshake.*
+## Verification
 
-## 📱 Mandatory Prerequisite for Order Drafting: Mobile Push Approval
-While account balances, positions, and market research are completely desktop-accessible, **order drafting (`Create Order Instruction`) strictly requires mobile Push-to-Approve**:
-1. **Install App**: Install **QuestMobile** or **EdgeMobile** on your smartphone.
-2. **Enroll Device**: Sign in on the app to register your phone as a trusted device under Security / Push Approvals.
-3. **App State**: Ensure the mobile app is active/unlocked on your phone when requesting order drafts from your AI agent to receive the instant push approval prompt.
-4. **Desktop Fallback**: If no mobile device is enrolled, orders will execute in **Preview mode only** (`Preview Order Instruction`), displaying margin and commission economics without sending to the broker.
+- Confirm `List Accounts` returns active account IDs.
+- Validate test cases against `evals/evals.json`.
 
----
+## References
 
-## ⚠️ Claude Code Permission Guidelines
-When configuring `.claude/settings.local.json` or granting tool permissions in Claude Code v2.1.246+:
-- **Avoid Leading Wildcards**: Use trailing wildcards only (e.g. `"Bash(awk *)"` or `"Bash(npm run *)"`), never unescaped mid-command wildcards (e.g. avoid `"Bash(awk '/regex.*pattern/' file)"`).
-- **Restart After Plugin Add**: After installing the plugin, restart Claude Code (`/exit` then `claude`) to load the newly registered `/questrade:*` slash commands.
+- [Questrade MCP Integration](references/questrade-mcp-ai-integration.md): Multi-environment integration and transport architecture.
+- [Questrade Tool Schemas](references/questrade-tool-schemas.md): Tool parameter shapes, return schemas, and error codes.

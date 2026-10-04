@@ -1,35 +1,50 @@
 ---
 name: questrade-get-positions
-description: "Direct skill wrapper for Questrade MCP tools to retrieve and display open security positions."
-argument-hint: "[account_id]"
+plugin: questrade
+description: Direct skill wrapper for Questrade MCP tools to retrieve and display open security positions. Trigger on /questrade-get-positions or "check questrade positions".
 allowed-tools: Bash, Read
 ---
 
-# Questrade Get Positions Skill
+# Questrade Get Positions
 
-## Purpose
-Directly queries the Questrade MCP `Get Positions` (and `List Accounts`) tool to display open securities, share counts, and average cost basis without modifying database records.
+Directly queries Questrade MCP position tools to display open securities, share counts, and cost basis.
 
-## Prerequisites & Pre-Flight Check
-1. Verify Questrade MCP session is active via `List Accounts`.
-2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
+## Contents
 
-## Schema Reference
-See `references/questrade-tool-schemas.md` (`get_positions` section) for exact field names — the symbol lives in `instrument`, not `symbol`, and there is no per-row market price or P&L.
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Constraints
+
+- **Read-only**: Never modify holdings in `domain_model.sqlite` from this skill (use `questrade-sync-portfolio` for database ingestion).
+- **Session check**: Verify active session via `List Accounts` before querying positions.
+- **Symbol attribute**: Questrade MCP position records store the ticker in `instrument`, not `symbol`.
+
+## Quick start
+
+Query open security positions:
+
+```text
+Query Questrade List Accounts -> Get Positions(accountId)
+```
 
 ## Workflow
 
-1. If no `account_id` is specified:
-   - Call MCP tool `List Accounts`.
-2. For each account:
-   - Call MCP tool `Get Positions(accountId=...)`.
-3. Format as a clean markdown table:
-   - Account Number & Type (TFSA, RRSP, Margin)
-   - Symbol
-   - Open Quantity
-   - Average Entry Price (USD/CAD)
-4. Account-level totals (total market value, day P&L) are retrieved via `/questrade:questrade-get-balances`.
+1. **Resolve Accounts**:
+   Call MCP tool `List Accounts` (or filter by user-specified `account_id`).
+2. **Fetch Positions**:
+   Call MCP tool `Get Positions(accountId=...)` for each account.
+3. **Format Table**:
+   Render Markdown table with columns: `Account`, `Symbol`, `Quantity`, `Average Entry Price`.
 
-## Continuous Self-Evolution Policy
-Per `.agent/rules/self-evolution-policy.md`:
-Whenever actual MCP tool schema responses reveal unexpected parameter names, response fields, or missing attributes during live execution, agents MUST immediately refine this `SKILL.md` to document the exact parameter shapes and optimize subsequent agent executions.
+## Verification
+
+- Confirm position list renders without altering local database state.
+- Validate test cases against `evals/evals.json`.
+
+## References
+
+- [Questrade Tool Schemas](references/questrade-tool-schemas.md): Schema definitions for `get_positions`.
