@@ -45,11 +45,11 @@
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 32.0,
         "netMargin": 35.0,
         "exitPE": 16.0,
-        "qualityMultiplier": 1.10,
+        "qualityMultiplier": 1.1,
         "shareChange": -0.5,
         "rationale": "SK Hynix defends #1 global market share in HBM3e/HBM4 packaging with NVIDIA priority allocation; expands to $290.5B revenue at 35% margin.",
         "moatScore": 5,
@@ -68,7 +68,7 @@
         "growthRate": 45.0,
         "netMargin": 44.0,
         "exitPE": 22.0,
-        "qualityMultiplier": 1.20,
+        "qualityMultiplier": 1.2,
         "shareChange": -1.5,
         "rationale": "SK Hynix commands virtual duopoly in advanced MR-MUF packaging for HBM4/HBM4e; $464.7B revenue at 44% margin justifies AI rerating.",
         "moatScore": 5,
@@ -84,7 +84,7 @@
       }
     },
     "globalSettings": {
-      "discountRate": 7.00,
+      "discountRate": 7.0,
       "timeHorizon": 5
     },
     "aiThesis": {
@@ -93,6 +93,7 @@
       "fairValue": 244.45,
       "action": "ACCUMULATE",
       "analyzedAt": "2026-09-01T06:55:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

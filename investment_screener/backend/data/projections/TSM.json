@@ -38,14 +38,14 @@
         "year5Revenue": 209776.8,
         "year5NetIncome": 79715.2,
         "year5EPS": 15.52,
-        "scenarioPrice": 209.20,
+        "scenarioPrice": 209.2,
         "risks": [
           "Taiwan Strait geopolitical tensions triggering valuation discount compression",
           "Hyperscaler AI capex pause leading to temporary fab utilization drops"
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 22.0,
         "netMargin": 46.0,
         "exitPE": 25.0,
@@ -68,14 +68,14 @@
         "growthRate": 30.0,
         "netMargin": 50.0,
         "exitPE": 32.0,
-        "qualityMultiplier": 1.20,
+        "qualityMultiplier": 1.2,
         "shareChange": -1.0,
         "rationale": "Unprecedented multi-year AI accelerator demand wave; global fab expansion in US/Japan diversifies geopolitical risk; $442.0B revenue at 50% margin.",
         "moatScore": 5,
         "managementScore": 5,
         "year5Revenue": 441961.2,
         "year5NetIncome": 220980.6,
-        "year5EPS": 44.80,
+        "year5EPS": 44.8,
         "scenarioPrice": 1226.64,
         "risks": [
           "Extreme concentration of global leading-edge AI compute dependencies",
@@ -84,7 +84,7 @@
       }
     },
     "globalSettings": {
-      "discountRate": 7.00,
+      "discountRate": 7.0,
       "timeHorizon": 5
     },
     "aiThesis": {
@@ -93,6 +93,7 @@
       "fairValue": 658.83,
       "action": "ACCUMULATE",
       "analyzedAt": "2026-09-01T06:57:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

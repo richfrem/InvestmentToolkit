@@ -26,11 +26,11 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.25,
+        "weight": 0.24000000000000002,
         "growthRate": 15.0,
         "netMargin": 16.0,
         "exitPE": 10.0,
-        "qualityMultiplier": 0.90,
+        "qualityMultiplier": 0.9,
         "shareChange": 1.0,
         "rationale": "Severe memory downcycle following HBM3e/HBM4 capacity overbuild; margin compresses to 16% on $75.2B Y5 revenue.",
         "moatScore": 3,
@@ -45,7 +45,7 @@
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.46,
         "growthRate": 36.0,
         "netMargin": 32.0,
         "exitPE": 16.0,
@@ -57,14 +57,14 @@
         "year5Revenue": 173904.4,
         "year5NetIncome": 55649.4,
         "year5EPS": 51.81,
-        "scenarioPrice": 506.00,
+        "scenarioPrice": 506.0,
         "risks": [
           "Hyperscaler capex consolidation causing temporary digestion pauses",
           "Raw silicon and specialized packaging substrates supply friction"
         ]
       },
       "bull": {
-        "weight": 0.25,
+        "weight": 0.3,
         "growthRate": 50.0,
         "netMargin": 42.0,
         "exitPE": 22.0,
@@ -76,7 +76,7 @@
         "year5Revenue": 283839.2,
         "year5NetIncome": 119212.5,
         "year5EPS": 116.77,
-        "scenarioPrice": 1717.40,
+        "scenarioPrice": 1717.4,
         "risks": [
           "Geopolitical tension in East Asia impacting offshore packaging lines",
           "Next-generation optical interconnects reducing total HBM memory stack height"
@@ -90,9 +90,38 @@
     "aiThesis": {
       "model": "Gemini 3.7 Flash",
       "rationale": "Micron Technology, Inc. (MU) is one of only three global producers of High-Bandwidth Memory (HBM3e/HBM4) vital to every modern AI accelerator. TTM revenue surged +345.7% YoY to $37.38B. While fundamental DCF yields $695.61 (-25.9% vs $938.32 current) due to conservative cycle down-turn modeling, the forward P/E of 6.05x and $1,513.41 Wall Street consensus reflect sustained HBM profitability. Recommendation: MAINTAIN (Core Holding: 1.2 shares, 3.55% target weight). Maintain current position size, accumulate only on pullbacks near $848.55, and execute partial trims into resistance above $1,050.00.",
-      "fairValue": 695.61,
-      "action": "MAINTAIN",
-      "analyzedAt": "2026-09-01T06:50:00.000Z"
-    }
+      "fairValue": 829.45,
+      "action": "SELL",
+      "analyzedAt": "2026-10-04T17:51:38Z"
+    },
+    "lastGrokSweep": "2026-10-04",
+    "catalystUpdates": [
+      {
+        "date": "2026-09-30",
+        "source": "apply_catalyst.py",
+        "type": "earnings_beat",
+        "events": [
+          "FQ4'26 (9/30): rev $54.23B vs $51.07B est, adj EPS $33.42, GM 87%; FQ1 guide $61.5B +/-1.5B, EPS $38.15 +/-1.00"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $700.25\u2192$764.85. Action: TRIM\u2192SELL."
+      },
+      {
+        "date": "2026-10-04",
+        "source": "apply_catalyst.py",
+        "type": "earnings_beat",
+        "events": [
+          "FQ4 beat and raise: $54.23B rev (+379% y/y), FQ1 guide $61.5B, >$32B LT commitments"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $764.85\u2192$829.45. Action: SELL\u2192SELL."
+      }
+    ]
   }
 ]

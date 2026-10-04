@@ -38,14 +38,14 @@
         "year5Revenue": 17338.1,
         "year5NetIncome": 2080.6,
         "year5EPS": 2.33,
-        "scenarioPrice": 21.50,
+        "scenarioPrice": 21.5,
         "risks": [
           "Chinese domestic SiC wafer competition eroding automotive gross margins",
           "Prolonged industrial microcontroller inventory destocking"
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 16.5,
         "netMargin": 19.5,
         "exitPE": 21.0,
@@ -84,15 +84,16 @@
       }
     },
     "globalSettings": {
-      "discountRate": 9.10,
+      "discountRate": 9.1,
       "timeHorizon": 5
     },
     "aiThesis": {
       "model": "Gemini 3.7 Flash",
       "rationale": "STMicroelectronics N.V. (STM) is a leader in high-voltage 800V DC server rack power distribution and Catania 200mm SiC semiconductor manufacturing. TTM revenue reached $11.8B (+26.1% YoY). At $48.78 (forward P/E 19.20x), our 5-year DCF yields a fair value of $93.19 (+91.0% upside at 9.10% WACC). Reverse DCF indicates the market is pricing in just 5.3% CAGR, well below our 16.5% base case. Recommendation: ACCUMULATE (Core Holding: 24.0 shares, 3.69% target weight). Accumulate on dips near $47.22, trim Tier 1 at $80.00+.",
       "fairValue": 93.19,
-      "action": "ACCUMULATE",
+      "action": "MAINTAIN",
       "analyzedAt": "2026-09-01T07:01:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

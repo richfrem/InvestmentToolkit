@@ -26,7 +26,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.30,
+        "weight": 0.25,
         "growthRate": 25.0,
         "netMargin": 12.0,
         "exitPE": 22.0,
@@ -45,18 +45,18 @@
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.47,
         "growthRate": 55.0,
         "netMargin": 25.0,
         "exitPE": 32.0,
-        "qualityMultiplier": 1.10,
+        "qualityMultiplier": 1.1,
         "shareChange": 2.0,
         "rationale": "Wafer-Scale Engine (WSE-3) captures massive inference market share across AWS Bedrock and OpenAI ($20B backlog); 21 PB/s memory bandwidth moat commands premium multiples.",
         "moatScore": 5,
         "managementScore": 4,
         "year5Revenue": 4562.7,
         "year5NetIncome": 1140.7,
-        "year5EPS": 9.20,
+        "year5EPS": 9.2,
         "scenarioPrice": 184.58,
         "risks": [
           "TSMC monolithic wafer packaging capacity allocation bottlenecks",
@@ -64,11 +64,11 @@
         ]
       },
       "bull": {
-        "weight": 0.20,
+        "weight": 0.28,
         "growthRate": 78.0,
         "netMargin": 34.0,
         "exitPE": 40.0,
-        "qualityMultiplier": 1.20,
+        "qualityMultiplier": 1.2,
         "shareChange": 1.5,
         "rationale": "Cerebras becomes universal hardware benchmark for frontier reasoning & agentic swarm inference; multi-gigawatt sovereign AI supercomputer contracts scale globally.",
         "moatScore": 5,
@@ -76,7 +76,7 @@
         "year5Revenue": 9113.0,
         "year5NetIncome": 3098.4,
         "year5EPS": 25.62,
-        "scenarioPrice": 700.70,
+        "scenarioPrice": 700.7,
         "risks": [
           "Next-generation optical interconnect GPU architectures narrowing latency advantage",
           "US export control restrictions on high-throughput AI wafer engines"
@@ -90,9 +90,25 @@
     "aiThesis": {
       "model": "Gemini 3.7 Flash",
       "rationale": "Cerebras Systems Inc. (CBRS) produces the monolithic Wafer-Scale Engine (WSE-3), bypassing traditional board-level GPU communication limits with 21 PB/s memory bandwidth and 2,500+ tok/s throughput. TTM revenue reached $510.0M (+74.3% YoY). At $177.25, our 5-year DCF yields a fair value of $237.56 (+34.0% upside at 11.91% WACC). Reverse DCF indicates the market is pricing in a 53.8% CAGR, below our 55.0% base case. Recommendation: ACCUMULATE (Core Holding: 4.5 shares, 2.74% target weight). Accumulate on dips near $159.96, trim Tier 1 at $237.56.",
-      "fairValue": 237.56,
-      "action": "ACCUMULATE",
-      "analyzedAt": "2026-09-01T06:48:00.000Z"
-    }
+      "fairValue": 287.22,
+      "action": "BUY",
+      "analyzedAt": "2026-10-04T17:51:39Z"
+    },
+    "lastGrokSweep": "2026-10-04",
+    "catalystUpdates": [
+      {
+        "date": "2026-10-04",
+        "source": "apply_catalyst.py",
+        "type": "major_contract",
+        "events": [
+          "Agreement to supply Gimlet Labs ~100 MW of AI systems; OpenAI hardware reallocation volatility"
+        ],
+        "weightShifts": {
+          "bull": 8,
+          "bear": -5
+        },
+        "thesisImpact": "Bull probability +8pp; bear -5pp. FV $237.56\u2192$287.22. Action: ACCUMULATE\u2192BUY."
+      }
+    ]
   }
 ]

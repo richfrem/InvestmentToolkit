@@ -26,11 +26,11 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.30,
+        "weight": 0.3,
         "growthRate": 25.0,
         "netMargin": 12.0,
         "exitPE": 18.0,
-        "qualityMultiplier": 0.90,
+        "qualityMultiplier": 0.9,
         "shareChange": 4.0,
         "rationale": "Execution delays in Australian 72MW datacenter construction; warrant dilution and power grid interconnect queues restrict Year 5 revenue to $405M with 12% margin.",
         "moatScore": 3,
@@ -45,7 +45,7 @@
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 55.0,
         "netMargin": 22.0,
         "exitPE": 28.0,
@@ -64,7 +64,7 @@
         ]
       },
       "bull": {
-        "weight": 0.20,
+        "weight": 0.2,
         "growthRate": 80.0,
         "netMargin": 28.0,
         "exitPE": 35.0,
@@ -93,6 +93,7 @@
       "fairValue": 143.02,
       "action": "ACCUMULATE",
       "analyzedAt": "2026-09-01T06:54:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

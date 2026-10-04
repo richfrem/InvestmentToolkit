@@ -26,11 +26,11 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.30,
+        "weight": 0.3,
         "growthRate": 15.0,
         "netMargin": 8.0,
         "exitPE": 10.0,
-        "qualityMultiplier": 0.90,
+        "qualityMultiplier": 0.9,
         "shareChange": 2.5,
         "rationale": "Bitcoin bear market and ASIC commercialization delays limit Year 5 revenue to $1.25B with 8% net margin.",
         "moatScore": 3,
@@ -45,7 +45,7 @@
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 38.0,
         "netMargin": 16.0,
         "exitPE": 18.0,
@@ -64,7 +64,7 @@
         ]
       },
       "bull": {
-        "weight": 0.20,
+        "weight": 0.2,
         "growthRate": 58.0,
         "netMargin": 24.0,
         "exitPE": 24.0,
@@ -91,8 +91,9 @@
       "model": "Gemini 3.7 Flash",
       "rationale": "Bitdeer Technologies Group (BTDR) stands apart from commodity Bitcoin miners through proprietary SEALMINER ASIC chip design capabilities and low-cost hydro/geothermal power across Bhutan and Norway. TTM revenue reached $620.3M (+47.1% YoY). At $10.45, our 5-year DCF yields a fair value of $32.77 (+213.6% upside at 10.53% WACC). Reverse DCF indicates the market is pricing in just 17.6% CAGR, well below our 38.0% base case. Recommendation: ACCUMULATE (Core Holding: 62.0 shares, 2.14% target weight). Accumulate on dips near $8.95, trim Tier 1 at $24.00+.",
       "fairValue": 32.77,
-      "action": "ACCUMULATE",
+      "action": "MAINTAIN",
       "analyzedAt": "2026-09-01T06:47:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

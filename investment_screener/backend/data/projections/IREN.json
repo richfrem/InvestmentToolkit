@@ -45,7 +45,7 @@
         ]
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 35.0,
         "netMargin": 24.0,
         "exitPE": 22.0,
@@ -93,6 +93,7 @@
       "fairValue": 29.03,
       "action": "MAINTAIN",
       "analyzedAt": "2026-09-01T07:00:00.000Z"
-    }
+    },
+    "lastGrokSweep": "2026-10-04"
   }
 ]

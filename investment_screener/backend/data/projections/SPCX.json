@@ -15,7 +15,7 @@
       "exchange": "PRIVATE",
       "shares": 1160000000,
       "revenue": 18674000000,
-      "lastActualPS": 16.10
+      "lastActualPS": 16.1
     },
     "dataPreferences": {
       "growthBasis": "ttm",
@@ -26,7 +26,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.25,
+        "weight": 0.2,
         "growthRate": 15.0,
         "netMargin": 8.0,
         "exitPE": 22.0,
@@ -45,11 +45,11 @@
         ]
       },
       "base": {
-        "weight": 0.45,
+        "weight": 0.42,
         "growthRate": 25.0,
         "netMargin": 18.0,
         "exitPE": 35.0,
-        "qualityMultiplier": 1.20,
+        "qualityMultiplier": 1.2,
         "shareChange": 0.5,
         "rationale": "Starlink reaches 25M+ subscribers globally with Direct-to-Cell rollout; Starship achieves regular commercial cargo cadence; $57.0B revenue at 18% net margin.",
         "moatScore": 5,
@@ -64,7 +64,7 @@
         ]
       },
       "bull": {
-        "weight": 0.30,
+        "weight": 0.38,
         "growthRate": 36.0,
         "netMargin": 25.0,
         "exitPE": 48.0,
@@ -84,15 +84,31 @@
       }
     },
     "globalSettings": {
-      "discountRate": 12.00,
+      "discountRate": 12.0,
       "timeHorizon": 5
     },
     "aiThesis": {
       "model": "Gemini 3.7 Flash",
       "rationale": "Space Exploration Technologies Corp. (SpaceX / SPCX) holds a global near-monopoly in orbital launch services and is scaling Starlink into the world's largest low-earth orbit constellation. TTM revenue reached $18.67B (+91.9% YoY). At $142.78 (secondary market pricing), our 5-year DCF yields a fair value of $287.12 (+101.1% upside at 12.0% illiquidity hurdle rate). Reverse DCF indicates the market is pricing in just 16.2% CAGR, well below our 25.0% base case. Recommendation: ACCUMULATE (Core Holding: 10.0 shares, 4.06% target weight). Accumulate on pullbacks near $125.67, trim Tier 1 at $250.00+.",
-      "fairValue": 287.12,
-      "action": "ACCUMULATE",
-      "analyzedAt": "2026-09-01T06:56:00.000Z"
-    }
+      "fairValue": 329.08,
+      "action": "BUY",
+      "analyzedAt": "2026-10-04T17:51:39Z"
+    },
+    "lastGrokSweep": "2026-10-04",
+    "catalystUpdates": [
+      {
+        "date": "2026-10-04",
+        "source": "apply_catalyst.py",
+        "type": "major_contract",
+        "events": [
+          "Starship reached orbit deploying 26 Starlink V3; Crew-13; Google Suncatcher orbital AI test"
+        ],
+        "weightShifts": {
+          "bull": 8,
+          "bear": -5
+        },
+        "thesisImpact": "Bull probability +8pp; bear -5pp. FV $287.12\u2192$329.08. Action: ACCUMULATE\u2192BUY."
+      }
+    ]
   }
 ]
