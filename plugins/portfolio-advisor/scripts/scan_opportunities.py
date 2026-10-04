@@ -48,8 +48,34 @@ from domain_model.pillar_repository import list_pillars  # noqa: E402
 from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
 from portfolio_io import compute_weights  # noqa: E402
 
+try:
+    from compute_conviction_scores import compute_all
+except ImportError:
+    compute_all = None
+
 
 # ── Loaders ────────────────────────────────────────────────────────────────────
+
+def load_conviction_scores(db_path: Path | None = None) -> dict:
+    """Return {ticker: ConvictionScore} mapping containing live technical momentum,
+    ownership-aware bands, and composite scores from SQLite.
+    """
+    if compute_all is None:
+        return {}
+    try:
+        intel_path = None
+        if db_path:
+            p = Path(db_path)
+            if p.name == "domain_model.sqlite":
+                sibling = p.parent / "intelligence.sqlite"
+                if sibling.exists():
+                    intel_path = str(sibling)
+            else:
+                intel_path = str(p)
+        scores = compute_all(intel_path)
+        return {s.ticker: s for s in scores}
+    except Exception:
+        return {}
 
 def load_json(path: Path) -> dict | list:
     with open(path) as f:
@@ -243,9 +269,20 @@ def _proj_fields(proj: dict) -> dict:
     }
 
 
+def _enrich_with_scores(item: dict, ticker: str, scores: dict | None = None) -> None:
+    """Enrich opportunity item with live technical momentum and conviction scoring."""
+    sc = scores.get(ticker) if scores else None
+    item["rsi"] = round(sc.rsi, 1) if (sc and sc.rsi is not None) else None
+    item["adx"] = round(sc.adx, 1) if (sc and sc.adx is not None) else None
+    item["volBias"] = round(sc.vol_bias, 1) if (sc and sc.vol_bias is not None) else None
+    item["band"] = sc.band if sc else None
+    item["convictionScore"] = sc.total if sc else None
+    item["flags"] = sc.flags if sc else []
+
+
 # ── Category scanners ──────────────────────────────────────────────────────────
 
-def scan_exit(portfolio: dict, thesis: dict) -> list:
+def scan_exit(portfolio: dict, thesis: dict, scores: dict | None = None) -> list:
     """Held positions where thesis targetPct == 0 → EXIT queue."""
     results = []
     for ticker, pos in portfolio.items():
@@ -261,7 +298,7 @@ def scan_exit(portfolio: dict, thesis: dict) -> list:
             if pf.get("action") in ("BUY", "ACCUMULATE", "INITIATE") and pf.get("upside", 0) > 10:
                 continue
 
-            results.append({
+            item = {
                 "ticker":     ticker,
                 "actualPct":  pos["actualPct"],
                 "value":      pos["value"],
@@ -274,13 +311,15 @@ def scan_exit(portfolio: dict, thesis: dict) -> list:
                 "analyzedAt": pf.get("analyzedAt", ""),
                 "stale":      pf.get("stale", True),
                 "note":       "thesis EXIT" if ticker in thesis else "not in thesis",
-            })
+            }
+            _enrich_with_scores(item, ticker, scores)
+            results.append(item)
     # Sort by value desc (biggest capital locked first)
     results.sort(key=lambda x: x["value"], reverse=True)
     return results
 
 
-def scan_trim(portfolio: dict, thesis: dict) -> list:
+def scan_trim(portfolio: dict, thesis: dict, scores: dict | None = None) -> list:
     """Held positions where actualPct > targetPct by >1pp AND DCF is SELL/TRIM."""
     results = []
     for ticker, pos in portfolio.items():
@@ -301,7 +340,7 @@ def scan_trim(portfolio: dict, thesis: dict) -> list:
         # DO NOT recommend trimming if the AI screams BUY or has massive upside
         if dcf_action in ("BUY", "ACCUMULATE", "INITIATE") and pf.get("upside", 0) > 10:
             continue
-        results.append({
+        item = {
             "ticker":     ticker,
             "actualPct":  actual,
             "targetPct":  target,
@@ -315,12 +354,14 @@ def scan_trim(portfolio: dict, thesis: dict) -> list:
             "pillar":     t.get("pillarName", ""),
             "analyzedAt": pf.get("analyzedAt", ""),
             "stale":      pf.get("stale", True),
-        })
+        }
+        _enrich_with_scores(item, ticker, scores)
+        results.append(item)
     results.sort(key=lambda x: x["drift"], reverse=True)
     return results
 
 
-def scan_accumulate(portfolio: dict, thesis: dict) -> list:
+def scan_accumulate(portfolio: dict, thesis: dict, scores: dict | None = None) -> list:
     """Held positions underweight vs thesis target AND DCF is BUY/ACCUMULATE."""
     results = []
     for ticker, pos in portfolio.items():
@@ -340,7 +381,7 @@ def scan_accumulate(portfolio: dict, thesis: dict) -> list:
         # Only flag if DCF agrees it's worth adding
         if dcf_action not in ("BUY", "ACCUMULATE", "INITIATE", "MAINTAIN", ""):
             continue
-        results.append({
+        item = {
             "ticker":     ticker,
             "actualPct":  actual,
             "targetPct":  target,
@@ -355,12 +396,14 @@ def scan_accumulate(portfolio: dict, thesis: dict) -> list:
             "pillar":     t.get("pillarName", ""),
             "analyzedAt": pf.get("analyzedAt", ""),
             "stale":      pf.get("stale", True),
-        })
+        }
+        _enrich_with_scores(item, ticker, scores)
+        results.append(item)
     results.sort(key=lambda x: x["score"] if x["score"] else 0, reverse=True)
     return results
 
 
-def scan_initiate(portfolio: dict, thesis: dict, top: int = 15) -> list:
+def scan_initiate(portfolio: dict, thesis: dict, top: int = 15, scores: dict | None = None) -> list:
     """Unowned tickers in projections with BUY/INITIATE rating, ranked by upside × confidence."""
     held = set(portfolio.keys()) - {"_meta"}
     results = []
@@ -381,7 +424,7 @@ def scan_initiate(portfolio: dict, thesis: dict, top: int = 15) -> list:
         if pf["upside"] <= 0:
             continue
         t = thesis.get(ticker, {})
-        results.append({
+        item = {
             "ticker":     ticker,
             "inThesis":   ticker in thesis,
             "targetPct":  t.get("targetPct", 0),
@@ -395,12 +438,14 @@ def scan_initiate(portfolio: dict, thesis: dict, top: int = 15) -> list:
             "thesis":     pf["thesis"],
             "analyzedAt": pf["analyzedAt"],
             "stale":      pf["stale"],
-        })
+        }
+        _enrich_with_scores(item, ticker, scores)
+        results.append(item)
     results.sort(key=lambda x: x["score"], reverse=True)
     return results[:top]
 
 
-def scan_conflicts(portfolio: dict, thesis: dict) -> list:
+def scan_conflicts(portfolio: dict, thesis: dict, scores: dict | None = None) -> list:
     """Finds two types of conflicts:
        1) Core holdings (targetPct > 0) where DCF says SELL
        2) Zero-weight holdings (targetPct == 0) where DCF screams BUY"""
@@ -429,7 +474,7 @@ def scan_conflicts(portfolio: dict, thesis: dict) -> list:
         if not is_conflict:
             continue
             
-        results.append({
+        item = {
             "ticker":      ticker,
             "actualPct":   pos["actualPct"],
             "targetPct":   target,
@@ -443,7 +488,9 @@ def scan_conflicts(portfolio: dict, thesis: dict) -> list:
             "analyzedAt":  pf["analyzedAt"],
             "conflictType": conflict_type,
             "stale":       pf["stale"],
-        })
+        }
+        _enrich_with_scores(item, ticker, scores)
+        results.append(item)
     results.sort(key=lambda x: abs(x["dcfUpside"] or 0), reverse=True)
     return results
 
@@ -481,69 +528,80 @@ def _stale_flag(row: dict) -> str:
 def fmt_exit_table(rows: list) -> str:
     if not rows:
         return "_No EXIT-flagged positions found._\n"
-    lines = ["| Ticker | Actual% | Value | P&L | DCF | Downside | Conf | Note |",
-             "|--------|---------|-------|-----|-----|----------|------|------|"]
+    lines = ["| Ticker | Actual% | Value | P&L | DCF | RSI | Band | Downside | Conf | Note |",
+             "|--------|---------|-------|-----|-----|-----|------|----------|------|------|"]
     for r in rows:
         pl  = f"{r['bookPL']:+.1f}%" if r.get("bookPL") is not None else "—"
         up  = f"{r['dcfUpside']:+.0f}%" if r.get("dcfUpside") is not None else "N/A"
         fv  = f"${r['fairValue']:,.0f}" if r.get("fairValue") else "N/A"
         conf= f"{r['confidence']:.2f}" if r.get("confidence") else "—"
         sf  = _stale_flag(r)
-        lines.append(f"| {r['ticker']}{sf} | {r['actualPct']}% | ${r['value']:,.0f} | {pl} | {r['dcfAction']} {fv} | {up} | {conf} | {r['note']} |")
+        rsi = f"{r['rsi']:.0f}" if r.get("rsi") is not None else "—"
+        band= r.get("band") or "—"
+        lines.append(f"| {r['ticker']}{sf} | {r['actualPct']}% | ${r['value']:,.0f} | {pl} | {r['dcfAction']} {fv} | {rsi} | {band} | {up} | {conf} | {r['note']} |")
     return "\n".join(lines) + "\n"
 
 
 def fmt_trim_table(rows: list) -> str:
     if not rows:
         return "_No TRIM candidates found._\n"
-    lines = ["| Ticker | Actual% | Target% | Drift | DCF | Downside | Value | Pillar |",
-             "|--------|---------|---------|-------|-----|----------|-------|--------|"]
+    lines = ["| Ticker | Actual% | Target% | Drift | DCF | RSI | Band | Downside | Value | Pillar |",
+             "|--------|---------|---------|-------|-----|-----|------|----------|-------|--------|"]
     for r in rows:
         up  = f"{r['dcfUpside']:+.0f}%" if r.get("dcfUpside") is not None else "N/A"
         sf  = _stale_flag(r)
-        lines.append(f"| {r['ticker']}{sf} | {r['actualPct']}% | {r['targetPct']}% | +{r['drift']}pp | {r['dcfAction']} | {up} | ${r['value']:,.0f} | {r['pillar']} |")
+        rsi = f"{r['rsi']:.0f}" if r.get("rsi") is not None else "—"
+        band= r.get("band") or "—"
+        lines.append(f"| {r['ticker']}{sf} | {r['actualPct']}% | {r['targetPct']}% | +{r['drift']}pp | {r['dcfAction']} | {rsi} | {band} | {up} | ${r['value']:,.0f} | {r['pillar']} |")
     return "\n".join(lines) + "\n"
 
 
 def fmt_accumulate_table(rows: list) -> str:
     if not rows:
         return "_No ACCUMULATE candidates found._\n"
-    lines = ["| Ticker | Actual% | Target% | Gap | DCF | Upside | Conf | Pillar |",
-             "|--------|---------|---------|-----|-----|--------|------|--------|"]
+    lines = ["| Ticker | Actual% | Target% | Gap | DCF | RSI | Band | Score | Upside | Pillar |",
+             "|--------|---------|---------|-----|-----|-----|------|-------|--------|--------|"]
     for r in rows:
         up  = f"{r['dcfUpside']:+.0f}%" if r.get("dcfUpside") is not None else "N/A"
-        conf= f"{r['confidence']:.2f}" if r.get("confidence") else "—"
         sf  = _stale_flag(r)
-        lines.append(f"| {r['ticker']}{sf} | {r['actualPct']}% | {r['targetPct']}% | {r['gap']}pp | {r['dcfAction']} | {up} | {conf} | {r['pillar']} |")
+        rsi = f"{r['rsi']:.0f}" if r.get("rsi") is not None else "—"
+        band= r.get("band") or "—"
+        score = f"{r['convictionScore']:+d}" if r.get("convictionScore") is not None else "—"
+        lines.append(f"| {r['ticker']}{sf} | {r['actualPct']}% | {r['targetPct']}% | {r['gap']}pp | {r['dcfAction']} | {rsi} | {band} | {score} | {up} | {r['pillar']} |")
     return "\n".join(lines) + "\n"
 
 
 def fmt_initiate_table(rows: list) -> str:
     if not rows:
         return "_No unowned BUY-rated opportunities found._\n"
-    lines = ["| Rank | Ticker | In Thesis | Upside | FV | Price | Conf | Analyzed | Key Thesis |",
-             "|------|--------|-----------|--------|-----|-------|------|----------|------------|"]
+    lines = ["| Rank | Ticker | In Thesis | Upside | FV | Price | RSI | Band | Score | Conf | Key Thesis |",
+             "|------|--------|-----------|--------|-----|-------|-----|------|-------|------|------------|"]
     for i, r in enumerate(rows, 1):
         in_t = f"✅ {r['targetPct']}% target" if r["inThesis"] else "❌ not in thesis"
         sf   = _stale_flag(r)
         fv   = f"${r['fairValue']:,.0f}" if r.get("fairValue") else "N/A"
         pr   = f"${r['price']:,.0f}" if r.get("price") else "N/A"
-        lines.append(f"| {i} | {r['ticker']}{sf} | {in_t} | +{r['dcfUpside']}% | {fv} | {pr} | {r['confidence']} | {r['analyzedAt']} | {r['thesis']}... |")
+        rsi  = f"{r['rsi']:.0f}" if r.get("rsi") is not None else "—"
+        band = r.get("band") or "—"
+        score = f"{r['convictionScore']:+d}" if r.get("convictionScore") is not None else "—"
+        lines.append(f"| {i} | {r['ticker']}{sf} | {in_t} | +{r['dcfUpside']}% | {fv} | {pr} | {rsi} | {band} | {score} | {r['confidence']} | {r['thesis']}... |")
     return "\n".join(lines) + "\n"
 
 
 def fmt_conflicts_table(rows: list) -> str:
     if not rows:
         return "_No thesis/DCF conflicts found._\n"
-    lines = ["| Ticker | Conflict Type | Actual% | Target% | DCF | Upside/Downside | FV | Conf | Pillar | Thesis (truncated) |",
-             "|--------|---------------|---------|---------|-----|-----------------|----|------|--------|--------------------|"]
+    lines = ["| Ticker | Conflict Type | Actual% | Target% | DCF | RSI | Band | Upside/Downside | FV | Pillar | Thesis (truncated) |",
+             "|--------|---------------|---------|---------|-----|-----|------|-----------------|----|--------|--------------------|"]
     for r in rows:
         up  = f"{r['dcfUpside']:+.0f}%" if r.get("dcfUpside") is not None else "N/A"
         fv  = f"${r['fairValue']:,.0f}" if r.get("fairValue") else "N/A"
         conf= f"{r['confidence']:.2f}" if r.get("confidence") else "—"
         sf  = _stale_flag(r)
+        rsi = f"{r['rsi']:.0f}" if r.get("rsi") is not None else "—"
+        band= r.get("band") or "—"
         th  = (r['thesis'][:80] + "...") if len(r['thesis']) > 80 else r['thesis']
-        lines.append(f"| {r['ticker']}{sf} | {r['conflictType']} | {r['actualPct']}% | {r['targetPct']}% | {r['dcfAction']} | {up} | {fv} | {conf} | {r['pillar']} | {th} |")
+        lines.append(f"| {r['ticker']}{sf} | {r['conflictType']} | {r['actualPct']}% | {r['targetPct']}% | {r['dcfAction']} | {rsi} | {band} | {up} | {fv} | {r['pillar']} | {th} |")
     return "\n".join(lines) + "\n"
 
 
@@ -630,15 +688,16 @@ def main():
 
     portfolio = load_portfolio(Path(args.db))
     thesis    = load_thesis(Path(args.db))
+    scores    = load_conviction_scores(Path(args.db))
     meta      = portfolio.pop("_meta", {})
 
     data = {
         "_meta":     meta,
-        "exit":      scan_exit(portfolio, thesis)      if args.category in ("exit", "all")      else [],
-        "trim":      scan_trim(portfolio, thesis)      if args.category in ("trim", "all")      else [],
-        "accumulate":scan_accumulate(portfolio, thesis) if args.category in ("accumulate","all") else [],
-        "initiate":  scan_initiate(portfolio, thesis, args.top) if args.category in ("initiate","all") else [],
-        "conflicts": scan_conflicts(portfolio, thesis) if args.category in ("conflicts","all")  else [],
+        "exit":      scan_exit(portfolio, thesis, scores=scores)      if args.category in ("exit", "all")      else [],
+        "trim":      scan_trim(portfolio, thesis, scores=scores)      if args.category in ("trim", "all")      else [],
+        "accumulate":scan_accumulate(portfolio, thesis, scores=scores) if args.category in ("accumulate","all") else [],
+        "initiate":  scan_initiate(portfolio, thesis, args.top, scores=scores) if args.category in ("initiate","all") else [],
+        "conflicts": scan_conflicts(portfolio, thesis, scores=scores) if args.category in ("conflicts","all")  else [],
         "stale":     scan_stale(portfolio, thesis)     if args.category in ("stale", "all")     else [],
     }
 

@@ -1,43 +1,79 @@
 ---
 name: strategic-review
 plugin: portfolio-advisor
-description: Challenges and stress-tests the investment thesis against AI valuation evidence, pillar performance, and market reality, producing formula improvement proposals.
+description: >-
+  Master strategic portfolio review and coordinator. Ingests DCF valuations, technical sweeps,
+  and live broker balances from SQLite to deliver an honest, adversarial assessment across EXIT,
+  TRIM, ACCUMULATE, and INITIATE priorities. Interactively guides the user through strategic
+  conflict resolutions (Options 1–5), target calibrations (/calibrate-targets), and rebalancing
+  execution (/rebalance-portfolio). Trigger on /strategic-review, "review my portfolio", "overall
+  analysis", "critical review", or "recommend top priorities to trim, exit, accumulate, initiate".
+allowed-tools: Bash, Read, Write
 ---
 
-# Strategic Review
+# Strategic Review & Master Portfolio Coordinator
+
+Conducts an end-to-end adversarial evaluation of your portfolio, absorbing live broker holdings, probability-weighted DCF models, news catalysts, and technical momentum (RSI, ADX, Volume Bias) to prioritize **EXIT**, **TRIM**, **ACCUMULATE**, and **INITIATE** actions, guiding you interactively into target calibration and rebalancing.
 
 ## Contents
 - [Constraints](#constraints)
 - [Quick start](#quick-start)
-- [Workflow](#workflow)
+- [Workflow (Phases 1–4)](#workflow)
 - [Verification](#verification)
 - [References](#references)
 
 ## Constraints
-- Targets must always sum to 100.00% (+-0.05%); normalize after any weight adjustment.
-- Sizing constraints: no holding may exceed 15% and no pillar may exceed 40% of total portfolio.
-- Standing decisions anchor allocations; require >15% Fair Value change or material catalysts to revisit.
-- Run the full refresh chain after applying changes (`update_targets.py --blueprint`, `generate_review_json.py`, `verify_refresh.py`).
+- **SQLite Authoritative**: Live holdings and target weights come strictly from `domain_model.sqlite`; technical telemetry from `intelligence.sqlite`. Never read retired `portfolio.json`.
+- **Target Invariant**: Target weights must sum to 100.00% (±0.05%); normalize after any adjustment.
+- **Position Sizing Caps**: No holding may exceed 15.00% and no strategy pillar may exceed 40.00% of total portfolio.
+- **Standing Decision Anchor**: Require >15% Fair Value delta or confirmed fundamental catalysts to revisit standing decisions.
+- **Capital Sourcing Invariant**: All buy proposals must identify `PSU-U.TO` shares to sell in the same account first (Rule 17).
+- **Refresh Chain**: When targets or theses are modified, execute `update_targets.py --blueprint`, `generate_review_json.py`, and `verify_refresh.py`.
 
 ## Quick start
 ```bash
-python3 plugins/portfolio-advisor/scripts/update_targets.py --show
+python3 plugins/portfolio-advisor/scripts/scan_opportunities.py --format summary
+python3 plugins/portfolio-advisor/scripts/scan_opportunities.py
+python3 plugins/portfolio-advisor/scripts/generate_review.py
 ```
 
 ## Workflow
-1. **Gap Analysis**: Scan portfolio state, identifying untracked holdings, unallocated targets, and DCF conflicts.
-2. **Foundation Scan**: Ingest DCF projections from `data/projections/` and recent review notes.
-3. **Adversarial Evaluation**: Apply `references/strategic_review_prompt.md` criteria to stress-test pillar logic and assumptions.
-4. **Propose Calibrations**: Formulate explicit target weight adjustments and present recommendations to user.
-5. **Apply & Refresh**: Write approved changes via `update_targets.py --write --blueprint` and run full refresh chain.
+### Phase 1: Multi-Source Opportunity Scan
+Run `scan_opportunities.py` to ingest cross-asset evidence from SQLite and DCF models into ranked tables:
+- **🚨 EXIT Queue**: Holdings with thesis target = 0% (ranked by locked capital).
+- **✂️ TRIM Overweights**: Positions where actual weight > target weight with DCF overvaluation.
+- **🔵 ACCUMULATE Underweights**: Underweight core holdings with DCF upside and favorable momentum.
+- **🚀 INITIATE Opportunities**: Top unowned watchlist setups with margin of safety (upside $\times$ confidence).
+- **⚔️ Strategic Conflicts**: Holdings where Thesis says "HOLD" but DCF says "SELL" (e.g. `MU`, `PANW`, `RIOT`).
+- **⚠️ Stale & Imminent Catalysts**: Tickers with earnings within 14 days or analyses >90 days old.
+
+### Phase 2: Executive Critical Assessment
+Deliver a non-sugarcoated, honest critique:
+- **Pillar Balance & Drift**: Which pillars drive returns vs under stress or over-concentrated.
+- **Capital Trapped**: Capital idle in dead-weight EXIT positions or uninvested cash.
+- **Key Vulnerabilities**: Strategic conflicts and thesis assumptions misaligned with market reality.
+
+### Phase 3: Interactive Socratic Menu (Options 1–5)
+Present a structured, interactive menu of prioritized next steps:
+- **`[1] Harvest Capital & Trim`**: Review and execute priority EXITs (e.g. GEV) and trimming overweights (e.g. BE).
+- **`[2] Resolve Strategic Conflicts`**: Step through conflicted holdings (MU, PANW, RIOT) to calibrate target weights.
+- **`[3] Full Portfolio Rebalance`**: Launch the integrated rebalancer to generate exact BUY/TRIM orders and PSU-U.TO tickets.
+- **`[4] Pillar Concentration Deep-Dive`**: Audit specific pillars to re-align sub-strategy allocations.
+- **`[5] Refresh Stale Valuations`**: Run `/update-stock-analysis` on holdings older than 90 days before deciding.
+
+### Phase 4: Downstream Calibration & Rebalancing Handoff
+- **Target Calibration**: If adjusting weights, seamlessly transition into `/calibrate-targets` with 100% normalization.
+- **Rebalancing Execution**: If generating orders, invoke `rebalancer.py --pretty` (`/rebalance-portfolio`), apply `risk_officer.py`, and draft account-level orders with PSU-U.TO funding.
+- **Persist Dossier**: Save findings to `PortfolioAnalysis/strategic-reviews/YYYY-MM-DD-PortfolioAnalysisRecommendations.md` and refresh web app modal data via `generate_review_json.py`.
 
 ## Verification
 ```bash
+python3 -m pytest plugins/portfolio-advisor/tests/test_scan_opportunities.py
+python3 -m pytest plugins/portfolio-advisor/tests/test_generate_review.py
 python3 plugins/portfolio-advisor/scripts/verify_refresh.py
-python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ```
 
 ## References
 - [Investment Thesis](references/investment_thesis.md) - Canonical portfolio thesis and sub-strategy definitions.
+- [Strategic Review Prompt](references/strategic_review_prompt.md) - Qualitative criteria and JSON evaluation schema.
 - [Fallback Tree](references/fallback-tree.md) - Operational fallback procedures for backend disruptions.
-- [Strategic Review Prompt](references/strategic_review_prompt.md) - Comprehensive strategic analysis prompt instructions.
