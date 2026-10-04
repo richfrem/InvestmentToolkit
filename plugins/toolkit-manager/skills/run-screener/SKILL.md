@@ -1,43 +1,50 @@
 ---
 name: run-screener
-description: >
-  Launch the Investment Screener suite (backend + frontend). Trigger when user says
-  "run the screener", "start the app", "launch investment toolkit", "start servers",
-  or "run investment screener".
+plugin: toolkit-manager
+description: Launch the Investment Screener suite (backend + frontend). Trigger when user says "run the screener", "start the app", "launch investment toolkit", "start servers", or "run investment screener".
 allowed-tools: Bash, Read, Write
 ---
 
-# Run Investment Screener Skill
+# Run Screener
 
-## Identity
-You are a utility agent focused on launching and monitoring the Investment Toolkit suite.
+Orchestrates startup of the backend and frontend services via the unified python runner.
 
-## Purpose
-Orchestrates the startup of the backend and frontend services via the unified python runner, ensuring a smooth user experience by only reporting final status once everything is ready.
+## Contents
 
-## Trigger Phrases
-- "run the screener"
-- "start the app"
-- "launch investment toolkit"
-- "start servers"
-- "run investment screener"
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-## Steps
-1.  **Launch**: Execute the unified startup script from the root:
-    ```bash
-    python3 run_investment_toolkit.py
-    ```
-2.  **Monitor Prerequisites**: Observe the logs as it installs Python and Node dependencies and builds the backend. **Do NOT** provide any URLs to the user during this phase, as they will not be active yet.
-3.  **Validate Startup**: Wait until you see the "✅ Services Running!" message and confirmation that the Backend (3001) and Frontend (5173) are listening.
-4.  **Final Report**: Once (and only once) the services are fully operational, provide the local URLs to the user and explain how to stop them (Ctrl+C).
+## Constraints
 
-## Common Failures
-- **Port Conflict**: If 3001 or 5173 are occupied. The script should handle clearing them, but if it fails, advise the user to check active processes.
-- **Node/Python missing**: Ensure both runtimes are available in the shell path.
+- **Port readiness barrier**: Never provide URLs or declare success until both Backend (port 3001) and Frontend (port 5173) are confirmed listening.
+- **Port conflicts**: If ports 3001 or 5173 are occupied, identify active process owners before restarting; never create orphan processes.
+- **Workspace execution**: Always execute `run_investment_toolkit.py` from repository root.
 
-## Data Architecture Note
+## Quick start
 
-Startup today only initializes JSON data files (see the onboarding guide's Phase 2). A
-SQLite-backed domain data model is in active design (`../../references/data-architecture/domain-data-model.md`)
-but not yet implemented — this skill does not run any schema initialization. If/when that model
-is implemented, a schema-init step belongs in the Launch step above, not before.
+Launch the entire suite from repository root:
+
+```bash
+python3 run_investment_toolkit.py
+```
+
+## Workflow
+
+1. **Invoke Runner**:
+   Execute `python3 run_investment_toolkit.py` to activate venv, compile backend, run SQLite migrations, and launch servers.
+2. **Monitor Startup Stream**:
+   Observe dependency installations and build steps. Withhold final URLs while builds are in flight.
+3. **Confirm Service Liveness**:
+   Wait for `✅ Services Running!` confirmation that Backend (3001) and Frontend (5173) are actively accepting connections.
+4. **Present Operational Summary**:
+   Provide local links to the user:
+   - Frontend Dashboard: `http://localhost:5173`
+   - Express Backend API: `http://localhost:3001`
+   - Inform user that `Ctrl+C` terminates the processes.
+
+## Verification
+
+- Confirm HTTP 200 response on `http://localhost:5173` and `http://localhost:3001/api/health`.
+- Test routing evaluations against `evals/evals.json`.
