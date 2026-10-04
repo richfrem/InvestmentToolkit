@@ -5,7 +5,7 @@ grok_sweep.py (Python Service)
 
 Purpose:
     Posts a pre-generated prompt to grok.com via Chrome DevTools Protocol and captures the response.
-    Used by the x-news-sweep skill to automate the full Grok sweep without manual copy-paste.
+    Used by the news-sweep skill to automate the full Grok sweep without manual copy-paste.
 
 Layer: Backend / Python Services / Browser Automation
 

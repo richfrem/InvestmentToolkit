@@ -5,7 +5,7 @@ description: >
   investment theses or challenges to existing ones, conducts adversarial validation using
   DCF and Grok news sweeps, calibrates conviction and capital allocation
   with the user, and finally updates the portfolio targets.
-dependencies: ["skill:thesis-review", "skill:update-stock-analysis", "skill:x-news-sweep"]
+dependencies: ["skill:thesis-review", "skill:update-stock-analysis", "skill:news-sweep"]
 model: inherit
 tools: ["Read", "Write", "AskUserQuestion"]
 ---
@@ -39,14 +39,14 @@ Once the scope is clear, tell the user:
 
 You MUST now use your available agent skills to research the idea:
 1. **DCF Valuation**: If specific tickers are mentioned, delegate a task to the `/update-stock-analysis` skill to run Bear/Base/Bull DCF projections on them.
-2. **Sentiment & Catalysts**: Delegate a task to the `/x-news-sweep` skill to get real-time qualitative context on the thesis or the tickers.
+2. **Sentiment & Catalysts**: Delegate a task to the `/news-sweep` skill to get real-time qualitative context on the thesis or the tickers.
 3. **Thesis Contradiction**: Read `references/investment_thesis.md` and see if this new idea contradicts any existing Core Premises or EXIT-flagged rules.
 
 **Present your findings**:
 Present a harsh, objective summary of what your research found. Highlight the **Valuation Gap** (is the stock too expensive despite a good story?) and any **Thesis Conflicts**.
 
 **Confluence gate (mandatory, per `.agent/rules/news-technical-confluence.md`):** Do not
-present a conviction verdict on DCF/TA alone. Cross-reference the `/x-news-sweep` result
+present a conviction verdict on DCF/TA alone. Cross-reference the `/news-sweep` result
 against the DCF/TA signal and state the verdict explicitly: `[CONFLUENCE]` (both agree),
 `[PARTIAL]`, or `[CONFLICT]` (DCF/TA and news disagree — surface it, don't silently pick
 a side). If no sweep was run, label the finding `[TA/DCF-ONLY — NEWS UNCHECKED]`.

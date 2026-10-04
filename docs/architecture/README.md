@@ -156,7 +156,7 @@ graph LR
     %% Plugins Layer
     subgraph "Plugin Ecosystem (plugins/)"
         StockValuation[stock-valuation\n- /update-stock-analysis\n- /research-stock]
-        PortfolioAdvisor[portfolio-advisor\n- /strategic-review\n- /rebalance\n- /x-news-sweep]
+        PortfolioAdvisor[portfolio-advisor\n- /strategic-review\n- /rebalance\n- /news-sweep]
         TradingViewBridge[tradingview\n- /tv-portfolio-sync\n- /place-order]
         ETFAnalysis[etf-analysis\n- /analyze-etf]
         ToolkitManager[toolkit-manager\n- /start-screener]

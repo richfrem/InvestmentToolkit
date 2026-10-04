@@ -3,7 +3,7 @@
 `Status: CONFIRMED (2026-09-02)`
 
 ## Overview
-Defines the architectural invariants for generating, reviewing, and sanitizing LLM/Grok prompts in `/x-news-sweep`. Prevents table corruption, dead-code branches, and unreviewed raw script outputs.
+Defines the architectural invariants for generating, reviewing, and sanitizing LLM/Grok prompts in `/news-sweep`. Prevents table corruption, dead-code branches, and unreviewed raw script outputs.
 
 ---
 

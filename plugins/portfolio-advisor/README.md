@@ -53,7 +53,7 @@ portfolio-advisor/
 | `/strategic-review` | `strategic-review` | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
 | `/rebalance` | `rebalance-portfolio` | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |
 | `/calibrate-targets` | `calibrate-targets` | Interactive target-weight negotiation per sub-strategy |
-| `/x-news-sweep` | `x-news-sweep` | Daily news sweep via Grok/X.com to surface catalysts and sentiment |
+| `/news-sweep` | `news-sweep` | Multi-model news sweep (Grok, Claude, ChatGPT, Gemini) to surface catalysts and sentiment |
 | `/13f-tracker` | `13f-tracker` | Polls and diffs SEC 13F EDGAR filings for super-investors |
 | `/13f-analyze` | `13f-analyze` | Cross-references super-investor 13F changes against target portfolio |
 | `apply formula changes` | `update-portfolio-targets` | Mechanical write of agreed target changes (chains from strategic-review or calibrate-targets) |

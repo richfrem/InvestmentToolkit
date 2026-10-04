@@ -144,7 +144,7 @@
 - **visual-companion**: visual-companion | >
 - **writing-plans**: writing-plans | Use when you have a spec or requirements for a multi-step task, before touching code
 - **writing-skills**: writing-skills | Use when creating new skills, editing existing skills, or verifying skills work before deployment
-- **x-news-sweep**: x_news_sweep | >
+- **news-sweep**: news_sweep | >
 
 ## AGENTS
 - **agent-agentic-os-agentic-os-setup.md**: agentic-os-setup | >

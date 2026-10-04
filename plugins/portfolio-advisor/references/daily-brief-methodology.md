@@ -90,7 +90,7 @@ drift or valuation logic.
 |---|---|
 | Trim / exit a ticker | `/rebalance` or `/place-order sell` |
 | Accumulate a ticker | Check its `TARGET_ENTRY` price level (domain_model `price_level_tier`) first, then `/place-order buy` |
-| News context | `/x-news-sweep` (model roles, fact-check gate and ETF handling: news-sweep-model-assessment) |
+| News context | `/news-sweep` (model roles, fact-check gate and ETF handling: news-sweep-model-assessment) |
 | Re-evaluate the thesis | `/strategic-review` |
 | Update DCF | `/update-stock-analysis TICKER` |
 

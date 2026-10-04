@@ -14,7 +14,7 @@
         },
         {
             "name": "portfolio-advisor",
-            "description": "Investment portfolio advisor suite. Flagship /daily interactive loop. Skills: /stock-intake, /portfolio-coverage-audit, /weekly-review, /data-quality-audit, /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /x-news-sweep, /adversarial-review, /bundle-thesis-review, /13f-tracker, /13f-analyze, /norberts-gambit, /ytd-return, /set-thesis-breakers. Agents: portfolio-advisor-orchestrator, red-team-agent, risk-officer-agent.",
+            "description": "Investment portfolio advisor suite. Flagship /daily interactive loop. Skills: /stock-intake, /portfolio-coverage-audit, /weekly-review, /data-quality-audit, /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /news-sweep, /adversarial-review, /bundle-thesis-review, /13f-tracker, /13f-analyze, /norberts-gambit, /ytd-return, /set-thesis-breakers. Agents: portfolio-advisor-orchestrator, red-team-agent, risk-officer-agent.",
             "source": "./plugins/portfolio-advisor",
             "strict": true
         },

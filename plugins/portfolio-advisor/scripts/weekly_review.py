@@ -112,7 +112,7 @@ def load_watchlist_items(db_path=None) -> list:
 
 def get_dynamic_exclusions():
     """Build exclusion list dynamically by scanning etf_analysis directory and cash reserves."""
-    exclusions = {'USD_CASH', 'PSU-U.TO', 'PSU.U.TO'}
+    exclusions = {'USD_CASH', 'PSU-U.TO', 'PSU.U.TO', 'CASH_USD'}
     if ETF_ANALYSIS_DIR.exists():
         for p in ETF_ANALYSIS_DIR.glob('*.json'):
             exclusions.add(p.stem.upper())
@@ -281,7 +281,7 @@ def run_weekly_review(write_prompt_path=None, db_path=None):
     print(f"  - Initiates (Undeployed target): {', '.join(initiates) if initiates else 'None'}")
     print(f"  - Watchlist: {', '.join(watch) if watch else 'None'}")
     
-    # Load the Grok Weekly Sweep Prompt from template
+    # Load the Weekly Sweep Prompt from template
     template_path = REPO_ROOT / "plugins/portfolio-advisor/assets/templates/weekly_sweep.md.template"
     try:
         template = template_path.read_text()
@@ -289,10 +289,24 @@ def run_weekly_review(write_prompt_path=None, db_path=None):
         prompt_content = prompt_content.replace("{{DATE}}", datetime.now().strftime("%Y-%m-%d"))
         prompt_content = prompt_content.replace("{{TICKERS}}", ", ".join(tickers_to_review))
         
+        # Build baseline anchor table from scanned holdings/watchlists
+        anchor_rows = [
+            f"| **{g['ticker']}** | ${g['price']:.2f} | {g['change_1w']} | {g['target']:.2f}% | {g['actual']:.2f}% | {g['status']} |"
+            for g in grok_tickers_data
+        ]
+        anchor_table = (
+            "| Ticker | Baseline Price | 1W Change | Target % | Actual % | Current Status |\n"
+            "| :--- | ---: | ---: | ---: | ---: | :--- |\n" + "\n".join(anchor_rows)
+        )
+        prompt_content = prompt_content.replace("{{ANCHOR_TABLE}}", anchor_table)
+
         # Inject recent summary context
         recent_ctx = get_recent_reviews_context(REPO_ROOT)
         if recent_ctx:
-            prompt_content = prompt_content.replace("## Instructions for Grok", recent_ctx + "## Instructions for Grok")
+            prompt_content = prompt_content.replace(
+                "## Instructions for the Model",
+                recent_ctx + "## Instructions for the Model"
+            )
     except Exception as e:
         print(f"Error loading weekly sweep template: {e}")
         prompt_content = f"# Weekly Sweep\n\nInclude: {', '.join(tickers_to_review)}"

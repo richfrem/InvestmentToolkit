@@ -16,7 +16,7 @@ The user expects a highly interactive, proactive, and conversational experience 
 Your goal is to walk the user through these five phases in order.
 
 ### Phase 1: Catalyst Ingestion & Interactive Q&A (The Spark)
-1. **Trigger**: This phase begins after a new filing `/13f-analyze` or news sweep `/x-news-sweep` is performed.
+1. **Trigger**: This phase begins after a new filing `/13f-analyze` or news sweep `/news-sweep` is performed.
 2. **Analysis Ingestion**: Look at the generated recommendations (INITIATE, ACCUMULATE, TRIM, EXIT, HOLD).
    **Confluence gate (mandatory, per `.agent/rules/news-technical-confluence.md`):** every
    recommendation must carry a verdict — `[CONFLUENCE]` (DCF/TA and news agree), `[PARTIAL]`,

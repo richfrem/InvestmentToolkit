@@ -124,7 +124,7 @@ Cost and effort matter, so not every model runs every day.
   Action column and asking for an independent view first.
 - **Stale SA LP section (fixed 2026-10-01):** the generated prompt said SA LP's "Q4 2025 top positions" should be flagged as
   reinforcing the portfolio, but SA LP liquidated its public book on 2026-07-30. Two of four models took the bait.
-  `generate_grok_prompt.py` and the weekly template now state the liquidation (test added); x-news-sweep Gates 3/5/10 carry a
+  `generate_grok_prompt.py` and the weekly template now state the liquidation (test added); news-sweep Gates 3/5/10 carry a
   non-signal note until the Q3 13F (mid-November).
 - **SPCX share count unreconciled:** the prompt's "7.57B public shares" implies ~$1.1T at $145, but $1.77T at the $135 IPO price
   implies ~13B shares. Rebuild SPCX's valuation inputs from filings before trusting its DCF.

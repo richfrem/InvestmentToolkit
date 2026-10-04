@@ -165,7 +165,7 @@
 | `plugins/portfolio-advisor/skills/calibrate-targets/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/skills/norberts-gambit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/skills/daily-loop/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `plugins/portfolio-advisor/skills/x-news-sweep/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `plugins/portfolio-advisor/skills/news-sweep/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/skills/update-portfolio-targets/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/skills/update-portfolio-targets/assets/templates/target_portfolio_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `plugins/portfolio-advisor/skills/ytd-return/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
@@ -986,34 +986,34 @@ No `.json`/`.jsonl` files currently exist under `temp/` (which is gitignored scr
 - plugins/portfolio-advisor/skills/calibrate-targets/scripts/verify_refresh.py:47
 - plugins/portfolio-advisor/skills/calibrate-targets/scripts/verify_refresh.py:48
 - plugins/portfolio-advisor/skills/daily-loop/scripts/generate_reports.py:16
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py:3
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py:38
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py:48
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py:258
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py:295
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py:33
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py:51
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py:123
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py:9
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py:14
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py:21
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py:31
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py:69
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py:115
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py:6
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py:22
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py:47
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py:48
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py:8
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py:21
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py:41
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py:160
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py:403
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py:32
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py:100
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py:44
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py:249
-- plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py:258
+- plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py:3
+- plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py:38
+- plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py:48
+- plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py:258
+- plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py:295
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py:33
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py:51
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py:123
+- plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py:9
+- plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py:14
+- plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py:21
+- plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py:31
+- plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py:69
+- plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py:115
+- plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py:6
+- plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py:22
+- plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py:47
+- plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py:48
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py:8
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py:21
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py:41
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py:160
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py:403
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py:32
+- plugins/portfolio-advisor/skills/news-sweep/scripts/generate_grok_prompt.py:100
+- plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py:44
+- plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py:249
+- plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py:258
 - plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/update_targets.py:3
 - plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/update_targets.py:38
 - plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/update_targets.py:48
@@ -2421,7 +2421,7 @@ No `.json`/`.jsonl` files currently exist under `temp/` (which is gitignored scr
 **Known consumers:**
 - investment_screener/backend/tests/py_services/test_audit_json_usage.py:129
 
-### plugins/portfolio-advisor/skills/x-news-sweep/evals/evals.json
+### plugins/portfolio-advisor/skills/news-sweep/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 

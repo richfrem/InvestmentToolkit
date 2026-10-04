@@ -25,7 +25,7 @@ exit." That context did not reach the user until they asked for it directly.
 
 1. **Freshness check first.** Before finalizing any REDUCE/EXIT/ACCUMULATE/INITIATE/TRIM
    card, check `temp/news-sweep-responses/{grok,gemini}/` for a response dated within the
-   last 7 days covering that ticker. If none exists, offer to generate one via `x-news-sweep`
+   last 7 days covering that ticker. If none exists, offer to generate one via `news-sweep`
    before presenting the recommendation as final — not only for ACCUMULATE candidates.
 
 2. **Confluence label on every card.** Every action card must state the news stance
@@ -52,4 +52,4 @@ exit." That context did not reach the user until they asked for it directly.
 - `portfolio-advisor-orchestrator.md` — Phase 1 catalyst ingestion Q&A
 - `thesis-review-agent.md` — new thesis intake and challenge validation
 - `weekly-review-agent.md` — weekly drift + sweep recommendations
-- `x-news-sweep` skill — the check, not just the offer, gates the agents above
+- `news-sweep` skill — the check, not just the offer, gates the agents above
