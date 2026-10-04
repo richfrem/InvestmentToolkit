@@ -8,6 +8,22 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-04 — Watchlist Pruning: Complete Removal of Nike (NKE) (Tier 0/1 Evolution)
+
+**Trigger:** Pruned non-core consumer discretionary broken thesis (NKE) completely from active watchlist, thesis definitions, and sweep templates following multi-agent review consensus.
+
+**Actions Taken:**
+1. **Database Purge**:
+   - Removed NKE rows and child records from `domain_model.sqlite` (`projection_scenario`, `projection_version`, `price_level_tier`, `price_level_set`, `alert`, `investment_price`, `investment`).
+   - Verified 0 remaining NKE rows and 0 foreign key integrity errors introduced.
+2. **Artifact Cleanup**:
+   - Removed temporary evaluation and cache JSON files (`temp/evaluations/NKE_*.json`, `py_services/cache/NKE*`, `data/cache/ohlcv_NKE2y1d.json`).
+3. **Template & Thesis Alignment**:
+   - Removed NKE from `investment_thesis.md` Untracked/Watchlist table.
+   - Removed NKE from `daily_sweep.md.template` and `weekly_sweep.md.template` Legacy / Non-Core Watchlist lists (Rule 12).
+
+---
+
 ## 2026-10-04 — Retirement of Legacy Grok Script Names & Symlinks (Tier 1 Evolution)
 
 **Trigger:** Completed retirement of legacy script filenames (`generate_grok_prompt.py`, `grok_sweep.py`, `test_generate_grok_prompt.py`) and their symlinks in favor of `generate_news_prompt.py` and `news_sweep.py`.
