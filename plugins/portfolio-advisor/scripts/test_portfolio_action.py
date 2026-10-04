@@ -24,10 +24,15 @@ class TestPortfolioAction(unittest.TestCase):
         self.assertEqual(derive_action("NORMAL", 5, 0), "EXIT")
 
     def test_ai_conflict_override(self):
-        # NBIS is a BUY with +186% upside. It should NOT return EXIT, it should return REVIEW.
-        # We mock this by actually testing NBIS which has a projection file in the repo.
-        action = derive_action("NBIS", 1.0, 0.0)
-        self.assertEqual(action, "REVIEW", "NBIS has massive upside, it should override EXIT to REVIEW")
+        # derive_action is pure: the caller supplies the AI upside (see _load_ai_upside).
+        # EXIT/TRIM with >10% AI upside must be flagged REVIEW instead.
+        self.assertEqual(derive_action("NBIS", 1.0, 0.0, ai_upside=186.0), "REVIEW")
+        self.assertEqual(derive_action("NBIS", 8.0, 5.0, ai_upside=186.0), "REVIEW")
+
+    def test_no_override_without_meaningful_ai_upside(self):
+        self.assertEqual(derive_action("NBIS", 1.0, 0.0), "EXIT")
+        self.assertEqual(derive_action("NBIS", 1.0, 0.0, ai_upside=10.0), "EXIT")
+        self.assertEqual(derive_action("NBIS", 2.0, 5.0, ai_upside=186.0), "ACCUMULATE")
 
 class TestLoadAiUpside(unittest.TestCase):
     """_load_ai_upside must read the domain_model SQLite DB (Wave 1 Task 7A),

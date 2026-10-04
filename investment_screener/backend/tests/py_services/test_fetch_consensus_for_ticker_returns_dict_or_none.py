@@ -37,7 +37,7 @@ class TestFetchConsensusForTickerReturnsDict:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("AAPL")
 
         assert result is not None
@@ -57,7 +57,7 @@ class TestFetchConsensusForTickerReturnsDict:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("INTC")
 
         assert result is not None
@@ -77,7 +77,7 @@ class TestFetchConsensusForTickerReturnsDict:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("AMD")
 
         assert result is not None
@@ -94,7 +94,7 @@ class TestFetchConsensusForTickerReturnsDict:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("NVDA")
 
         assert result is not None
@@ -111,7 +111,7 @@ class TestFetchConsensusForTickerErrorHandling:
         """Should return None when yfinance raises an exception."""
         mock_yf = MagicMock()
         mock_yf.Ticker.side_effect = Exception("API Error")
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("INVALID")
 
         assert result is None
@@ -120,7 +120,7 @@ class TestFetchConsensusForTickerErrorHandling:
         """Should return None on network timeout."""
         mock_yf = MagicMock()
         mock_yf.Ticker.side_effect = TimeoutError("Connection timeout")
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("SYMBOL")
 
         assert result is None
@@ -129,7 +129,7 @@ class TestFetchConsensusForTickerErrorHandling:
         """Should return None when rate limited by yfinance."""
         mock_yf = MagicMock()
         mock_yf.Ticker.side_effect = ConnectionError("Rate limited")
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("TICKER")
 
         assert result is None
@@ -146,7 +146,7 @@ class TestFetchConsensusForTickerErrorHandling:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("STOCK")
 
         assert result is not None
@@ -173,7 +173,7 @@ class TestFetchConsensusForTickerCalendarParsing:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("GOOG")
 
         assert result["earnings_date"] == "2026-08-20"
@@ -192,7 +192,7 @@ class TestFetchConsensusForTickerCalendarParsing:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("TSLA")
 
         assert result["earnings_date"] == "2026-09-15"
@@ -208,7 +208,7 @@ class TestFetchConsensusForTickerCalendarParsing:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("MSFT")
 
         assert result["earnings_date"] is None
@@ -226,7 +226,7 @@ class TestFetchConsensusForTickerCalendarParsing:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("META")
 
         assert result["earnings_date"] is None
@@ -243,7 +243,7 @@ class TestFetchConsensusForTickerReturnType:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("GOOD")
 
         assert isinstance(result, dict) or result is None
@@ -256,7 +256,7 @@ class TestFetchConsensusForTickerReturnType:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("SYM")
 
         assert set(result.keys()) == {"consensus_eps", "consensus_revenue", "earnings_date"}
@@ -269,7 +269,7 @@ class TestFetchConsensusForTickerReturnType:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("TEST")
 
         assert isinstance(result["consensus_eps"], float) or result["consensus_eps"] is None
@@ -282,7 +282,7 @@ class TestFetchConsensusForTickerReturnType:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("TEST")
 
         assert isinstance(result["consensus_revenue"], float) or result["consensus_revenue"] is None
@@ -298,7 +298,7 @@ class TestFetchConsensusForTickerReturnType:
 
         mock_yf = MagicMock()
         mock_yf.Ticker.return_value = fake_ticker
-        with patch.dict("sys.modules", {"yfinance": mock_yf}):
+        with patch("earnings_expectations.yf", mock_yf):
             result = _fetch_consensus_for_ticker("TEST")
 
         if result["earnings_date"] is not None:

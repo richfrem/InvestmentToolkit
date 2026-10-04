@@ -35,18 +35,27 @@ def run_ts_math(revenue, shares, discount_rate, horizon, scenarios):
         raise Exception("TS math failed")
     return json.loads(proc.stdout)
 
+def _percent(rng, low, high):
+    """A percentage in [low, high] outside (0, 1) — dcf_scenarios.py rejects that
+    band as a decimal-fraction mistake (0.08 meant as 8%), which made this test
+    fail on roughly 1 run in 15 when the bear growth rate landed there."""
+    value = rng.uniform(low, high)
+    return value if not 0 < value < 1 else 1.0
+
+
 def test_math_parity():
-    # Test 10 random cases
+    # 10 random cases from a fixed seed, so a failure is reproducible
+    rng = random.Random(20261004)
     for i in range(10):
-        rev = random.uniform(100e6, 100e9)
-        shares = random.uniform(10e6, 10e9)
+        rev = rng.uniform(100e6, 100e9)
+        shares = rng.uniform(10e6, 10e9)
         discount_rate = 0.10
         horizon = 5
         
         scenarios = {
-            "bear": {"weight": 0.2, "growthRate": random.uniform(-10, 5), "netMargin": random.uniform(1, 10), "exitPE": random.uniform(8, 15), "qualityMultiplier": 0.8, "shareChange": 1.0},
-            "base": {"weight": 0.5, "growthRate": random.uniform(5, 15), "netMargin": random.uniform(10, 20), "exitPE": random.uniform(15, 25), "qualityMultiplier": 1.0, "shareChange": 0.0},
-            "bull": {"weight": 0.3, "growthRate": random.uniform(15, 30), "netMargin": random.uniform(20, 35), "exitPE": random.uniform(25, 40), "qualityMultiplier": 1.2, "shareChange": -1.0}
+            "bear": {"weight": 0.2, "growthRate": _percent(rng, -10, 5), "netMargin": rng.uniform(1, 10), "exitPE": rng.uniform(8, 15), "qualityMultiplier": 0.8, "shareChange": 1.0},
+            "base": {"weight": 0.5, "growthRate": rng.uniform(5, 15), "netMargin": rng.uniform(10, 20), "exitPE": rng.uniform(15, 25), "qualityMultiplier": 1.0, "shareChange": 0.0},
+            "bull": {"weight": 0.3, "growthRate": rng.uniform(15, 30), "netMargin": rng.uniform(20, 35), "exitPE": rng.uniform(25, 40), "qualityMultiplier": 1.2, "shareChange": -1.0}
         }
         
         py_res = run_python_math(rev, shares, discount_rate, horizon, scenarios)

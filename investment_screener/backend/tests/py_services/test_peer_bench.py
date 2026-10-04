@@ -7,6 +7,9 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 
+import pytest  # noqa: E402
+
+import peer_bench  # noqa: E402
 from peer_bench import compute_peer_benchmark  # noqa: E402
 
 
@@ -17,6 +20,14 @@ def _metrics(revenue_growth):
         "operatingMargin": None, "roic": None, "evSales": None, "fcfYield": None,
         "debtEbitda": None, "interestCoverage": None, "currentRatio": None,
     }
+
+
+@pytest.fixture(autouse=True)
+def _no_real_fundamentals(monkeypatch):
+    """compute_peer_benchmark() calls get_fundamentals() per ticker. Unpatched, that
+    hit yfinance for the fake TARGET/PEERA/PEERB tickers and wrote
+    fundamentals_PEERA.json etc. into the real data/cache directory."""
+    monkeypatch.setattr(peer_bench, "get_fundamentals", lambda ticker, cik=None: {})
 
 
 def test_compute_peer_benchmark_computes_zscore_and_percentile():

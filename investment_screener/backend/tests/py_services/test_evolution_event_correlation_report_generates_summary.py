@@ -218,7 +218,13 @@ class TestGenerateEvolutionCorrelationReport:
         report = generate_evolution_correlation_report("2026-01-13", "2026-01-17")
 
         assert report["total_events"] == 0
-        assert report["event_summary"] == {}
+        # The summary keeps one zero-count entry per event type (stable shape
+        # for consumers); an empty week means none of them counted anything.
+        assert report["event_summary"]
+        assert all(
+            summary["count"] == 0 and summary["tickers"] == []
+            for summary in report["event_summary"].values()
+        )
 
     def test_all_event_types_in_summary(self, tmp_path, monkeypatch):
         import evolution_events

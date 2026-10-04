@@ -12,7 +12,7 @@ import subprocess
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-SCRIPT_PATH = REPO_ROOT / "plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py"
+SCRIPT_PATH = REPO_ROOT / "plugins/stock-valuation/scripts/standardize_metrics.py"
 
 
 def _run_standardize(raw_data: dict) -> dict:

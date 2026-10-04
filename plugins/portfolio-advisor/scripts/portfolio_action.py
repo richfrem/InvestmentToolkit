@@ -157,7 +157,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--db",
         default=str(Path(__file__).resolve().parents[3] / "investment_screener/backend/data/domain_model.sqlite"),
-        help="Path to domain_model.sqlite (source of target weights + AI upside).",
+        help="Path to domain_model.sqlite (source of holdings, target weights + AI upside).",
     )
     args = parser.parse_args()
 
@@ -167,7 +167,8 @@ if __name__ == "__main__":
 
     # Wave 3 cutover (ADR-030): actual holdings from domain_model.sqlite via
     # portfolio_io, not validate_weights.compute_current(portfolio.json).
-    _state = load_portfolio_state(None)
+    # Same --db as the target weights and AI upside below: one database per run.
+    _state = load_portfolio_state(None, db_path=args.db)
     ch = compute_weights(_state["shares"], _state["prices"], _state["total_usd"])
     th = _load_target_weights(args.db)
     all_tickers = set(list(ch.keys()) + list(th.keys()))

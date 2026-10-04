@@ -193,6 +193,9 @@ class EarningsGrade(BaseModel):
         spyReturn: SPY return over the horizon: (spy_now - baseSpyPrice) / baseSpyPrice.
         relativeReturn: Ticker return minus SPY return (used for verdict).
         verdict: Grade outcome (correct, incorrect, inconclusive).
+        earningsGrade: BEAT / MEET / MISS from the EPS surprise; what
+            get_earnings_context()'s prior beat rate is counted from.
+        epsSurprisePct: (actual - consensus) / abs(consensus) * 100.
     """
 
     v: Literal[1] = Field(default=1)
@@ -202,6 +205,8 @@ class EarningsGrade(BaseModel):
     spyReturn: float = Field(..., description="SPY return over horizon")
     relativeReturn: float = Field(..., description="Ticker return - SPY return")
     verdict: str = Field(..., description="correct, incorrect, or inconclusive")
+    earningsGrade: Optional[str] = Field(default=None, description="BEAT, MEET, or MISS")
+    epsSurprisePct: Optional[float] = Field(default=None, description="EPS surprise in percent")
 
     model_config = {
         "json_schema_extra": {"examples": [
@@ -618,6 +623,8 @@ def grade_earnings_expectations(
                 spyReturn=spy_return,
                 relativeReturn=relative_return,
                 verdict=verdict,
+                earningsGrade=grade,
+                epsSurprisePct=eps_surprise_pct,
             )
 
             _append_grade(grade_rec.model_dump(), jsonl_path=jsonl_path)
@@ -692,11 +699,15 @@ def get_earnings_context(ticker: str, days_ahead: int = 7) -> dict | None:
         # Calculate prior beat rate from graded predictions
         try:
             graded = _load_graded(DEFAULT_INTEL_DB_PATH) if _load_graded else []
-            # Filter for this ticker's earnings grades
-            ticker_grades = [g for g in graded if ticker in g.get("predictionId", "")]
+            # This ticker's earnings grades that recorded a BEAT/MEET/MISS outcome
+            id_prefix = f"{ticker}:earnings_expectation:"
+            ticker_grades = [
+                g for g in graded
+                if g.get("predictionId", "").startswith(id_prefix) and g.get("earningsGrade")
+            ]
             if ticker_grades:
-                beats = sum(1 for g in ticker_grades if "BEAT" in g.get("predictionId", ""))
-                prior_beat_pct = (beats / len(ticker_grades)) * 100 if ticker_grades else 0.0
+                beats = sum(1 for g in ticker_grades if g["earningsGrade"] == "BEAT")
+                prior_beat_pct = (beats / len(ticker_grades)) * 100
             else:
                 prior_beat_pct = None
         except Exception:

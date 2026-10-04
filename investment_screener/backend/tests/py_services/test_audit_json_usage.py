@@ -289,29 +289,10 @@ def test_links_markdown_documentation_mention(tmp_path):
     assert any(r["confidence"] == "mention_only" for r in all_refs)
 
 
-def test_real_ta_sweep_results_json_has_known_producers_and_consumers():
-    """End-to-end regression test against the ACTUAL repository (not tmp_path).
-
-    This is the exact case that exposed the original bug: ta-sweep-results.json
-    showed zero producers/consumers despite real, verified references in
-    ta_sweep_batch.py, daily_brief.py, and compute_conviction_scores.py.
-
-    NOTE: this test is intentionally coupled to real repo content, which is
-    unusual for this suite. It will legitimately start failing once Task 18
-    (plan: docs/superpowers/plans/2026-07-18-canonical-research-consolidation.md)
-    rewires these three files off ta-sweep-results.json onto the ledger — that
-    is expected, not a regression. Update or retire this test at that point;
-    the tmp_path-based tests above cover the resolution LOGIC independent of
-    real repo content and do not need to change.
-    """
-    result = run_audit(str(REPO_ROOT))
-    entry = _target_entry(result, "ta-sweep-results.json")
-    all_refs = entry["known_producers"] + entry["known_consumers"]
-    referencing_files = {r["referencing_file"] for r in all_refs}
-
-    assert any("ta_sweep_batch.py" in f for f in referencing_files)
-    assert any("daily_brief.py" in f for f in referencing_files)
-    assert any("compute_conviction_scores.py" in f for f in referencing_files)
+# The end-to-end check against the real repo's ta-sweep-results.json was retired
+# as its own docstring instructed: the TA sweep now writes TECHNICAL_SWEEP events
+# to the ledger and that file is archived. The tmp_path tests above cover the
+# reference-resolution logic independent of real repo content.
 
 
 def test_run_audit_does_not_modify_or_delete_any_file(tmp_path):

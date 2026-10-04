@@ -8,6 +8,33 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-04 — Test suite repair: 49 failing tests, and tests that wrote to real data
+
+**Trigger:** After PR #237 the Python suites had ~50 failures on `main`. User asked for them to be fixed.
+
+**Incident (Tier 2):** `test_stock_intake_persist.py` ran the intake CLI with no database override, so every run of the suite in the main checkout overwrote real `domain_model.sqlite` rows: INTC (target weight, lifecycle status, standing-decision reason, price levels) and BE (agent rationale). This happened during a baseline run on 2026-10-04 at 18:46Z. `test_peer_bench.py` likewise fetched and cached fundamentals for fake tickers (`fundamentals_PEERA/PEERB/TARGET.json`) in the real cache.
+
+**Root causes found:**
+1. **Tests left behind by storage cutovers** — order audit trail, trade log, prediction ledger and TA-sweep tests still targeted retired JSON/JSONL paths after the SQLite/ledger waves.
+2. **Mocks that never applied** — `patch.dict("sys.modules", {"yfinance": ...})` against a module that imports `yf` at load time, so 12 "unit" tests hit live Yahoo Finance; `mock_date` used where the patch was bound as `mock_date_class`.
+3. **Split database reads (real bugs)** — `portfolio_action.py --db` and `order_risk_gates.build_portfolio_state_for_order(db_path=...)` used the override for targets/pillars but always read holdings from the real database.
+4. **Prior earnings beat rate always 0% (real bug)** — `get_earnings_context()` searched for "BEAT" inside the prediction ID; the BEAT/MEET/MISS grade was computed and discarded.
+5. **Time- and randomness-dependent tests** — a hard-coded "future" date that passed in July; random DCF inputs landing in the validator's decimal-fraction band (~1 run in 15).
+6. **Hand-copied schema in a test** drifted from the real DDL (`as_of` vs `fetched_at`); the same test existed twice under one filename, breaking combined collection.
+
+**Actions Taken:**
+1. `stock_intake_persist.py` takes `--db-path` / `db_path`; its tests run on a seeded temp database and assert the real file is untouched.
+2. `portfolio_io.load_portfolio_state(..., db_path=None)`; `portfolio_action.py` and `order_risk_gates.py` pass their override through, so one run reads one database.
+3. `EarningsGrade` stores `earningsGrade` and `epsSurprisePct`; the beat rate is counted from them, matched on the exact `TICKER:earnings_expectation:` prefix.
+4. Stale tests ported to the current APIs; mocks pointed at `earnings_expectations.yf`; dates pinned with a real `date` subclass; parity test seeded.
+5. Retired: the real-repo `ta-sweep-results.json` audit test (per its own docstring), `test_pine_advisor_skill.py` (skill no longer exists), and the duplicate backend `test_manage_watchlist.py`.
+
+**Verification:** all three suites in one invocation, with a copy of real data in the worktree: 1803 passed, 2 failed, 5 skipped; the 2 failures are `test_place_order_gates` needing `node_modules` (they skip when it is present and no broker is connected). A before/after file snapshot showed the run wrote nothing under `data/` or `plugins/`.
+
+**Open:** real INTC/BE rows need restoring from the pre-run snapshot (user approval required). `get_earnings_context()` has no production caller. `tv_pine_manager.py` is referenced by no skill. `TestFetchSourceLive` needs a live TradingView session.
+
+---
+
 ## 2026-10-04 — Strategic Review Upgrade: Master Portfolio Coordinator & Technical Ingestion (Tier 1 Evolution)
 
 **Trigger:** User identified that `/strategic-review` description and workflow were overly academic/narrow, disconnected from the interactive needs of the user (options 1-5, ranked priorities to trim, exit, accumulate, initiate), and isolated from the live technical momentum and conviction scoring engines.
