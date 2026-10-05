@@ -15,6 +15,8 @@
  *     - fetchPortfolioData() - Retrieves holdings and joins with latest AI projections
  *     - stocksWithPct (memo) - Calculates portfolio weighting and drift against target
  */
+import { useRecommendations } from '../contexts/useRecommendations';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllProjections, syncAndRefreshPortfolio, addToWatchlist, removeFromWatchlist } from '../services/api';
@@ -180,6 +182,7 @@ const sortRows = (rows: StockRow[], col: keyof StockRow, dir: 'asc' | 'desc') =>
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PortfolioTable() {
+    const recommendations = useRecommendations();
     const navigate = useNavigate();
     const [data, setData] = useState<HeatmapResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -342,13 +345,11 @@ export default function PortfolioTable() {
             }, {});
             const aiProjs: any[] = Object.values(latest);
 
-            let actionsMap: Record<string, any> = {};
             let reviewMap: Record<string, any> = {};
             const watched = new Set<string>();
             if (ahRes?.ok) {
                 const ahData = await ahRes.json();
                 for (const h of ahData) {
-                    actionsMap[h.ticker] = h.action;
                     if (h.isWatched) {
                         watched.add(h.ticker);
                     }
@@ -382,7 +383,7 @@ export default function PortfolioTable() {
                     // Do not default an unset action to 'WATCHLIST' — same fix as
                     // ScreenerTable.tsx/screener.ts: that mislabeled any held
                     // position with no computed Python action as watchlist-only.
-                    action: actionsMap[s.symbol] ?? null,
+                    action: recommendations[s.symbol]?.action ?? null,
                     recommendedPct: rev?.recommendedTarget ?? null,
                     rationale: rev?.rationale ?? null,
                     fairValue: fairValue,
@@ -438,7 +439,7 @@ export default function PortfolioTable() {
     const orderedCols = columnOrder.map(id => COLUMNS.find(c => c.id === id)!).filter(Boolean);
     const visibleCols = orderedCols.filter(c => visible.has(c.id));
 
-    const filteredRows = (data?.stocks ?? []).filter(row =>
+    const filteredRows = (data?.stocks ?? []).map(row => ({ ...row, action: recommendations[row.symbol]?.action ?? null })).filter(row =>
         Object.entries(filters).every(([colId, filterVal]) => {
             if (!filterVal) return true;
             const val = row[colId as keyof StockRow];

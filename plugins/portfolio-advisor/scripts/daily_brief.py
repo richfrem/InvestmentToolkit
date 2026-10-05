@@ -371,14 +371,14 @@ def _emit_rebalance_events_step(
         try:
             ticker = rec.get("ticker")
             action = rec.get("recommendation")
-            if ticker and action in ("BUY", "SELL"):
+            if ticker and action in ("INITIATE", "ACCUMULATE", "TRIM", "EXIT", "BUY", "SELL"):
                 curr_price = next(
                     (s["price"] for s in scores_raw if s["ticker"] == ticker),
                     None,
                 )
                 emit_rebalance_event(
                     ticker=ticker,
-                    order_type="buy" if action == "BUY" else "sell",
+                    order_type="buy" if action in ("INITIATE", "ACCUMULATE", "BUY") else "sell",
                     order_quantity=1,
                     order_price=curr_price or 0.0,
                     rebalance_date=date.today().isoformat(),
@@ -809,7 +809,7 @@ def render(brief: dict[str, Any]) -> str:
                          f"({e['days_away']}d)  → consider pre-event size reduction")
 
     # ── REDUCE / EXIT list ────────────────────────────────────────────────────
-    reduce = [s for s in scores if s["band"] in ("EXIT", "REDUCE")]
+    reduce = [s for s in scores if s["band"] in ("EXIT", "TRIM")]
     if reduce:
         lines.append(f"\n▼  REDUCE / EXIT — {len(reduce)} holdings:")
         lines.append(f"   {'TICKER':<8} {'SCORE':>5}  {'BAND':<10}  "

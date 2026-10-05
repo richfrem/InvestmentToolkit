@@ -5,7 +5,7 @@ interface TradeButtonsProps {
     ticker: string;
     shares?: number;
     size?: 'sm' | 'md';
-    rating?: 'BUY' | 'SELL' | 'HOLD';
+    rating?: 'BUY' | 'SELL' | 'HOLD' | 'INITIATE' | 'ACCUMULATE' | 'MAINTAIN' | 'TRIM' | 'EXIT' | 'WATCHLIST';
     className?: string;
 }
 
@@ -27,8 +27,8 @@ export function TradeButtons({ ticker, shares = 1, size = 'md', rating, classNam
     const offlineTip = 'TradingView not connected — open TV Desktop with --remote-debugging-port=9222';
 
     // When a DCF signal is present, emphasize the signal-aligned button and ghost the other.
-    const buyPrimary = !rating || rating === 'BUY' || rating === 'HOLD';
-    const sellPrimary = !rating || rating === 'SELL' || rating === 'HOLD';
+    const buyPrimary = !rating || ['BUY', 'HOLD', 'INITIATE', 'ACCUMULATE', 'MAINTAIN'].includes(rating);
+    const sellPrimary = !rating || ['SELL', 'HOLD', 'TRIM', 'EXIT', 'MAINTAIN'].includes(rating);
     const buyStyle = tvConnected
         ? buyPrimary
             ? 'bg-emerald-600 hover:bg-emerald-500 text-white'

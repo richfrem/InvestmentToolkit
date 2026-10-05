@@ -33,7 +33,7 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import { getPythonActions } from '../utils/helpers';
+import { getRecommendations } from '../utils/helpers';
 import { PORTFOLIO_FILE, PORTFOLIO_REVIEWS_DIR, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { watchlistService } from '../services/WatchlistService';
 import { InvestmentRepository } from '../services/InvestmentRepository';
@@ -42,21 +42,14 @@ import { getWeightsFromDb } from './portfolio';
 
 const router = express.Router();
 
-/** Resolves a ticker's display action when the Python-computed action is
- * absent. Must never default an unwatched ticker to 'WATCHLIST' — that
- * previously mislabeled any researched-but-untracked ticker, and kept
- * showing 'WATCHLIST' even after a ticker was explicitly removed from the
- * watchlist. Returns null (not a placeholder string) when no real action
- * category applies. */
-export function resolveFallbackAction(
-    isWatched: boolean,
-    hasLiveHolding: boolean,
-    hasThesis: boolean
-): 'WATCHLIST' | 'EXIT' | null {
-    if (isWatched) return 'WATCHLIST';
-    if (hasLiveHolding && !hasThesis) return 'EXIT';
-    return null;
-}
+/** One current recommendation record per ticker for all web surfaces. */
+router.get('/recommendations', async (_req, res) => {
+    try {
+        res.json(await getRecommendations());
+    } catch (error: any) {
+        res.status(503).json({ error: error.message });
+    }
+});
 
 /** Wave 3 Task 6: per-symbol {symbol, shares, price} aggregated across accounts
  * from account_investment/investment_price, replacing GET /all-holdings' direct
@@ -187,7 +180,7 @@ router.get('/all-holdings', async (_req, res) => {
         const dbWeights = getWeightsFromDb();
         const actualMap = buildActualPctMap(positions, dbWeights);
 
-        const actionsMap = await getPythonActions();
+        const recommendations = await getRecommendations();
 
         let reviewMap: Record<string, any> = {};
         try {
@@ -228,11 +221,9 @@ router.get('/all-holdings', async (_req, res) => {
             const hasValuation = projectionTickers.has(ticker);
             const isWatched = watchedTickers.has(ticker);
 
-            // Compute default/fallback actions
-            let action: string | null = actionsMap[ticker];
-            if (!action) {
-                action = resolveFallbackAction(isWatched, Boolean(live), Boolean(h));
-            }
+            // The action is the canonical recommendation verbatim (no fallbacks here).
+            const rec = recommendations[ticker] ?? null;
+            const action: string | null = rec?.action ?? null;
 
             return {
                 ticker,
@@ -245,6 +236,7 @@ router.get('/all-holdings', async (_req, res) => {
                 actualPct: live?.pct ?? null,
                 currentPrice: live?.price ?? null,
                 action,
+                recommendation: rec,
                 rationale: rev?.rationale ?? h?.agentRationale ?? h?.thesisForInclusion ?? (isWatched ? 'Monitored via Watchlist' : null),
                 hasValuation,
                 isWatched

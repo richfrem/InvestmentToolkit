@@ -218,7 +218,7 @@ def build_prompt(date_str: str) -> str:
             continue
         actual  = current_data["holdings"].get(ticker, 0)
         target  = target_data["holdings"].get(ticker, 0)
-        action  = derive_action(ticker, actual, target)
+        action  = derive_action(ticker, actual, target, db_path=str(DB_PATH))
         dcf     = load_dcf(ticker)
         role    = h.get("role", "watchlist")
         pillar  = h.get("pillarId", "")
@@ -243,7 +243,7 @@ def build_prompt(date_str: str) -> str:
             agentRationale=h.get("agentRationale", ""),
         )
 
-        if action == "WATCHLIST":
+        if not actual and not target:
             watchlist.append(row)
         elif target == 0 and actual > 0:
             exit_list.append(row)

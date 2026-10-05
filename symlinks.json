@@ -1074,6 +1074,12 @@
       "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/news_sweep.py",
       "strategy": "symlink",
       "description": "news-sweep canonical script \u2014 posts prompt to browser automation and captures response"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/recommendation.py",
+      "dst": "investment_screener/backend/py_services/recommendation.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

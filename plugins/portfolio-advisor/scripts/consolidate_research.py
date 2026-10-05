@@ -74,6 +74,8 @@ def run_consolidation(research_dir, db_path, delete_old=False):
     # Group files by ticker
     ticker_files = {}
     pattern = re.compile(r"^([A-Z0-9.\-]+)_(\d{4}-\d{2}-\d{2})\.md$")
+    from recommendation import recommend_all
+    current_records = recommend_all(str(db_path))
     for f in files:
         base = os.path.basename(f)
         match = pattern.match(base)
@@ -92,7 +94,7 @@ def run_consolidation(research_dir, db_path, delete_old=False):
         snapshot = proj.get("snapshot", {})
         
         fair_value = ai_thesis.get("fairValue", "N/A")
-        action = ai_thesis.get("action", "N/A")
+        action = current_records.get(ticker, {}).get("action", "UNAVAILABLE")
         saved_at = proj.get("savedAt", "N/A")
         price = snapshot.get("price", "N/A")
 

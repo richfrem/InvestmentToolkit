@@ -38,6 +38,10 @@ import argparse
 import json
 import sys
 from typing import Any
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services"))
+from recommendation import valuation_signal
 
 
 REQUIRED_SCENARIO_KEYS = {
@@ -213,15 +217,8 @@ def run(
         sum(computed[n]["weight"] * computed[n]["presentValue"] for n in SCENARIO_NAMES), 2
     )
 
-    action = "HOLD"
-    if price is not None:
-        pct = (weighted_fv - price) / price * 100
-        if pct > 15:
-            action = "BUY"
-        elif pct < -5:
-            action = "SELL"
-    else:
-        pct = None
+    pct = (weighted_fv - price) / price * 100 if price is not None and price > 0 else None
+    action = valuation_signal(pct) or "HOLD"
 
     return {
         "ticker": ticker,

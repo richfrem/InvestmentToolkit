@@ -299,50 +299,5 @@ class TestLoadTargetWeights:
         assert targets["ZZZ"] == 0
 
 
-class TestBandAndDcfActionOwnershipAware:
-    """Ownership-aware logic: held (>0 shares) vs non-held (watchlist) stocks."""
-
-    def test_held_bands(self):
-        from compute_conviction_scores import _band  # noqa: PLC0415
-        assert _band(4, is_held=True) == "ACCUMULATE"
-        assert _band(3, is_held=True) == "ACCUMULATE"
-        assert _band(2, is_held=True) == "HOLD"
-        assert _band(1, is_held=True) == "HOLD"
-        assert _band(0, is_held=True) == "HOLD"
-        assert _band(-1, is_held=True) == "REDUCE"
-        assert _band(-2, is_held=True) == "REDUCE"
-        assert _band(-3, is_held=True) == "EXIT"
-
-    def test_non_held_bands_never_show_hold_accumulate_reduce_or_exit(self):
-        from compute_conviction_scores import _band  # noqa: PLC0415
-        assert _band(4, is_held=False) == "INITIATE"
-        assert _band(2, is_held=False) == "INITIATE"
-        assert _band(1, is_held=False) == "WATCH"
-        assert _band(0, is_held=False) == "WATCH"
-        assert _band(-1, is_held=False) == "AVOID"
-        assert _band(-3, is_held=False) == "AVOID"
-
-    def test_held_dcf_actions(self):
-        from compute_conviction_scores import _normalize_dcf_action  # noqa: PLC0415
-        assert _normalize_dcf_action("BUY", is_held=True) == "ACCUMULATE"
-        assert _normalize_dcf_action("ACCUMULATE", is_held=True) == "ACCUMULATE"
-        assert _normalize_dcf_action("INITIATE", is_held=True) == "ACCUMULATE"
-        assert _normalize_dcf_action("HOLD", is_held=True) == "HOLD"
-        assert _normalize_dcf_action("MAINTAIN", is_held=True) == "HOLD"
-        assert _normalize_dcf_action("TRIM", is_held=True) == "TRIM"
-        assert _normalize_dcf_action("SELL", is_held=True) == "EXIT"
-        assert _normalize_dcf_action("EXIT", is_held=True) == "EXIT"
-
-    def test_non_held_dcf_actions_never_show_accumulate_hold_trim_or_exit(self):
-        from compute_conviction_scores import _normalize_dcf_action  # noqa: PLC0415
-        assert _normalize_dcf_action("BUY", is_held=False) == "INITIATE"
-        assert _normalize_dcf_action("ACCUMULATE", is_held=False) == "INITIATE"
-        assert _normalize_dcf_action("INITIATE", is_held=False) == "INITIATE"
-        assert _normalize_dcf_action("HOLD", is_held=False) == "WATCHLIST"
-        assert _normalize_dcf_action("MAINTAIN", is_held=False) == "WATCHLIST"
-        assert _normalize_dcf_action("WATCHLIST", is_held=False) == "WATCHLIST"
-        assert _normalize_dcf_action("TRIM", is_held=False) == "AVOID"
-        assert _normalize_dcf_action("SELL", is_held=False) == "AVOID"
-        assert _normalize_dcf_action("EXIT", is_held=False) == "AVOID"
-
-
+# Ownership and valuation boundaries are tested in test_recommendation.py;
+# full daily consumer agreement is tested in test_canonical_recommendation_consumers.py.

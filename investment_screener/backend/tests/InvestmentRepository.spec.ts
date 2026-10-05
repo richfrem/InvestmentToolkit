@@ -43,6 +43,7 @@ describe('InvestmentRepository', () => {
             expect(holdings.map(h => h.ticker)).to.deep.equal(['HOLD1']);
             expect(holdings[0]).to.deep.equal({
                 ticker: 'HOLD1',
+                assetClass: 'EQUITY',
                 name: 'Holding One',
                 pillarId: 'compute',
                 subStrategyId: 'sa-asi-race',
@@ -84,7 +85,8 @@ describe('InvestmentRepository', () => {
     // this repository's own code, so the comparison cannot be circular.
     describe('standingDecision byte-for-byte parity (real domain_model.sqlite)', () => {
         it('getInvestment() matches an independent ground-truth query for a real ticker', function () {
-            if (!fs.existsSync(DOMAIN_MODEL_DB_FILE)) {
+            const groundTruthPath = process.env.TEST_DOMAIN_MODEL_DB ?? DOMAIN_MODEL_DB_FILE;
+            if (!fs.existsSync(groundTruthPath)) {
                 this.skip();
                 return;
             }
@@ -93,7 +95,7 @@ describe('InvestmentRepository', () => {
                 '-c',
                 `
 import sqlite3, json
-c = sqlite3.connect("${DOMAIN_MODEL_DB_FILE}")
+c = sqlite3.connect("${groundTruthPath}")
 row = c.execute(
     "SELECT investment_id, standing_decision_type, standing_decision_reason, "
     "standing_decision_source, standing_decision_review FROM investment "
@@ -105,7 +107,7 @@ print(json.dumps(row))
             const [investmentId, type, reason, source, review] = JSON.parse(groundTruthJson);
             expect(investmentId, 'no ticker with a standing decision found in the real DB').to.not.be.undefined;
 
-            const liveRepo = new InvestmentRepository(DOMAIN_MODEL_DB_FILE);
+            const liveRepo = new InvestmentRepository(groundTruthPath);
             let row;
             try {
                 row = liveRepo.getInvestment(investmentId);

@@ -170,7 +170,8 @@ stale = []
 for ticker, h in list(non_zero.items())[:8]:   # spot-check first 8
     action = derive_action(ticker,
                            current_data["holdings"].get(ticker, 0),
-                           target_data["holdings"].get(ticker, 0))
+                           target_data["holdings"].get(ticker, 0),
+                           db_path=str(DB_PATH))
     # Look for the ticker in the md with a different action
     pattern = rf"\|\s*\*\*{re.escape(ticker)}\*\*\s*\|[^|]*\|\s*[^|]*\|\s*[^|]*\|\s*[^|]*\|"
     row = re.search(pattern, md_text)
@@ -233,7 +234,7 @@ no_change_broken = []
 for ticker, h in holdings_map.items():
     actual = current_data["holdings"].get(ticker, 0)
     target = target_data["holdings"].get(ticker, 0)
-    action = derive_action(ticker, actual, target)
+    action = derive_action(ticker, actual, target, db_path=str(DB_PATH))
 
     # No-change positions must be MAINTAIN
     if ticker in NO_CHANGE and action != "MAINTAIN":

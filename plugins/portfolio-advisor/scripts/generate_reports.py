@@ -126,7 +126,7 @@ def load_json(path):
     return {}
 
 
-def generate_report(brief_data, target_portfolio_data, portfolio_data, template_path):
+def generate_report(brief_data, target_portfolio_data, portfolio_data, template_path, db_path=None):
     """Compiles the template with the provided datasets."""
     with open(template_path) as f:
         template = f.read()
@@ -135,6 +135,9 @@ def generate_report(brief_data, target_portfolio_data, portfolio_data, template_
     date_str = brief_data.get("date", datetime.now().strftime("%Y-%m-%d"))
     total_val = portfolio_data.get("totals", {}).get("totalUSD", brief_data.get("total_equity", 0.0))
     macro_reg = brief_data.get("macro_regime", {})
+    sys.path.insert(0, os.path.join(PROJECT_ROOT, "investment_screener/backend/py_services"))
+    from recommendation import recommend_all
+    recommendations = recommend_all(str(db_path or DOMAIN_DB_PATH))
     macro_status = macro_reg.get("regime", "NEUTRAL")
     macro_score = macro_reg.get("score", 0)
 
@@ -171,7 +174,9 @@ def generate_report(brief_data, target_portfolio_data, portfolio_data, template_
         "INITIATE": [],
         "TRIM": [],
         "EXIT": [],
-        "MAINTAIN": []
+        "MAINTAIN": [],
+        "WATCHLIST": [],
+        "UNAVAILABLE": []
     }
 
     # Order sub-strategies for presentation
@@ -200,22 +205,19 @@ def generate_report(brief_data, target_portfolio_data, portfolio_data, template_
             vol_bias = score_info.get("vol_bias")
 
             # DCF values
-            dcf_action = score_info.get("dcf_action", "N/A")
-            pct_to_fv = score_info.get("pct_to_fv", 0.0)
+            rec = recommendations.get(t, {})
+            dcf_action = rec.get("valuation") or "N/A"
+            pct_to_fv = rec.get("upside_pct") or 0.0
 
             # Recommendations & Rationale
-            action = rec_info.get("recommendation")
-            if not action:
-                action = "ACCUMULATE" if details["role"] == "accumulate" and macro_status == "RISK-ON" else "MAINTAIN"
-            
+            action = rec.get("action") or "UNAVAILABLE"
+
             # Map action category
             cat = action.upper()
             if cat not in rec_categories:
-                cat = "MAINTAIN"
+                cat = "UNAVAILABLE"
             
-            rationale = rec_info.get("rationale")
-            if not rationale:
-                rationale = f"DCF Action: {dcf_action} | Target Weight: {target_w:.2f}% | Actual Weight: {actual_w:.2f}%"
+            rationale = rec.get("reason") or "No canonical recommendation available"
 
             ticker_row = (
                 f"* **{t}** ({details['name']}) — Role: `{details['role']}`\n"

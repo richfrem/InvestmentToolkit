@@ -13,6 +13,8 @@
  * Key Functions:
  *     - fetchLatestReviewData() - Async call to retrieve the latest review summary from backend
  */
+import { useRecommendations } from '../contexts/useRecommendations';
+
 import { useEffect, useState } from 'react';
 import { X, TrendingUp, TrendingDown, Minus, AlertTriangle, Clock, CheckCircle2, Loader2, FileBarChart2 } from 'lucide-react';
 import { fetchLatestReviewData } from '../services/api';
@@ -183,6 +185,7 @@ export default function LatestReviewModal({ onClose }: Props) {
 }
 
 function HoldingTable({ holdings, title }: { holdings: any[]; title: string }) {
+    const recommendations = useRecommendations();
     if (!holdings.length) return <div className="text-slate-500 text-sm">No holdings in this group.</div>;
     return (
         <div>
@@ -201,7 +204,7 @@ function HoldingTable({ holdings, title }: { holdings: any[]; title: string }) {
                             <tr key={h.ticker} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
                                 <td className="px-3 py-3 font-black text-white tracking-tighter">{h.ticker}</td>
                                 <td className="px-3 py-3">
-                                    <span className={`text-[10px] font-black uppercase ${getActionTextClass(h.action)}`}>{h.action}</span>
+                                    <span className={`text-[10px] font-black uppercase ${getActionTextClass(recommendations[h.ticker]?.action ?? '')}`}>{recommendations[h.ticker]?.action ?? '—'}</span>
                                 </td>
                                 <td className="px-3 py-3 font-mono text-xs text-slate-400">{(h.actualPct ?? 0).toFixed(2)}%</td>
                                 <td className="px-3 py-3 font-mono text-xs text-white">{h.recommendedTarget?.toFixed(2)}%</td>

@@ -5,7 +5,7 @@ relabel_actions.py (Python Service)
 
 Purpose:
     Drives the re-derivation of correct action verbs (INITIATE, ACCUMULATE, TRIM, etc.) for recommendation JSONs.
-    Compares live brokerage holdings against proposed targets to ensure actions reflect actual portfolio state.
+    Uses recommendation.recommend_all() for every action; target deltas are display data only.
 
 Layer: Backend / Python Services / Rebalancing
 
@@ -13,11 +13,11 @@ Usage Examples:
     python3 relabel_actions.py --recs 2026-05-11-Recommendations.json --threshold 0.5
 
 Key Functions:
-    - assign_action() - Core logic for mapping weight deltas to specific investment action verbs
+    - assign_action() - Compatibility shim for the canonical recommendation
     - main() - CLI orchestrator that computes actual weights and updates recommendation files in-place
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - domain_model.sqlite (canonical holdings and valuations)
 """
 
 import argparse
@@ -56,29 +56,13 @@ def assign_action(
 ) -> tuple[str, str]:
     """Return (new_action, reason)."""
 
-    # Preserve explicit EXIT — thesis breaker, not weight-driven
-    if current_action == "EXIT":
-        return "EXIT", "thesis breaker — preserved"
-
-    held = actual_pct > 0
-    delta = recommended_pct - actual_pct  # positive = need to buy more
-
-    if not held:
-        if recommended_pct > 0 and delta > 0:
-            return "INITIATE", f"not held, target={recommended_pct:.2f}%"
-        else:
-            return "WATCHLIST", f"not held, no buy signal"
-
-    # Held — compare actual vs recommended
-    if delta > threshold:
-        return "ACCUMULATE", f"held {actual_pct:.2f}% → target {recommended_pct:.2f}% (+{delta:.2f}pp)"
-    elif delta < -threshold:
-        return "TRIM", f"held {actual_pct:.2f}% → target {recommended_pct:.2f}% ({delta:.2f}pp)"
-    else:
-        return "MAINTAIN", f"held {actual_pct:.2f}% ≈ target {recommended_pct:.2f}% (within {threshold}pp)"
+    sys.path.insert(0, str(PY_SERVICES))
+    from recommendation import recommend_all
+    rec = recommend_all().get(ticker)
+    return (rec["action"], rec["reason"]) if rec else ("UNAVAILABLE", "No canonical recommendation")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Re-label recommendation actions based on actual holdings")
     parser.add_argument("--recs", required=True, help="Path to recommendations JSON file")
     parser.add_argument("--portfolio", default=str(DEFAULT_PORTFOLIO),
@@ -87,6 +71,7 @@ def main():
     parser.add_argument("--threshold", type=float, default=MAINTAIN_THRESHOLD,
                         help=f"pp band within which position is MAINTAIN (default {MAINTAIN_THRESHOLD})")
     parser.add_argument("--dry-run", action="store_true", help="Print changes without writing")
+    parser.add_argument("--db", default=None, help="Domain database override")
     args = parser.parse_args()
 
     recs_path = Path(args.recs)
@@ -99,7 +84,10 @@ def main():
         recs = json.load(f)
 
     # Build actual pct map from domain_model.sqlite (Wave 3 cutover, ADR-030)
-    actual_pct_map = build_actual_pct_map()
+    sys.path.insert(0, str(PY_SERVICES))
+    from recommendation import recommend_all
+    records = recommend_all(args.db)
+    actual_pct_map = {t: r["current_weight_pct"] for t, r in records.items()}
 
     print(f"\n{'TICKER':<8} {'ACTUAL%':>8} {'REC_TGT%':>9} {'DELTA':>7}  {'OLD':<14} {'NEW':<14} NOTE")
     print("─" * 90)
@@ -112,7 +100,11 @@ def main():
         old_action = holding.get("action", "")
         delta = rec_target - actual_pct
 
-        new_action, reason = assign_action(ticker, actual_pct, rec_target, old_action, args.threshold)
+        rec = records.get(ticker)
+        if rec is None:
+            print(f"{ticker}: no canonical recommendation; unchanged")
+            continue
+        new_action, reason = rec["action"], rec["reason"]
 
         changed = "✏️ " if new_action != old_action else "   "
         if new_action != old_action:

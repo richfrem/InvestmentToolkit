@@ -50,6 +50,8 @@ if PROJECT_ROOT not in sys.path:
 from tv_client import tv_call, validate_cdp_installation, MUTATING_CALL_OPTS
 from pine_linter import PineLinter
 from investment_screener.backend.py_services.ticker_aliases import normalize_ticker
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "investment_screener/backend/py_services"))
+from recommendation import recommend_all
 
 DEFAULT_DB_PATH = os.path.join(
     PROJECT_ROOT, "investment_screener/backend/data/domain_model.sqlite"
@@ -85,6 +87,7 @@ def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[s
     if not os.path.exists(db_path):
         return result
 
+    rec = recommend_all(db_path).get(norm_symbol, {})
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     try:
@@ -106,7 +109,8 @@ def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[s
         ).fetchone()
         if proj:
             result["fair_value"] = proj["fair_value"]
-            result["action"] = proj["action"]
+            result["action"] = rec.get("action")
+            result["fair_value"] = rec.get("fair_value")
 
         # 3. DCF scenario prices (bear/base/bull) from the latest projection version
         scenarios = conn.execute(
@@ -115,9 +119,9 @@ def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[s
             FROM projection_scenario ps
             JOIN projection_version pv ON ps.projection_id = pv.projection_id
             WHERE pv.investment_id = ?
-              AND pv.version = (SELECT MAX(version) FROM projection_version WHERE investment_id = ?);
+              AND pv.projection_id = ?;
             """,
-            (investment_id, investment_id),
+            (investment_id, rec.get("projection_id")),
         ).fetchall()
         for sc in scenarios:
             key = f"{(sc['scenario_name'] or '').strip().lower()}_price"

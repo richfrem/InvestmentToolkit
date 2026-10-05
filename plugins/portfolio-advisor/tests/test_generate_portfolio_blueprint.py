@@ -163,7 +163,7 @@ def test_get_ai_signal_no_real_io(tmp_path, monkeypatch):
         investment_id = resolve_investment(conn, "MSFT", asset_class="EQUITY")
         save_projection_version(
             conn, investment_id, version=1, saved_at="2026-06-01T00:00:00Z",
-            fair_value=500.0, action="ACCUMULATE", source="AI_AGENT",
+            fair_value=500.0, action="ACCUMULATE", source="AI_AGENT", snapshot_json='{"price":300}',
         )
     finally:
         conn.close()
@@ -179,4 +179,4 @@ def test_get_ai_signal_no_real_io(tmp_path, monkeypatch):
     target_data = {"holdings": {"MSFT": 6.0}}
 
     updated = gpb.update_section_tables(content, current_data, target_data)
-    assert "ACCUMULATE" in updated
+    assert "INITIATE" in updated  # No broker shares; caller weights cannot override ownership

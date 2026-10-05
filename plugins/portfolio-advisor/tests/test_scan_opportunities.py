@@ -194,6 +194,6 @@ def test_enrich_with_scores_populates_technicals():
     assert item["rsi"] == 62.4
     assert item["adx"] == 28.1
     assert item["volBias"] == 15.0
-    assert item["band"] == "ACCUMULATE"
+    assert item["band"] is None  # Numeric score alone cannot invent an action
     assert item["convictionScore"] == 3
     assert item["flags"] == ["ADX_STRONG"]

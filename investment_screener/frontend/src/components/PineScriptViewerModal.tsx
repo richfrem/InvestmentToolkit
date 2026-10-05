@@ -59,7 +59,7 @@ export const PineScriptViewerModal: React.FC<PineScriptViewerModalProps> = ({
     const fvVal = fairValue && fairValue > 0 ? fairValue.toFixed(2) : '0.0';
     const entryVal = targetEntry && targetEntry > 0 ? targetEntry.toFixed(2) : '0.0';
     const stopVal = stopLoss && stopLoss > 0 ? stopLoss.toFixed(2) : '0.0';
-    const actStr = action || 'INITIATE';
+    const actStr = action || 'Unavailable';
     const brkStr = breakerStatus || 'OK';
 
     const universalPineCode = `//@version=6
@@ -70,7 +70,7 @@ indicator("AI Thesis & Valuation Overlay", shorttitle="AI Thesis", overlay=true)
 fairValue   = input.float(${fvVal}, title="Fair Value (DCF Target)", inline="fv")
 targetEntry = input.float(${entryVal}, title="Target Entry Limit", inline="entry")
 stopLoss    = input.float(${stopVal}, title="Stop Loss / Breaker", inline="stop")
-actionText  = input.string("${actStr}", title="Thesis Action", options=["INITIATE", "ACCUMULATE", "MAINTAIN", "TRIM", "EXIT", "MONITOR"])
+actionText  = input.string("${actStr}", title="Thesis Action", options=["INITIATE", "ACCUMULATE", "MAINTAIN", "TRIM", "EXIT", "WATCHLIST", "MONITOR", "Unavailable"])
 breakerText = input.string("${brkStr}", title="Breaker Status", options=["OK", "WARNING", "TRIGGERED"])
 
 // === Plot Valuation Lines ===

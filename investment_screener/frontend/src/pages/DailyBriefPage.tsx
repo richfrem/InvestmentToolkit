@@ -3,13 +3,15 @@
  *
  * Purpose:
  *     Displays the latest daily portfolio brief — macro regime, conviction-scored
- *     holdings (ACCUMULATE / HOLD / WATCH / REDUCE / EXIT), earnings calendar
+ *     holdings (INITIATE / ACCUMULATE / MAINTAIN / TRIM / EXIT / WATCHLIST), earnings calendar
  *     binary event flags, pillar health aggregation, and score delta vs. yesterday.
  *     Reads from /api/daily-brief/latest which serves the JSON snapshot produced by
  *     plugins/portfolio-advisor/scripts/daily_brief.py.
  *
  * Layer: Frontend / Pages
  */
+import { useRecommendations } from '../contexts/useRecommendations';
+
 import { useState, useEffect } from 'react';
 import { AlertTriangle, TrendingUp, TrendingDown, Minus, Calendar, Shield, Activity, RefreshCw, Target, Lock } from 'lucide-react';
 import { TradeButtons } from '../components/TradeButtons';
@@ -30,7 +32,7 @@ interface MacroRegime {
 interface ConvictionScore {
     ticker: string;
     total: number;
-    band: 'INITIATE' | 'ACCUMULATE' | 'HOLD' | 'WATCH' | 'REDUCE' | 'EXIT' | 'AVOID';
+    band: 'INITIATE' | 'ACCUMULATE' | 'MAINTAIN' | 'WATCHLIST' | 'TRIM' | 'EXIT' | 'WATCHLIST';
     dcf_pts: number;
     ta_pts: number;
     weight_gap_pts: number;
@@ -81,6 +83,7 @@ interface Recommendation {
     score: number;
     held: boolean;
     recommendation: string;
+    executionStatus?: string;
     rationale: string;
     actionable: boolean;
     urgency: number;
@@ -108,11 +111,10 @@ const BAND_STYLES: Record<string, { bg: string; text: string; border: string }> 
     ACCUMULATE: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
     INITIATE:   { bg: 'bg-teal-500/10',    text: 'text-teal-400',    border: 'border-teal-500/30' },
     BUY:        { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-    HOLD:       { bg: 'bg-sky-500/10',     text: 'text-sky-400',     border: 'border-sky-500/30' },
-    WATCH:      { bg: 'bg-amber-500/10',   text: 'text-amber-400',   border: 'border-amber-500/30' },
-    REDUCE:     { bg: 'bg-orange-500/10',  text: 'text-orange-400',  border: 'border-orange-500/30' },
+    MAINTAIN:       { bg: 'bg-sky-500/10',     text: 'text-sky-400',     border: 'border-sky-500/30' },
+    WATCHLIST:      { bg: 'bg-amber-500/10',   text: 'text-amber-400',   border: 'border-amber-500/30' },
+    TRIM:     { bg: 'bg-orange-500/10',  text: 'text-orange-400',  border: 'border-orange-500/30' },
     EXIT:       { bg: 'bg-red-500/10',     text: 'text-red-400',     border: 'border-red-500/30' },
-    AVOID:      { bg: 'bg-rose-500/10',    text: 'text-rose-400',    border: 'border-rose-500/30' },
 };
 
 const REGIME_STYLES: Record<string, { bg: string; text: string; label: string }> = {
@@ -140,6 +142,7 @@ function DeltaBadge({ delta }: { delta: number }) {
 }
 
 export default function DailyBriefPage() {
+    const recommendations = useRecommendations();
     const [brief, setBrief] = useState<DailyBrief | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -177,7 +180,11 @@ export default function DailyBriefPage() {
 
     const macro     = brief.macro_regime;
     const regStyle  = REGIME_STYLES[macro.regime] ?? REGIME_STYLES['NEUTRAL'];
-    const scores    = brief.conviction_scores ?? [];
+    const scores = (brief.conviction_scores ?? []).map(s => ({
+        ...s, band: recommendations[s.ticker]?.action ?? '—',
+        dcf_action: recommendations[s.ticker]?.valuation ?? null,
+        pct_to_fv: recommendations[s.ticker]?.upside_pct ?? null,
+    }));
     const deltas    = brief.score_deltas ?? {};
     const earnings  = (brief.earnings_flags ?? []).filter(e => e.flag !== 'OK' && e.flag !== 'UNKNOWN');
     const pillars   = brief.pillar_health ?? [];
@@ -189,11 +196,10 @@ export default function DailyBriefPage() {
     const bandCounts: Record<string, number> = {
         ACCUMULATE: scores.filter(s => s.band === 'ACCUMULATE').length,
         INITIATE:   scores.filter(s => s.band === 'INITIATE').length,
-        HOLD:       scores.filter(s => s.band === 'HOLD').length,
-        WATCH:      scores.filter(s => s.band === 'WATCH').length,
-        REDUCE:     scores.filter(s => s.band === 'REDUCE').length,
+        MAINTAIN:       scores.filter(s => s.band === 'MAINTAIN').length,
+        WATCHLIST:      scores.filter(s => s.band === 'WATCHLIST').length,
+        TRIM:     scores.filter(s => s.band === 'TRIM').length,
         EXIT:       scores.filter(s => s.band === 'EXIT').length,
-        AVOID:      scores.filter(s => s.band === 'AVOID').length,
     };
 
     return (
@@ -231,7 +237,7 @@ export default function DailyBriefPage() {
                     </div>
                     {macro.regime === 'RISK-OFF' && (
                         <p className="mt-3 text-red-400 text-xs bg-red-500/10 rounded px-3 py-2 border border-red-500/20">
-                            ⛔ Gate all ACCUMULATE signals. Execute REDUCE / EXIT only today.
+                            ⛔ Gate all ACCUMULATE signals. Review TRIM / EXIT only today.
                         </p>
                     )}
                     {macro.regime === 'NEUTRAL' && (
@@ -318,9 +324,16 @@ export default function DailyBriefPage() {
                         </p>
                     </div>
                     <div className="space-y-3">
-                        {(brief.recommendations ?? []).map(rec => {
-                            const chip = REC_CHIP_STYLES[rec.recommendation] ?? REC_CHIP_STYLES.HOLD;
-                            const sigStyle = BAND_STYLES[rec.signal] ?? BAND_STYLES.HOLD;
+                        {(brief.recommendations ?? []).map(saved => {
+                            const current = recommendations[saved.ticker];
+                            const matches = current?.action === saved.recommendation;
+                            const rec = { ...saved, recommendation: current?.action ?? '—', signal: current?.action ?? '—',
+                                actionable: matches && saved.actionable,
+                                proposedTrade: matches ? saved.proposedTrade : null,
+                                rationale: matches ? saved.rationale : current?.reason ?? 'Current recommendation unavailable',
+                                executionStatus: matches ? saved.executionStatus : 'REVIEW' };
+                            const chip = REC_CHIP_STYLES[rec.recommendation] ?? REC_CHIP_STYLES.MAINTAIN;
+                            const sigStyle = BAND_STYLES[rec.signal] ?? BAND_STYLES.MAINTAIN;
                             const intent = tradeIntent(rec.recommendation);
                             return (
                                 <div key={rec.ticker}
@@ -362,7 +375,7 @@ export default function DailyBriefPage() {
                                             <TradeButtons ticker={rec.ticker} rating={intent.rating} size="md" />
                                         ) : (
                                             <span className="text-xs text-zinc-600 italic px-2">
-                                                {rec.recommendation === 'QUEUED' ? 'macro-gated' : 'no trade without your direction'}
+                                                {rec.executionStatus === 'QUEUED' ? 'macro-gated' : 'no trade without your direction'}
                                             </span>
                                         )}
                                     </div>
@@ -412,7 +425,7 @@ export default function DailyBriefPage() {
                 {/* Filter bar */}
                 <div className="flex items-center gap-2 p-4 border-b border-zinc-800 flex-wrap">
                     <span className="text-xs text-zinc-500 mr-1">Filter:</span>
-                    {(['all', 'ACCUMULATE', 'INITIATE', 'HOLD', 'WATCH', 'REDUCE', 'EXIT', 'AVOID'] as const)
+                    {(['all', 'ACCUMULATE', 'INITIATE', 'MAINTAIN', 'WATCHLIST', 'TRIM', 'EXIT'] as const)
                         .filter(f => f === 'all' || (bandCounts[f] ?? 0) > 0)
                         .map(f => {
                             const style = f === 'all' ? { text: 'text-zinc-300', bg: 'bg-zinc-700' } :
@@ -454,7 +467,7 @@ export default function DailyBriefPage() {
                         </thead>
                         <tbody>
                             {filtered.map(s => {
-                                const bs = BAND_STYLES[s.band] ?? BAND_STYLES.HOLD;
+                                const bs = BAND_STYLES[s.band] ?? BAND_STYLES.MAINTAIN;
                                 const delta = deltas[s.ticker];
                                 return (
                                     <tr key={s.ticker}

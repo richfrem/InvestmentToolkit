@@ -15,6 +15,8 @@
  *     - handleInputChange() - Debounced state updates for model inputs
  *     - saveAsPreset() - Persists the current model configuration to local storage
  */
+import { useRecommendations } from '../contexts/useRecommendations';
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown, Clock } from 'lucide-react';
@@ -67,6 +69,7 @@ interface ValuationModelerProps {
 }
 
 export default function ValuationModeler({ stockData }: ValuationModelerProps) {
+    const recommendation = useRecommendations()[stockData.symbol.toUpperCase()];
     // --- State ---
     const [activeScenario, setActiveScenario] = useState<'bear' | 'base' | 'bull'>('base');
     const [showProjectionsPanel, setShowProjectionsPanel] = useState(false);
@@ -587,9 +590,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 <div>
                                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                         {activeCoachMetric ? `AI Coach: ${activeCoachMetric}` : 'AI Expert Thesis'}
-                                        {aiResult?.action && (
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(aiResult.action)}`}>
-                                                {aiResult.action}
+                                        {recommendation?.action && (
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(recommendation.action)}`}>
+                                                {recommendation.action}
                                             </span>
                                         )}
                                     </h3>

@@ -15,6 +15,8 @@
  *     - loadAIThesis() - Retrieves and synchronizes existing AI-generated projections and rationale from storage
  *     - handleInputSubmit() - Updates the URL search parameters to trigger a new stock search
  */
+import { useRecommendations } from '../contexts/useRecommendations';
+
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { fetchStockData, fetchTargetPortfolio, fetchTechnicalAnalysis, type StockData, type ValuationResult, type Projection, type TechnicalAnalysisData } from '../services/api';
@@ -37,6 +39,7 @@ import { storage } from '../services/storage';
 type Tab = 'overview' | 'technicals' | 'analysis' | 'valuation';
 
 export default function Dashboard() {
+    const recommendations = useRecommendations();
     const [searchParams, setSearchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [chartMode, setChartMode] = useState<ChartMode>('revenue');
@@ -269,7 +272,7 @@ export default function Dashboard() {
                             <Code size={14} />
                             <span>TV Overlay</span>
                         </button>
-                        <TradeButtons ticker={stockData.symbol} size="md" rating={aiResult?.action as any} />
+                        <TradeButtons ticker={stockData.symbol} size="md" rating={recommendations[stockData.symbol]?.action} />
                         <div className="h-6 w-px bg-slate-800" />
                         <div className="flex bg-slate-900/50 p-1 rounded-lg border border-slate-800">
                             <button
@@ -418,7 +421,7 @@ export default function Dashboard() {
                     fairValue={aiResult?.fair_value || viewingProjection?.aiThesis?.fairValue}
                     targetEntry={targetHolding?.targetEntryPrice}
                     stopLoss={targetHolding?.stopLossPrice}
-                    action={aiResult?.action || targetHolding?.action}
+                    action={stockData ? recommendations[stockData.symbol]?.action : null}
                     breakerStatus={targetHolding?.breakerStatus}
                 />
             )}

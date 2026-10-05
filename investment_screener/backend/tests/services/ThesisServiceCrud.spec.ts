@@ -6,6 +6,7 @@ import { ThesisService } from '../../src/services/ThesisService';
 import { InvestmentRepository } from '../../src/services/InvestmentRepository';
 import { PriceLevelRepository } from '../../src/services/PriceLevelRepository';
 import { PortfolioChangeLogRepository } from '../../src/services/PortfolioChangeLogRepository';
+import { ThesisSchema, PriceTierSchema } from '../../src/utils/zod-schemas';
 
 /**
  * Wave 8: proves ThesisService.getThesis()/saveThesis()/updateHolding()/
@@ -50,6 +51,27 @@ describe('ThesisService CRUD (Wave 8 SQLite cutover)', () => {
     });
 
     describe('getThesis', () => {
+        it('validates persisted legacy price levels without inventing missing metadata', async () => {
+            const investmentRepo = new InvestmentRepository(dbPath);
+            investmentRepo.updateThesisFields('NVDA', { targetWeight: 100 });
+            investmentRepo.close();
+            const levels = new PriceLevelRepository(dbPath);
+            levels.replacePriceLevels('NVDA', '1.0', null, null, null,
+                [{ tier: 0, price: 150, action: 'ACCUMULATE', source: 'tradingview_cdp', status: 'PENDING' },
+                 { tier: 1, price: 0, action: 'BUY_POCKET_1', status: 'suppressed' }],
+                [{ tier: 0, price: 200, action: 'TRIM', status: 'ACTIVE' }],
+                { price: 0, source: 'DCF Bear Model', status: 'ACTIVE' }, null);
+            levels.close();
+
+            const thesis = await service.getThesis('target-portfolio');
+            const result = ThesisSchema.safeParse(thesis);
+            expect(result.success, JSON.stringify(result.success ? null : result.error.issues)).to.equal(true);
+            if (!result.success) return;
+            expect(result.data.holdings[0].priceLevels).to.deep.equal(thesis!.holdings[0].priceLevels);
+            expect(PriceTierSchema.safeParse({ tier: -1, price: 150 }).success).to.equal(false);
+            expect(PriceTierSchema.safeParse({ tier: 1, price: -150 }).success).to.equal(false);
+        });
+
         it('returns null for a non-canonical id', async () => {
             expect(await service.getThesis('some-other-id')).to.equal(null);
         });
