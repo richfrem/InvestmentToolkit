@@ -12,20 +12,8 @@ from portfolio_action import derive_action  # noqa: E402
 from recommendation import recommend, recommend_all  # noqa: E402
 
 
-class TestDeriveActionDelegates(unittest.TestCase):
-    """derive_action is a thin shim over recommendation.recommend; targets are ignored."""
-
-    def test_target_weight_is_ignored(self):
-        for target in (0, 5, 50):
-            self.assertEqual(derive_action("X", 5, target, ai_upside=-30.0), "TRIM")
-            self.assertEqual(derive_action("X", 5, target, ai_upside=40.0), "ACCUMULATE")
-
-    def test_matches_recommend_exactly(self):
-        for held_pct, upside in [(0, 40.0), (0, -40.0), (3, 0.0), (3, None)]:
-            self.assertEqual(
-                derive_action("X", held_pct, 0, ai_upside=upside),
-                recommend(held_pct > 0, upside)["action"],
-            )
+# Source-data and override resistance are exercised with real seeded SQLite in
+# test_canonical_recommendation_consumers.py, including missing-ticker behavior.
 
 
 class TestRecommendAllReadsSqlite(unittest.TestCase):

@@ -306,7 +306,7 @@ class TestEnrichmentPreservedAfterAdxValidation:
         row = out[0]
         assert row["adx"] is None, "Out-of-range ADX must be nulled in the OUTPUT rows"
         assert "ADX_STRONG" not in row["flags"]
-        assert row["action"] == "HOLD", "Derived action must survive ADX validation"
+        assert row["action"] == "UNAVAILABLE", "Missing canonical data must not invent a recommendation"
         assert row["targetWeight"] == 2.2, "Target enrichment must survive ADX validation"
 
     def test_valid_adx_row_enriched_normally(self):
@@ -315,7 +315,7 @@ class TestEnrichmentPreservedAfterAdxValidation:
         rows = [{"ticker": "AAPL", "close": 195.5, "adx": 22.0, "flags": []}]
         out = enrich_results(rows, target_map={}, dcf_loader=lambda t: None)
         assert out[0]["adx"] == 22.0
-        assert out[0]["action"] == "HOLD"
+        assert out[0]["action"] == "UNAVAILABLE"
         assert out[0]["targetAction"] is None
 
 

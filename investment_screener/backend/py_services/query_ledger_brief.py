@@ -25,6 +25,8 @@ def main():
     group.add_argument("--history", action="store_true")
     group.add_argument("--conviction", type=str)
     parser.add_argument("--db-path", type=str)
+    parser.add_argument("--current-recommendations", action="store_true")
+    parser.add_argument("--domain-db", type=str)
     args = parser.parse_args()
 
     db_path = args.db_path or str(REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
@@ -46,7 +48,11 @@ def main():
                 print(json.dumps(None))
             else:
                 # Output the exact payload JSON
-                print(event["payload_json"])
+                payload = json.loads(event["payload_json"])
+                if args.current_recommendations:
+                    from brief_recommendations import align_current_brief
+                    payload = align_current_brief(payload, args.domain_db)
+                print(json.dumps(payload))
 
         elif args.history:
             from intelligence.event_repository import list_active_events_by_type

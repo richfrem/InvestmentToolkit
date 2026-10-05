@@ -16,16 +16,14 @@ Key Input Dependencies:
     - investment_screener/backend/data/domain_model.sqlite
 """
 import sys
-from functools import lru_cache
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from recommendation import ACTION_EMOJI, recommend, recommend_all  # noqa: E402,F401
+from recommendation import ACTION_EMOJI, recommend_all  # noqa: E402,F401
 
 
-@lru_cache(maxsize=4)
 def _records(db_path: str | None) -> dict:
-    """Canonical per-ticker recommendation records (cached per process)."""
+    """Current canonical per-ticker records."""
     return recommend_all(db_path)
 
 
@@ -34,14 +32,11 @@ def derive_action(ticker: str, current_pct: float, target_pct: float | None = No
     """Return the canonical action for ``ticker``.
 
     ``target_pct`` is accepted for call-site compatibility and ignored.
-    Pass ``ai_upside`` to decide purely from a caller-supplied upside; otherwise
-    the latest projection and holdings are read from domain_model.sqlite.
+    Legacy current/target/upside arguments are ignored. Holdings and valuation
+    always come from domain_model.sqlite.
     """
-    held = (current_pct or 0.0) > 0
-    if ai_upside is not None:
-        return recommend(held, ai_upside)["action"]
     rec = _records(db_path).get(ticker)
-    return rec["action"] if rec else recommend(held, None)["action"]
+    return rec["action"] if rec else "UNAVAILABLE"
 
 
 def _load_target_weights(db_path) -> dict:

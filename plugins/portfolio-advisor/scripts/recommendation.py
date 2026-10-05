@@ -12,6 +12,8 @@ Key Functions:
     valuation_signal(upside_pct)            BUY / HOLD / SELL band
     recommend(held, upside_pct, exit_signal) pure decision
     recommend_all(db_path)                  per-ticker records for the API
+    _valuation_inputs()                    selected projection and current price
+    _triggered_tickers()                   evaluated thesis breaker signals
 Key Input Dependencies:
     domain_model.sqlite (holdings, prices, latest projection fair value),
     thesis_breaker_state.json (TRIGGERED breakers = exit signal).
@@ -23,11 +25,13 @@ the app shows the current holding and asks the user to set the target.
 Rules (held):    exit signal -> EXIT; SELL band -> TRIM; BUY band -> ACCUMULATE;
                  otherwise MAINTAIN (also when there is no valuation).
 Rules (not held): BUY band -> INITIATE; otherwise WATCHLIST.
-The +/-15% band matches the standing-decision materiality threshold.
+The +/-15% valuation band is the policy inherited by this refactor. Standing
+decisions remain explicit review constraints; this band is not an FV-change test.
 """
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -42,7 +46,7 @@ ACTION_EMOJI = {
 
 def valuation_signal(upside_pct: float | None) -> str | None:
     """Classify upside to fair value into BUY / HOLD / SELL (None if unknown)."""
-    if upside_pct is None:
+    if upside_pct is None or not math.isfinite(upside_pct):
         return None
     if upside_pct >= ACT_THRESHOLD_PCT:
         return "BUY"
@@ -62,17 +66,21 @@ def recommend(held: bool, upside_pct: float | None, exit_signal: bool = False) -
     Returns:
         {"action", "reason", "valuation", "upside_pct"}.
     """
+    if upside_pct is not None and not math.isfinite(upside_pct):
+        upside_pct = None
     val = valuation_signal(upside_pct)
     if not held:
-        action = "INITIATE" if val == "BUY" else "WATCHLIST"
+        action = "INITIATE" if val == "BUY" and not exit_signal else "WATCHLIST"
         reason = (f"Not held; valuation {val} ({upside_pct:+.0f}% to fair value)"
                   if val else "Not held; no valuation")
+        if exit_signal:
+            reason = "Not held; explicit exit signal prevents entry"
     elif exit_signal:
         action, reason = "EXIT", "Explicit exit signal (thesis breaker or EXIT projection)"
     elif val == "SELL":
-        action, reason = "TRIM", f"Price {abs(upside_pct):.0f}% above fair value"
+        action, reason = "TRIM", f"{upside_pct:+.0f}% to fair value; valuation SELL"
     elif val == "BUY":
-        action, reason = "ACCUMULATE", f"Price {upside_pct:.0f}% below fair value"
+        action, reason = "ACCUMULATE", f"{upside_pct:+.0f}% to fair value; valuation BUY"
     elif val == "HOLD":
         action, reason = "MAINTAIN", f"Within ±{ACT_THRESHOLD_PCT:.0f}% of fair value"
     else:
@@ -80,15 +88,31 @@ def recommend(held: bool, upside_pct: float | None, exit_signal: bool = False) -
     return {"action": action, "reason": reason, "valuation": val, "upside_pct": upside_pct}
 
 
-def _triggered_tickers() -> set[str]:
+def _triggered_tickers(state_path: Path) -> set[str]:
     """Tickers with at least one TRIGGERED thesis breaker (read-only)."""
     sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services"))
     try:
-        from thesis_breakers import STATE_PATH
-        state = json.loads(Path(STATE_PATH).read_text()).get("holdings", {})
-    except Exception:
+        state = json.loads(state_path.read_text()).get("holdings", {})
+    except FileNotFoundError:
         return set()
     return {t for t, bs in state.items() if any(b.get("status") == "TRIGGERED" for b in bs.values())}
+
+
+# Resolve the projection and price once before producing the recommendation.
+def _valuation_inputs(conn: Any, inv_id: str, prices: dict[str, float], symbol: str) -> tuple:
+    """Return the preferred projection, fair value, price, provenance and upside."""
+    from domain_model.investment_price_repository import get_investment_price
+    from domain_model.projection_repository import get_latest_projection, get_latest_projection_by_source
+
+    entry = (get_latest_projection_by_source(conn, inv_id, "AI_AGENT")
+             or get_latest_projection(conn, inv_id))
+    fv = entry.get("fair_value") if entry else None
+    current_price = get_investment_price(conn, inv_id)
+    price = current_price.get("price") if current_price else prices.get(symbol)
+    if not price and entry and entry.get("snapshot_json"):
+        price = json.loads(entry["snapshot_json"]).get("price")
+    upside = (fv - price) / price * 100 if fv is not None and price and price > 0 else None
+    return entry, fv, price, "investment_price" if current_price else "projection_snapshot", upside
 
 
 def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
@@ -96,29 +120,30 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
     py = str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services")
     sys.path.insert(0, py)
     from domain_model.db_client import initialize_db
-    from domain_model.projection_repository import get_latest_projection, get_latest_projection_by_source
     from portfolio_io import compute_weights, load_portfolio_state
     from thesis_breakers import DB_PATH
 
     state = load_portfolio_state(None, db_path=db_path)
     weights = compute_weights(state["shares"], state["prices"], state["total_usd"])
-    triggered = _triggered_tickers()
+    resolved_db = Path(db_path or DB_PATH)
+    triggered = _triggered_tickers(resolved_db.parent / "thesis_breaker_state.json")
     out: dict[str, dict[str, Any]] = {}
     conn = initialize_db(db_path or str(DB_PATH))
     try:
-        for inv_id, symbol in conn.execute("SELECT investment_id, symbol FROM investment;").fetchall():
-            entry = (get_latest_projection_by_source(conn, inv_id, "AI_AGENT")
-                     or get_latest_projection(conn, inv_id))
-            fv = entry.get("fair_value") if entry else None
-            price = state["prices"].get(symbol)
-            if not price and entry and entry.get("snapshot_json"):
-                price = json.loads(entry["snapshot_json"]).get("price")
-            upside = round((fv - price) / price * 100, 1) if fv and price and price > 0 else None
+        for inv_id, symbol, standing_type, standing_reason in conn.execute(
+            "SELECT investment_id, symbol, standing_decision_type, standing_decision_reason FROM investment;"
+        ).fetchall():
+            entry, fv, price, price_source, upside = _valuation_inputs(conn, inv_id, state["prices"], symbol)
             held = (state["shares"].get(symbol) or 0) > 0
             exit_signal = symbol in triggered or bool(entry and entry.get("action") == "EXIT")
             rec = recommend(held, upside, exit_signal)
-            rec.update(ticker=symbol, held=held, current_weight_pct=round(weights.get(symbol, 0.0), 2),
-                       fair_value=fv, price=price)
+            if standing_type or standing_reason:
+                rec["reason"] += f"; standing decision {standing_type or 'USER'}: {standing_reason or 'review before trading'}"
+            rec.update(ticker=symbol, held=held, exit_signal=exit_signal,
+                       projection_id=entry.get("projection_id") if entry else None, current_weight_pct=round(weights.get(symbol, 0.0), 2),
+                       fair_value=fv, price=price,
+                       price_source=price_source,
+                       standing_decision={"type": standing_type or "USER", "reason": standing_reason} if standing_type or standing_reason else None)
             out[symbol] = rec
     finally:
         conn.close()

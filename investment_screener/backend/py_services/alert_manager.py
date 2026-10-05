@@ -632,7 +632,7 @@ def get_alerts_for_ticker(ticker: str) -> List[Dict]:
 # cross-module (same "don't import private names" convention already
 # established for _tv_call_succeeded() in this file); duplicated here
 # instead, same precedent.
-_ACTIONABLE_BANDS = frozenset({"EXIT", "REDUCE", "ACCUMULATE"})
+_ACTIONABLE_BANDS = frozenset({"EXIT", "TRIM", "ACCUMULATE", "INITIATE"})
 
 
 def score_alert_correlation(

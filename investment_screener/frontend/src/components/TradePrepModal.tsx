@@ -1,3 +1,4 @@
+import { useRecommendations } from '../contexts/useRecommendations';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertTriangle, Loader2, ShieldCheck, Clock, Wifi, TrendingUp, RefreshCw } from 'lucide-react';
@@ -67,6 +68,7 @@ function ConfRow({ label, value, flag, warn, valueClass }: { label: string; valu
 }
 
 export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClose }: TradePrepModalProps) {
+    const recommendations = useRecommendations();
     const [step, setStep] = useState<ModalStep>('configure');
     const [action] = useState<'buy' | 'sell'>(initialAction);
     const [shares, setShares] = useState(initialShares);
@@ -177,13 +179,13 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                 portfolioSyncAgeMin: syncAgeMin,
                 priceSource: tv?.price_source ?? null,
                 tvConnected: tv?.price_source === 'tradingview',
-                dcfAction: latest?.aiThesis?.action ?? null,
+                dcfAction: recommendations[ticker]?.valuation ?? null,
                 dcfFairValue: latest?.aiThesis?.fairValue ?? null,
                 dcfTimestamp: latest?.savedAt ?? null,
             });
         };
         load().catch(() => {});
-    }, [ticker]);
+    }, [ticker, recommendations]);
 
     const runPreflight = async () => {
         setStep('running_preflight');

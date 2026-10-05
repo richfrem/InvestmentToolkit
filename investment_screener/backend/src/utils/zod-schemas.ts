@@ -34,30 +34,36 @@ import { z } from 'zod';
 
 // === PRICE LEVEL SCHEMAS ===
 // Structured tiered buy/sell price levels derived from DCF, TA, news, earnings, 13F.
-// Written by update_price_levels.py — consumed by tv-alert-sync, ta-daily-sweep,
-// rebalance-portfolio, and the daily-loop triage cards.
+// SQLite also retains imported TA annotations and nullable metadata. Preserve
+// those values on read/write; tier action labels are saved level annotations,
+// while current portfolio recommendations come from recommendation.py.
+// A zero/null stored price denotes an unavailable level, not an order price.
+const PriceLevelStatusSchema = z.string().refine(
+    value => ['active', 'pending', 'triggered', 'cancelled', 'expired', 'suppressed', 'inactive'].includes(value.toLowerCase()),
+    'Unknown price level status'
+).nullable().optional();
 
 export const PriceTierSchema = z.object({
-    tier: z.number().int().min(1),
-    price: z.number().positive(),
-    action: z.enum(['accumulate', 'accumulate_aggressive', 'trim', 'exit']),
+    tier: z.number().int().nonnegative(),
+    price: z.number().nonnegative().nullable(),
+    action: z.string().min(1).max(100).nullable().optional(),
     trimPct: z.number().min(1).max(100).nullable().optional(),
-    orderType: z.enum(['limit', 'market', 'stop_limit']).default('limit'),
-    basis: z.string().max(300),
-    source: z.enum(['dcf', 'ta', 'news', 'earnings', '13f', 'manual']),
-    sourceDate: z.string(),
+    orderType: z.enum(['limit', 'market', 'stop_limit', 'LIMIT', 'MARKET', 'STOP_LIMIT']).nullable().optional(),
+    basis: z.string().max(300).nullable().optional(),
+    source: z.string().nullable().optional(),
+    sourceDate: z.string().nullable().optional(),
     condition: z.string().nullable().optional(),
-    status: z.enum(['active', 'triggered', 'cancelled', 'expired']).default('active'),
+    status: PriceLevelStatusSchema,
     triggeredAt: z.string().datetime().optional(),
 });
 
 export const StopLossSchema = z.object({
-    price: z.number().positive(),
-    basis: z.string().max(300),
-    source: z.enum(['dcf', 'ta', 'news', 'earnings', '13f', 'manual']),
-    sourceDate: z.string(),
-    type: z.enum(['thesis_breaker', 'trailing', 'manual']),
-    status: z.enum(['active', 'triggered', 'cancelled']).default('active'),
+    price: z.number().nonnegative().nullable(),
+    basis: z.string().max(300).nullable().optional(),
+    source: z.string().nullable().optional(),
+    sourceDate: z.string().nullable().optional(),
+    type: z.enum(['thesis_breaker', 'trailing', 'manual']).nullable().optional(),
+    status: PriceLevelStatusSchema,
     triggeredAt: z.string().datetime().optional(),
 });
 
@@ -294,7 +300,8 @@ export const HealthCheckSchema = z.object({
         message: z.string(),
         pillarId: z.string().optional(),
         ticker: z.string().optional(),
-        action: z.enum(['BUY', 'SELL', 'HOLD', 'NONE']).optional() // Added for clarity in alerts
+        action: z.enum(['BUY', 'SELL', 'HOLD', 'NONE']).optional(),
+        allocationStatus: z.enum(['UNDERWEIGHT', 'OVERWEIGHT']).optional()
     })),
     summary: z.object({
         totalDriftScore: z.number(),    // Sum of |drift| across all pillars

@@ -21,11 +21,11 @@
  *   - isValidTicker(ticker: string) - Validate that a ticker symbol conforms to standard format
  *   - getLiveUsdCadRate(fallback: number) - Retrieve the current USD to CAD exchange conversion rate
  *   - isTradingViewConnected(tvPort: number) - Check if the TradingView CDP remote debugging port is open
- *   - getPythonActions() - Query portfolio actions and recommendation targets computed by the Python backend
+ *   - getRecommendations() - Canonical per-ticker recommendations (action + reason) from recommendation.py
  */
 
 import net from 'net';
-import { PORTFOLIO_FILE, TARGET_PORTFOLIO_FILE, DOMAIN_MODEL_DB_FILE } from './paths';
+import { DOMAIN_MODEL_DB_FILE } from './paths';
 import { spawnPythonScript } from '../services/bridge';
 import { PortfolioRepository } from '../services/PortfolioRepository';
 
@@ -103,25 +103,16 @@ export function isTradingViewConnected(tvPort = parseInt(process.env.TV_CDP_PORT
 }
 
 /**
- * Query portfolio actions and recommendation targets computed by the Python backend.
- * 
- * @returns {Promise<Record<string, string>>} Action mappings computed per ticker symbol
+ * Query canonical per-ticker recommendations computed by recommendation.py.
+ *
+ * @returns {Promise<Record<string, any>>} Records keyed by ticker (action, reason, valuation, upside_pct, held, current_weight_pct)
  */
-export async function getPythonActions(): Promise<Record<string, string>> {
+export async function getRecommendations(dbPath: string = DOMAIN_MODEL_DB_FILE): Promise<Record<string, any>> {
     /**
-     * Spawns portfolio_action.py via the bridge, passing portfolio and target file parameters,
-     * returning the mapped actions dictionary.
+     * Spawns recommendation.py (the canonical recommendation function) and returns
+     * per-ticker records: action, reason, valuation, upside_pct, held, current_weight_pct.
      */
-    try {
-        const data = await spawnPythonScript('portfolio_action.py', [
-            '--all',
-            '--portfolio', PORTFOLIO_FILE,
-            '--target', TARGET_PORTFOLIO_FILE
-        ]);
-        return data || {};
-    } catch (err) {
-        console.error('[Actions] Failed to fetch python actions:', err);
-        return {};
-    }
+    const records = await spawnPythonScript('recommendation.py', ['--all', '--db', dbPath]);
+    if (!records || records.stale) throw new Error('Current recommendations unavailable');
+    return records;
 }
-

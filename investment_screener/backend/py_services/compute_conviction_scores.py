@@ -11,19 +11,15 @@ action list.
 
 Score = dcf_pts + ta_pts + weight_gap_pts + momentum_pts
 
-Bands:
-    ≥ +3 : ACCUMULATE  — consider adding to position
-    +1–+2: HOLD        — no action required
-     0   : WATCH       — borderline; monitor closely
-    −1–−2: REDUCE      — trim toward target or below
-    ≤ −3 : EXIT        — thesis broken; full exit
+The numeric score ranks attention only. Actions and valuation signals come from
+recommendation.recommend_all(), independently of score, TA, or target weights.
 
 Usage:
     python3 compute_conviction_scores.py
     python3 compute_conviction_scores.py --json
 
 Key Input Dependencies:
-    - investment_screener/backend/data/theses/target-portfolio.json (Reads targets)
+    - domain_model.sqlite (holdings, targets, valuation)
 
 Layer:
     Backend / Python Services
@@ -39,7 +35,6 @@ Key Functions (Index):
     - _score_weight_gap()
     - _score_momentum()
     - _resolve_pct_to_fv()
-    - _band()
     - _load_ta()
     - _load_dcf()
     - _load_actual_weights()
@@ -77,6 +72,7 @@ from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection_by_source,
 )
 from portfolio_io import compute_weights  # noqa: E402
+from recommendation import recommend_all  # noqa: E402
 
 
 @dataclass
@@ -85,7 +81,7 @@ class ConvictionScore:
 
     ticker: str
     total: int
-    band: str               # ACCUMULATE | HOLD | WATCH | REDUCE | EXIT
+    band: str               # Canonical recommendation.action
     dcf_pts: int            # −2 to +2: from DCF action signal
     ta_pts: int             # −2 to +1: from RSI/Vol Bias/flags
     weight_gap_pts: int     # −1 to +1: underweight BUY or overweight SELL
@@ -256,77 +252,6 @@ def _resolve_pct_to_fv(
     return pct if pct is not None else None
 
 
-# ── Band classification ────────────────────────────────────────────────────────
-
-def _band(total: int, is_held: bool = True) -> str:
-    """Map numeric score to action band, respecting ownership status.
-
-    Held positions (>0 shares) can only be:
-        ACCUMULATE, HOLD, REDUCE, or EXIT.
-    Non-held positions (0 shares / watchlist) can only be:
-        INITIATE, WATCH, or AVOID.
-
-    Args:
-        total: Summed conviction score.
-        is_held: True if the portfolio currently owns shares of this holding.
-
-    Returns:
-        Action band string.
-    """
-    if is_held:
-        if total >= 3:
-            return "ACCUMULATE"
-        if total >= 0:
-            return "HOLD"
-        if total >= -2:
-            return "REDUCE"
-        return "EXIT"
-    else:
-        if total >= 2:
-            return "INITIATE"
-        if total >= 0:
-            return "WATCH"
-        return "AVOID"
-
-
-def _normalize_dcf_action(action: str | None, is_held: bool = True) -> str | None:
-    """Normalize DCF action to be logically coherent with portfolio ownership.
-
-    Held positions (>0 shares) can only be:
-        ACCUMULATE, HOLD, TRIM, EXIT.
-    Non-held positions (0 shares / watchlist) can only be:
-        INITIATE, WATCHLIST, AVOID.
-
-    Args:
-        action: Raw action string from projection or TA sweep.
-        is_held: True if the portfolio currently owns shares of this holding.
-
-    Returns:
-        Normalized action string.
-    """
-    if not action:
-        return "HOLD" if is_held else "WATCHLIST"
-    act = action.upper().strip()
-    if is_held:
-        if act in ("BUY", "ACCUMULATE", "INITIATE"):
-            return "ACCUMULATE"
-        if act in ("HOLD", "MAINTAIN", "WATCHLIST", "WATCH"):
-            return "HOLD"
-        if act in ("TRIM", "REDUCE"):
-            return "TRIM"
-        if act in ("SELL", "EXIT", "AVOID"):
-            return "EXIT"
-        return act
-    else:
-        if act in ("BUY", "ACCUMULATE", "INITIATE"):
-            return "INITIATE"
-        if act in ("HOLD", "MAINTAIN", "WATCHLIST", "WATCH"):
-            return "WATCHLIST"
-        if act in ("TRIM", "SELL", "EXIT", "AVOID", "REDUCE"):
-            return "AVOID"
-        return act
-
-
 # ── Data loaders ───────────────────────────────────────────────────────────────
 
 def _load_ta(db_path: str | None = None) -> tuple[dict[str, dict[str, Any]], int | None]:
@@ -472,15 +397,17 @@ def _load_target_weights(db_path: str | None = None) -> dict[str, float]:
 
 # ── Main compute ───────────────────────────────────────────────────────────────
 
-def compute_all(db_path: str | None = None) -> list[ConvictionScore]:
+def compute_all(db_path: str | None = None, domain_db_path: str | None = None) -> list[ConvictionScore]:
     """Compute conviction scores for all active portfolio holdings.
 
     Returns:
         List of ConvictionScore sorted by total score descending.
     """
     ta_map, stale_days = _load_ta(db_path=db_path)
-    actual   = _load_actual_weights()
-    targets  = _load_target_weights()  # domain_model.sqlite (not TA sweep db_path)
+    domain_path = domain_db_path or str(DB_PATH)
+    recommendations = recommend_all(domain_path)
+    actual   = _load_actual_weights(Path(domain_path))
+    targets  = _load_target_weights(domain_path)  # domain_model.sqlite (not TA sweep db_path)
 
 
     all_tickers = (set(targets) | set(ta_map) | set(actual)) - SKIP_TICKERS
@@ -488,7 +415,10 @@ def compute_all(db_path: str | None = None) -> list[ConvictionScore]:
     scores: list[ConvictionScore] = []
     for ticker in sorted(all_tickers):
         ta     = ta_map.get(ticker, {})
-        dcf    = _load_dcf(ticker)
+        dcf    = _load_dcf(ticker, Path(domain_path))
+        rec    = recommendations.get(ticker)
+        if rec is None:
+            continue
         act_w  = actual.get(ticker)
         tgt_w  = targets.get(ticker)
 
@@ -496,15 +426,14 @@ def compute_all(db_path: str | None = None) -> list[ConvictionScore]:
         if act_w is None and not ta and not dcf:
             continue
 
-        is_held = (act_w is not None and act_w > 0.0)
 
         gap = round(tgt_w - act_w, 2) if tgt_w is not None and act_w is not None else None
         flags      = ta.get("flags", [])
 
         # Prefer TA sweep's enriched DCF over raw projection file when available
-        raw_dcf_action = ta.get("dcf", {}).get("action") or dcf.get("action")
-        dcf_action = _normalize_dcf_action(raw_dcf_action, is_held=is_held)
-        pct_to_fv  = _resolve_pct_to_fv(ta, dcf)
+        raw_dcf_action = rec["valuation"]
+        dcf_action = rec["valuation"]
+        pct_to_fv  = rec["upside_pct"]
         rsi        = ta.get("rsi")
         adx        = ta.get("adx")
         vol_bias   = ta.get("volBias")
@@ -514,7 +443,7 @@ def compute_all(db_path: str | None = None) -> list[ConvictionScore]:
         gap_pts  = _score_weight_gap(gap, raw_dcf_action)
         mom_pts  = _score_momentum(adx, flags, rsi)
         total    = dcf_pts + ta_pts + gap_pts + mom_pts
-        band     = _band(total, is_held=is_held)
+        band     = rec["action"]
 
         scores.append(ConvictionScore(
             ticker=ticker,
@@ -554,7 +483,7 @@ def main() -> None:
           f"{'DCF':>3} {'TA':>3} {'GAP':>3} {'MOM':>3}  "
           f"{'DCF_ACTION':<12}  {'RSI':>5}  {'ADX':>5}  {'WGT_GAP':>8}")
     print("─" * 88)
-    band_icon = {"ACCUMULATE": "▲", "HOLD": "◆", "WATCH": "○", "REDUCE": "▼", "EXIT": "✗"}
+    band_icon = {"ACCUMULATE": "▲", "INITIATE": "▲", "MAINTAIN": "◆", "WATCHLIST": "○", "TRIM": "▼", "EXIT": "✗"}
     for s in scores:
         icon = band_icon.get(s.band, " ")
         print(

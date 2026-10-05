@@ -80,21 +80,13 @@ PRESETS: dict[str, dict[str, float] | None] = {
     "custom":          None,
 }
 
-# Upside → action mapping (lower bound inclusive, upper exclusive)
-_ACTION_BANDS = [
-    (20,          float("inf"), "BUY"),
-    (5,           20,           "ACCUMULATE"),
-    (-5,          5,            "MAINTAIN"),
-    (-15,         -5,           "TRIM"),
-    (float("-inf"), -15,        "SELL"),
-]
+# Compatibility alias: saved valuation signals use the canonical valuation band.
+from recommendation import valuation_signal
 
 
 def _derive_action(upside_pct: float) -> str:
-    for lo, hi, action in _ACTION_BANDS:
-        if lo <= upside_pct < hi:
-            return action
-    return "SELL"
+    """Delegate valuation classification to the shared recommendation service."""
+    return valuation_signal(upside_pct) or "HOLD"
 
 
 def _shift_weights(scenarios: dict, bull_delta_pp: float, bear_delta_pp: float) -> dict[str, float]:

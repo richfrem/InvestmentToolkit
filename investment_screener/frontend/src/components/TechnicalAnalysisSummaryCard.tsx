@@ -10,6 +10,8 @@
  *
  * Layer: Frontend / Components / Analysis
  */
+import { useRecommendations } from '../contexts/useRecommendations';
+
 
 import React from 'react';
 import { Activity, ShieldAlert, TrendingUp, TrendingDown, Layers, Zap, Compass, CheckCircle2, AlertCircle, History } from 'lucide-react';
@@ -22,7 +24,8 @@ interface TechnicalAnalysisSummaryCardProps {
 }
 
 export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCardProps> = ({ data, currentPrice }) => {
-    const { technicalAction, regime, rationale, keyLevels, metrics, effectiveAt } = data;
+    const recommendation = useRecommendations()[data.ticker.toUpperCase()];
+    const { regime, rationale, keyLevels, metrics, effectiveAt } = data;
     const livePrice = currentPrice || data.price;
 
     const getActionBadge = (action: string) => {
@@ -89,7 +92,7 @@ export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCard
         }
     };
 
-    const badge = getActionBadge(technicalAction);
+    const badge = { ...getActionBadge(recommendation?.action ?? '—'), label: recommendation?.action ?? 'Unavailable' };
     const regimeBadge = getRegimeLabel(regime);
 
     return (
@@ -117,7 +120,7 @@ export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCard
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-2 shadow-sm ${badge.bg}`}>
+                    <div title={recommendation?.reason} className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-2 shadow-sm ${badge.bg}`}>
                         {badge.icon}
                         <span>{badge.label}</span>
                     </div>
@@ -142,9 +145,9 @@ export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCard
                     <div>
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                                <TrendingDown className="w-3.5 h-3.5" /> Accumulation & Support
+                                <TrendingDown className="w-3.5 h-3.5" /> Support Levels
                             </span>
-                            <span className="text-[10px] text-slate-500 uppercase">Dip Buy Shelf</span>
+                            <span className="text-[10px] text-slate-500 uppercase">Technical reference</span>
                         </div>
                         <div className="space-y-2 mt-2">
                             <div className="flex justify-between items-center bg-slate-900/50 px-2.5 py-1.5 rounded border border-slate-800/50">
@@ -173,7 +176,7 @@ export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCard
                             <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
                                 <TrendingUp className="w-3.5 h-3.5" /> Staged Take-Profit Tiers
                             </span>
-                            <span className="text-[10px] text-slate-500 uppercase">Trim Targets</span>
+                            <span className="text-[10px] text-slate-500 uppercase">Technical reference</span>
                         </div>
                         <div className="space-y-2 mt-2">
                             {keyLevels.profitTiers && keyLevels.profitTiers.length > 0 ? (
@@ -182,7 +185,7 @@ export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCard
                                         <div className="flex flex-col">
                                             <span className="text-[11px] text-slate-300 font-semibold flex items-center gap-1">
                                                 <span className={`w-1.5 h-1.5 rounded-full ${tier.tier === 1 ? 'bg-indigo-400' : tier.tier === 2 ? 'bg-purple-400' : 'bg-pink-400'}`} />
-                                                Tier {tier.tier} Trim (-{tier.trimPct}%)
+                                                Reference {tier.tier}
                                             </span>
                                             <span className="text-[9px] text-slate-500">{tier.basis}</span>
                                         </div>
@@ -196,13 +199,13 @@ export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCard
                                 <>
                                     <div className="flex justify-between items-center bg-slate-900/50 px-2.5 py-1.5 rounded border border-slate-800/50">
                                         <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" /> Tier 1 Tactical Trim (-20%)
+                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" /> Near resistance
                                         </span>
                                         <span className="text-xs font-bold text-indigo-300">${keyLevels.resistance1.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between items-center bg-slate-900/50 px-2.5 py-1.5 rounded border border-slate-800/50">
                                         <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" /> Tier 2 Base Trim (-30%)
+                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" /> Base valuation
                                         </span>
                                         <span className="text-xs font-bold text-purple-300">${(keyLevels.baseTarget || keyLevels.resistance2).toFixed(2)}</span>
                                     </div>

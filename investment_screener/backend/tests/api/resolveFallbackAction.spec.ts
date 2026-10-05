@@ -1,25 +1,34 @@
+/**
+ * Purpose: regression coverage for canonical records replacing invented fallback actions.
+ * Layer: API bridge integration. Usage: mocha -r ts-node/register tests/api/resolveFallbackAction.spec.ts
+ * Functions: seed a real isolated DB, invoke getRecommendations through the Python bridge.
+ * Key input dependencies: SQLite repositories, recommendation.py symlink, Python.
+ */
 import { expect } from 'chai';
-import { resolveFallbackAction } from '../../src/routes/screener';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import Database from 'better-sqlite3';
+import { InvestmentRepository } from '../../src/services/InvestmentRepository';
+import { ThesisService } from '../../src/services/ThesisService';
+import { getRecommendations } from '../../src/utils/helpers';
 
-describe('resolveFallbackAction', () => {
-    it('a watched ticker always resolves to WATCHLIST', () => {
-        expect(resolveFallbackAction(true, false, false)).to.equal('WATCHLIST');
-        expect(resolveFallbackAction(true, true, true)).to.equal('WATCHLIST');
-    });
-
-    it('an unwatched ticker with a live holding and no thesis resolves to EXIT', () => {
-        expect(resolveFallbackAction(false, true, false)).to.equal('EXIT');
-    });
-
-    it('an unwatched ticker with a live holding AND a thesis resolves to null (not EXIT)', () => {
-        expect(resolveFallbackAction(false, true, true)).to.equal(null);
-    });
-
-    it('a researched-but-untracked ticker (no watch, no live holding, no thesis) resolves to null, not WATCHLIST', () => {
-        expect(resolveFallbackAction(false, false, false)).to.equal(null);
-    });
-
-    it('an unwatched ticker with only a thesis (no live holding) resolves to null', () => {
-        expect(resolveFallbackAction(false, false, true)).to.equal(null);
+describe('canonical recommendation bridge', () => {
+    it('returns actual records and never derives actions from targets', async () => {
+        const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'recommendations-'));
+        const dbPath = path.join(directory, 'domain_model.sqlite');
+        const investments = new InvestmentRepository(dbPath);
+        const id = investments.resolveInvestmentId('BRIDGE_TEST');
+        investments.close();
+        const db = new Database(dbPath);
+        db.prepare('UPDATE investment SET target_weight = 99 WHERE investment_id = ?').run(id);
+        db.close();
+        const records = await getRecommendations(dbPath);
+        expect(records.BRIDGE_TEST.action).to.equal('WATCHLIST');
+        expect(records.BRIDGE_TEST.held).to.equal(false);
+        expect(records.BRIDGE_TEST.upside_pct).to.equal(null);
+        expect(records.BRIDGE_TEST.reason).to.include('no valuation');
+        const optimized = await new ThesisService(undefined, dbPath).optimizePortfolio('target-portfolio');
+        expect(optimized.recommendations.BRIDGE_TEST.action).to.equal(records.BRIDGE_TEST.action);
     });
 });

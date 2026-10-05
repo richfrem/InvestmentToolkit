@@ -72,7 +72,7 @@ def load_conviction_scores(db_path: Path | None = None) -> dict:
                     intel_path = str(sibling)
             else:
                 intel_path = str(p)
-        scores = compute_all(intel_path)
+        scores = compute_all(intel_path, domain_db_path=str(db_path or DB_PATH))
         return {s.ticker: s for s in scores}
     except Exception:
         return {}
@@ -275,7 +275,11 @@ def _enrich_with_scores(item: dict, ticker: str, scores: dict | None = None) -> 
     item["rsi"] = round(sc.rsi, 1) if (sc and sc.rsi is not None) else None
     item["adx"] = round(sc.adx, 1) if (sc and sc.adx is not None) else None
     item["volBias"] = round(sc.vol_bias, 1) if (sc and sc.vol_bias is not None) else None
-    item["band"] = sc.band if sc else None
+    from recommendation import recommend_all
+    rec = recommend_all(str(DB_PATH)).get(ticker, {})
+    item["band"] = rec.get("action")
+    item["dcfAction"] = rec.get("valuation")
+    item["recommendation"] = rec
     item["convictionScore"] = sc.total if sc else None
     item["flags"] = sc.flags if sc else []
 
@@ -284,19 +288,17 @@ def _enrich_with_scores(item: dict, ticker: str, scores: dict | None = None) -> 
 
 def scan_exit(portfolio: dict, thesis: dict, scores: dict | None = None) -> list:
     """Held positions where thesis targetPct == 0 → EXIT queue."""
+    from recommendation import recommend_all
+    records = recommend_all(str(DB_PATH))
     results = []
     for ticker, pos in portfolio.items():
         if ticker == "_meta":
             continue
         t = thesis.get(ticker, {})
-        if t.get("targetPct", -1) == 0 or (ticker not in thesis):
+        if records.get(ticker, {}).get("action") == "EXIT":
             proj = load_projection(ticker)
             pf = _proj_fields(proj) if proj else {}
             
-            # If AI strongly disagrees with the EXIT (it's a BUY with upside),
-            # this is a conflict, not dead weight. Route to scan_conflicts instead.
-            if pf.get("action") in ("BUY", "ACCUMULATE", "INITIATE") and pf.get("upside", 0) > 10:
-                continue
 
             item = {
                 "ticker":     ticker,
@@ -321,6 +323,8 @@ def scan_exit(portfolio: dict, thesis: dict, scores: dict | None = None) -> list
 
 def scan_trim(portfolio: dict, thesis: dict, scores: dict | None = None) -> list:
     """Held positions where actualPct > targetPct by >1pp AND DCF is SELL/TRIM."""
+    from recommendation import recommend_all
+    records = recommend_all(str(DB_PATH))
     results = []
     for ticker, pos in portfolio.items():
         if ticker == "_meta":
@@ -328,18 +332,12 @@ def scan_trim(portfolio: dict, thesis: dict, scores: dict | None = None) -> list
         t = thesis.get(ticker, {})
         target = t.get("targetPct", 0)
         actual = pos["actualPct"]
-        if target == 0:
-            continue  # that's EXIT, not TRIM
-        drift = actual - target
-        if drift <= 1.0:
+        if records.get(ticker, {}).get("action") != "TRIM":
             continue
+        drift = actual - target
         proj = load_projection(ticker)
         pf = _proj_fields(proj) if proj else {}
-        dcf_action = pf.get("action", "")
-        
-        # DO NOT recommend trimming if the AI screams BUY or has massive upside
-        if dcf_action in ("BUY", "ACCUMULATE", "INITIATE") and pf.get("upside", 0) > 10:
-            continue
+        dcf_action = records[ticker]["valuation"]
         item = {
             "ticker":     ticker,
             "actualPct":  actual,
@@ -363,6 +361,8 @@ def scan_trim(portfolio: dict, thesis: dict, scores: dict | None = None) -> list
 
 def scan_accumulate(portfolio: dict, thesis: dict, scores: dict | None = None) -> list:
     """Held positions underweight vs thesis target AND DCF is BUY/ACCUMULATE."""
+    from recommendation import recommend_all
+    records = recommend_all(str(DB_PATH))
     results = []
     for ticker, pos in portfolio.items():
         if ticker == "_meta":
@@ -370,17 +370,12 @@ def scan_accumulate(portfolio: dict, thesis: dict, scores: dict | None = None) -
         t = thesis.get(ticker, {})
         target = t.get("targetPct", 0)
         actual = pos["actualPct"]
-        if target == 0 or actual >= target:
+        if records.get(ticker, {}).get("action") != "ACCUMULATE":
             continue
         gap = target - actual
-        if gap < 0.5:
-            continue  # within threshold
         proj = load_projection(ticker)
         pf = _proj_fields(proj) if proj else {}
-        dcf_action = pf.get("action", "")
-        # Only flag if DCF agrees it's worth adding
-        if dcf_action not in ("BUY", "ACCUMULATE", "INITIATE", "MAINTAIN", ""):
-            continue
+        dcf_action = records[ticker]["valuation"]
         item = {
             "ticker":     ticker,
             "actualPct":  actual,
@@ -406,6 +401,8 @@ def scan_accumulate(portfolio: dict, thesis: dict, scores: dict | None = None) -
 def scan_initiate(portfolio: dict, thesis: dict, top: int = 15, scores: dict | None = None) -> list:
     """Unowned tickers in projections with BUY/INITIATE rating, ranked by upside × confidence."""
     held = set(portfolio.keys()) - {"_meta"}
+    from recommendation import recommend_all
+    records = recommend_all(str(DB_PATH))
     results = []
     conn = initialize_db(str(DB_PATH))
     try:
@@ -419,7 +416,7 @@ def scan_initiate(portfolio: dict, thesis: dict, top: int = 15, scores: dict | N
         if not proj:
             continue
         pf = _proj_fields(proj)
-        if pf["action"] not in ("BUY", "INITIATE", "ACCUMULATE"):
+        if records.get(ticker, {}).get("action") != "INITIATE":
             continue
         if pf["upside"] <= 0:
             continue
@@ -668,6 +665,7 @@ def fmt_markdown(data: dict) -> str:
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
+    global DB_PATH
     parser = argparse.ArgumentParser(description="Scan DCF corpus and portfolio for action priorities.")
     parser.add_argument("--format", choices=["markdown", "json", "summary"], default="markdown")
     parser.add_argument("--top", type=int, default=15, help="Max rows for INITIATE table")
@@ -686,7 +684,8 @@ def main():
     parser.add_argument("--db", default=str(DB_PATH), help="Path to domain_model.sqlite")
     args = parser.parse_args()
 
-    portfolio = load_portfolio(Path(args.db))
+    DB_PATH = Path(args.db)
+    portfolio = load_portfolio(DB_PATH)
     thesis    = load_thesis(Path(args.db))
     scores    = load_conviction_scores(Path(args.db))
     meta      = portfolio.pop("_meta", {})

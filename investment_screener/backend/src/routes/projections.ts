@@ -23,14 +23,15 @@
 
 import express from 'express';
 import { projectionService } from '../services/ProjectionService';
-import { isValidTicker } from '../utils/helpers';
+import { isValidTicker, getRecommendations } from '../utils/helpers';
 
 const router = express.Router();
 
 router.get('/', async (_req, res) => {
     try {
         const projections = await projectionService.getAllProjections();
-        res.json(projections);
+        const records = await getRecommendations();
+        res.json(projections.map(p => ({ ...p, recommendation: records[p.ticker] ?? null })));
     } catch (error) {
         console.error(`[API] Error getting all projections:`, error);
         res.status(500).json({ error: 'Failed to fetch projections' });
@@ -42,7 +43,8 @@ router.get('/:ticker', async (req, res) => {
     if (!isValidTicker(ticker)) { res.status(400).json({ error: 'Invalid ticker symbol' }); return; }
     try {
         const projections = await projectionService.getProjections(ticker);
-        res.json(projections);
+        const records = await getRecommendations();
+        res.json(projections.map(p => ({ ...p, recommendation: records[p.ticker] ?? null })));
     } catch (error) {
         console.error(`[API] Error fetching projections for ${ticker}:`, error);
         res.status(500).json({ error: 'Failed to fetch projections' });

@@ -1,10 +1,14 @@
 import { expect } from 'chai';
 import { ThesisSchema } from '../../src/utils/zod-schemas';
-import { thesisService } from '../../src/services/ThesisService';
+import { ThesisService } from '../../src/services/ThesisService';
+import { DOMAIN_MODEL_DB_FILE } from '../../src/utils/paths';
 
 describe('Zod Schemas Validation', () => {
     it('should successfully validate the production thesis ground truth (Wave 8: domain_model.sqlite, not target-portfolio.json)', async () => {
-        const data = await thesisService.getThesis('target-portfolio');
+        // Allow a real SQLite backup so worktree tests never need private data
+        // copied over their own DB or a connection to the live main database.
+        const service = new ThesisService(undefined, process.env.TEST_DOMAIN_MODEL_DB ?? DOMAIN_MODEL_DB_FILE);
+        const data = await service.getThesis('target-portfolio');
         expect(data).to.not.be.null;
 
         const parseResult = ThesisSchema.safeParse(data);

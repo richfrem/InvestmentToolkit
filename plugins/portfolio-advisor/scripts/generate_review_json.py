@@ -108,10 +108,6 @@ def generate(date_str: str, db_path: Path = DB_PATH) -> dict:
         if not actual and not target:
             continue
 
-        # REVIEW means actual significantly > target → treat as TRIM
-        if action == "REVIEW":
-            action = "TRIM"
-
         entry = {
             "ticker":            ticker,
             "pillarId":          h.get("pillar_id") or "unknown",

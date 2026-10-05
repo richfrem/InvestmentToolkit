@@ -132,7 +132,7 @@ def _resolve_investment_id_readonly(conn, ticker: str) -> str | None:
 
 
 def get_latest_valuation_action(ticker: str, db_path: Path) -> str | None:
-    """Latest AI projection's action for a ticker, or None if unavailable.
+    """Current canonical valuation signal or explicit EXIT, or None if unavailable.
 
     Storage backend (Wave 1 Task 7A): reads `projection_version` via
     `domain_model.projection_repository`, not `projections/{TICKER}.json`
@@ -152,22 +152,11 @@ def get_latest_valuation_action(ticker: str, db_path: Path) -> str | None:
         any source if no AI_AGENT row exists, or None if the investment has
         no projection rows at all.
     """
-    try:
-        conn = initialize_db(str(db_path))
-        try:
-            investment_id = _resolve_investment_id_readonly(conn, ticker)
-            if investment_id is None:
-                return None
-            entry = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
-            if entry is None:
-                entry = get_latest_projection(conn, investment_id)
-            if entry is None:
-                return None
-            return entry.get("action")
-        finally:
-            conn.close()
-    except Exception:
+    from recommendation import recommend_all
+    rec = recommend_all(str(db_path)).get(ticker)
+    if not rec:
         return None
+    return "EXIT" if rec.get("exit_signal") else rec["valuation"]
 
 
 def compute_candidate_orders(
@@ -184,7 +173,7 @@ def compute_candidate_orders(
     targetEntryPrice, and downgrades to a no-op when a standingDecision is
     present (same "signal stands but no trade proposed without your
     direction" framing brief_recommendations.py already uses for EXIT/REDUCE).
-    Sells are never gated — an overweight EXIT-rated or standing-decision
+    Sell proposals require canonical TRIM/EXIT; an overweight EXIT-rated or standing-decision
     holding should still be trimmed toward target.
 
     Args:
@@ -198,6 +187,8 @@ def compute_candidate_orders(
     Returns:
         (candidate_orders, skipped_restores).
     """
+    from recommendation import recommend_all
+    records = recommend_all(str(db_path))
     holdings_by_ticker = {h["ticker"]: h for h in target_data.get("holdings", [])}
     candidates: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
@@ -212,7 +203,11 @@ def compute_candidate_orders(
         drift_dollars = abs(band["driftPct"]) / 100.0 * total_usd
         shares = math.floor(drift_dollars / price)
 
+        rec = records.get(ticker, {})
         if band["driftPct"] > 0:
+            if rec.get("action") not in ("TRIM", "EXIT"):
+                skipped.append({"ticker": ticker, "reason": f"Canonical {rec.get('action', 'UNAVAILABLE')} does not recommend selling"})
+                continue
             if shares <= 0:
                 continue
             candidates.append({
@@ -237,7 +232,7 @@ def compute_candidate_orders(
             })
             continue
 
-        standing = holding.get("standingDecision")
+        standing = rec.get("standing_decision") or holding.get("standingDecision")
         if standing:
             skipped.append({
                 "ticker": ticker,
@@ -247,6 +242,9 @@ def compute_candidate_orders(
             })
             continue
 
+        if rec.get("action") not in ("INITIATE", "ACCUMULATE"):
+            skipped.append({"ticker": ticker, "reason": f"Canonical {rec.get('action', 'UNAVAILABLE')} does not recommend buying"})
+            continue
         if shares <= 0:
             continue
 

@@ -19,14 +19,16 @@
  * Key Output Dependencies:
  *   None
  */
+import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { Router } from 'express';
 import { spawnPythonScript } from '../services/bridge';
 
 const router = Router();
 
-export async function queryLatestBriefFromLedger(dbPath?: string): Promise<any> {
+export async function queryLatestBriefFromLedger(dbPath?: string, domainDbPath?: string): Promise<any> {
     try {
         const args = ['--latest'];
+        if (domainDbPath) args.push('--current-recommendations', '--domain-db', domainDbPath);
         if (dbPath) {
             args.push('--db-path', dbPath);
         }
@@ -69,7 +71,7 @@ export async function queryTickerConvictionFromLedger(ticker: string, dbPath?: s
 /** GET /api/daily-brief/latest — returns today's brief or the most recent available. */
 router.get('/latest', async (_req, res) => {
     try {
-        const brief = await queryLatestBriefFromLedger();
+        const brief = await queryLatestBriefFromLedger(undefined, DOMAIN_MODEL_DB_FILE);
         if (!brief) {
             res.status(404).json({ error: 'No daily brief found. Run: python3 plugins/portfolio-advisor/scripts/daily_brief.py' });
             return;

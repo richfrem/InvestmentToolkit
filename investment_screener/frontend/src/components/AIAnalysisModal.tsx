@@ -14,6 +14,8 @@
  *     - loadAIProjection() - Fetches and filters AI-specific DCF projections
  *     - handlePresetChange() - Manages switching between different valuation scenarios
  */
+import { useRecommendations } from '../contexts/useRecommendations';
+
 import React, { useEffect, useState } from 'react';
 import { X, BrainCircuit, TrendingUp, TrendingDown, AlertTriangle, BookOpen, Sparkles, Clock } from 'lucide-react';
 import { type Projection, fetchProjections } from '../services/api';
@@ -31,6 +33,7 @@ interface AIAnalysisModalProps {
 }
 
 export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClose, isOpen, initialProjection }) => {
+    const recommendation = useRecommendations()[symbol.toUpperCase()];
     const [projection, setProjection] = useState<Projection | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -147,8 +150,8 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                             {/* Top Stats Row */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {(() => {
-                                    const action = projection.aiThesis?.action ?? '—';
-                                    const valuationAction = (projection as any).analyticsLog?.valuationAction as string | undefined;
+                                    const action = recommendation?.action ?? '—';
+                                    const valuationAction = recommendation?.valuation;
                                     const portfolioUrgency = (projection as any).analyticsLog?.portfolioUrgency as string | undefined;
                                     const urgencyColors: Record<string, string> = {
                                         URGENT: 'text-red-400 bg-red-500/10 border-red-500/30',
@@ -338,7 +341,7 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                         <span className="w-1 h-4 bg-cyan-500 rounded-full"></span>
                                         TA Price Levels
                                         <span className="text-xs font-normal text-slate-500 ml-auto">
-                                            {projection.taLevels.signal} · score {projection.taLevels.score > 0 ? '+' : ''}{projection.taLevels.score} · {projection.taLevels.date}
+                                            Saved TA: {projection.taLevels.signal} · score {projection.taLevels.score > 0 ? '+' : ''}{projection.taLevels.score} · {projection.taLevels.date}
                                         </span>
                                     </h3>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">

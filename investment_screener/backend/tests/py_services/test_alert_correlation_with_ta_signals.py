@@ -180,7 +180,7 @@ def test_score_alert_correlation_computes_proximity_pct():
 def test_score_alert_correlation_matches_ta_signal_for_actionable_band():
     alert = {"alert_id": "id-1", "symbol": "NASDAQ:NVDA", "price": 100.0, "state": "pending"}
 
-    for band in ("ACCUMULATE", "EXIT", "REDUCE"):
+    for band in ("ACCUMULATE", "INITIATE", "EXIT", "TRIM"):
         result = score_alert_correlation(alert, current_price=100.0, ta_signal={"band": band})
         assert result["matches_ta_signal"] is True, f"expected True for band={band}"
 

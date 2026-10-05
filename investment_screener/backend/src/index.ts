@@ -32,6 +32,8 @@
  *   - app.use('/api/13f', thirteenfRouter)
  *   - app.use('/api/daily-brief', dailybriefRouter)
  */
+import { getRecommendations } from './utils/helpers';
+
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -84,7 +86,8 @@ app.post('/api/analysis/valuation', async (req, res) => {
     try {
         if (!ticker) { res.status(400).json({ error: 'Ticker is required' }); return; }
         const result = await valuationService.analyzeStock(ticker, userMessage);
-        res.json(result);
+        const recommendation = (await getRecommendations())[ticker.toUpperCase()] ?? null;
+        res.json({ ...result, researchAction: result.action, action: recommendation?.action ?? null, recommendation });
     } catch (error: any) {
         console.error(`[API] Valuation Error: `, error);
         res.status(500).json({ error: 'AI Analysis Failed', details: error.message });

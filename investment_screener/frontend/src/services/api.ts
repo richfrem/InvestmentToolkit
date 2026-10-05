@@ -200,7 +200,8 @@ export const fetchStrategyAllocation = async (): Promise<StrategyAllocation> => 
 export interface TechnicalAnalysisData {
     ticker: string;
     price: number;
-    technicalAction: 'ACCUMULATE' | 'MAINTAIN' | 'TRIM' | 'EXIT' | 'INITIATE' | 'WATCHLIST' | 'AVOID';
+    /** Canonical recommendation from the backend (valuation + exit signal); null if unknown. */
+    recommendation: RecommendationRecord | null;
     regime: 'BULLISH_TREND' | 'BULLISH_CONSOLIDATION' | 'BEARISH_TREND' | 'DISTRIBUTION' | 'COMPRESSION';
     rationale: string;
     effectiveAt: string;
@@ -486,6 +487,7 @@ export const saveProjection = async (projection: Projection): Promise<{ success:
     if (!response.ok) {
         throw new Error(data.error || 'Failed to save projection');
     }
+    window.dispatchEvent(new Event('recommendation-data-changed'));
     return data;
 };
 
@@ -807,3 +809,23 @@ export const fetchTVQuote = async (ticker: string): Promise<MarketQuote> => {
     return res.json();
 };
 
+
+/** Canonical current recommendation; no client-side action derivation. */
+export interface RecommendationRecord {
+    ticker: string;
+    action: 'INITIATE' | 'ACCUMULATE' | 'MAINTAIN' | 'TRIM' | 'EXIT' | 'WATCHLIST';
+    reason: string;
+    valuation: 'BUY' | 'HOLD' | 'SELL' | null;
+    upside_pct: number | null;
+    current_weight_pct: number;
+    held: boolean;
+    fair_value: number | null;
+    price: number | null;
+    standing_decision: { type: string | null; reason: string | null } | null;
+}
+
+export async function fetchRecommendations(): Promise<Record<string, RecommendationRecord>> {
+    const response = await fetch('/api/screener/recommendations');
+    if (!response.ok) throw new Error('Failed to fetch recommendations');
+    return response.json();
+}

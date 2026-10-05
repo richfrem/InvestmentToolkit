@@ -322,43 +322,11 @@ def add_local_validation(result: dict[str, Any], snapshot_fn: Any = compute_tech
 
 
 def derive_action(result: dict[str, Any], _target: dict[str, Any] | None) -> str:
-    """Derive an action suggestion from flags and thesis context.
+    """Return the canonical recommendation; TA flags describe timing only."""
+    from recommendation import recommend_all
+    rec = recommend_all(str(DB_PATH)).get(result["ticker"])
+    return rec["action"] if rec else "UNAVAILABLE"
 
-    Args:
-        result: Enriched sweep result.
-        target: Matching target-portfolio holding, or None.
-
-    Returns:
-        One of: ACCUMULATE, REDUCE, MONITOR, HOLD.
-    """
-    flags = set(result.get("flags", []))
-
-    # Oversold + accumulation signal → strong buy
-    if "RSI_OS" in flags:
-        return "ACCUMULATE"
-    if "ACCUM_SIGNAL" in flags and "DEEP_VALUE" in flags:
-        return "ACCUMULATE"
-
-    # Overbought at or above fair value → reduce
-    if "ABOVE_FV" in flags:
-        return "REDUCE"
-    if "RSI_OB" in flags and ("NEAR_FV" in flags or "ABOVE_FV" in flags or "DIST_SIGNAL" in flags):
-        return "REDUCE"
-
-    # Distribution + weak volume on move → monitor closely
-    if "DIST_SIGNAL" in flags and "VOLUME_DRY" in flags:
-        return "MONITOR"
-    if "VOLUME_SPIKE" in flags:
-        return "MONITOR"
-    if "BIG_DAY" in flags:
-        return "MONITOR"
-    if "SQUEEZE_ON" in flags:
-        return "MONITOR"
-
-    return "HOLD"
-
-
-# ── Post-processing ────────────────────────────────────────────────────────────
 
 def validate_adx(result: dict[str, Any]) -> dict[str, Any]:
     """Null out ADX values outside the valid 0–100 range and remove stale ADX flags.

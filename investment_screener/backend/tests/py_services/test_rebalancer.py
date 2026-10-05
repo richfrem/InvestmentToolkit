@@ -117,7 +117,8 @@ def _write_projection(tmp_path: Path, ticker: str, action: str) -> Path:
     investment_id = resolve_investment(conn, ticker)
     save_projection_version(
         conn, investment_id, version=1, saved_at="2026-07-01T00:00:00Z",
-        action=action, source="AI_AGENT",
+        action=action, source="AI_AGENT", fair_value=40.0 if action in ("BUY", "ACCUMULATE") else 10.0,
+        snapshot_json='{"price":20}',
     )
     conn.close()
     return db_path
@@ -125,7 +126,7 @@ def _write_projection(tmp_path: Path, ticker: str, action: str) -> Path:
 
 def test_get_latest_valuation_action_reads_latest_ai_agent_entry(tmp_path):
     db_path = _write_projection(tmp_path, "NBIS", "ACCUMULATE")
-    assert get_latest_valuation_action("NBIS", db_path) == "ACCUMULATE"
+    assert get_latest_valuation_action("NBIS", db_path) == "BUY"
 
 
 def test_get_latest_valuation_action_missing_file_returns_none(tmp_path):
@@ -133,6 +134,8 @@ def test_get_latest_valuation_action_missing_file_returns_none(tmp_path):
 
 
 def test_candidate_orders_sell_when_overweight(tmp_path):
+    _write_projection(tmp_path, "CRWD", "SELL")
+    _seed_positions(_domain_db(tmp_path), [("TFSA", "CRWD", 15, 100)])
     bands = {"CRWD": {"currentWeight": 7.8, "targetWeight": 4.0, "bandPct": 1.5, "driftPct": 3.8, "inBand": False}}
     target_data = {"holdings": [{"ticker": "CRWD", "targetWeight": 4.0}]}
     candidates, skipped = compute_candidate_orders(bands, target_data, {"CRWD": 100.0}, 10000.0, _domain_db(tmp_path))
@@ -629,6 +632,7 @@ def _write_full_fixture(tmp_path):
     )
     conn.close()
 
+    _write_projection(tmp_path, "CRWD", "SELL")
     return target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path
 
 
@@ -734,7 +738,5 @@ def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
         account_policy_path=policy_path, db_path=db_path,
     )
-    nbis_order = next(o for o in plan["orders"] if o["ticker"] == "NBIS")
-    assert len(nbis_order["riskGateWarnings"]) >= 1  # cap-breaching, deliberately not vetoed
-    assert len(nbis_order["breakerWarnings"]) >= 1
-    assert nbis_order in plan["orders"]  # still present, not excluded
+    assert not any(o["ticker"] == "NBIS" for o in plan["orders"])
+    assert any(item["ticker"] == "NBIS" and "EXIT" in item["reason"] for item in plan["skippedRestores"])

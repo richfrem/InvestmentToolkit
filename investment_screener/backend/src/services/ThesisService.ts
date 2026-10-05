@@ -29,7 +29,7 @@
  *   - replaceHoldings(thesisId, newHoldings) - Replaces the entire holding list
  *   - performStrategicReview(thesisId: string) - Combines thesis targets with AI valuation data to produce a qualitative adversarial report
  *   - deleteThesis(id: string) - No-op for the canonical id (nothing to delete; single-document architecture)
- *   - optimizePortfolio(thesisId: string) - Generates specific trade recommendations to restore thesis alignment
+ *   - optimizePortfolio(thesisId: string) - Returns canonical recommendations alongside allocation drift
  *   - parseResponse(text: string) - Helper to clean and parse JSON blocks from LLM responses
  *
  * Key Input Dependencies:
@@ -57,10 +57,10 @@ import { PortfolioRepository } from './PortfolioRepository';
 import { InvestmentRepository } from './InvestmentRepository';
 import { PriceLevelRepository, PriceTierRow, StopLossRow } from './PriceLevelRepository';
 import { PortfolioChangeLogRepository } from './PortfolioChangeLogRepository';
+import { getRecommendations } from '../utils/helpers';
 import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 
 const PORTFOLIO_FILE = path.resolve(__dirname, '../../data/portfolio.json');
-const REBALANCE_PROMPT_PATH = path.resolve(__dirname, '../../../.agent/skills/portfolio-advisor/references/rebalance_prompt.md');
 
 // The single, real thesis document this app has ever had one of. Wave 8 fully
 // cut this over to domain_model.sqlite (investment/strategy_pillar/
@@ -264,7 +264,8 @@ export class ThesisService {
                     message: `${holding.ticker} is ${driftPct.toFixed(1)}% off target (Actual: ${actualPct.toFixed(1)}%, Target: ${holding.targetWeight}%)`,
                     ticker: holding.ticker,
                     pillarId: holding.pillarId,
-                    action: driftPct < 0 ? 'BUY' : 'SELL'
+                    action: 'NONE',
+                    allocationStatus: driftPct < 0 ? 'UNDERWEIGHT' : 'OVERWEIGHT'
                 });
             } else if (status === 'DRIFT' && holding.role !== 'watchlist') {
                 // Wave 8: role's real enum ('accumulate'/'avoid'/'watchlist'/'trim'/
@@ -277,7 +278,8 @@ export class ThesisService {
                     message: `${holding.ticker} is drifting ${driftPct.toFixed(1)}% (Band: ${bandPct.toFixed(1)}pp)`,
                     ticker: holding.ticker,
                     pillarId: holding.pillarId,
-                    action: driftPct < 0 ? 'BUY' : 'SELL'
+                    action: 'NONE',
+                    allocationStatus: driftPct < 0 ? 'UNDERWEIGHT' : 'OVERWEIGHT'
                 });
             }
 
@@ -318,7 +320,8 @@ export class ThesisService {
                     severity: 'CRITICAL',
                     message: `Pillar '${pillar.name}' is ${driftPct.toFixed(1)}% off target`,
                     pillarId: pillar.id,
-                    action: driftPct < 0 ? 'BUY' : 'SELL'
+                    action: 'NONE',
+                    allocationStatus: driftPct < 0 ? 'UNDERWEIGHT' : 'OVERWEIGHT'
                 });
             }
         }
@@ -652,44 +655,13 @@ ${JSON.stringify(health, null, 2)}
         return false;
     }
 
+    /** Return the shared recommendations with allocation drift as separate context. */
     async optimizePortfolio(thesisId: string): Promise<any> {
         const healthCheck = await this.computeHealthCheck(thesisId);
-
-        // Read Prompt
-        if (!fs.existsSync(REBALANCE_PROMPT_PATH)) {
-            throw new Error(`Rebalance prompt not found at ${REBALANCE_PROMPT_PATH}`);
-        }
-        const promptTemplate = fs.readFileSync(REBALANCE_PROMPT_PATH, 'utf-8');
-
-        // Construct Final Prompt
-        const prompt = `
-        ${promptTemplate}
-
-        DATA INPUT:
-        ${JSON.stringify(healthCheck, null, 2)}
-        `;
-
-        console.log(`[ThesisService] Asking Gemini to optimize thesis ${thesisId}...`);
-
-        try {
-            const llmResponse = await geminiService.generateContent(prompt);
-            return this.parseResponse(llmResponse);
-        } catch (error: any) {
-            console.error("[ThesisService] Optimization failed:", error);
-            throw new Error(`Optimization failed: ${error.message}`);
-        }
+        const recommendations = await getRecommendations(this.dbPath);
+        return { healthCheck, recommendations };
     }
 
-    private parseResponse(text: string): any {
-        try {
-            // Clean markdown code blocks if present
-            const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(cleanText);
-        } catch (error) {
-            console.error("[ThesisService] Failed to parse LLM response:", text);
-            throw new Error("Invalid format from Thesis Optimizer.");
-        }
-    }
 }
 
 export const thesisService = new ThesisService();

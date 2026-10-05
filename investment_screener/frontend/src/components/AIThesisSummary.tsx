@@ -17,6 +17,8 @@
  * Key Functions:
  *     - AIThesisSummary() - Functional component managing loading, error, and rendering of the AI rationale markdown
  */
+import { useRecommendations } from '../contexts/useRecommendations';
+
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { BrainCircuit, FolderOpen, X, AlertTriangle, Loader2, Sparkles, Check, Clock } from 'lucide-react';
@@ -33,6 +35,8 @@ interface AIThesisSummaryProps {
 }
 
 export function AIThesisSummary({ aiResult, isAnalyzing, aiError, symbol, onViewFullReport, onClose }: AIThesisSummaryProps) {
+    const recommendations = useRecommendations();
+    const recommendation = recommendations[(symbol || aiResult?.ticker || '').toUpperCase()];
     const [copied, setCopied] = useState(false);
     if (!aiResult && !isAnalyzing && !aiError) return null;
 
@@ -61,9 +65,9 @@ export function AIThesisSummary({ aiResult, isAnalyzing, aiError, symbol, onView
                         <div>
                             <div className="flex items-center gap-3">
                                 <h3 className="text-base font-bold text-white">AI Expert Thesis</h3>
-                                {aiResult?.action && (
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(aiResult.action)}`}>
-                                        {aiResult.action}
+                                {recommendation?.action && (
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(recommendation.action)}`}>
+                                        {recommendation.action}
                                     </span>
                                 )}
                             </div>

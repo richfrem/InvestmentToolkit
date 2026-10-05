@@ -16,6 +16,8 @@
  *     - startResize() - Handles column width resizing logic
  *     - rows (memo) - Computes sorted and filtered data for the grid
  */
+import { useRecommendations } from '../contexts/useRecommendations';
+
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity, Star, Zap } from 'lucide-react';
@@ -164,6 +166,7 @@ const sortRows = (rows: ScreenerRow[], col: keyof ScreenerRow, dir: 'asc' | 'des
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ScreenerTable() {
+    const recommendations = useRecommendations();
     const navigate = useNavigate();
     const [projections, setProjections] = useState<Projection[]>([]);
     const [loading, setLoading] = useState(true);
@@ -386,37 +389,11 @@ export default function ScreenerTable() {
             const health = portfolioWeights[p.ticker];
             const currentPct = allPortfolioWeights[p.ticker] ?? health?.actualPct ?? rev?.actualPct ?? null;
             const recommendedPct = health?.targetPct ?? null;
-            const backendAction = allHoldingsMap[p.ticker]?.action ?? null;
+            const backendAction = recommendations[p.ticker]?.action ?? null;
 
-            // Invariant Gate: Determine logical portfolio action
-            const isHeld = (currentPct ?? 0) > 0;
-            const isTarget = (recommendedPct ?? 0) > 0;
-            const rawAction = backendAction ?? thesis?.action ?? null;
-
-            let action = rawAction;
-            if (!isHeld) {
-                if (isTarget) {
-                    action = 'INITIATE';
-                } else if (['BUY', 'INITIATE'].includes((rawAction ?? '').toUpperCase())) {
-                    action = 'INITIATE';
-                } else {
-                    action = 'WATCHLIST';
-                }
-            } else {
-                if (recommendedPct === 0) {
-                    action = 'EXIT';
-                } else if (!rawAction || rawAction === 'MAINTAIN' || rawAction === 'HOLD') {
-                    // Check allocation ratio
-                    const ratio = recommendedPct && recommendedPct > 0 ? (currentPct ?? 0) / recommendedPct : 1.0;
-                    if (ratio < 0.85 && (upside ?? 0) > 0) {
-                        action = 'ACCUMULATE';
-                    } else if (ratio > 1.15) {
-                        action = 'TRIM';
-                    } else {
-                        action = 'MAINTAIN';
-                    }
-                }
-            }
+            // The action is the backend's canonical recommendation, shown verbatim.
+            // The browser never derives or overrides actions (one source of truth).
+            const action = backendAction;
 
             return {
                 symbol: p.ticker,
@@ -469,7 +446,7 @@ export default function ScreenerTable() {
                     symbol: h.ticker,
                     name: h.name,
                     model: '—',
-                    action: h.action,  // from backend Python
+                    action: recommendations[h.ticker]?.action ?? null,
                     portfolioRationale: null,
                     // Analyst target from heatmap as fair value fallback for holding stubs without DCF.
                     fairValue: heatmapMap[h.ticker]?.analyst_target_mean ?? null,
@@ -507,7 +484,7 @@ export default function ScreenerTable() {
             });
 
         return [...projectionRows, ...holdingRows];
-    }, [projections, portfolioWeights, allPortfolioWeights, reviewRecommendations, allHoldings, allHoldingsMap, heatmapMap]);
+    }, [recommendations, projections, portfolioWeights, allPortfolioWeights, reviewRecommendations, allHoldings, allHoldingsMap, heatmapMap]);
 
     // Dynamic counts per category
     const counts = useMemo(() => {

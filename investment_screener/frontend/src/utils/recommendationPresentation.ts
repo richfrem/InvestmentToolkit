@@ -21,9 +21,12 @@ export interface TradeIntent {
  */
 export function tradeIntent(recommendation: string): TradeIntent | null {
     switch (recommendation) {
+        case 'EXIT':
         case 'SELL':
         case 'TRIM':
             return { side: 'sell', rating: 'SELL' };
+        case 'INITIATE':
+        case 'ACCUMULATE':
         case 'BUY':
         case 'BUY_LIMIT':
             return { side: 'buy', rating: 'BUY' };
@@ -41,3 +44,9 @@ export const REC_CHIP_STYLES: Record<string, { bg: string; text: string; border:
     HOLD:      { bg: 'bg-sky-500/10',     text: 'text-sky-400',     border: 'border-sky-500/30' },
     QUEUED:    { bg: 'bg-zinc-500/10',    text: 'text-zinc-400',    border: 'border-zinc-500/30' },
 };
+
+REC_CHIP_STYLES.EXIT = REC_CHIP_STYLES.SELL;
+REC_CHIP_STYLES.INITIATE = REC_CHIP_STYLES.BUY;
+REC_CHIP_STYLES.ACCUMULATE = REC_CHIP_STYLES.BUY;
+REC_CHIP_STYLES.MAINTAIN = REC_CHIP_STYLES.HOLD;
+REC_CHIP_STYLES.WATCHLIST = REC_CHIP_STYLES.QUEUED;

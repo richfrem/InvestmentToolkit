@@ -82,6 +82,7 @@ SUB_STRATEGY_NAMES = {
 }
 
 from portfolio_action import derive_action, ACTION_EMOJI, _load_target_weights
+from recommendation import recommend_all
 
 
 def _resolve_investment_id(conn, ticker: str) -> str | None:
@@ -231,10 +232,6 @@ def build_thesis_map(db_path: Path | None = None) -> dict:
     return holdings
 
 
-def assign_action(ticker: str, actual_pct: float, target_pct: float, existing_action: str = "") -> str:
-    return derive_action(ticker, actual_pct, target_pct, db_path=str(DOMAIN_DB))
-
-
 def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> str:
     today = date.today().isoformat()
 
@@ -289,7 +286,7 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
             th         = thesis_map.get(ticker, {})
             actual_pct = current_data["holdings"].get(ticker, 0.0) or 0.0
             target_pct = target_data["holdings"].get(ticker, 0.0) or 0.0
-            action     = assign_action(ticker, actual_pct, target_pct, th.get("role", "").upper())
+            action     = derive_action(ticker, actual_pct, target_pct, db_path=str(DOMAIN_DB))
             emoji      = ACTION_EMOJI.get(action, "")
             note       = th.get("thesisNote") or a.get("name", ticker)
             actual_str = f"{actual_pct:.2f}%" if actual_pct else "—"
@@ -305,7 +302,7 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
                 if fv and curr_price and curr_price > 0:
                     upside = ((fv - curr_price) / curr_price) * 100
                     upside_str = f"+{upside:.1f}%" if upside >= 0 else f"{upside:.1f}%"
-                ai_action = entry.get("action")
+                ai_action = recommend_all(str(DOMAIN_DB)).get(ticker, {}).get("valuation")
                 if ai_action:
                     ai_signal = ai_action
 
@@ -372,7 +369,7 @@ def update_section_tables(content: str, current_data: dict, target_data: dict) -
     def get_ai_signal(ticker: str) -> str:
         entry = _get_latest_ai_agent_projection(ticker)
         if entry:
-            action = entry.get("action")
+            action = recommend_all(str(DOMAIN_DB)).get(ticker, {}).get("valuation")
             if action:
                 return action
         return "—"

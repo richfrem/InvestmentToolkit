@@ -50,7 +50,7 @@ class TestSellRecommendations:
         assert len(recs) == 1
         r = recs[0]
         assert r["ticker"] == "IONQ"
-        assert r["recommendation"] == "SELL"
+        assert r["recommendation"] == "EXIT"
         assert r["actionable"] is True
         assert r["proposedTrade"]["side"] == "sell"
         assert r["proposedTrade"]["approxValueUSD"] == 320.0   # 1.0% of 32k
@@ -59,14 +59,14 @@ class TestSellRecommendations:
     def test_exit_band_not_held_is_excluded(self):
         """Watchlist tickers (ASML, POET…) with no position produce no card."""
         recs = build_recommendations(
-            scores=[_score("ASML", -2, "REDUCE", actual_weight=None)],
+            scores=[_score("ASML", -2, "TRIM", actual_weight=None)],
             standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
         assert recs == []
 
     def test_reduce_band_overweight_recommends_trim(self):
         recs = build_recommendations(
-            scores=[_score("DRAM", -1, "REDUCE",
+            scores=[_score("DRAM", -1, "TRIM",
                            actual_weight=4.3, target_weight=2.0, weight_gap=-2.3)],
             standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
@@ -86,13 +86,13 @@ class TestReduceWithinTargetBand:
 
     def test_reduce_under_target_proposes_no_sell(self):
         recs = build_recommendations(
-            scores=[_score("RIOT", -1, "REDUCE",
+            scores=[_score("RIOT", -1, "TRIM",
                            actual_weight=2.1184, target_weight=2.226, weight_gap=0.11)],
             standing={}, earnings=[], macro=RISK_ON, total_equity=34414.0,
         )
         assert len(recs) == 1
         r = recs[0]
-        assert r["recommendation"] == "HOLD"
+        assert r["executionStatus"] == "BLOCKED"
         assert r["proposedTrade"] is None
         assert r["actionable"] is False
         assert "target" in r["rationale"].lower()
@@ -100,26 +100,26 @@ class TestReduceWithinTargetBand:
     def test_reduce_slightly_overweight_within_band_proposes_no_sell(self):
         """MU after its target moved to ~4%: -0.34pp over target is inside the 0.5pp band."""
         recs = build_recommendations(
-            scores=[_score("MU", -2, "REDUCE",
+            scores=[_score("MU", -2, "TRIM",
                            actual_weight=4.333, target_weight=3.9893, weight_gap=-0.34)],
             standing={}, earnings=[], macro=RISK_ON, total_equity=34414.0,
         )
-        assert recs[0]["recommendation"] == "HOLD"
+        assert recs[0]["executionStatus"] == "BLOCKED"
         assert recs[0]["proposedTrade"] is None
         assert recs[0]["actionable"] is False
 
     def test_reduce_without_a_target_weight_proposes_no_sell(self):
         recs = build_recommendations(
-            scores=[_score("ZZZZ", -1, "REDUCE",
+            scores=[_score("ZZZZ", -1, "TRIM",
                            actual_weight=3.0, target_weight=None, weight_gap=None)],
             standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
-        assert recs[0]["recommendation"] == "HOLD"
+        assert recs[0]["executionStatus"] == "BLOCKED"
         assert recs[0]["proposedTrade"] is None
 
     def test_reduce_materially_overweight_still_trims_to_target(self):
         recs = build_recommendations(
-            scores=[_score("DRAM", -1, "REDUCE",
+            scores=[_score("DRAM", -1, "TRIM",
                            actual_weight=2.6, target_weight=2.0, weight_gap=-0.6)],
             standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
@@ -131,7 +131,7 @@ class TestReduceWithinTargetBand:
             scores=[_score("IONQ", -4, "EXIT", actual_weight=1.0)],
             standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
-        assert recs[0]["recommendation"] == "SELL"
+        assert recs[0]["recommendation"] == "EXIT"
         assert recs[0]["proposedTrade"]["approxValueUSD"] == 320.0
 
 
@@ -148,7 +148,7 @@ class TestStandingDecisions:
             standing=standing, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
         r = recs[0]
-        assert r["recommendation"] == "HOLD"
+        assert r["executionStatus"] == "BLOCKED"
         assert r["actionable"] is False
         assert r["standingDecision"]["type"] == "ALLOWLISTED_CONFLICT"
         assert r["signal"] == "EXIT"          # signal is never muted
@@ -167,7 +167,7 @@ class TestStandingDecisions:
             standing=standing, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
         r = recs[0]
-        assert r["recommendation"] == "BUY_LIMIT"
+        assert r["executionStatus"] == "LIMIT_ONLY"
         assert "1,350" in r["rationale"] or "1350" in r["rationale"]
 
 
@@ -180,7 +180,7 @@ class TestMacroGate:
             standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
         r = recs[0]
-        assert r["recommendation"] == "BUY"
+        assert r["recommendation"] == "ACCUMULATE"
         assert r["actionable"] is True
         assert r["proposedTrade"]["side"] == "buy"
         assert r["proposedTrade"]["approxValueUSD"] == 768.0   # 2.4% of 32k
@@ -192,7 +192,7 @@ class TestMacroGate:
             standing={}, earnings=[], macro=RISK_OFF, total_equity=32000.0,
         )
         r = recs[0]
-        assert r["recommendation"] == "QUEUED"
+        assert r["executionStatus"] == "QUEUED"
         assert r["actionable"] is False
         assert "risk-off" in r["rationale"].lower()
 
@@ -205,7 +205,8 @@ class TestMacroGate:
                            actual_weight=None, target_weight=0.0, weight_gap=None)],
             standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
-        assert recs == []
+        assert recs[0]["proposedTrade"] is None
+        assert recs[0]["actionable"] is False
 
     def test_neutral_macro_requires_score_four(self):
         recs = build_recommendations(
@@ -216,8 +217,8 @@ class TestMacroGate:
             standing={}, earnings=[], macro=NEUTRAL, total_equity=32000.0,
         )
         by_ticker = {r["ticker"]: r for r in recs}
-        assert by_ticker["CRWV"]["recommendation"] == "QUEUED"
-        assert by_ticker["PSIX"]["recommendation"] == "BUY"
+        assert by_ticker["CRWV"]["executionStatus"] == "QUEUED"
+        assert by_ticker["PSIX"]["recommendation"] == "ACCUMULATE"
 
 
 class TestEarningsAndOrdering:
@@ -247,7 +248,7 @@ class TestEarningsAndOrdering:
 
     def test_hold_and_watch_bands_produce_no_cards(self):
         recs = build_recommendations(
-            scores=[_score("MSFT", 2, "HOLD"), _score("CEG", 0, "WATCH")],
+            scores=[_score("MSFT", 2, "HOLD"), _score("CEG", 0, "WATCHLIST")],
             standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
         assert recs == []

@@ -11,8 +11,8 @@ proposed trade sized from the live broker equity total. Consumed by
 daily_brief.py (adds a `recommendations` array to the brief JSON) and rendered
 by the Daily Brief page with action buttons.
 
-Standing decisions ANNOTATE — they never mute the underlying signal
-(no-sycophancy rule) — but they downgrade the proposed action so the system
+Standing decisions block trade proposals while preserving the canonical recommendation
+(no-sycophancy rule) — but they gate trade readiness so the system
 never recommends trades against the user's documented calls (e.g. CORZ
 allowlisted SA/DCF conflict, OKLO/CEG sell-only-when-green).
 
@@ -51,13 +51,13 @@ STANDING_DECISIONS_PATH = (
     REPO_ROOT / "plugins/portfolio-advisor/references/standing-decisions.json"
 )
 
-_ACTIONABLE_BANDS = frozenset({"EXIT", "REDUCE", "ACCUMULATE"})
+_ACTIONABLE_BANDS = frozenset({"EXIT", "TRIM", "ACCUMULATE", "INITIATE"})
 
-# Overweight (in percentage points) beyond which a REDUCE signal proposes a trim back to target.
+# Overweight (in percentage points) beyond which a TRIM signal proposes a trim back to target.
 _TRIM_BAND_PP = 0.5
 
 
-def load_standing_decisions(path: Path = STANDING_DECISIONS_PATH) -> dict[str, Any]:
+def load_standing_decisions(path: Path | None = None, db_path: str | None = None) -> dict[str, Any]:
     """Load the user's standing decisions keyed by ticker.
 
     Args:
@@ -66,6 +66,10 @@ def load_standing_decisions(path: Path = STANDING_DECISIONS_PATH) -> dict[str, A
     Returns:
         Dict of ticker → decision dict (empty if file missing).
     """
+    if path is None:
+        from recommendation import recommend_all
+        return {t: r["standing_decision"] for t, r in recommend_all(db_path).items()
+                if r.get("standing_decision")}
     if not path.exists():
         return {}
     with open(path) as f:
@@ -127,7 +131,7 @@ def build_recommendations(
 
     Returns:
         Recommendation cards: sells first (worst score first), then buys
-        (best score first). HOLD/WATCH bands produce no cards.
+        (best score first). MAINTAIN/WATCHLIST actions produce no cards.
     """
     earn_map = {e["ticker"]: e for e in earnings}
     regime = macro.get("regime", "NEUTRAL")
@@ -144,6 +148,8 @@ def build_recommendations(
         base: dict[str, Any] = {
             "ticker": s["ticker"],
             "signal": band,
+            "recommendation": band,
+            "executionStatus": "REVIEW",
             "score": s["total"],
             "held": held,
             "standingDecision": decision,
@@ -152,11 +158,11 @@ def build_recommendations(
             "actionable": False,
         }
 
-        if band in ("EXIT", "REDUCE"):
+        if band in ("EXIT", "TRIM"):
             if not held:
                 continue   # watchlist noise — nothing to reduce
             if decision:
-                base["recommendation"] = "HOLD"
+                base["executionStatus"] = "BLOCKED"
                 base["rationale"] = (
                     f"{_signal_summary(s)}. Standing decision "
                     f"({decision.get('type', 'USER')}): {decision.get('reason', '')} "
@@ -169,24 +175,24 @@ def build_recommendations(
             gap = s.get("weight_gap")
             if band == "EXIT":
                 trim_pct = actual
-                base["recommendation"] = "SELL"
+                base["executionStatus"] = "READY"
                 verb = f"selling the full {actual:.1f}% position"
             elif gap is not None and gap < -_TRIM_BAND_PP:
                 trim_pct = -gap
-                base["recommendation"] = "TRIM"
+                base["executionStatus"] = "READY"
                 verb = f"trimming {trim_pct:.1f}% of portfolio back toward target"
             else:
-                # REDUCE comes from the DCF score; with no material overweight there is no
+                # TRIM comes from the DCF score; with no material overweight there is no
                 # basis to size a sell (AGENTS rule 9: DCF never silently overrides targets).
                 # This used to fall through to `actual / 2` and propose selling half of a
                 # position that was at or under target (RIOT, MU on 2026-10-01).
                 target = s.get("target_weight")
                 where = (f"{actual:.1f}% vs a {target:.1f}% target"
                          if target is not None else f"{actual:.1f}% with no target weight")
-                base["recommendation"] = "HOLD"
+                base["executionStatus"] = "BLOCKED"
                 base["rationale"] = (
                     f"{_signal_summary(s)}. Weight is within {_TRIM_BAND_PP:.1f}pp of target "
-                    f"({where}), so no trade is proposed; the REDUCE signal alone does not "
+                    f"({where}), so no trade is proposed; the TRIM signal alone does not "
                     f"size a sale. Review the thesis if you want to cut it."
                     f"{_earnings_note(earn)}"
                 )
@@ -205,10 +211,14 @@ def build_recommendations(
             continue
 
         # ── ACCUMULATE ────────────────────────────────────────────────────────
+        if decision and not decision.get("maxEntryPrice"):
+            base["executionStatus"] = "BLOCKED"
+            base["rationale"] = f"{_signal_summary(s)}. Standing decision: {decision.get('reason', '')}. Review before trading."
+            buys.append(base)
+            continue
         if decision and decision.get("maxEntryPrice"):
             limit = decision["maxEntryPrice"]
-            base["recommendation"] = "BUY_LIMIT"
-            base["actionable"] = True
+            base["executionStatus"] = "LIMIT_ONLY"
             base["rationale"] = (
                 f"{_signal_summary(s)}. Standing decision: never add above "
                 f"${limit:,.0f} — accumulate via GTC limit at or below that price "
@@ -227,16 +237,18 @@ def build_recommendations(
                       "when the regime improves."
                       if regime == "RISK-OFF" or macro.get("degraded")
                       else "NEUTRAL macro requires score ≥ +4 — signal queued.")
-            base["recommendation"] = "QUEUED"
+            base["executionStatus"] = "QUEUED"
             base["rationale"] = f"{_signal_summary(s)}. {reason}{_earnings_note(earn)}"
             buys.append(base)
             continue
 
         gap = s.get("weight_gap") or 0.0
         if gap <= 0:
-            continue   # no target weight to close (watchlist / already at target)
+            base["rationale"] = f"{_signal_summary(s)}. Set or review the target allocation before sizing a trade."
+            buys.append(base)
+            continue
         value = round(gap / 100 * total_equity, 2)
-        base["recommendation"] = "BUY"
+        base["executionStatus"] = "READY"
         base["actionable"] = True
         base["proposedTrade"] = {
             "side": "buy", "ticker": s["ticker"], "approxValueUSD": value,
@@ -254,3 +266,33 @@ def build_recommendations(
     for i, r in enumerate(ranked, start=1):
         r["urgency"] = i
     return ranked
+
+
+def align_current_brief(brief: dict[str, Any], db_path: str | None = None) -> dict[str, Any]:
+    """Overlay current canonical actions and rebuild trade cards without rewriting history.
+
+    Numeric scores and macro context retain their snapshot dates; holdings, valuation,
+    and recommendations are read from the current domain database.
+    """
+    from recommendation import recommend_all
+    from portfolio_io import load_portfolio_state, load_target_weights
+
+    records = recommend_all(db_path)
+    targets = load_target_weights(db_path)
+    scores = []
+    for original in brief.get("conviction_scores", []):
+        rec = records.get(original["ticker"])
+        if rec is None:
+            continue
+        score = dict(original)
+        actual = rec["current_weight_pct"]
+        target = targets.get(original["ticker"])
+        score.update(band=rec["action"], dcf_action=rec["valuation"], pct_to_fv=rec["upside_pct"],
+                     actual_weight=actual, target_weight=target,
+                     weight_gap=target - actual if target is not None else None)
+        scores.append(score)
+    standing = {t: r["standing_decision"] for t, r in records.items() if r.get("standing_decision")}
+    state = load_portfolio_state(None, db_path=db_path)
+    return {**brief, "conviction_scores": scores,
+            "recommendations": build_recommendations(scores, standing, brief.get("earnings_flags", []),
+                                                       brief.get("macro_regime", {}), state["total_usd"])}

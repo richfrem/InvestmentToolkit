@@ -35,7 +35,7 @@ import fs from 'fs';
 import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
 import { getLiveUsdCadRate } from '../utils/helpers';
-import { isValidTicker } from '../utils/helpers';
+import { isValidTicker, getRecommendations } from '../utils/helpers';
 import { ETF_ANALYSIS_DIR, PORTFOLIO_FILE, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { buildLookupDictionary } from '../utils/stockLookup';
 import { InvestmentRepository } from '../services/InvestmentRepository';
@@ -190,37 +190,17 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
             regime = 'BEARISH_TREND';
         }
 
-        // Derive Technical Action Recommendation
-        let technicalAction: 'ACCUMULATE' | 'MAINTAIN' | 'TRIM' | 'EXIT' | 'INITIATE' | 'WATCHLIST' | 'AVOID';
-        let actionRationale = '';
-
-        if (holdingInfo.isHolding) {
-            if (regime === 'BULLISH_TREND' || (price <= ema21 * 1.02 && price >= ema50 && volBias > -15)) {
-                technicalAction = 'ACCUMULATE';
-                actionRationale = `${cleanSym} is in a confirmed Bullish Trend trading above its key moving averages (21 EMA: $${ema21.toFixed(2)}). Pullbacks toward support represent high-probability accumulation zones.`;
-            } else if (regime === 'DISTRIBUTION' || (dcfFV && price > dcfFV * 1.25) || rsi > 72) {
-                technicalAction = 'TRIM';
-                actionRationale = `${cleanSym} is showing technical distribution pressure (Vol Bias: ${volBias.toFixed(1)}%) or extended valuation. Consider taking partial profits into strength.`;
-            } else if (price < ema50 && volBias < -30) {
-                technicalAction = 'EXIT';
-                actionRationale = `${cleanSym} has breached key structural support (50 EMA: $${ema50.toFixed(2)}) with elevated selling volume. Risk-reward favors capital preservation.`;
-            } else {
-                technicalAction = 'MAINTAIN';
-                actionRationale = `${cleanSym} is consolidating within a normal statistical volatility band (ATR: $${atr.toFixed(2)}). Maintain current position size and monitor support at $${ema50.toFixed(2)}.`;
-            }
-        } else {
-            // Non-holding / Watchlist
-            if ((regime === 'BULLISH_TREND' || regime === 'COMPRESSION') && (dcfFV ? price <= dcfFV * 1.1 : true) && price >= ema50) {
-                technicalAction = 'INITIATE';
-                actionRationale = `${cleanSym} presents an attractive technical entry shelf near the 21 EMA ($${ema21.toFixed(2)}) with favorable trend momentum (ADX: ${adx.toFixed(1)}).`;
-            } else if (price < ema200 || (dcfFV && price > dcfFV * 1.4)) {
-                technicalAction = 'AVOID';
-                actionRationale = `${cleanSym} is trading in a long-term downtrend beneath its 200 EMA ($${ema200.toFixed(2)}) or is excessively extended. Avoid new exposure until a structural base forms.`;
-            } else {
-                technicalAction = 'WATCHLIST';
-                actionRationale = `${cleanSym} is in a consolidation regime. Keep on active watchlist and wait for a volume-backed breakout or pullback to structural support ($${ema50.toFixed(2)}).`;
-            }
-        }
+        // The action is the canonical recommendation (valuation + exit signal), never derived
+        // from technicals. The regime only produces a timing note.
+        const recommendation = (await getRecommendations())[cleanSym] ?? null;
+        const timingNotes: Record<typeof regime, string> = {
+            BULLISH_TREND: `Timing: ${cleanSym} trades above its 21/50 EMAs with a confirmed trend (ADX ${adx.toFixed(1)}); pullbacks toward the 21 EMA ($${ema21.toFixed(2)}) are the better execution zone.`,
+            BULLISH_CONSOLIDATION: `Timing: ${cleanSym} is consolidating above its 50 EMA ($${ema50.toFixed(2)}); wait for a volume-backed move or a pullback to support.`,
+            COMPRESSION: `Timing: ${cleanSym} is in a TTM squeeze; expect expansion and avoid sizing into the move until direction confirms.`,
+            DISTRIBUTION: `Timing: ${cleanSym} shows distribution pressure (Vol Bias ${volBias.toFixed(1)}%); execute any reduction into strength rather than chasing weakness.`,
+            BEARISH_TREND: `Timing: ${cleanSym} is below its 50 and 200 EMAs ($${ema200.toFixed(2)}); scale any buying in rather than committing at once.`,
+        };
+        const actionRationale = timingNotes[regime];
 
         const support1 = ema21 > 0 ? Number(ema21.toFixed(2)) : Number((price * 0.98).toFixed(2));
         const support2 = ema50 > 0 ? Number(ema50.toFixed(2)) : Number((price * 0.95).toFixed(2));
@@ -234,7 +214,7 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
         const profitTiers = [
             {
                 tier: 1,
-                label: 'Tier 1 (Tactical Trim)',
+                label: 'Near resistance',
                 price: resistance1,
                 trimPct: 20,
                 gainPct: price > 0 ? Number((((resistance1 - price) / price) * 100).toFixed(1)) : 0,
@@ -242,7 +222,7 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
             },
             {
                 tier: 2,
-                label: 'Tier 2 (Base Case Trim)',
+                label: 'Base valuation',
                 price: baseTarget,
                 trimPct: 30,
                 gainPct: price > 0 ? Number((((baseTarget - price) / price) * 100).toFixed(1)) : 0,
@@ -261,7 +241,7 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
         res.json({
             ticker: cleanSym,
             price,
-            technicalAction,
+            recommendation,
             regime,
             rationale: actionRationale,
             effectiveAt: sweepData?.effectiveAt ?? new Date().toISOString().split('T')[0],
@@ -309,7 +289,9 @@ router.get('/stock/:ticker', async (req, res) => {
             const etf = Array.isArray(parsed) ? parsed[parsed.length - 1] : parsed;
             const snap = etf.snapshot ?? {};
             const holdings = etf.holdingsAnalysis?.topHoldings ?? [];
+            const rec = (await getRecommendations())[cleanSym] ?? null;
             res.json({
+                recommendation: rec,
                 symbol: cleanSym, price: snap.price ?? 0, currency: snap.currency ?? 'USD',
                 profile: {
                     type: 'ETF', assetType: 'ETF', sector: 'ETF', industry: etf.fundType ?? 'THEMATIC_ETF',
@@ -317,7 +299,7 @@ router.get('/stock/:ticker', async (req, res) => {
                     expenseRatio: snap.expenseRatio ?? null, aum: snap.aum ?? null,
                     fiftyTwoWeekHigh: snap.fiftyTwoWeekHigh ?? null, fiftyTwoWeekLow: snap.fiftyTwoWeekLow ?? null,
                     topHoldings: holdings, thesisAlignmentScore: etf.holdingsAnalysis?.thesisAlignmentScore ?? null,
-                    action: etf.action ?? null, actionRationale: etf.actionRationale ?? null,
+                    action: rec?.action ?? null, actionRationale: rec?.reason ?? null,
                     upsideCatalysts: etf.upsideCatalysts ?? [], risks: etf.risks ?? [],
                     entryNote: etf.entryNote ?? null, analyzedAt: etf.savedAt ?? null,
                 },
