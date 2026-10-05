@@ -9,6 +9,8 @@
  *     plugins/portfolio-advisor/scripts/daily_brief.py.
  *
  * Layer: Frontend / Pages
+ * Key Functions: DailyBriefPage, ScoreBadge, DeltaBadge.
+ * Key Input Dependencies: daily brief API and canonical recommendation context.
  */
 import { useRecommendations } from '../contexts/useRecommendations';
 
@@ -16,6 +18,7 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, TrendingUp, TrendingDown, Minus, Calendar, Shield, Activity, RefreshCw, Target, Lock } from 'lucide-react';
 import { TradeButtons } from '../components/TradeButtons';
 import { TABriefCard } from '../components/TABriefCard';
+import { RecommendationFilters } from '../components/RecommendationFilters';
 import { tradeIntent, REC_CHIP_STYLES } from '../utils/recommendationPresentation';
 
 interface MacroRegime {
@@ -147,6 +150,7 @@ export default function DailyBriefPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeFilter, setActiveFilter] = useState<string>('all');
+    const [recommendationFilter, setRecommendationFilter] = useState<string>('all');
 
     useEffect(() => {
         fetch('/api/daily-brief/latest')
@@ -193,14 +197,17 @@ export default function DailyBriefPage() {
     const filtered = activeFilter === 'all' ? scores :
         scores.filter(s => s.band === activeFilter.toUpperCase());
 
-    const bandCounts: Record<string, number> = {
-        ACCUMULATE: scores.filter(s => s.band === 'ACCUMULATE').length,
-        INITIATE:   scores.filter(s => s.band === 'INITIATE').length,
-        MAINTAIN:       scores.filter(s => s.band === 'MAINTAIN').length,
-        WATCHLIST:      scores.filter(s => s.band === 'WATCHLIST').length,
-        TRIM:     scores.filter(s => s.band === 'TRIM').length,
-        EXIT:       scores.filter(s => s.band === 'EXIT').length,
-    };
+    const cards = (brief.recommendations ?? []).map(saved => {
+        const current = recommendations[saved.ticker];
+        const matches = current?.action === saved.recommendation;
+        return { ...saved, recommendation: current?.action ?? '—', signal: current?.action ?? '—',
+            actionable: matches && saved.actionable,
+            proposedTrade: matches ? saved.proposedTrade : null,
+            rationale: matches ? saved.rationale : current?.reason ?? 'Current recommendation unavailable',
+            executionStatus: matches ? saved.executionStatus : 'REVIEW' };
+    });
+    const filteredCards = recommendationFilter === 'all' ? cards :
+        cards.filter(card => card.recommendation === recommendationFilter);
 
     return (
         <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -311,27 +318,25 @@ export default function DailyBriefPage() {
 
             {/* Recommendations — summarized actions with rationales */}
             {(brief.recommendations ?? []).length > 0 && (
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+                <section aria-label="Recommendations" className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                             <Target size={16} className="text-zinc-400" />
                             <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide">
-                                Recommendations ({(brief.recommendations ?? []).length})
+                                Recommendations ({filteredCards.length}{recommendationFilter !== 'all' && ` of ${cards.length}`})
                             </h2>
                         </div>
                         <p className="text-xs text-zinc-600">
                             Review each rationale — buttons open the order prep flow, nothing executes without your confirm.
                         </p>
                     </div>
+                    <div className="mb-4">
+                        <RecommendationFilters actions={cards.map(card => card.recommendation)}
+                            active={recommendationFilter} onChange={setRecommendationFilter} label="Recommendation filters" />
+                    </div>
                     <div className="space-y-3">
-                        {(brief.recommendations ?? []).map(saved => {
-                            const current = recommendations[saved.ticker];
-                            const matches = current?.action === saved.recommendation;
-                            const rec = { ...saved, recommendation: current?.action ?? '—', signal: current?.action ?? '—',
-                                actionable: matches && saved.actionable,
-                                proposedTrade: matches ? saved.proposedTrade : null,
-                                rationale: matches ? saved.rationale : current?.reason ?? 'Current recommendation unavailable',
-                                executionStatus: matches ? saved.executionStatus : 'REVIEW' };
+                        {filteredCards.length === 0 && <p className="py-4 text-sm text-zinc-500">No recommendations match this filter.</p>}
+                        {filteredCards.map(rec => {
                             const chip = REC_CHIP_STYLES[rec.recommendation] ?? REC_CHIP_STYLES.MAINTAIN;
                             const sigStyle = BAND_STYLES[rec.signal] ?? BAND_STYLES.MAINTAIN;
                             const intent = tradeIntent(rec.recommendation);
@@ -383,7 +388,7 @@ export default function DailyBriefPage() {
                             );
                         })}
                     </div>
-                </div>
+                </section>
             )}
 
             {/* Pillar health */}
@@ -425,23 +430,8 @@ export default function DailyBriefPage() {
                 {/* Filter bar */}
                 <div className="flex items-center gap-2 p-4 border-b border-zinc-800 flex-wrap">
                     <span className="text-xs text-zinc-500 mr-1">Filter:</span>
-                    {(['all', 'ACCUMULATE', 'INITIATE', 'MAINTAIN', 'WATCHLIST', 'TRIM', 'EXIT'] as const)
-                        .filter(f => f === 'all' || (bandCounts[f] ?? 0) > 0)
-                        .map(f => {
-                            const style = f === 'all' ? { text: 'text-zinc-300', bg: 'bg-zinc-700' } :
-                                          BAND_STYLES[f] ?? { text: 'text-zinc-400', bg: 'bg-zinc-800' };
-                            const count = f === 'all' ? scores.length : (bandCounts[f] ?? 0);
-                            const isActive = activeFilter === f;
-                            return (
-                                <button key={f}
-                                        onClick={() => setActiveFilter(f)}
-                                        className={`px-3 py-1 rounded-full text-xs font-medium border transition-all
-                                            ${isActive ? `${style.bg} ${style.text} border-transparent` :
-                                                         `bg-transparent ${style.text} border-zinc-700 opacity-60 hover:opacity-100`}`}>
-                                    {f === 'all' ? `All (${count})` : `${f} (${count})`}
-                                </button>
-                            );
-                    })}
+                    <RecommendationFilters actions={scores.map(score => score.band)}
+                        active={activeFilter} onChange={setActiveFilter} label="Conviction filters" />
                 </div>
 
                 {/* Table */}
