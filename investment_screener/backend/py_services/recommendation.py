@@ -1,0 +1,1 @@
+../../../plugins/portfolio-advisor/scripts/recommendation.py

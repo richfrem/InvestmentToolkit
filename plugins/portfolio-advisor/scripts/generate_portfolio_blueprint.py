@@ -232,7 +232,7 @@ def build_thesis_map(db_path: Path | None = None) -> dict:
 
 
 def assign_action(ticker: str, actual_pct: float, target_pct: float, existing_action: str = "") -> str:
-    return derive_action(ticker, actual_pct, target_pct)
+    return derive_action(ticker, actual_pct, target_pct, db_path=str(DOMAIN_DB))
 
 
 def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> str:
@@ -382,7 +382,7 @@ def update_section_tables(content: str, current_data: dict, target_data: dict) -
         t = ticker.strip("* ")
         actual  = current_data["holdings"].get(t, 0) or 0
         target  = target_data["holdings"].get(t, 0)  or 0
-        action  = derive_action(t, actual, target)
+        action  = derive_action(t, actual, target, db_path=str(DOMAIN_DB))
         emoji   = ACTION_EMOJI.get(action, "")
         act_str = f"{actual:.2f}%" if actual else "—"
         tgt_str = f"{target:.2f}%" if target else "—"
@@ -442,7 +442,7 @@ def update_section_tables(content: str, current_data: dict, target_data: dict) -
             t = ticker_raw.strip("* ")
             actual  = current_data["holdings"].get(t, 0) or 0
             target  = target_data["holdings"].get(t, 0)  or 0
-            action  = derive_action(t, actual, target)
+            action  = derive_action(t, actual, target, db_path=str(DOMAIN_DB))
             emoji   = ACTION_EMOJI.get(action, "")
             act_str = f"{actual:.2f}%" if actual else "—"
             tgt_str = f"{target:.2f}%" if target else "—"

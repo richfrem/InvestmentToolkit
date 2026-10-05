@@ -101,11 +101,11 @@ def generate(date_str: str, db_path: Path = DB_PATH) -> dict:
     for ticker, h in holdings_map.items():
         actual  = current_data["holdings"].get(ticker, 0)
         target  = target_data.get(ticker, 0)
-        action  = derive_action(ticker, actual, target)
+        action  = derive_action(ticker, actual, target, db_path=str(db_path))
         delta   = round(target - actual, 4)
 
-        # Skip WATCHLIST (both actual=0 and target=0, nothing to do)
-        if action == "WATCHLIST":
+        # Skip tickers with no position and no target (nothing to review)
+        if not actual and not target:
             continue
 
         # REVIEW means actual significantly > target → treat as TRIM

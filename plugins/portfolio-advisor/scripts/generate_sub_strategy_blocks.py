@@ -91,7 +91,7 @@ def build_current_positions_block(
             act    = weights.get(t, 0)
             tgt    = float(h.get("targetWeight") or 0)
             role   = h.get("role", "")
-            action = derive_action(t, act, tgt)
+            action = derive_action(t, act, tgt, db_path=str(DB_PATH))
             emoji  = ACTION_EMOJI.get(action, "")
             entry  = _entry_str(h)
             lines.append(
