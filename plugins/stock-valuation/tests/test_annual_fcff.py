@@ -90,3 +90,17 @@ def test_cash_flow_run_and_negative_weight() -> None:
     assert dcf.run("TEST", 90, 10, scenarios, horizon=1)["validation"]["valid"]
     scenarios["bear"]["weight"] = -0.2
     assert not dcf.run("TEST", 90, 10, scenarios, horizon=1)["validation"]["valid"]
+
+
+def test_sub_one_percent_fcff_nopat_margin_is_not_a_unit_error() -> None:
+    """A legitimate <1% FCFF NOPAT margin must not trigger legacy DCF unit guards."""
+    scenarios = {name: cash_flow_params() for name in dcf.SCENARIO_NAMES}
+    for name, revenue, weight in (("bear", 95, 0.2), ("base", 100, 0.6), ("bull", 110, 0.2)):
+        scenarios[name].update(method="annual_fcff", weight=weight)
+        scenarios[name]["terminalForecast"] = deepcopy(scenarios[name]["terminalForecast"])
+        scenarios[name]["annualForecast"][0]["revenue"] = revenue
+        scenarios[name]["annualForecast"][0]["operatingMarginPct"] = 1
+        scenarios[name]["terminalForecast"]["operatingMarginPct"] = 20
+    result = dcf.run("TEST", 90, 10, scenarios, horizon=1)
+    assert result["validation"]["valid"] is True
+    assert result["validation"]["errors"] == []

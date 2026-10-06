@@ -45,3 +45,25 @@ def test_forward_recalculation(ticker: str, tmp_path: Path) -> None:
         assert conversion["action"] == "TRIM"
     assert "standing_decision_type" not in payload
     assert "target_weight" not in payload
+
+
+def test_nonpositive_terminal_cash_flow_stress_is_reported_and_does_not_abort(tmp_path: Path) -> None:
+    """Stress cases that invalidate a perpetuity are disclosed without aborting the base DCF."""
+    source = ROOT / "plugins/stock-valuation/tests/fixtures/forward-valuation/BE_inputs.json"
+    model = json.loads(source.read_text())
+    model["scenarios"]["bear"]["terminalForecast"]["operatingMarginPct"] = 5
+    for row in model["scenarios"]["bear"]["annualForecast"]:
+        row["capex"] = 4_000_000_000
+    model_path = tmp_path / "stress-model.json"
+    model_path.write_text(json.dumps(model))
+    output = tmp_path / "stress-output"
+    command = [sys.executable, str(ROOT / "plugins/stock-valuation/scripts/recalculate_forward_valuation.py"),
+               "--model", str(model_path), "--output", str(output)]
+    result = subprocess.run(command, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    valuation = json.loads((output / "valuation.json").read_text())
+    margin_stress = next(case for case in valuation["stressCases"]
+                         if case["stress"] == "operating_margin_minus_10pp")
+    assert margin_stress["status"] == "not_computable"
+    assert "terminal free cash flow must be positive" in margin_stress["reason"]
+    assert "N/M" in (output / "review.md").read_text()

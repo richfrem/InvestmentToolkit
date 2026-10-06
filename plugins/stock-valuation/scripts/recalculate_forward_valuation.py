@@ -70,7 +70,14 @@ def stress_cases(model: dict[str, Any]) -> list[dict]:
                         row["operatingMarginPct"] -= 10
                     else:
                         row["capex"] *= 1.25
-        value = calculate(trial)
+        try:
+            value = calculate(trial)
+        except ValueError as exc:
+            reason = str(exc)
+            if "Normalized terminal free cash flow must be positive for a perpetuity" not in reason:
+                raise
+            results.append({"stress": name, "status": "not_computable", "reason": reason})
+            continue
         results.append({"stress": name, "fairValue": value["weightedFairValue"],
                         "action": value["recommendation"]["action"]})
     if model.get("convertibleStress"):
@@ -145,11 +152,13 @@ def write_artifacts(model: dict, output: Path) -> dict:
     )
     scenario_lines = "\n".join(
         f"| {name.title()} | ${scenario['presentValue']:,.2f} | {scenario['weight']:.0%} | "
-        f"{scenario.get('terminalValuePct', 0):.1f}% |"
+        f"{format(scenario['terminalValuePct'], '.1f') + '%' if scenario.get('terminalValuePct') is not None else 'N/M'} |"
         for name, scenario in result["scenarios"].items()
     )
     stress_lines = "\n".join(
-        f"| {stress['stress']} | ${stress['fairValue']:,.2f} | {stress['action']} |"
+        f"| {stress['stress']} | "
+        f"{('$' + format(stress['fairValue'], ',.2f')) if 'fairValue' in stress else 'N/A'} | "
+        f"{stress.get('action', stress.get('status'))} | {stress.get('reason', '')} |"
         for stress in result["stressCases"]
     )
     (output / "review.md").write_text(
@@ -159,7 +168,7 @@ def write_artifacts(model: dict, output: Path) -> dict:
         f"canonical portfolio action **{result['recommendation']['action']}**.\n\n"
         f"## Scenarios\n\n| Case | Fair value/share | Weight | Terminal value share of EV |\n"
         f"|---|---:|---:|---:|\n{scenario_lines}\n\n"
-        f"## Sensitivities\n\n| Stress | Fair value/share | Valuation action |\n|---|---:|---|\n{stress_lines}\n\n"
+        f"## Sensitivities\n\n| Stress | Fair value/share | Valuation action/status | Note |\n|---|---:|---|---|\n{stress_lines}\n\n"
         f"## Model scope and limits\n\n{model['rationale']}\n\n"
         f"{model['outlookAudit']['strategicAssessment']}\n\n"
         f"Backlog and pipeline: {model['outlookAudit']['backlogPipeline']}\n\n"
