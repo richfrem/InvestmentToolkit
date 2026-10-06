@@ -1,0 +1,499 @@
+{
+  "ticker": "MU",
+  "baseRevenue": 133188000000,
+  "baseShares": 1147000000,
+  "discountRate": 0.12,
+  "horizon": 4.9167,
+  "discountDivisor": 1.74578,
+  "currentPrice": 1060.28,
+  "weightedFairValue": 1466.3,
+  "upsidePct": 38.3,
+  "action": "BUY",
+  "scenarios": {
+    "bear": {
+      "weight": 0.25,
+      "terminalGrowth": 0.03,
+      "rationale": "Demand persists but pricing resets sooner than guidance implies; new capacity and efficiency constrain margins. A guidance reset is required for FY2027 downside; this is an adverse scenario, not the central expectation.",
+      "risks": [
+        "ASP decline",
+        "Supply ramps",
+        "Capex cash burden"
+      ],
+      "annualForecast": [
+        {
+          "fiscalYear": 2027,
+          "discountPeriod": 0.9167,
+          "revenue": 245000000000,
+          "operatingMarginPct": 78,
+          "taxRatePct": 15.5,
+          "depreciation": 12000000000,
+          "capex": 55000000000,
+          "workingCapitalChange": 16000000000,
+          "operatingProfit": 191100000000.0,
+          "cashTaxes": 29620500000.0,
+          "nopat": 161479500000.0,
+          "freeCashFlow": 102479500000.0,
+          "presentValueCashFlow": 92367424958.92105
+        },
+        {
+          "fiscalYear": 2028,
+          "discountPeriod": 1.9167,
+          "revenue": 245000000000,
+          "operatingMarginPct": 65,
+          "taxRatePct": 15.5,
+          "depreciation": 16000000000,
+          "capex": 65000000000,
+          "workingCapitalChange": 0,
+          "operatingProfit": 159250000000.0,
+          "cashTaxes": 24683750000.0,
+          "nopat": 134566250000.0,
+          "freeCashFlow": 85566250000.0,
+          "presentValueCashFlow": 68859888492.43086
+        },
+        {
+          "fiscalYear": 2029,
+          "discountPeriod": 2.9167,
+          "revenue": 225000000000,
+          "operatingMarginPct": 48,
+          "taxRatePct": 15.5,
+          "depreciation": 22000000000,
+          "capex": 50000000000,
+          "workingCapitalChange": -4000000000,
+          "operatingProfit": 108000000000.0,
+          "cashTaxes": 16740000000.0,
+          "nopat": 91260000000.0,
+          "freeCashFlow": 67260000000.0,
+          "presentValueCashFlow": 48328426595.108
+        },
+        {
+          "fiscalYear": 2030,
+          "discountPeriod": 3.9167,
+          "revenue": 235000000000,
+          "operatingMarginPct": 45,
+          "taxRatePct": 15.5,
+          "depreciation": 27000000000,
+          "capex": 40000000000,
+          "workingCapitalChange": 2000000000,
+          "operatingProfit": 105750000000.0,
+          "cashTaxes": 16391250000.0,
+          "nopat": 89358750000.0,
+          "freeCashFlow": 74358750000.0,
+          "presentValueCashFlow": 47704555231.816124
+        },
+        {
+          "fiscalYear": 2031,
+          "discountPeriod": 4.9167,
+          "revenue": 250000000000,
+          "operatingMarginPct": 45,
+          "taxRatePct": 15.5,
+          "depreciation": 30000000000,
+          "capex": 35000000000,
+          "workingCapitalChange": 3000000000,
+          "operatingProfit": 112500000000.0,
+          "cashTaxes": 17437500000.0,
+          "nopat": 95062500000.0,
+          "freeCashFlow": 87062500000.0,
+          "presentValueCashFlow": 49870173793.914055
+        }
+      ],
+      "terminalForecast": {
+        "revenue": 250000000000,
+        "operatingMarginPct": 40,
+        "taxRatePct": 15.5,
+        "depreciation": 30000000000,
+        "capex": 35000000000,
+        "workingCapitalChange": 2000000000,
+        "operatingProfit": 100000000000.0,
+        "cashTaxes": 15500000000.0,
+        "nopat": 84500000000.0,
+        "freeCashFlow": 77500000000.0
+      },
+      "cash": 73453000000,
+      "debt": 5179000000,
+      "otherClaims": 12895000000,
+      "method": "annual_fcff",
+      "sbcTreatment": "expensed_in_operating_margin",
+      "growthRate": 13.66366063231898,
+      "netMargin": 38.025,
+      "exitPE": 0,
+      "qualityMultiplier": 1,
+      "shareChange": 0,
+      "year5Revenue": 250000.0,
+      "terminalFreeCashFlow": 77500000000.0,
+      "terminalValuePV": 508049660760.8441,
+      "terminalValuePct": 62.3236070369997,
+      "enterpriseValue": 815180129833.0342,
+      "equityValue": 870559129833.0342,
+      "presentValue": 758.99,
+      "priceFloored": false
+    },
+    "base": {
+      "weight": 0.5,
+      "terminalGrowth": 0.03,
+      "rationale": "Consensus-aligned FY2027/2028 revenue, wider DDR/LPDDR and SSD demand, then gradual normalization as new fabs ramp. FY2027 capex $55B exceeds first-half $25B and allows a larger second half. No floor applied to equity value from RPO.",
+      "risks": [
+        "Long-run margins remain uncertain",
+        "Pricing ceilings constrain upside",
+        "Construction cost inflation"
+      ],
+      "annualForecast": [
+        {
+          "fiscalYear": 2027,
+          "discountPeriod": 0.9167,
+          "revenue": 275000000000,
+          "operatingMarginPct": 84,
+          "taxRatePct": 15.5,
+          "depreciation": 12000000000,
+          "capex": 55000000000,
+          "workingCapitalChange": 20000000000,
+          "operatingProfit": 231000000000.0,
+          "cashTaxes": 35805000000.0,
+          "nopat": 195195000000.0,
+          "freeCashFlow": 132195000000.0,
+          "presentValueCashFlow": 119150773983.5242
+        },
+        {
+          "fiscalYear": 2028,
+          "discountPeriod": 1.9167,
+          "revenue": 315000000000,
+          "operatingMarginPct": 82,
+          "taxRatePct": 15.5,
+          "depreciation": 15000000000,
+          "capex": 65000000000,
+          "workingCapitalChange": 10000000000,
+          "operatingProfit": 258300000000.0,
+          "cashTaxes": 40036500000.0,
+          "nopat": 218263500000.0,
+          "freeCashFlow": 158263500000.0,
+          "presentValueCashFlow": 127363381735.46033
+        },
+        {
+          "fiscalYear": 2029,
+          "discountPeriod": 2.9167,
+          "revenue": 350000000000,
+          "operatingMarginPct": 76,
+          "taxRatePct": 15.5,
+          "depreciation": 20000000000,
+          "capex": 65000000000,
+          "workingCapitalChange": 9000000000,
+          "operatingProfit": 266000000000.0,
+          "cashTaxes": 41230000000.0,
+          "nopat": 224770000000.0,
+          "freeCashFlow": 170770000000.0,
+          "presentValueCashFlow": 122703618936.167
+        },
+        {
+          "fiscalYear": 2030,
+          "discountPeriod": 3.9167,
+          "revenue": 380000000000,
+          "operatingMarginPct": 68,
+          "taxRatePct": 15.5,
+          "depreciation": 25000000000,
+          "capex": 60000000000,
+          "workingCapitalChange": 8000000000,
+          "operatingProfit": 258400000000.0,
+          "cashTaxes": 40052000000.0,
+          "nopat": 218348000000.0,
+          "freeCashFlow": 175348000000.0,
+          "presentValueCashFlow": 112493800000.51767
+        },
+        {
+          "fiscalYear": 2031,
+          "discountPeriod": 4.9167,
+          "revenue": 410000000000,
+          "operatingMarginPct": 60,
+          "taxRatePct": 15.5,
+          "depreciation": 30000000000,
+          "capex": 55000000000,
+          "workingCapitalChange": 7000000000,
+          "operatingProfit": 246000000000.0,
+          "cashTaxes": 38130000000.0,
+          "nopat": 207870000000.0,
+          "freeCashFlow": 175870000000.0,
+          "presentValueCashFlow": 100739899097.03563
+        }
+      ],
+      "terminalForecast": {
+        "revenue": 410000000000,
+        "operatingMarginPct": 50,
+        "taxRatePct": 15.5,
+        "depreciation": 35000000000,
+        "capex": 45000000000,
+        "workingCapitalChange": 4000000000,
+        "operatingProfit": 205000000000.0,
+        "cashTaxes": 31775000000.0,
+        "nopat": 173225000000.0,
+        "freeCashFlow": 159225000000.0
+      },
+      "cash": 73453000000,
+      "debt": 5179000000,
+      "otherClaims": 12895000000,
+      "method": "annual_fcff",
+      "sbcTreatment": "expensed_in_operating_margin",
+      "growthRate": 25.69511404303688,
+      "netMargin": 50.7,
+      "exitPE": 0,
+      "qualityMultiplier": 1,
+      "shareChange": 0,
+      "year5Revenue": 410000.0,
+      "terminalFreeCashFlow": 159225000000.0,
+      "terminalValuePV": 1043796222382.5214,
+      "terminalValuePct": 64.18433212007622,
+      "enterpriseValue": 1626247696135.226,
+      "equityValue": 1681626696135.226,
+      "presentValue": 1466.11,
+      "priceFloored": false
+    },
+    "bull": {
+      "weight": 0.25,
+      "terminalGrowth": 0.03,
+      "rationale": "Inference concurrency, conventional-memory context and SSD offload expand with HBM; technology leadership and contract pricing sustain exceptional margins. Requires equipment, fab and customer deployment execution beyond the base case.",
+      "risks": [
+        "Requires continued scarcity",
+        "Customers optimize bytes per token",
+        "Capacity and pricing assumptions may not coexist"
+      ],
+      "annualForecast": [
+        {
+          "fiscalYear": 2027,
+          "discountPeriod": 0.9167,
+          "revenue": 295000000000,
+          "operatingMarginPct": 86,
+          "taxRatePct": 15.5,
+          "depreciation": 12000000000,
+          "capex": 60000000000,
+          "workingCapitalChange": 24000000000,
+          "operatingProfit": 253700000000.0,
+          "cashTaxes": 39323500000.0,
+          "nopat": 214376500000.0,
+          "freeCashFlow": 142376500000.0,
+          "presentValueCashFlow": 128327623375.05377
+        },
+        {
+          "fiscalYear": 2028,
+          "discountPeriod": 1.9167,
+          "revenue": 360000000000,
+          "operatingMarginPct": 86,
+          "taxRatePct": 15.5,
+          "depreciation": 16000000000,
+          "capex": 75000000000,
+          "workingCapitalChange": 17000000000,
+          "operatingProfit": 309600000000.0,
+          "cashTaxes": 47988000000.0,
+          "nopat": 261612000000.0,
+          "freeCashFlow": 185612000000.0,
+          "presentValueCashFlow": 149372230556.52292
+        },
+        {
+          "fiscalYear": 2029,
+          "discountPeriod": 2.9167,
+          "revenue": 425000000000,
+          "operatingMarginPct": 84,
+          "taxRatePct": 15.5,
+          "depreciation": 23000000000,
+          "capex": 80000000000,
+          "workingCapitalChange": 17000000000,
+          "operatingProfit": 357000000000.0,
+          "cashTaxes": 55335000000.0,
+          "nopat": 301665000000.0,
+          "freeCashFlow": 227665000000.0,
+          "presentValueCashFlow": 163584466856.60516
+        },
+        {
+          "fiscalYear": 2030,
+          "discountPeriod": 3.9167,
+          "revenue": 490000000000,
+          "operatingMarginPct": 80,
+          "taxRatePct": 15.5,
+          "depreciation": 32000000000,
+          "capex": 75000000000,
+          "workingCapitalChange": 17000000000,
+          "operatingProfit": 392000000000.0,
+          "cashTaxes": 60760000000.0,
+          "nopat": 331240000000.0,
+          "freeCashFlow": 271240000000.0,
+          "presentValueCashFlow": 174012924653.49142
+        },
+        {
+          "fiscalYear": 2031,
+          "discountPeriod": 4.9167,
+          "revenue": 550000000000,
+          "operatingMarginPct": 72,
+          "taxRatePct": 15.5,
+          "depreciation": 40000000000,
+          "capex": 70000000000,
+          "workingCapitalChange": 16000000000,
+          "operatingProfit": 396000000000.0,
+          "cashTaxes": 61380000000.0,
+          "nopat": 334620000000.0,
+          "freeCashFlow": 288620000000.0,
+          "presentValueCashFlow": 165324101196.26102
+        }
+      ],
+      "terminalForecast": {
+        "revenue": 550000000000,
+        "operatingMarginPct": 60,
+        "taxRatePct": 15.5,
+        "depreciation": 45000000000,
+        "capex": 65000000000,
+        "workingCapitalChange": 6000000000,
+        "operatingProfit": 330000000000.0,
+        "cashTaxes": 51150000000.0,
+        "nopat": 278850000000.0,
+        "freeCashFlow": 252850000000.0
+      },
+      "cash": 73453000000,
+      "debt": 5179000000,
+      "otherClaims": 12895000000,
+      "method": "annual_fcff",
+      "sbcTreatment": "expensed_in_operating_margin",
+      "growthRate": 33.43398536562961,
+      "netMargin": 60.84,
+      "exitPE": 0,
+      "qualityMultiplier": 1,
+      "shareChange": 0,
+      "year5Revenue": 550000.0,
+      "terminalFreeCashFlow": 252850000000.0,
+      "terminalValuePV": 1657552989979.0896,
+      "terminalValuePct": 67.98336628704536,
+      "enterpriseValue": 2438174336617.024,
+      "equityValue": 2493553336617.024,
+      "presentValue": 2173.98,
+      "priceFloored": false
+    }
+  },
+  "validation": {
+    "weightSum": 1.0,
+    "weightSumOk": true,
+    "growthOrdering": true,
+    "pvOrdering": true,
+    "errors": [],
+    "warnings": [],
+    "valid": true
+  },
+  "method": "annual_fcff",
+  "sources": [
+    {
+      "date": "2026-09-30",
+      "type": "primary",
+      "url": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx",
+      "use": "FY2026 revenue, balance sheet, current diluted shares and Q1 guidance"
+    },
+    {
+      "date": "2026-09-30",
+      "type": "primary",
+      "url": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q4/Q4-FY26-Prepared-Remarks.pdf",
+      "use": "Forward demand, contracts, fab timing, tax and capex trajectory"
+    },
+    {
+      "date": "2026-06-24",
+      "type": "primary",
+      "url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "use": "Prior guidance for change comparison"
+    },
+    {
+      "date": "accessed 2026-10-06",
+      "type": "vendor technical",
+      "url": "https://www.micron.com/about/blog/memory/dram/unlocking-the-token-economy-micron-powers-ais-kv-cache",
+      "use": "Memory tier use cases; not a revenue forecast"
+    },
+    {
+      "date": "fetched 2026-10-06",
+      "type": "secondary estimates",
+      "url": "https://finance.yahoo.com/quote/MU/analysis/",
+      "use": "0y revenue $274.929B / EPS $176.416; +1y $314.369B / $206.677, interpreted FY2027/FY2028 after FY2026 ended. Calendar-year labels generated by fetcher are not trusted. 46 price-target analysts; estimate-specific coverage and revision history unavailable."
+    }
+  ],
+  "asOf": "2026-10-06",
+  "recommendation": {
+    "action": "ACCUMULATE",
+    "reason": "+38% to fair value; valuation BUY",
+    "valuation": "BUY",
+    "upside_pct": 38.3
+  },
+  "sensitivity": [
+    {
+      "discountRate": 0.1,
+      "terminalGrowth": 0.02,
+      "fairValue": 1693.92,
+      "action": "ACCUMULATE"
+    },
+    {
+      "discountRate": 0.1,
+      "terminalGrowth": 0.03,
+      "fairValue": 1867.77,
+      "action": "ACCUMULATE"
+    },
+    {
+      "discountRate": 0.1,
+      "terminalGrowth": 0.04,
+      "fairValue": 2099.57,
+      "action": "ACCUMULATE"
+    },
+    {
+      "discountRate": 0.12,
+      "terminalGrowth": 0.02,
+      "fairValue": 1365.49,
+      "action": "ACCUMULATE"
+    },
+    {
+      "discountRate": 0.12,
+      "terminalGrowth": 0.03,
+      "fairValue": 1466.3,
+      "action": "ACCUMULATE"
+    },
+    {
+      "discountRate": 0.12,
+      "terminalGrowth": 0.04,
+      "fairValue": 1592.3,
+      "action": "ACCUMULATE"
+    },
+    {
+      "discountRate": 0.14,
+      "terminalGrowth": 0.02,
+      "fairValue": 1146.25,
+      "action": "MAINTAIN"
+    },
+    {
+      "discountRate": 0.14,
+      "terminalGrowth": 0.03,
+      "fairValue": 1210.38,
+      "action": "MAINTAIN"
+    },
+    {
+      "discountRate": 0.14,
+      "terminalGrowth": 0.04,
+      "fairValue": 1287.33,
+      "action": "ACCUMULATE"
+    }
+  ],
+  "stressCases": [
+    {
+      "stress": "operating_margin_minus_10pp",
+      "fairValue": 1181.8,
+      "action": "MAINTAIN"
+    },
+    {
+      "stress": "capex_plus_25pct",
+      "fairValue": 1350.43,
+      "action": "ACCUMULATE"
+    },
+    {
+      "stress": "shares_plus_15pct",
+      "fairValue": 1275.04,
+      "action": "ACCUMULATE"
+    }
+  ],
+  "reverseEarnings": {
+    "impliedGrowth": 20.6341,
+    "impliedGrowthVsBaseCase": -5.061,
+    "impliedGrowthVsGuidance": null,
+    "verdict": "BETWEEN_BEAR_AND_BASE",
+    "converged": true,
+    "iterations": 16,
+    "method": "discounted_terminal_earnings",
+    "exitPE": 15,
+    "netMarginProxyPct": 42.25,
+    "limitation": "Unlevered NOPAT proxy, no cash bridge or annual distributions. Shares assumptions with FCFF; peer data insufficient. Diagnostic only."
+  }
+}

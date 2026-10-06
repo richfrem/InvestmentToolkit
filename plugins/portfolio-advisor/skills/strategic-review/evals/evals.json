@@ -77,5 +77,25 @@
     ],
     "pass_condition": "Agent routes to rebalance_portfolio (trade generation), not strategic_review. Strategic review challenges thesis structure and pillar sizing \u2014 it does not itself compute trade orders.",
     "should_trigger": true
+  },
+  {
+    "id": "EVAL-009",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review MU for this workflow: the valuation was saved today but only models HBM. New guidance and agentic AI context-storage demand may affect server DDR/LPDDR and NAND/enterprise SSD. Is the stored TRIM ready to act on?",
+    "expected_trigger": "strategic_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Checks dated guidance and forward revenue/EPS, DDR/LPDDR and NAND/SSD alongside HBM, KV-cache tier substitution, pricing/capacity and capex/working capital. Flags NEEDS_REVALUATION if material drivers are missing, preserves the canonical action and standing decision, and routes or performs revaluation within this workflow without assuming a bullish result.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-010",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review BE for this workflow: a hypothetical announcement says up to 2.8 GW framework capacity, with 1.2 GW initially firm contracted. Grid connections are delayed. Can the full framework be treated as next-year revenue or a bear-case valuation floor?",
+    "expected_trigger": "strategic_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
+    "should_trigger": true
   }
 ]

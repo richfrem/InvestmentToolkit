@@ -1080,6 +1080,60 @@
       "dst": "investment_screener/backend/py_services/recommendation.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/stock-valuation/skills/forward-valuation-challenge/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/weekly-review/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/recalculate_forward_valuation.py",
+      "dst": "investment_screener/backend/py_services/recalculate_forward_valuation.py",
+      "strategy": "symlink",
+      "description": "Reproducible sourced annual cash-flow valuation artifacts"
     }
   ]
 }

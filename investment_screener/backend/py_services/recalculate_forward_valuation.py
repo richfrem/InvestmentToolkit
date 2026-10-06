@@ -1,0 +1,1 @@
+../../../plugins/stock-valuation/scripts/recalculate_forward_valuation.py

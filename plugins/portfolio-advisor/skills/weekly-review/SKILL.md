@@ -15,6 +15,7 @@ description: Runs weekend drift audits, calculates week-over-week performance mo
 - [References](#references)
 
 ## Constraints
+- **AI forward-evidence gate**: Before valuation or action proposals for AI-exposed names, apply [AI-sector forward valuation evidence](references/ai-forward-valuation.md). Reconcile dated forward estimates, memory/storage or power demand, executable capacity and cash conversion; flag `NEEDS_REVALUATION` when material drivers are missing. This review flag does not replace the canonical action or standing decision.
 - Weekend drift audit evaluates holdings against target weights and DCF signals in `domain_model.sqlite`.
 - Multi-model prompt output file must be written to `temp/weekly_grok_prompt.md`.
 - Never execute live trade orders during weekly reviews; review is strictly analytical.
@@ -41,10 +42,13 @@ Leverage complementary agent capabilities across the weekly research sweep:
 - **Gemini**: Best for rapid full-breadth scanning across all 95 tickers and cross-checking candidate moves.
 
 ## Verification
+
+- For AI-exposed names, verify the forward-evidence cases in `evals/evals.json`; record source dates, modeled changes and unresolved gaps before relying on a valuation signal.
 ```bash
 test -s temp/weekly_grok_prompt.md && head -n 20 temp/weekly_grok_prompt.md
 python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both
 ```
 
 ## References
+- [AI-sector Forward Valuation Evidence](references/ai-forward-valuation.md) - Forward estimates, memory/storage and power drivers, cash-flow bridge, and recommendation readiness.
 - [News Sweep Model Assessment](references/news-sweep-model-assessment.md) - Model scoring criteria, accuracy benchmarks, and historical performance evaluations.

@@ -13,8 +13,6 @@ allowed-tools: Bash, Read, Write
 
 # Strategic Review & Master Portfolio Coordinator
 
-Conducts an end-to-end adversarial evaluation of your portfolio, absorbing live broker holdings, probability-weighted DCF models, news catalysts, and technical momentum (RSI, ADX, Volume Bias) to prioritize **EXIT**, **TRIM**, **ACCUMULATE**, and **INITIATE** actions, guiding you interactively into target calibration and rebalancing.
-
 ## Contents
 - [Constraints](#constraints)
 - [Quick start](#quick-start)
@@ -23,6 +21,7 @@ Conducts an end-to-end adversarial evaluation of your portfolio, absorbing live 
 - [References](#references)
 
 ## Constraints
+- **AI forward-evidence gate**: Before valuation or action proposals for AI-exposed names, apply [AI-sector forward valuation evidence](references/ai-forward-valuation.md). Reconcile dated forward estimates, memory/storage or power demand, executable capacity and cash conversion; flag `NEEDS_REVALUATION` when material drivers are missing. This review flag does not replace the canonical action or standing decision.
 - **SQLite Authoritative**: Live holdings and target weights come strictly from `domain_model.sqlite`; technical telemetry from `intelligence.sqlite`. Never read retired `portfolio.json`.
 - **Target Invariant**: Target weights must sum to 100.00% (±0.05%); normalize after any adjustment.
 - **Position Sizing Caps**: No holding may exceed 15.00% and no strategy pillar may exceed 40.00% of total portfolio.
@@ -40,12 +39,11 @@ python3 plugins/portfolio-advisor/scripts/generate_review.py
 ## Workflow
 ### Phase 1: Multi-Source Opportunity Scan
 Run `scan_opportunities.py` to ingest cross-asset evidence from SQLite and DCF models into ranked tables:
-- **🚨 EXIT Queue**: Holdings with thesis target = 0% (ranked by locked capital).
-- **✂️ TRIM Overweights**: Positions where actual weight > target weight with DCF overvaluation.
-- **🔵 ACCUMULATE Underweights**: Underweight core holdings with DCF upside and favorable momentum.
+- **🚨 EXIT Queue**: Canonical EXIT signals, ranked by locked capital; show standing-decision conditions.
+- **✂️ TRIM / 🔵 ACCUMULATE**: Canonical signals with drift and technical timing shown separately; targets do not derive the action.
 - **🚀 INITIATE Opportunities**: Top unowned watchlist setups with margin of safety (upside $\times$ confidence).
 - **⚔️ Strategic Conflicts**: Holdings where Thesis says "HOLD" but DCF says "SELL" (e.g. `MU`, `PANW`, `RIOT`).
-- **⚠️ Stale & Imminent Catalysts**: Tickers with earnings within 14 days or analyses >90 days old.
+- **⚠️ Evidence Gaps & Imminent Catalysts**: Missing material forward drivers, earnings within 14 days, or analyses >90 days old; recently saved models still need the evidence check.
 
 ### Phase 2: Executive Critical Assessment
 Deliver a non-sugarcoated, honest critique:
@@ -55,11 +53,11 @@ Deliver a non-sugarcoated, honest critique:
 
 ### Phase 3: Interactive Socratic Menu (Options 1–5)
 Present a structured, interactive menu of prioritized next steps:
-- **`[1] Harvest Capital & Trim`**: Review and execute priority EXITs (e.g. GEV) and trimming overweights (e.g. BE).
+- **`[1] Harvest Capital & Trim`**: Review current canonical EXIT/TRIM signals and standing conditions after the evidence gate.
 - **`[2] Resolve Strategic Conflicts`**: Step through conflicted holdings (MU, PANW, RIOT) to calibrate target weights.
 - **`[3] Full Portfolio Rebalance`**: Launch the integrated rebalancer to generate exact BUY/TRIM orders and PSU-U.TO tickets.
 - **`[4] Pillar Concentration Deep-Dive`**: Audit specific pillars to re-align sub-strategy allocations.
-- **`[5] Refresh Stale Valuations`**: Run `/update-stock-analysis` on holdings older than 90 days before deciding.
+- **`[5] Refresh Valuations`**: Run `/update-stock-analysis` for material evidence gaps or stale assumptions before deciding.
 
 ### Phase 4: Downstream Calibration & Rebalancing Handoff
 - **Target Calibration**: If adjusting weights, seamlessly transition into `/calibrate-targets` with 100% normalization.
@@ -68,12 +66,15 @@ Present a structured, interactive menu of prioritized next steps:
 - **Closing Refresh**: Always finish with `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
+
+- For AI-exposed names, verify the forward-evidence cases in `evals/evals.json`; record source dates, modeled changes and unresolved gaps before relying on a valuation signal.
 ```bash
 python3 -m pytest plugins/portfolio-advisor/tests/test_scan_opportunities.py
 python3 -m pytest plugins/portfolio-advisor/tests/test_generate_review.py
 ```
 
 ## References
+- [AI-sector Forward Valuation Evidence](references/ai-forward-valuation.md) - Forward estimates, memory/storage and power drivers, cash-flow bridge, and recommendation readiness.
 - [Investment Thesis](references/investment_thesis.md) - Canonical portfolio thesis and sub-strategy definitions.
 - [Strategic Review Prompt](references/strategic_review_prompt.md) - Qualitative criteria and JSON evaluation schema.
 - [Fallback Tree](references/fallback-tree.md) - Operational fallback procedures for backend disruptions.

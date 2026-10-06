@@ -16,6 +16,34 @@ from domain_model.db_client import initialize_db
 from domain_model.investment_repository import resolve_investment
 
 
+def test_preserve_cash_flow_audit_and_standing_decision(tmp_path):
+    """Persist computed FCFF evidence, zero upside and scenario metadata intact."""
+    db_path = str(tmp_path / "domain_model.sqlite")
+    conn = initialize_db(db_path)
+    resolve_investment(conn, "MU", name="Micron")
+    conn.execute("UPDATE investment SET standing_decision_type = 'MAINTAIN_TRIM_EXTREME', target_weight = 3 WHERE symbol = 'MU'")
+    conn.commit()
+    model = {"method": "annual_fcff", "annualForecast": [{"freeCashFlow": 12}], "terminalGrowth": 0.03}
+    payload = {"symbol": "MU", "projection": {
+        "weightedFairValue": 100, "currentPrice": 100, "upsidePct": 0,
+        "discountRate": 0.12, "action": "HOLD", "valuationModel": model,
+        "scenarios": {"base": {"weight": 1, "presentValue": 100,
+                               "qualityMultiplier": 1, "shareChange": 0,
+                               "rationale": "Forward cash flow", "risks": ["Capex"]}}}}
+    result = subprocess.run([sys.executable, str(PERSIST_SCRIPT), "--payload", json.dumps(payload),
+                             "--db", db_path, "--json"], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    row = conn.execute("SELECT snapshot_json, analytics_log_json FROM projection_version WHERE investment_id='MU'").fetchone()
+    assert json.loads(row[0])["discountRate"] == 0.12
+    assert json.loads(row[0])["upsidePct"] == 0
+    assert json.loads(row[1])["valuationModel"] == model
+    scenario = conn.execute("SELECT scenario_price, rationale, risks_json FROM projection_scenario").fetchone()
+    assert tuple(scenario) == (100, "Forward cash flow", '["Capex"]')
+    standing = conn.execute("SELECT standing_decision_type, target_weight FROM investment WHERE symbol='MU'").fetchone()
+    assert tuple(standing) == ("MAINTAIN_TRIM_EXTREME", 3)
+    conn.close()
+
+
 def test_persist_valuation_happy_path(tmp_path):
     db_path = str(tmp_path / "domain_model.sqlite")
     conn = initialize_db(db_path)

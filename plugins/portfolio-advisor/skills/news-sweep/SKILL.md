@@ -15,6 +15,7 @@ description: Generates multi-agent news sweep prompts, gates cross-model finding
 - [References](#references)
 
 ## Constraints
+- **AI forward-evidence gate**: Before valuation or action proposals for AI-exposed names, apply [AI-sector forward valuation evidence](references/ai-forward-valuation.md). Reconcile dated forward estimates, memory/storage or power demand, executable capacity and cash conversion; flag `NEEDS_REVALUATION` when material drivers are missing. This review flag does not replace the canonical action or standing decision.
 - Source portfolio and thesis data strictly from `domain_model.sqlite` (never legacy JSON files).
 - Gate every recommendation against DCF fair values, live technicals, and the fact-check gate before applying.
 - Label each ticker recommendation as CONFLUENCE, PARTIAL, or CONFLICT before presenting changes.
@@ -41,9 +42,12 @@ python3 plugins/portfolio-advisor/scripts/generate_news_prompt.py --output temp/
 - **Gemini**: Primary for full-breadth context scanning and rapid cross-checking across large ticker batches.
 
 ## Verification
+
+- For AI-exposed names, verify the forward-evidence cases in `evals/evals.json`; record source dates, modeled changes and unresolved gaps before relying on a valuation signal.
 ```bash
 python3 plugins/portfolio-advisor/scripts/verify_refresh.py
 ```
 
 ## References
+- [AI-sector Forward Valuation Evidence](references/ai-forward-valuation.md) - Forward estimates, memory/storage and power drivers, cash-flow bridge, and recommendation readiness.
 - [News Sweep Model Assessment](references/news-sweep-model-assessment.md) - Model scoring criteria, accuracy benchmarks, and historical performance evaluations.

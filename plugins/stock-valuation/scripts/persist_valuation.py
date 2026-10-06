@@ -95,12 +95,13 @@ def persist_valuation(payload: dict, db_path: str | None = None) -> dict:
             latest_pv = get_latest_projection(conn, symbol)
             new_version = (latest_pv["version"] + 1) if latest_pv else 1
 
-            fair_value = proj.get("fair_value") or proj.get("weightedFairValue")
+            fair_value = proj.get("fair_value", proj.get("weightedFairValue"))
             action = proj.get("action") or "HOLD"
             model = proj.get("model", "5yr_dcf_scenarios")
             rationale = proj.get("rationale", "")
             current_price = proj.get("current_price") or proj.get("currentPrice")
-            upside_pct = proj.get("upside_pct") or proj.get("upsidePct")
+            upside_pct = proj.get("upside_pct", proj.get("upsidePct"))
+            discount_rate = proj.get("discount_rate", proj.get("discountRate", 0.085))
 
             snapshot = {
                 "ticker": symbol,
@@ -108,7 +109,7 @@ def persist_valuation(payload: dict, db_path: str | None = None) -> dict:
                 "weightedFairValue": fair_value,
                 "upsidePct": upside_pct,
                 "action": action,
-                "discountRate": proj.get("discount_rate", 0.085),
+                "discountRate": discount_rate,
                 "horizon": proj.get("horizon", 5),
                 "baseRevenue": proj.get("base_revenue") or proj.get("baseRevenue"),
                 "baseShares": proj.get("base_shares") or proj.get("baseShares"),
@@ -119,8 +120,10 @@ def persist_valuation(payload: dict, db_path: str | None = None) -> dict:
                 "conviction": proj.get("conviction", 8),
                 "fairValue": fair_value,
                 "upsidePct": upside_pct,
-                "wacc": proj.get("discount_rate", 0.085),
+                "wacc": discount_rate,
             }
+            if "valuationModel" in proj:
+                analytics_log["valuationModel"] = proj["valuationModel"]
 
             # Preserve and enforce outlookAudit in analytics_log
             if "outlookAudit" in proj:
@@ -154,17 +157,22 @@ def persist_valuation(payload: dict, db_path: str | None = None) -> dict:
                 backlog = audit.get("backlogPipeline", "None recorded")
 
                 note_body = (
-                    f"## Earnings Calls & Forward Outlook Audit ({calls_str})\n"
+                    f"## Forward Outlook Audit ({calls_str})\n"
                     f"- Guidance Trajectory: {guidance}\n"
                     f"- Contracted Backlog & Pipeline: {backlog}\n"
                     f"- Strategic Assessment: {assessment}\n"
                     f"- Adversarial Risks: {risks}"
                 )
                 note_id = f"{symbol}-audit-{_uuid.uuid4().hex[:8]}"
+                has_call_material = any(
+                    marker in calls_str.lower()
+                    for marker in ("prepared remarks", "conference call", "call transcript")
+                )
+                note_type = "INVESTOR_CALL_TRANSCRIPT_ANALYSIS" if has_call_material else "EARNINGS_RELEASE_OUTLOOK"
                 conn.execute(
                     "INSERT INTO investment_note (note_id, investment_id, note_date, note_type, body, source) "
-                    "VALUES (?, ?, ?, 'INVESTOR_CALL_TRANSCRIPT_ANALYSIS', ?, 'persist_valuation::outlookAudit');",
-                    (note_id, symbol, now_iso, note_body)
+                    "VALUES (?, ?, ?, ?, ?, 'persist_valuation::outlookAudit');",
+                    (note_id, symbol, now_iso, note_type, note_body)
                 )
 
             # Insert scenarios (bear, base, bull)
@@ -178,7 +186,11 @@ def persist_valuation(payload: dict, db_path: str | None = None) -> dict:
                     growth_rate=sc_data.get("growthRate") or sc_data.get("growth_rate", 0.0),
                     net_margin=sc_data.get("netMargin") or sc_data.get("net_margin", 0.0),
                     exit_pe=sc_data.get("exitPE") or sc_data.get("exit_pe", 0.0),
-                    scenario_price=sc_data.get("price") or sc_data.get("scenario_price", 0.0),
+                    scenario_price=sc_data.get("price", sc_data.get("scenario_price", sc_data.get("presentValue", 0.0))),
+                    quality_multiplier=sc_data.get("qualityMultiplier"),
+                    share_change=sc_data.get("shareChange"),
+                    rationale=sc_data.get("rationale"),
+                    risks_json=json.dumps(sc_data["risks"]) if "risks" in sc_data else None,
                     year5_revenue=sc_data.get("year5Revenue") or sc_data.get("year5_revenue"),
                     year5_net_income=sc_data.get("year5NetIncome") or sc_data.get("year5_net_income"),
                     year5_eps=sc_data.get("year5EPS") or sc_data.get("year5_eps"),

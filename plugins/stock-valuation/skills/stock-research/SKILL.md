@@ -18,6 +18,7 @@ Qualitative deep-dive research sweep and re-valuation decision gate for existing
 - [References](#references)
 
 ## Constraints
+- **AI forward-evidence gate**: Before valuation or action proposals for AI-exposed names, apply [AI-sector forward valuation evidence](references/ai-forward-valuation.md). Reconcile dated forward estimates, memory/storage or power demand, executable capacity and cash conversion; flag `NEEDS_REVALUATION` when material drivers are missing. This review flag does not replace the canonical action or standing decision.
 
 - **No hallucinated events**: Never extrapolate unverified news or guidance; cite dates, official earnings releases, or SEC filings.
 - **Decision gate requirement**: Never automatically re-run DCF valuation without presenting the structured re-valuation decision card to the user first.
@@ -52,9 +53,12 @@ Trigger with `/research-stock {TICKER}` or natural language when material events
 
 ## Verification
 
+- For AI-exposed names, verify the forward-evidence cases in `evals/evals.json`; record source dates, modeled changes and unresolved gaps before relying on a valuation signal.
+
 - Confirm research file created at `investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md`.
 - Test routing cases against `evals/evals.json`.
 
 ## References
+- [AI-sector Forward Valuation Evidence](references/ai-forward-valuation.md) - Forward estimates, memory/storage and power drivers, cash-flow bridge, and recommendation readiness.
 
 - [Fallback Tree](references/fallback-tree.md): Operational degradation procedures when data feeds or APIs are unreachable.
