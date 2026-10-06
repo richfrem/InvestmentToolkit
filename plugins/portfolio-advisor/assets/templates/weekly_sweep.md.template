@@ -72,3 +72,7 @@ Synthesize this week's market developments:
 3. **Supply Chain & Single-Source Bottlenecks**: High-speed optical transceivers (800G/1.6T), CoWoS advanced packaging, and high-voltage power transformers.
 4. **Bitcoin Mining Power Pivot**: Economics of miner-to-HPC transitions, hardware impairments, and utility interconnection timelines.
 5. **Space & Defense Infrastructure**: Government contracts, satellite constellations, and launch cadence.
+
+
+## AI forward-evidence gate
+For AI-exposed tickers, identify dated primary-source changes to forward revenue and forward EPS, not just price moves. Cover HBM **and** DDR/server DRAM, NAND/SSD, long-context KV-cache and persistent agent storage where relevant. For power names assess time-to-power, manufacturing output, grid/turbine lead times, fuel/permitting and actual commissioning schedules. Separate firm non-cancellable orders from frameworks/options/LOIs. Explain the effect on annual revenue, margins, capex, working capital and cash flow; include contrary evidence on supply additions, pricing and execution. Distinguish verified facts, consensus estimates and assumptions. If a material driver is missing from the stored model, flag **NEEDS_REVALUATION** before any action proposal; a recent save date alone is insufficient. This is a review-readiness flag, not a replacement recommendation.

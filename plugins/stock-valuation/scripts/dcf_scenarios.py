@@ -3,7 +3,7 @@
 dcf_scenarios.py - Discounted Cash Flow scenario calculator.
 
 Purpose:
-    Canonical calculation engine for 5-year Discounted Cash Flow (DCF) scenario valuations.
+    Canonical engine for annual FCFF DCF and legacy discounted terminal earnings valuations.
     Supports bear, base, and bull scenarios with probability weighting and structural validation.
 
 Layer:
@@ -20,6 +20,9 @@ Usage Examples:
     echo '<scenarios_json>' | python3 dcf_scenarios.py --raw AAPL_raw.json --scenarios -
 
 Key Functions (Index):
+    - _finite_number(value, label) - Reject non-finite numeric inputs
+    - _annual_cash_flow(row) - Calculate NOPAT, investment and FCFF for one year
+    - compute_cash_flow_scenario(...) - Discount annual FCFF and normalized terminal FCFF
     - compute_scenario(base_revenue, base_shares, discount_rate, horizon, params) - Compute all derived values for one scenario
     - validate_scenarios(results) - Validate ordering and weight constraints
     - run(ticker, base_revenue, base_shares, scenario_params, discount_rate, horizon, price) - Main calculation entry point
@@ -28,7 +31,7 @@ Key Functions (Index):
     - main() - Main CLI entry point
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - Scenario JSON and dated financial inputs; recommendation.valuation_signal
 
 Key Output Dependencies:
     None
@@ -36,6 +39,7 @@ Key Output Dependencies:
 
 import argparse
 import json
+import math
 import sys
 from typing import Any
 from pathlib import Path
@@ -48,6 +52,85 @@ REQUIRED_SCENARIO_KEYS = {
     "weight", "growthRate", "netMargin", "exitPE", "qualityMultiplier", "shareChange"
 }
 SCENARIO_NAMES = ("bear", "base", "bull")
+
+
+# Validate numeric inputs before any cash-flow arithmetic.
+def _finite_number(value: Any, label: str) -> float:
+    """Return a finite number or raise a labeled input error."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise ValueError(f"{label} must be a finite number")
+    return float(value)
+
+
+# Convert an explicit annual operating forecast to unlevered cash flow.
+def _annual_cash_flow(row: dict[str, Any]) -> dict[str, Any]:
+    """Compute FCFF in dollars; operating margin includes SBC and lease expenses."""
+    required = ("revenue", "operatingMarginPct", "taxRatePct", "depreciation", "capex", "workingCapitalChange")
+    values = {key: _finite_number(row[key], key) for key in required}
+    if values["revenue"] <= 0 or values["capex"] < 0 or values["depreciation"] < 0:
+        raise ValueError("Revenue must be positive; capex and depreciation must be non-negative")
+    if not -100 <= values["operatingMarginPct"] <= 100 or not 0 <= values["taxRatePct"] <= 100:
+        raise ValueError("Margin and tax must use percentage units within their valid ranges")
+    operating_profit = values["revenue"] * values["operatingMarginPct"] / 100
+    taxes = max(operating_profit, 0) * values["taxRatePct"] / 100
+    nopat = operating_profit - taxes
+    fcff = nopat + values["depreciation"] - values["capex"] - values["workingCapitalChange"]
+    return {**row, "operatingProfit": operating_profit, "cashTaxes": taxes,
+            "nopat": nopat, "freeCashFlow": fcff}
+
+
+# Value annual cash flows and a separately normalized terminal business.
+def compute_cash_flow_scenario(
+    base_revenue: float, base_shares: float, discount_rate: float,
+    horizon: int, params: dict[str, Any],
+) -> dict[str, Any]:
+    """Discount end-year FCFF, add net cash once, and divide by supplied equity shares.
+
+    terminalForecast is the normalized year-horizon cash-flow base; terminalGrowth
+    grows it once into year horizon+1. Dollar inputs remain dollars in the audit.
+    SBC remains an economic operating expense; no extra share-change haircut is
+    supported. Convertible debt/share treatment belongs in the disclosed bridge.
+    """
+    rate = _finite_number(discount_rate, "discount rate")
+    growth = _finite_number(params["terminalGrowth"], "terminal growth")
+    if not 0 <= growth < rate or rate > 1:
+        raise ValueError("Require 0 <= terminal growth < discount rate <= 1 in decimal units")
+    if _finite_number(base_revenue, "base revenue") <= 0 or _finite_number(base_shares, "shares") <= 0:
+        raise ValueError("Base revenue and shares must be positive")
+    if horizon < 1 or len(params["annualForecast"]) != horizon:
+        raise ValueError("Annual forecast length must equal the positive horizon")
+    if params.get("sbcTreatment") != "expensed_in_operating_margin" or params.get("shareChange", 0) != 0:
+        raise ValueError("SBC must remain expensed in operating margin; no share-change double count")
+    if params.get("optionalityAdjustment", 0) != 0:
+        raise ValueError("FCFF does not accept an optionality adjustment")
+    bridge = {key: _finite_number(params[key], key) for key in ("cash", "debt", "otherClaims")}
+    if any(value < 0 for value in bridge.values()):
+        raise ValueError("Cash, debt and other claims must be non-negative")
+    annual = [_annual_cash_flow(row) for row in params["annualForecast"]]
+    prior_period = 0.0
+    for year, row in enumerate(annual, start=1):
+        period = _finite_number(row.get("discountPeriod", year), "discount period")
+        if period <= prior_period:
+            raise ValueError("Discount periods must be positive and strictly increasing")
+        row["discountPeriod"] = period
+        row["presentValueCashFlow"] = row["freeCashFlow"] / (1 + rate) ** period
+        prior_period = period
+    terminal = _annual_cash_flow(params["terminalForecast"])
+    if terminal["freeCashFlow"] <= 0:
+        raise ValueError("Normalized terminal free cash flow must be positive for a perpetuity")
+    terminal_pv = terminal["freeCashFlow"] * (1 + growth) / (rate - growth) / (1 + rate) ** prior_period
+    enterprise = sum(row["presentValueCashFlow"] for row in annual) + terminal_pv
+    equity = enterprise + bridge["cash"] - bridge["debt"] - bridge["otherClaims"]
+    last = annual[-1]
+    return {**params, "annualForecast": annual, "terminalForecast": terminal,
+            "growthRate": (last["revenue"] / base_revenue) ** (1 / prior_period) * 100 - 100,
+            "netMargin": last["nopat"] / last["revenue"] * 100,
+            "exitPE": 0, "qualityMultiplier": 1, "shareChange": 0,
+            "year5Revenue": round(last["revenue"] / 1_000_000, 1),
+            "terminalFreeCashFlow": terminal["freeCashFlow"], "terminalValuePV": terminal_pv,
+            "terminalValuePct": terminal_pv / enterprise * 100 if enterprise > 0 else None,
+            "enterpriseValue": enterprise, "equityValue": equity,
+            "presentValue": round(max(equity, 0) / base_shares, 2), "priceFloored": equity < 0}
 
 
 def compute_scenario(
@@ -63,6 +146,10 @@ def compute_scenario(
     DCF terminal value calculation to account for massive committed but 
     unrealized projects (e.g. data center buildouts).
     """
+    if params.get("method") == "annual_fcff":
+        return compute_cash_flow_scenario(base_revenue, base_shares, discount_rate, horizon, params)
+    if params.get("method", "terminal_earnings") != "terminal_earnings":
+        raise ValueError("Unknown valuation method")
     growth = params["growthRate"] / 100.0
     margin = params["netMargin"] / 100.0
     sc = params["shareChange"] / 100.0
@@ -139,12 +226,16 @@ def validate_scenarios(results: dict[str, dict]) -> dict[str, Any]:
     # Warn on quality multiplier > 1.1 without a moat citation (can't check here,
     # but flag it so the agent documents justification in the rationale field)
     for name, s in results.items():
+        if not math.isfinite(s["weight"]) or not 0 <= s["weight"] <= 1:
+            errors.append(f"{name}.weight must be a finite probability in [0, 1]")
         if s["qualityMultiplier"] > 1.1:
             warnings.append(
                 f"{name}.qualityMultiplier={s['qualityMultiplier']} > 1.1 — "
                 "ensure ≥1 structural moat is cited in scenario rationale"
             )
-        if s.get("priceFloored"):
+        if s.get("priceFloored") and s.get("method") == "annual_fcff":
+            warnings.append(f"{name}.equityValue was floored to $0 after debt and other claims")
+        elif s.get("priceFloored"):
             warnings.append(
                 f"{name}.year5PriceUndiscounted was floored to $0 (negative EPS × exitPE "
                 "produced a negative price) — the P/E-based terminal-value method breaks "
@@ -202,11 +293,29 @@ def run(
     for name in SCENARIO_NAMES:
         if name not in scenario_params:
             raise ValueError(f"Missing scenario: '{name}'")
-        missing = REQUIRED_SCENARIO_KEYS - set(scenario_params[name].keys())
+        required = {"weight", "annualForecast", "terminalForecast", "terminalGrowth", "cash", "debt", "otherClaims"} if scenario_params[name].get("method") == "annual_fcff" else REQUIRED_SCENARIO_KEYS
+        missing = required - set(scenario_params[name].keys())
         if missing:
             raise ValueError(f"Scenario '{name}' missing keys: {missing}")
 
-    divisor = round((1 + discount_rate) ** horizon, 5)
+    annual_fcff = scenario_params["base"].get("method") == "annual_fcff"
+    if annual_fcff:
+        periods_present = [
+            "discountPeriod" in scenario_params[name]["annualForecast"][-1]
+            for name in SCENARIO_NAMES
+        ]
+        if any(periods_present) and not all(periods_present):
+            raise ValueError("Annual FCFF scenarios must all declare their final discountPeriod")
+        periods = {
+            name: float(scenario_params[name]["annualForecast"][-1]["discountPeriod"])
+            for name in SCENARIO_NAMES
+        } if all(periods_present) else {}
+        if periods and len(set(periods.values())) != 1:
+            raise ValueError(f"Annual FCFF scenarios must share a forecast horizon: {periods}")
+        effective_horizon = next(iter(periods.values())) if periods else horizon
+    else:
+        effective_horizon = horizon
+    divisor = round((1 + discount_rate) ** effective_horizon, 5)
 
     computed = {
         name: compute_scenario(base_revenue, base_shares, discount_rate, horizon, scenario_params[name])
@@ -225,7 +334,7 @@ def run(
         "baseRevenue": base_revenue,
         "baseShares": base_shares,
         "discountRate": discount_rate,
-        "horizon": horizon,
+        "horizon": effective_horizon,
         "discountDivisor": divisor,
         "currentPrice": price,
         "weightedFairValue": weighted_fv,

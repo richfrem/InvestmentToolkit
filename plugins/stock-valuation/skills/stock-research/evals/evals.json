@@ -25,7 +25,7 @@
     "id": "EVAL-003",
     "type": "negative",
     "category": "trigger_conflict",
-    "prompt": "There's no prior valuation for PLTR yet — can you build me a full DCF with bear/base/bull cases?",
+    "prompt": "There's no prior valuation for PLTR yet \u2014 can you build me a full DCF with bear/base/bull cases?",
     "expected_trigger": "update-stock-analysis",
     "expected_not_trigger": [
       "stock-research"
@@ -37,7 +37,7 @@
     "id": "EVAL-004",
     "type": "positive",
     "category": "workflow_gate",
-    "prompt": "/research-stock BE — Bloom Energy just announced a new $2B utility contract",
+    "prompt": "/research-stock BE \u2014 Bloom Energy just announced a new $2B utility contract",
     "expected_trigger": "stock-research",
     "pass_condition": "Agent classifies the finding, reaches the Re-Valuation Decision Gate, and explicitly waits for user confirmation before chaining into update-stock-analysis.",
     "should_trigger": true
@@ -46,7 +46,7 @@
     "id": "EVAL-005",
     "type": "positive",
     "category": "chaining",
-    "prompt": "/research-stock ORCL — Oracle raised FY guidance 8% and beat revenue by 12% on cloud/AI bookings. Yes, please proceed with the full re-valuation.",
+    "prompt": "/research-stock ORCL \u2014 Oracle raised FY guidance 8% and beat revenue by 12% on cloud/AI bookings. Yes, please proceed with the full re-valuation.",
     "expected_trigger": "stock-research",
     "pass_condition": "Agent classifies the guidance raise + beat as Class A, writes research context, then invokes the update-stock-analysis skill.",
     "should_trigger": true
@@ -55,9 +55,29 @@
     "id": "EVAL-006",
     "type": "negative",
     "category": "hallucination",
-    "prompt": "/research-stock ZZZQ — a ticker that doesn't exist in our projections or on any exchange",
+    "prompt": "/research-stock ZZZQ \u2014 a ticker that doesn't exist in our projections or on any exchange",
     "expected_trigger": "stock-research",
     "pass_condition": "Agent explicitly declares the fetch failure rather than fabricating a research sweep.",
     "should_trigger": false
+  },
+  {
+    "id": "EVAL-007",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review MU for this workflow: the valuation was saved today but only models HBM. New guidance and agentic AI context-storage demand may affect server DDR/LPDDR and NAND/enterprise SSD. Is the stored TRIM ready to act on?",
+    "expected_trigger": "stock-research",
+    "expected_not_trigger": [],
+    "pass_condition": "Checks dated guidance and forward revenue/EPS, DDR/LPDDR and NAND/SSD alongside HBM, KV-cache tier substitution, pricing/capacity and capex/working capital. Flags NEEDS_REVALUATION if material drivers are missing, preserves the canonical action and standing decision, and routes or performs revaluation within this workflow without assuming a bullish result.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-008",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review BE for this workflow: a hypothetical announcement says up to 2.8 GW framework capacity, with 1.2 GW initially firm contracted. Grid connections are delayed. Can the full framework be treated as next-year revenue or a bear-case valuation floor?",
+    "expected_trigger": "stock-research",
+    "expected_not_trigger": [],
+    "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
+    "should_trigger": true
   }
 ]

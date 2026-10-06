@@ -32,7 +32,7 @@
     "id": "EVAL-004",
     "type": "positive",
     "category": "standalone_degradation",
-    "prompt": "Value TSLA — backend is down",
+    "prompt": "Value TSLA \u2014 backend is down",
     "setup": "Backend health check fails (simulate by providing no backend)",
     "expected_trigger": "update-stock-analysis",
     "pass_condition": "Agent announces degraded mode, requests raw JSON from user, completes analysis and writes report to /tmp/, does NOT crash",
@@ -78,6 +78,26 @@
     "prompt": "Generate a projection for GOOG where all weights are expressed as percentages like 25, 55, 20",
     "expected_trigger": "update-stock-analysis",
     "pass_condition": "Agent corrects weights to decimal (0.25, 0.55, 0.20) and notes the correction. Does NOT use integer percentages in the persisted JSON.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-009",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review MU for this workflow: the valuation was saved today but only models HBM. New guidance and agentic AI context-storage demand may affect server DDR/LPDDR and NAND/enterprise SSD. Is the stored TRIM ready to act on?",
+    "expected_trigger": "update-stock-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Checks dated guidance and forward revenue/EPS, DDR/LPDDR and NAND/SSD alongside HBM, KV-cache tier substitution, pricing/capacity and capex/working capital. Flags NEEDS_REVALUATION if material drivers are missing, preserves the canonical action and standing decision, and routes or performs revaluation within this workflow without assuming a bullish result.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-010",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review BE for this workflow: a hypothetical announcement says up to 2.8 GW framework capacity, with 1.2 GW initially firm contracted. Grid connections are delayed. Can the full framework be treated as next-year revenue or a bear-case valuation floor?",
+    "expected_trigger": "update-stock-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
     "should_trigger": true
   }
 ]

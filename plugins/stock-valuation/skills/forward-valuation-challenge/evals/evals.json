@@ -3,17 +3,17 @@
     "id": "EVAL-001",
     "type": "positive",
     "category": "trigger",
-    "prompt": "Run a forward valuation challenge for Bloom Energy (BE) — fuel cell power for AI data centers",
+    "prompt": "Run a forward valuation challenge for Bloom Energy (BE) \u2014 fuel cell power for AI data centers",
     "expected_trigger": "forward-valuation-challenge",
     "expected_not_trigger": [],
-    "pass_condition": "Skill activates for AI data center power provider, enforcing backlog revenue floors and forward capex integration.",
+    "pass_condition": "Skill activates for an AI data center power provider, testing firm annual deliveries and forward capex without treating backlog as an unconditional revenue or valuation floor.",
     "should_trigger": true
   },
   {
     "id": "EVAL-002",
     "type": "positive",
     "category": "trigger",
-    "prompt": "Challenge Vertiv (VRT) valuation — data center cooling and electrical infrastructure",
+    "prompt": "Challenge Vertiv (VRT) valuation \u2014 data center cooling and electrical infrastructure",
     "expected_trigger": "forward-valuation-challenge",
     "expected_not_trigger": [],
     "pass_condition": "Skill activates to stress-test data center cooling infrastructure multiples against forward hyperscaler demand.",
@@ -23,7 +23,7 @@
     "id": "EVAL-003",
     "type": "negative",
     "category": "trigger_exclusion",
-    "prompt": "Value Procter & Gamble (PG) — a consumer staples company with no AI infrastructure or data center exposure",
+    "prompt": "Value Procter & Gamble (PG) \u2014 a consumer staples company with no AI infrastructure or data center exposure",
     "expected_trigger": null,
     "expected_not_trigger": [
       "forward-valuation-challenge"
@@ -37,7 +37,7 @@
     "category": "rule_enforcement",
     "prompt": "Value Bloom Energy: TTM revenue ~$2B, product backlog ~$6B, service backlog ~$14B, and the raw model wants to set bear case target price to $4 with 35% base CAGR",
     "expected_trigger": "forward-valuation-challenge",
-    "pass_condition": "Rejects the $4 bear case as an unvalidated bankruptcy scenario and recomputes a bear floor using contracted backlog.",
+    "pass_condition": "Challenges unsupported bear assumptions against firm contract enforceability, delivery timing, margins, cash conversion and financing. Does not reject a low equity value solely because gross backlog is large or invent a guaranteed price floor.",
     "should_trigger": true
   },
   {
@@ -63,5 +63,25 @@
     ],
     "pass_condition": "Agent routes to tv-portfolio-sync, not forward-valuation-challenge.",
     "should_trigger": false
+  },
+  {
+    "id": "EVAL-007",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review MU for this workflow: the valuation was saved today but only models HBM. New guidance and agentic AI context-storage demand may affect server DDR/LPDDR and NAND/enterprise SSD. Is the stored TRIM ready to act on?",
+    "expected_trigger": "forward-valuation-challenge",
+    "expected_not_trigger": [],
+    "pass_condition": "Checks dated guidance and forward revenue/EPS, DDR/LPDDR and NAND/SSD alongside HBM, KV-cache tier substitution, pricing/capacity and capex/working capital. Flags NEEDS_REVALUATION if material drivers are missing, preserves the canonical action and standing decision, and routes or performs revaluation within this workflow without assuming a bullish result.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-008",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review BE for this workflow: a hypothetical announcement says up to 2.8 GW framework capacity, with 1.2 GW initially firm contracted. Grid connections are delayed. Can the full framework be treated as next-year revenue or a bear-case valuation floor?",
+    "expected_trigger": "forward-valuation-challenge",
+    "expected_not_trigger": [],
+    "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
+    "should_trigger": true
   }
 ]

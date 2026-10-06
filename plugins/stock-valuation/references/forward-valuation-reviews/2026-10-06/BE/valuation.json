@@ -1,0 +1,568 @@
+{
+  "ticker": "BE",
+  "baseRevenue": 4050000000,
+  "baseShares": 294527346,
+  "discountRate": 0.14,
+  "horizon": 5.25,
+  "discountDivisor": 1.98953,
+  "currentPrice": 294.015,
+  "weightedFairValue": 99.43,
+  "upsidePct": -66.2,
+  "action": "SELL",
+  "scenarios": {
+    "bear": {
+      "weight": 0.25,
+      "terminalGrowth": 0.03,
+      "rationale": "Contracted demand remains, but permitting, collections and factory ramp lag; framework conversion disappoints. Revenue still grows, without assuming all bookings deliver on time.",
+      "risks": [
+        "Jupiter delay",
+        "Margin/collections stress",
+        "Competitor supply"
+      ],
+      "annualForecast": [
+        {
+          "fiscalYear": "2026 Q4 stub",
+          "discountPeriod": 0.25,
+          "revenue": 1150000000,
+          "operatingMarginPct": 16,
+          "taxRatePct": 5,
+          "depreciation": 15000000,
+          "capex": 85000000,
+          "workingCapitalChange": 100000000,
+          "operatingProfit": 184000000.0,
+          "cashTaxes": 9200000.0,
+          "nopat": 174800000.0,
+          "freeCashFlow": 4800000.0,
+          "presentValueCashFlow": 4645313.455391598
+        },
+        {
+          "fiscalYear": 2027,
+          "discountPeriod": 1.25,
+          "revenue": 5300000000,
+          "operatingMarginPct": 18,
+          "taxRatePct": 15,
+          "depreciation": 85000000,
+          "capex": 280000000,
+          "workingCapitalChange": 500000000,
+          "operatingProfit": 954000000.0,
+          "cashTaxes": 143100000.0,
+          "nopat": 810900000.0,
+          "freeCashFlow": 115900000.0,
+          "presentValueCashFlow": 98390319.71489146
+        },
+        {
+          "fiscalYear": 2028,
+          "discountPeriod": 2.25,
+          "revenue": 6500000000,
+          "operatingMarginPct": 20,
+          "taxRatePct": 21,
+          "depreciation": 110000000,
+          "capex": 320000000,
+          "workingCapitalChange": 300000000,
+          "operatingProfit": 1300000000.0,
+          "cashTaxes": 273000000.0,
+          "nopat": 1027000000.0,
+          "freeCashFlow": 517000000.0,
+          "presentValueCashFlow": 384994590.71340156
+        },
+        {
+          "fiscalYear": 2029,
+          "discountPeriod": 3.25,
+          "revenue": 8000000000,
+          "operatingMarginPct": 22,
+          "taxRatePct": 21,
+          "depreciation": 150000000,
+          "capex": 350000000,
+          "workingCapitalChange": 350000000,
+          "operatingProfit": 1760000000.0,
+          "cashTaxes": 369600000.0,
+          "nopat": 1390400000.0,
+          "freeCashFlow": 840400000.0,
+          "presentValueCashFlow": 548965784.4438946
+        },
+        {
+          "fiscalYear": 2030,
+          "discountPeriod": 4.25,
+          "revenue": 9500000000,
+          "operatingMarginPct": 23,
+          "taxRatePct": 21,
+          "depreciation": 200000000,
+          "capex": 350000000,
+          "workingCapitalChange": 350000000,
+          "operatingProfit": 2185000000.0,
+          "cashTaxes": 458850000.0,
+          "nopat": 1726150000.0,
+          "freeCashFlow": 1226150000.0,
+          "presentValueCashFlow": 702583561.4994125
+        },
+        {
+          "fiscalYear": 2031,
+          "discountPeriod": 5.25,
+          "revenue": 11000000000,
+          "operatingMarginPct": 24,
+          "taxRatePct": 21,
+          "depreciation": 250000000,
+          "capex": 350000000,
+          "workingCapitalChange": 300000000,
+          "operatingProfit": 2640000000.0,
+          "cashTaxes": 554400000.0,
+          "nopat": 2085600000.0,
+          "freeCashFlow": 1685600000.0,
+          "presentValueCashFlow": 847235320.9864637
+        }
+      ],
+      "terminalForecast": {
+        "revenue": 11000000000,
+        "operatingMarginPct": 22,
+        "taxRatePct": 21,
+        "depreciation": 250000000,
+        "capex": 350000000,
+        "workingCapitalChange": 150000000,
+        "operatingProfit": 2420000000.0,
+        "cashTaxes": 508200000.0,
+        "nopat": 1911800000.0,
+        "freeCashFlow": 1661800000.0
+      },
+      "cash": 2666859000,
+      "debt": 2684453000,
+      "otherClaims": 28673000,
+      "method": "annual_fcff",
+      "sbcTreatment": "expensed_in_operating_margin",
+      "growthRate": 20.96362488805785,
+      "netMargin": 18.96,
+      "exitPE": 0,
+      "qualityMultiplier": 1,
+      "shareChange": 0,
+      "year5Revenue": 11000.0,
+      "terminalFreeCashFlow": 1661800000.0,
+      "terminalValuePV": 7821189790.027637,
+      "terminalValuePct": 75.14590961344179,
+      "enterpriseValue": 10408004680.841091,
+      "equityValue": 10361737680.841091,
+      "presentValue": 35.18,
+      "priceFloored": false
+    },
+    "base": {
+      "weight": 0.5,
+      "terminalGrowth": 0.03,
+      "rationale": "FY2027 revenue $6.8B reconciles consensus. Subsequent revenue $9.5B/$13B/$17B/$21B assumes effective shipments about 2.4/3.4/4.6/5.7 GW with product revenue about $3.3M/MW and other revenue: these are model assumptions requiring financed capacity expansion, not booked orders. GAAP margin includes SBC.",
+      "risks": [
+        "New factories not committed",
+        "Working-capital needs",
+        "Service and fuel economics"
+      ],
+      "annualForecast": [
+        {
+          "fiscalYear": "2026 Q4 stub",
+          "discountPeriod": 0.25,
+          "revenue": 1300000000,
+          "operatingMarginPct": 20,
+          "taxRatePct": 5,
+          "depreciation": 15000000,
+          "capex": 85000000,
+          "workingCapitalChange": 70000000,
+          "operatingProfit": 260000000.0,
+          "cashTaxes": 13000000.0,
+          "nopat": 247000000.0,
+          "freeCashFlow": 107000000.0,
+          "presentValueCashFlow": 103551779.10977103
+        },
+        {
+          "fiscalYear": 2027,
+          "discountPeriod": 1.25,
+          "revenue": 6800000000,
+          "operatingMarginPct": 24,
+          "taxRatePct": 15,
+          "depreciation": 100000000,
+          "capex": 300000000,
+          "workingCapitalChange": 500000000,
+          "operatingProfit": 1632000000.0,
+          "cashTaxes": 244800000.0,
+          "nopat": 1387200000.0,
+          "freeCashFlow": 687200000.0,
+          "presentValueCashFlow": 583380739.5002021
+        },
+        {
+          "fiscalYear": 2028,
+          "discountPeriod": 2.25,
+          "revenue": 9500000000,
+          "operatingMarginPct": 27,
+          "taxRatePct": 21,
+          "depreciation": 140000000,
+          "capex": 400000000,
+          "workingCapitalChange": 400000000,
+          "operatingProfit": 2565000000.0,
+          "cashTaxes": 538650000.0,
+          "nopat": 2026350000.0,
+          "freeCashFlow": 1366350000.0,
+          "presentValueCashFlow": 1017480384.9540739
+        },
+        {
+          "fiscalYear": 2029,
+          "discountPeriod": 3.25,
+          "revenue": 13000000000,
+          "operatingMarginPct": 29,
+          "taxRatePct": 21,
+          "depreciation": 200000000,
+          "capex": 500000000,
+          "workingCapitalChange": 500000000,
+          "operatingProfit": 3770000000.0,
+          "cashTaxes": 791700000.0,
+          "nopat": 2978300000.0,
+          "freeCashFlow": 2178300000.0,
+          "presentValueCashFlow": 1422908339.188643
+        },
+        {
+          "fiscalYear": 2030,
+          "discountPeriod": 4.25,
+          "revenue": 17000000000,
+          "operatingMarginPct": 30,
+          "taxRatePct": 21,
+          "depreciation": 300000000,
+          "capex": 600000000,
+          "workingCapitalChange": 500000000,
+          "operatingProfit": 5100000000.0,
+          "cashTaxes": 1071000000.0,
+          "nopat": 4029000000.0,
+          "freeCashFlow": 3229000000.0,
+          "presentValueCashFlow": 1850215976.9046228
+        },
+        {
+          "fiscalYear": 2031,
+          "discountPeriod": 5.25,
+          "revenue": 21000000000,
+          "operatingMarginPct": 31,
+          "taxRatePct": 21,
+          "depreciation": 400000000,
+          "capex": 650000000,
+          "workingCapitalChange": 500000000,
+          "operatingProfit": 6510000000.0,
+          "cashTaxes": 1367100000.0,
+          "nopat": 5142900000.0,
+          "freeCashFlow": 4392900000.0,
+          "presentValueCashFlow": 2208009042.217273
+        }
+      ],
+      "terminalForecast": {
+        "revenue": 21000000000,
+        "operatingMarginPct": 28,
+        "taxRatePct": 21,
+        "depreciation": 450000000,
+        "capex": 650000000,
+        "workingCapitalChange": 250000000,
+        "operatingProfit": 5880000000.0,
+        "cashTaxes": 1234800000.0,
+        "nopat": 4645200000.0,
+        "freeCashFlow": 4195200000.0
+      },
+      "cash": 2666859000,
+      "debt": 2684453000,
+      "otherClaims": 28673000,
+      "method": "annual_fcff",
+      "sbcTreatment": "expensed_in_operating_margin",
+      "growthRate": 36.81873651991285,
+      "netMargin": 24.490000000000002,
+      "exitPE": 0,
+      "qualityMultiplier": 1,
+      "shareChange": 0,
+      "year5Revenue": 21000.0,
+      "terminalFreeCashFlow": 4195200000.0,
+      "terminalValuePV": 19744527263.884907,
+      "terminalValuePct": 73.3177621850851,
+      "enterpriseValue": 26930073525.75949,
+      "equityValue": 26883806525.75949,
+      "presentValue": 91.28,
+      "priceFloored": false
+    },
+    "bull": {
+      "weight": 0.25,
+      "terminalGrowth": 0.03,
+      "rationale": "Framework conversion and new hyperscaler wins combine with faster factories. Effective shipments rise from about 2.3 GW in 2027 to 9.4 GW in 2031; capex must fund capacity far above the announced 2 GW plan. Premium margins require execution and customer demand to coexist.",
+      "risks": [
+        "Unannounced capacity required",
+        "Pricing pressure",
+        "Gas and commissioning bottlenecks"
+      ],
+      "annualForecast": [
+        {
+          "fiscalYear": "2026 Q4 stub",
+          "discountPeriod": 0.25,
+          "revenue": 1450000000,
+          "operatingMarginPct": 23,
+          "taxRatePct": 5,
+          "depreciation": 15000000,
+          "capex": 100000000,
+          "workingCapitalChange": 70000000,
+          "operatingProfit": 333500000.0,
+          "cashTaxes": 16675000.0,
+          "nopat": 316825000.0,
+          "freeCashFlow": 161825000.0,
+          "presentValueCashFlow": 156609968.73307192
+        },
+        {
+          "fiscalYear": 2027,
+          "discountPeriod": 1.25,
+          "revenue": 9000000000,
+          "operatingMarginPct": 28,
+          "taxRatePct": 15,
+          "depreciation": 110000000,
+          "capex": 400000000,
+          "workingCapitalChange": 650000000,
+          "operatingProfit": 2520000000.0,
+          "cashTaxes": 378000000.0,
+          "nopat": 2142000000.0,
+          "freeCashFlow": 1202000000.0,
+          "presentValueCashFlow": 1020406939.5798062
+        },
+        {
+          "fiscalYear": 2028,
+          "discountPeriod": 2.25,
+          "revenue": 14000000000,
+          "operatingMarginPct": 32,
+          "taxRatePct": 21,
+          "depreciation": 180000000,
+          "capex": 550000000,
+          "workingCapitalChange": 800000000,
+          "operatingProfit": 4480000000.0,
+          "cashTaxes": 940800000.0,
+          "nopat": 3539200000.0,
+          "freeCashFlow": 2369200000.0,
+          "presentValueCashFlow": 1764273083.7876034
+        },
+        {
+          "fiscalYear": 2029,
+          "discountPeriod": 3.25,
+          "revenue": 20000000000,
+          "operatingMarginPct": 35,
+          "taxRatePct": 21,
+          "depreciation": 280000000,
+          "capex": 700000000,
+          "workingCapitalChange": 1000000000,
+          "operatingProfit": 7000000000.0,
+          "cashTaxes": 1470000000.0,
+          "nopat": 5530000000.0,
+          "freeCashFlow": 4110000000.0,
+          "presentValueCashFlow": 2684732715.4502697
+        },
+        {
+          "fiscalYear": 2030,
+          "discountPeriod": 4.25,
+          "revenue": 28000000000,
+          "operatingMarginPct": 36,
+          "taxRatePct": 21,
+          "depreciation": 420000000,
+          "capex": 850000000,
+          "workingCapitalChange": 1300000000,
+          "operatingProfit": 10080000000.0,
+          "cashTaxes": 2116800000.0,
+          "nopat": 7963200000.0,
+          "freeCashFlow": 6233200000.0,
+          "presentValueCashFlow": 3571621625.0362015
+        },
+        {
+          "fiscalYear": 2031,
+          "discountPeriod": 5.25,
+          "revenue": 36000000000,
+          "operatingMarginPct": 36,
+          "taxRatePct": 21,
+          "depreciation": 600000000,
+          "capex": 950000000,
+          "workingCapitalChange": 1300000000,
+          "operatingProfit": 12960000000.0,
+          "cashTaxes": 2721600000.0,
+          "nopat": 10238400000.0,
+          "freeCashFlow": 8588400000.0,
+          "presentValueCashFlow": 4316798665.614703
+        }
+      ],
+      "terminalForecast": {
+        "revenue": 36000000000,
+        "operatingMarginPct": 32,
+        "taxRatePct": 21,
+        "depreciation": 700000000,
+        "capex": 1000000000,
+        "workingCapitalChange": 400000000,
+        "operatingProfit": 11520000000.0,
+        "cashTaxes": 2419200000.0,
+        "nopat": 9100800000.0,
+        "freeCashFlow": 8400800000.0
+      },
+      "cash": 2666859000,
+      "debt": 2684453000,
+      "otherClaims": 28673000,
+      "method": "annual_fcff",
+      "sbcTreatment": "expensed_in_operating_margin",
+      "growthRate": 51.61174727299229,
+      "netMargin": 28.439999999999998,
+      "exitPE": 0,
+      "qualityMultiplier": 1,
+      "shareChange": 0,
+      "year5Revenue": 36000.0,
+      "terminalFreeCashFlow": 8400800000.0,
+      "terminalValuePV": 39538001677.737495,
+      "terminalValuePct": 74.52625777991557,
+      "enterpriseValue": 53052444675.93915,
+      "equityValue": 53006177675.93915,
+      "presentValue": 179.97,
+      "priceFloored": false
+    }
+  },
+  "validation": {
+    "weightSum": 1.0,
+    "weightSumOk": true,
+    "growthOrdering": true,
+    "pvOrdering": true,
+    "errors": [],
+    "warnings": [],
+    "valid": true
+  },
+  "method": "annual_fcff",
+  "sources": [
+    {
+      "date": "2026-07-28",
+      "type": "primary",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-Reports-Record-Second-Quarter-2026-Financial-Results-and-Raises-Full-Year-2026-Guidance/default.aspx",
+      "use": "FY2026 guidance, GAAP earnings, cash flow and cash/debt bridge"
+    },
+    {
+      "date": "2026-04-28",
+      "type": "primary",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2026/Bloom-Energy-Reports-Record-First-Quarter-2026-Results-and-Raises-Full-Year-2026-Guidance/default.aspx",
+      "use": "Prior guidance comparison"
+    },
+    {
+      "date": "2026-04-13",
+      "type": "primary",
+      "url": "https://www.bloomenergy.com/news/bloom-energy-and-oracle-expand-strategic-partnership-to-deploy-up-to-2-8-gw-to-accelerate-ai-infrastructure-build-out/",
+      "use": "1.2 GW firm vs 2.8 GW framework; speed-to-power deployment"
+    },
+    {
+      "date": "2025-07-31",
+      "type": "primary",
+      "url": "https://investor.bloomenergy.com/press-releases/press-release-details/2025/Bloom-Energy-Reports-Second-Quarter-2025-Financial-Results/default.aspx",
+      "use": "Announced 2 GW manufacturing target by end-2026; not verified current throughput"
+    },
+    {
+      "date": "2026-06-03",
+      "type": "primary customer",
+      "url": "https://www.oracle.com/news/announcement/public-review-opens-for-updated-project-jupiter-power-plan-2026-06-03/",
+      "use": "Fuel-cell selection and permitting process"
+    },
+    {
+      "date": "2026-09-24",
+      "type": "secondary reporting",
+      "url": "https://www.axios.com/2026/09/24/oracle-force-majeure-blue-owl-openai",
+      "use": "Reported notice to developer: treated as timing risk; original contract text unavailable"
+    },
+    {
+      "date": "fetched 2026-10-06",
+      "type": "secondary estimates",
+      "url": "https://finance.yahoo.com/quote/BE/analysis/",
+      "use": "FY2026 revenue $4.116B/EPS $2.707; FY2027 $6.791B/$4.942. 26 price-target analysts; estimate-specific coverage and revision history unavailable."
+    },
+    {
+      "date": "2026-08-07",
+      "type": "primary SEC filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1664703/000162828026050325/be-20260630.htm",
+      "use": "June 30 balance sheet, convertible carrying value and maximum note conversion shares"
+    }
+  ],
+  "asOf": "2026-10-06",
+  "recommendation": {
+    "action": "TRIM",
+    "reason": "-66% to fair value; valuation SELL",
+    "valuation": "SELL",
+    "upside_pct": -66.2
+  },
+  "sensitivity": [
+    {
+      "discountRate": 0.12,
+      "terminalGrowth": 0.02,
+      "fairValue": 115.65,
+      "action": "TRIM"
+    },
+    {
+      "discountRate": 0.12,
+      "terminalGrowth": 0.03,
+      "fairValue": 126.4,
+      "action": "TRIM"
+    },
+    {
+      "discountRate": 0.12,
+      "terminalGrowth": 0.04,
+      "fairValue": 139.84,
+      "action": "TRIM"
+    },
+    {
+      "discountRate": 0.14,
+      "terminalGrowth": 0.02,
+      "fairValue": 92.62,
+      "action": "TRIM"
+    },
+    {
+      "discountRate": 0.14,
+      "terminalGrowth": 0.03,
+      "fairValue": 99.43,
+      "action": "TRIM"
+    },
+    {
+      "discountRate": 0.14,
+      "terminalGrowth": 0.04,
+      "fairValue": 107.59,
+      "action": "TRIM"
+    },
+    {
+      "discountRate": 0.16,
+      "terminalGrowth": 0.02,
+      "fairValue": 76.41,
+      "action": "TRIM"
+    },
+    {
+      "discountRate": 0.16,
+      "terminalGrowth": 0.03,
+      "fairValue": 80.98,
+      "action": "TRIM"
+    },
+    {
+      "discountRate": 0.16,
+      "terminalGrowth": 0.04,
+      "fairValue": 86.33,
+      "action": "TRIM"
+    }
+  ],
+  "stressCases": [
+    {
+      "stress": "operating_margin_minus_10pp",
+      "fairValue": 59.14,
+      "action": "TRIM"
+    },
+    {
+      "stress": "capex_plus_25pct",
+      "fairValue": 95.36,
+      "action": "TRIM"
+    },
+    {
+      "stress": "shares_plus_15pct",
+      "fairValue": 86.46,
+      "action": "TRIM"
+    },
+    {
+      "stress": "convertible_converted",
+      "fairValue": 101.1,
+      "action": "TRIM",
+      "assumption": "Replace the $2.4707B June 30 convertible-note carrying value with up to 19.554M conversion shares; excludes conversion of other debt."
+    }
+  ],
+  "reverseEarnings": {
+    "impliedGrowth": 48.6435,
+    "impliedGrowthVsBaseCase": 11.8248,
+    "impliedGrowthVsGuidance": null,
+    "verdict": "BETWEEN_BASE_AND_BULL",
+    "converged": true,
+    "iterations": 14,
+    "method": "discounted_terminal_earnings",
+    "exitPE": 24,
+    "netMarginProxyPct": 22.12,
+    "limitation": "Unlevered NOPAT proxy, no cash bridge or annual distributions. Shares assumptions with FCFF; peer data insufficient. Diagnostic only."
+  }
+}
