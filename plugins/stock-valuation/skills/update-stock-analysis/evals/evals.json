@@ -99,5 +99,23 @@
     "expected_not_trigger": [],
     "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
     "should_trigger": true
+  },
+  {
+    "id": "EVAL-011",
+    "type": "positive",
+    "category": "method_rate_contract",
+    "prompt": "Update APLD after earnings. Its existing model discounts year-five EPS times P/E at an inherited 12.77% WACC whose source inputs are missing. Do not change the model without explaining it.",
+    "expected_trigger": "update-stock-analysis",
+    "should_trigger": true,
+    "pass_condition": "Identifies terminal common-equity earnings requiring cost of equity, labels the inherited rate not reproducible, reconstructs dated evidence without inventing a CAPM explanation, and presents a concrete comparison before any method migration. Does not replace the model with FCFF or publish a changed central value with missing project financing inputs. Saves an explicit rate audit only with consistent recalculated values through canonical persistence."
+  },
+  {
+    "id": "EVAL-012",
+    "type": "positive",
+    "category": "rate_evidence",
+    "prompt": "Value an AI data-center builder: debt data is unavailable, the company has tax losses, and the live WACC script hits its 14% cap. Can we just use 14% and zero debt?",
+    "expected_trigger": "update-stock-analysis",
+    "should_trigger": true,
+    "pass_condition": "Distinguishes unavailable debt from confirmed zero, researches financing and usable tax shields, rejects the legacy capped rate as a validated estimate, retains raw Ke/WACC and dated input sources through explicit-input calculation, and reports diagnostic sensitivity with NEEDS_REVALUATION if material capital claims remain unresolved. No decision-ready SQLite replacement based on fabricated debt or automatic 21% tax shield."
   }
 ]

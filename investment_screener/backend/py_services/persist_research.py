@@ -1,0 +1,1 @@
+../../../plugins/stock-valuation/scripts/persist_research.py

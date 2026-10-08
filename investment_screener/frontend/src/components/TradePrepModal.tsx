@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertTriangle, Loader2, ShieldCheck, Clock, Wifi, TrendingUp, RefreshCw } from 'lucide-react';
 import { runTradePreflight, runTradeExecute, runTradeSubmit, logTrade, fetchMarketQuotes, fetchTVQuote, type MarketQuote } from '../services/api';
+import { SmartText } from './SmartText';
 
 type ModalStep =
     | 'configure'
@@ -49,7 +50,7 @@ function ProvenanceRow({ icon, label, value, warn }: { icon: React.ReactNode; la
     return (
         <div className={`flex items-center gap-2 text-xs ${warn ? 'text-amber-400' : 'text-slate-400'}`}>
             <span className="text-slate-500 shrink-0">{icon}</span>
-            <span className="text-slate-500 w-28 shrink-0">{label}</span>
+            <span className="text-slate-500 w-28 shrink-0"><SmartText text={label} /></span>
             <span className={`font-medium ${warn ? 'text-amber-400' : 'text-slate-200'}`}>{value}</span>
         </div>
     );

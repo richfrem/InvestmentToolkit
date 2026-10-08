@@ -1,4 +1,5 @@
 import React from 'react';
+import { SmartText } from './SmartText';
 import { Target, ShieldAlert, TrendingUp, TrendingDown, Info, ShieldCheck } from 'lucide-react';
 
 interface BuyTier {
@@ -106,7 +107,7 @@ export const TargetThesisDetails: React.FC<TargetThesisDetailsProps> = ({ holdin
                 <div className="mb-5 bg-slate-900/40 rounded-lg p-3.5 border border-slate-800/50 text-xs text-slate-300 leading-relaxed">
                     <div className="flex items-start gap-2">
                         <Info size={14} className="text-emerald-500 mt-0.5 shrink-0" />
-                        <p><strong className="text-white">Strategic Intent:</strong> {agentRationale}</p>
+                        <p><strong className="text-white">Strategic Intent:</strong> <SmartText text={agentRationale} /></p>
                     </div>
                 </div>
             )}
@@ -130,7 +131,7 @@ export const TargetThesisDetails: React.FC<TargetThesisDetailsProps> = ({ holdin
                                                 <span className="text-xs font-black text-emerald-400">${tier.price.toFixed(2)}</span>
                                             </div>
                                             {tier.basis && (
-                                                <p className="text-[10px] text-slate-500 leading-tight">{tier.basis}</p>
+                                                <p className="text-[10px] text-slate-500 leading-tight"><SmartText text={tier.basis} /></p>
                                             )}
                                         </div>
                                     );
@@ -159,7 +160,7 @@ export const TargetThesisDetails: React.FC<TargetThesisDetailsProps> = ({ holdin
                                                 <span className="text-xs font-black text-indigo-400">${tier.price.toFixed(2)}</span>
                                             </div>
                                             {tier.basis && (
-                                                <p className="text-[10px] text-slate-500 leading-tight">{tier.basis}</p>
+                                                <p className="text-[10px] text-slate-500 leading-tight"><SmartText text={tier.basis} /></p>
                                             )}
                                         </div>
                                     );
@@ -184,7 +185,7 @@ export const TargetThesisDetails: React.FC<TargetThesisDetailsProps> = ({ holdin
                                     <span className="text-xs font-black text-rose-400">${stopLoss.price.toFixed(2)}</span>
                                 </div>
                                 {stopLoss.basis && (
-                                    <p className="text-[10px] text-slate-500 leading-normal">{stopLoss.basis}</p>
+                                    <p className="text-[10px] text-slate-500 leading-normal"><SmartText text={stopLoss.basis} /></p>
                                 )}
                             </div>
                         ) : (

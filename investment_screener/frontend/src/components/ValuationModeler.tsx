@@ -34,6 +34,8 @@ import { ScenarioEditor } from './analysis/ScenarioEditor';
 import { SliderInput } from './analysis/SliderInput';
 import { SensitivityGrid } from './analysis/SensitivityGrid';
 import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
+import { SmartText } from './SmartText';
+import { savedValuationRate } from '../utils/valuationPresentation';
 
 function normalizeScenario(s: any): Scenario & { weight: number } {
     return {
@@ -91,6 +93,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [showPresetModal, setShowPresetModal] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [viewingProjection, setViewingProjection] = useState<Projection | null>(null);
+    const [loadedProjection, setLoadedProjection] = useState<Projection | null>(null);
     const [activeProjection, setActiveProjection] = useState<{ id: string; version: number } | null>(null);
 
     // Global Settings
@@ -140,12 +143,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // --- Calculations ---
 
-    const baseRevenue = stockData.metrics.revenue || 0;
-    const baseShares = (stockData.metrics.shares_diluted ?? 0) > 0 
+    const baseRevenue = loadedProjection?.snapshot?.revenue ?? stockData.metrics.revenue ?? 0;
+    const baseShares = loadedProjection?.snapshot?.shares ?? ((stockData.metrics.shares_diluted ?? 0) > 0
         ? (stockData.metrics.shares_diluted ?? 0) 
         : (stockData.metrics.market_cap && stockData.price > 0 
             ? stockData.metrics.market_cap / stockData.price 
-            : (stockData.metrics.shares_outstanding || 1));
+            : (stockData.metrics.shares_outstanding || 1)));
 
     // Derived Prices
     const bearResult = useMemo(() => computeScenario(baseRevenue, baseShares, discountRate/100, timeHorizon, scenarios.bear), [baseRevenue, baseShares, discountRate, timeHorizon, scenarios.bear]);
@@ -236,6 +239,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     // --- handleLoad ---
     const handleLoad = useCallback((loadedProjection: any) => {
         const p = loadedProjection;
+        setLoadedProjection(p);
 
         if (p.id && p.ticker) {
             if (p.source === 'USER') {
@@ -289,6 +293,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // Initialize: Try to load latest saved projection, otherwise default to Yahoo
     useEffect(() => {
+        setLoadedProjection(null);
         const init = async () => {
             const saved = await storage.syncProjections(stockData.symbol);
             setSavedCount(saved.length);
@@ -368,6 +373,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         } else if (preset.type === 'ai') {
             const aiProjection = preset.aiProjection;
             if (aiProjection && aiProjection.scenarios) {
+                setLoadedProjection(aiProjection);
                 const newSettings = aiProjection.globalSettings || { discountRate: 10, timeHorizon: 5 };
 
                 const newScenarios = {
@@ -404,6 +410,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 alert('Failed to load this specific AI Analysis');
             }
         } else if (preset.type === 'user' && preset.data) {
+            setLoadedProjection(preset.data);
             setScenarios(preset.data.scenarios);
             setDiscountRate(preset.data.globalSettings.discountRate);
             setTimeHorizon(preset.data.globalSettings.timeHorizon);
@@ -448,41 +455,10 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     }, [stockData.symbol, scenarios, discountRate, timeHorizon]);
 
     const handleViewFullReport = useCallback(() => {
-        const tempProjection: Projection = {
-            id: 'temp-ai-view',
-            source: 'AI_AGENT',
-            schemaVersion: '1.1',
-            ticker: stockData.symbol,
-            version: 1,
-            savedAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            name: 'Current AI Analysis',
-            rationale: aiResult?.rationale,
-            snapshot: {
-                price: stockData.price,
-                currency: stockData.currency,
-                revenue: stockData.metrics.revenue || 0,
-                shares: stockData.metrics.shares_outstanding || 0,
-                lastActualPS: stockData.metrics.market_cap / (stockData.metrics.revenue || 1),
-                fiscalPeriod: "TTM",
-                analystGrowthEstimate: stockData.analyst_estimates?.revenue_growth,
-                analystMarginEstimate: stockData.analyst_estimates?.profit_margin
-            },
-            dataPreferences: { growthBasis, marginBasis },
-            scenarios: scenarios,
-            globalSettings: { discountRate, timeHorizon },
-            aiThesis: aiResult ? {
-                model: aiResult.model_name,
-                rationale: aiResult.rationale,
-                fairValue: aiResult.fair_value,
-                action: (aiResult.action as 'BUY' | 'SELL' | 'HOLD') || 'HOLD',
-                analyzedAt: new Date().toISOString(),
-                researchReport: (aiResult as any).researchReport
-            } : undefined
-        };
-        setViewingProjection(tempProjection);
+        if (!loadedProjection) return;
+        setViewingProjection(loadedProjection);
         setShowAIModal(true);
-    }, [aiResult, stockData, scenarios, growthBasis, marginBasis, discountRate, timeHorizon]);
+    }, [loadedProjection]);
 
     const handleSyncToAI = useCallback(() => {
         if (!aiResult?.fair_value) return;
@@ -518,7 +494,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             <div className="flex justify-between items-center mb-1 flex-none">
                 <div>
                     <h2 className="text-lg font-bold text-text">{stockData.symbol} Valuation Modeler</h2>
-                    <p className="text-[10px] text-secondary">5-Year Discounted Cash Flow (DCF)</p>
+                    <p className="text-[10px] text-secondary"><SmartText text="5-Year Discounted Valuation (DCF / EPS × P/E)" /></p>
                 </div>
                 <div className="flex gap-2">
                     <button
@@ -804,6 +780,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             {/* Global/Shared Controls */}
                             <div className="md:col-span-1 space-y-4 pt-6 md:pt-0">
                                 <div className="text-[10px] font-bold text-indigo-300 uppercase mb-2 tracking-wider">Global Settings</div>
+                                <p className="text-[10px] text-slate-400 mb-2">
+                                    Saved rate: {savedValuationRate(loadedProjection).value}.
+                                    {loadedProjection?.globalSettings.discountRate !== discountRate
+                                        ? ' Editor rate is a what-if assumption; save to publish a new projection.'
+                                        : ' Editor uses the saved rate.'}
+                                </p>
                                 <SliderInput
                                     label="Discount Rate"
                                     value={discountRate}
@@ -812,7 +794,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                     impact="Med"
                                     helpTopic="discountRate"
                                     warningThreshold={4}
-                                    note="Typ: 8-12%"
+                                    note="Use documented model inputs"
                                 />
                                 <SliderInput
                                     label="Time Horizon"

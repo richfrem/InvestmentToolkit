@@ -15,15 +15,17 @@
  *     - getMarginValue() - Normalizes margin values to a 0-100 scale for visual components
  *     - getOpMarginColor() - Determines conditional formatting for operating margin thresholds
  */
-import type { StockData } from '../services/api';
+import type { StockData, Projection } from '../services/api';
 import { AlertTriangle, TrendingUp, DollarSign, Percent, Activity, PieChart, Calculator, BarChart3, Target } from 'lucide-react';
 import { HelpTrigger } from './HelpModal';
+import { SavedValuationRateCard } from './SavedValuationRateCard';
 
 interface MetricsGridProps {
     stockData: StockData;
+    projection?: Projection | null;
 }
 
-export default function MetricsGrid({ stockData }: MetricsGridProps) {
+export default function MetricsGrid({ stockData, projection }: MetricsGridProps) {
     const { expert_metrics, metrics, financials } = stockData;
 
     // === DATA EXTRACTION ===
@@ -104,7 +106,8 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
     return (
         <div className="space-y-6">
             {/* ROW 1: MOST CRITICAL - Growth & Cash Flow (What drives valuation) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <SavedValuationRateCard projection={projection} />
                 {/* Revenue Growth - Core driver */}
                 <div className="bg-surface p-6 rounded-xl border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition-colors">
                     <div className={`absolute top-0 left-0 w-1 h-full ${revenueGrowth && revenueGrowth >= 20 ? 'bg-green-500' : 'bg-amber-500'} opacity-50`}></div>

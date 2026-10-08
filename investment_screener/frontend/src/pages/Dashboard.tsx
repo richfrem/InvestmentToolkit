@@ -35,6 +35,7 @@ import { AIAnalysisModal } from '../components/AIAnalysisModal';
 import { PineScriptViewerModal } from '../components/PineScriptViewerModal';
 import { TradeButtons } from '../components/TradeButtons';
 import { storage } from '../services/storage';
+import { SmartText } from '../components/SmartText';
 
 type Tab = 'overview' | 'technicals' | 'analysis' | 'valuation';
 
@@ -105,6 +106,7 @@ export default function Dashboard() {
         setStockData(null);
         setTechnicalAnalysis(null);
         setAiResult(null);
+        setViewingProjection(null);
         setTargetHolding(null);
 
         try {
@@ -351,7 +353,7 @@ export default function Dashboard() {
                                         onViewFullReport={() => setShowAIModal(true)} 
                                     />
                                 )}
-                                <MetricsGrid stockData={stockData} />
+                                <MetricsGrid stockData={stockData} projection={viewingProjection} />
                             </div>
                         )}
 
@@ -394,7 +396,7 @@ export default function Dashboard() {
                             <div className="p-6">
                                 <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-6 text-slate-400">
                                     <h3 className="text-lg font-bold text-white mb-2">Valuation not available for ETFs</h3>
-                                    <p>Detailed DCF valuations are out-of-scope for ETFs. This ETF has no saved projections; you can request per-holding valuations or save a projection for this ETF to enable the valuation page.</p>
+                                    <p><SmartText text="Detailed DCF valuations are out-of-scope for ETFs. This ETF has no saved projections; you can request per-holding valuations or save a projection for this ETF to enable the valuation page." /></p>
                                 </div>
                             </div>
                         )}

@@ -26,6 +26,47 @@ export interface HelpTopic {
 }
 
 export const helpTopics: Record<string, HelpTopic> = {
+    dcf: {
+        title: "DCF (Discounted Cash Flow)",
+        summary: "An estimate of today's business value from future cash flows.",
+        explanation: `Start with dated analyst estimates, management guidance, contracts and business demand. Build bear, base and bull forecasts for revenue and profitability, then account for taxes, capital spending and working capital to estimate future cash flows.
+
+Discount those annual cash flows and the value beyond the forecast period back to today. For business cash flows before financing, use WACC; reconcile debt, cash and other claims to arrive at common-shareholder value.
+
+The sector informs growth, margins, reinvestment and risk assumptions. The discounting formula follows the cash-flow claim being valued.
+
+Some saved toolkit valuations instead estimate future EPS × exit P/E and discount that future share price. That is a discounted earnings-based valuation using cost of equity, with different assumptions from annual cash-flow DCF.
+
+Fair value is an estimate, not a guaranteed price. Review forecast evidence, financing, dilution and sensitivity before relying on it.`,
+        formula: "Present value = sum of future cash flows / (1 + matched discount rate)^period",
+        example: "Illustration: $110 received in one year at a 10% discount rate is worth $100 today. The 10% is an example, not a default for every company.",
+        learnMoreUrl: "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/lectures/val.html"
+    },
+    wacc: {
+        title: "WACC (Weighted Average Cost of Capital)",
+        summary: "The blended required return of a business's equity and debt providers.",
+        explanation: `WACC weights the cost of equity and the after-tax cost of debt by their shares of the company's capital structure. It applies to business cash flows before financing payments.
+
+Its inputs include a dated risk-free rate, beta, equity risk premium, borrowing cost, capital values and a tax shield the company can actually use. A company with tax losses may have no current debt tax shield.
+
+Future EPS × P/E values common equity and uses cost of equity. It does not automatically use WACC.
+
+The saved rate and its inputs belong to the valuation version. Higher discount rates generally reduce present value. Missing inputs or an inherited unexplained rate require review; a precise-looking percentage is not proof of reliable evidence.`,
+        formula: "WACC = equity weight × cost of equity + debt weight × pre-tax debt cost × (1 − usable tax-shield rate)",
+        example: "Synthetic example: 80% equity at 10%, plus 20% debt at 5% with a usable 20% tax shield, gives an 8.8% WACC.",
+        learnMoreUrl: "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/lectures/val.html"
+    },
+    costOfEquity: {
+        title: "Cost of Equity",
+        summary: "The return required by common shareholders for the risk they bear.",
+        explanation: `Cost of equity discounts cash flows belonging to common shareholders or a future EPS × exit P/E share price.
+
+One estimation method is CAPM: a dated risk-free rate plus beta times an equity risk premium. Beta describes market exposure; the premium compensates for equity-market risk. Record the sources, dates and limitations of each assumption.
+
+WACC also includes debt funding and applies to cash flows for the whole business. Choose the rate that matches the valuation method, rather than assigning one percentage to every company in a sector.`,
+        formula: "Cost of equity = risk-free rate + beta × equity risk premium",
+        learnMoreUrl: "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/lectures/val.html"
+    },
     // Valuation Modeler terms
     growthRate: {
         title: "Revenue Growth Rate",
@@ -253,20 +294,15 @@ Originally created for SaaS companies but now widely used for tech.
     discountRate: {
         title: "Discount Rate (Required Return)",
         summary: "The annual return you require to justify the investment risk.",
-        explanation: `The discount rate converts a future stock price into today's equivalent value. It answers: "What's this worth to me TODAY?"
+        explanation: `The discount rate converts future cash flows or a future share price into today's value. Higher rates generally lower present value for the same forecast.
 
-**Why it matters:**
-$500 in 5 years is NOT worth $500 today. You could invest that money elsewhere and earn returns.
+Use WACC for cash flows to the whole business before financing. Use cost of equity for common-shareholder cash flows or a future EPS × exit P/E share price.
 
-**How to choose your rate:**
-- **8%:** Aggressive / High risk tolerance (tech investor)
-- **10%:** Typical market return expectation
-- **12%:** Conservative / Lower risk tolerance
-- **15%+:** Very high bar (Warren Buffett style)
+The selected rate should have dated, documented inputs: risk-free yield, beta and equity risk premium, plus debt cost and usable tax shield when WACC applies. It is not a universal 10% baseline or just a risk-tolerance setting.
 
-**Higher discount rate = Lower present value.** If you require higher returns, you'll pay less today for the same future payoff.
+The overview card and thesis popup show the saved valuation rate. The model editor lets you change assumptions for a what-if calculation; those edits do not change the saved rate until you save a new projection.
 
-**✅ Quick Tip:** This is personal preference, but 10% is the standard baseline.`,
+An older rate without an input audit is unverified. Review its evidence and a range of plausible rates before treating its fair value as reliable.`,
         formula: "Present Value = Future Price / (1 + Discount Rate)^Years",
         example: "$500 in 5yr at 10% = $500 / 1.10^5 = $310 today",
         learnMoreUrl: "https://www.investopedia.com/terms/d/discountrate.asp"

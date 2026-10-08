@@ -12,6 +12,8 @@
 
 import React, { useState } from 'react';
 import { Sparkles, Check } from 'lucide-react';
+import { SmartText } from './SmartText';
+import { HelpTrigger } from './HelpModal';
 
 interface AgentResearchPromptCardProps {
     symbol: string;
@@ -53,7 +55,7 @@ export const AgentResearchPromptCard: React.FC<AgentResearchPromptCardProps> = (
                             Run All-in-One Valuation & Technicals for {symbol}
                         </h2>
                         <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-                            Run a single master command in your agent chat to perform fundamentals research, extract TradingView technical levels, and calibrate DCF target prices in one shot:
+                            <SmartText text="Run a single master command in your agent chat to perform fundamentals research, extract TradingView technical levels, and calibrate DCF target prices in one shot:" />
                         </p>
                     </div>
 
@@ -78,6 +80,7 @@ export const AgentResearchPromptCard: React.FC<AgentResearchPromptCardProps> = (
                                 <p className="text-[11px] text-emerald-100/80 mt-0.5">Financials + TradingView TA + DCF Scenarios + Intelligence DB in 1 shot</p>
                             </div>
                         </button>
+                        <HelpTrigger topicId="dcf" className="self-center" />
                     </div>
                 </div>
             </div>

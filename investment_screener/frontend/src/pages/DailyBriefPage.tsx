@@ -19,6 +19,7 @@ import { AlertTriangle, TrendingUp, TrendingDown, Minus, Calendar, Shield, Activ
 import { TradeButtons } from '../components/TradeButtons';
 import { TABriefCard } from '../components/TABriefCard';
 import { RecommendationFilters } from '../components/RecommendationFilters';
+import { SmartText } from '../components/SmartText';
 import { tradeIntent, REC_CHIP_STYLES } from '../utils/recommendationPresentation';
 
 interface MacroRegime {
@@ -357,7 +358,7 @@ export default function DailyBriefPage() {
 
                                     {/* Middle: rationale + standing decision */}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm text-zinc-300 leading-snug">{rec.rationale}</p>
+                                        <p className="text-sm text-zinc-300 leading-snug"><SmartText text={rec.rationale} /></p>
                                         {rec.standingDecision && (
                                             <p className="mt-1 flex items-center gap-1.5 text-xs text-amber-400/90">
                                                 <Lock size={11} className="shrink-0" />
@@ -442,11 +443,11 @@ export default function DailyBriefPage() {
                                 <th className="text-left px-4 py-3">Ticker</th>
                                 <th className="text-center px-3 py-3">Score</th>
                                 <th className="text-center px-3 py-3">Band</th>
-                                <th className="text-center px-3 py-3">DCF</th>
+                                <th className="text-center px-3 py-3"><SmartText text="DCF" /></th>
                                 <th className="text-center px-3 py-3">TA</th>
                                 <th className="text-center px-3 py-3">Gap</th>
                                 <th className="text-center px-3 py-3">Mom</th>
-                                <th className="text-left px-3 py-3">DCF Action</th>
+                                <th className="text-left px-3 py-3"><SmartText text="DCF Action" /></th>
                                 <th className="text-center px-3 py-3">%→FV</th>
                                 <th className="text-center px-3 py-3">RSI</th>
                                 <th className="text-center px-3 py-3">ADX</th>
