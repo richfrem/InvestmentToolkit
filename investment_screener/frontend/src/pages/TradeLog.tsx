@@ -8,8 +8,8 @@ import { TradePrepModal } from '../components/TradePrepModal';
 import { PriceSourceBadge } from '../components/PriceSourceBadge';
 import { CopyCommandChip } from '../components/CopyCommandChip';
 import {
-    TRADE_LOG_PAGE_SIZE, TRADE_REFRESH_NUDGE_DAYS, TRADE_SYNC_COMMAND, daysSince, latestFilledTrade, recentFirst,
-    tradeDateParts,
+    TRADE_LOG_PAGE_SIZE, TRADE_LOG_TAB_STATUSES, TRADE_REFRESH_NUDGE_DAYS, TRADE_SYNC_COMMAND, daysSince,
+    latestFilledTrade, recentFirst, tradeDateParts, type TradeLogTab,
 } from '../utils/tradeLogView';
 
 // ── Chips ─────────────────────────────────────────────────────────────────────
@@ -43,17 +43,10 @@ function ActionChip({ action }: { action: string }) {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
-type TabId = 'all' | 'working' | 'inactive' | 'planned' | 'filled' | 'cancelled';
+type TabId = TradeLogTab;
 type ActionFilter = 'buy' | 'sell' | 'all';
 
-const TAB_STATUS_MAP: Record<TabId, TradeLogStatus[]> = {
-    all:       ['suggested', 'logged', 'submitted', 'inactive', 'filled', 'cancelled'],
-    working:   ['submitted'],
-    inactive:  ['inactive'],
-    planned:   ['suggested', 'logged'],
-    filled:    ['filled'],
-    cancelled: ['cancelled'],
-};
+const TAB_STATUS_MAP = TRADE_LOG_TAB_STATUSES;
 
 function resolvedStatus(e: TradeLogEntry): TradeLogStatus {
     if (e.status === 'submitted' && (e.orderType === 'limit' || e.orderType === 'stop' || e.orderType === 'stop_limit')) {
@@ -356,14 +349,8 @@ export default function TradeLog() {
 
     // ── Counts / filters ──────────────────────────────────────────────────────
 
-    const counts: Record<TabId, number> = {
-        all:       entries.length,
-        working:   entries.filter(e => resolvedStatus(e) === 'submitted').length,
-        inactive:  entries.filter(e => resolvedStatus(e) === 'inactive').length,
-        planned:   entries.filter(e => resolvedStatus(e) === 'suggested' || resolvedStatus(e) === 'logged').length,
-        filled:    entries.filter(e => resolvedStatus(e) === 'filled').length,
-        cancelled: entries.filter(e => resolvedStatus(e) === 'cancelled').length,
-    };
+    const counts = Object.fromEntries((Object.keys(TAB_STATUS_MAP) as TabId[]).map(id =>
+        [id, entries.filter(e => TAB_STATUS_MAP[id].includes(resolvedStatus(e))).length])) as Record<TabId, number>;
 
     // Newest trade date first; imported fills share one import time, so loggedAt alone would not order them.
     const matching = recentFirst(entries).filter(e => {
@@ -380,7 +367,7 @@ export default function TradeLog() {
     const lastFillAge = daysSince(lastFill?.date);
     const fillsStale = lastFillAge == null || lastFillAge > TRADE_REFRESH_NUDGE_DAYS;
 
-    const showOrderIdCol = tab === 'working' || tab === 'inactive';
+    const showOrderIdCol = tab === 'open';
     // Executed trades appear on the All tab too, so their fill price and total are shown there as well.
     const showFillCols   = tab === 'filled' || tab === 'all';
 
@@ -396,13 +383,11 @@ export default function TradeLog() {
     });
     const allSelected = selectableFiltered.length > 0 && selectableFiltered.every(e => selectedIds.has(e.id));
 
+    // Planned and cancelled entries are not tabs: they are reached from the link under the table.
     const TABS: { id: TabId; label: string }[] = [
-        { id: 'all', label: 'All' },
-        { id: 'working', label: 'Working' },
-        { id: 'inactive', label: 'Inactive' },
-        { id: 'planned', label: 'Planned' },
+        { id: 'all', label: 'Open & Filled' },
+        { id: 'open', label: 'Open orders' },
         { id: 'filled', label: 'Filled' },
-        { id: 'cancelled', label: 'Cancelled' },
     ];
 
     return (
@@ -413,7 +398,7 @@ export default function TradeLog() {
                 <div>
                     <h2 className="text-2xl font-bold text-text">Trade Log</h2>
                     <p className="text-xs text-slate-500 mt-0.5">
-                        {entries.length} entries
+                        {counts.open} open order{counts.open === 1 ? '' : 's'} · {counts.filled} executed trade{counts.filled === 1 ? '' : 's'}
                         {quotesLoading && <span className="ml-2 text-sky-500">· fetching quotes…</span>}
                     </p>
                     <p className={`text-xs mt-0.5 ${fillsStale ? 'text-amber-400' : 'text-slate-500'}`}>
@@ -495,7 +480,7 @@ export default function TradeLog() {
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-40 text-slate-500 gap-2">
-                        <span className="text-sm">No trades in this tab</span>
+                        <span className="text-sm">{tab === 'open' ? 'No open orders' : tab === 'filled' ? 'No executed trades recorded' : 'Nothing to show here'}</span>
                         {entries.length === 0 && (
                             <span className="text-xs text-slate-600 text-center max-w-sm">
                                 Use Buy/Sell from the Portfolio or Stock Analysis pages.
@@ -673,6 +658,15 @@ export default function TradeLog() {
                             })}
                         </tbody>
                     </table>
+                )}
+                {(counts.other > 0 || tab === 'other') && (
+                    <div className="px-4 py-2 border-t border-slate-800 text-xs text-slate-500">
+                        <button type="button" onClick={() => setTab(tab === 'other' ? 'all' : 'other')}
+                            className="hover:text-slate-300 underline decoration-dotted underline-offset-2">
+                            {tab === 'other' ? 'Back to open orders and executed trades'
+                                : `Show ${counts.other} planned and cancelled entr${counts.other === 1 ? 'y' : 'ies'}`}
+                        </button>
+                    </div>
                 )}
                 {matching.length > TRADE_LOG_PAGE_SIZE && (
                     <div className="flex items-center justify-between px-4 py-2.5 border-t border-slate-800 text-xs text-slate-500">
