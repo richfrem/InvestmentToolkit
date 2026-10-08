@@ -23,13 +23,19 @@ import { useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity, Star, Zap } from 'lucide-react';
 import { type Projection, addToWatchlist, removeFromWatchlist } from '../services/api';
 import { TradeButtons } from './TradeButtons';
+import { HelpTrigger } from './HelpModal';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgUpside, changeBgDaily, sortByColumn } from '../utils/formatters';
 import { PORTFOLIO_PERIODS, portfolioPeriodFields } from '../utils/priceChangePeriods';
 import { getActionBadgeClass, getActionPriority } from '../utils/actionColors';
+import {
+    RISK_REWARD_COLUMNS, fairValueGap, isReduceCandidate, isRiskRewardColumn, mergeColumnPrefs, riskRewardRowAccent, riskRewardRowFields,
+    type RiskRewardRowFields,
+} from '../utils/riskReward';
+import { ReduceCandidatesChip, RiskRewardCell } from './RiskRewardCell';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ScreenerRow {
+interface ScreenerRow extends RiskRewardRowFields {
     symbol: string;
     name: string;
     model: string;
@@ -80,6 +86,8 @@ interface ColDef {
     changeScale?: number;
     defaultOn?: boolean;
     align?: 'left' | 'right';
+    /** Header tooltip explaining the column. */
+    title?: string;
     format: (v: any) => string;
 }
 
@@ -87,6 +95,11 @@ const COLUMNS: ColDef[] = [
     { id: 'symbol',         label: 'Ticker',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
     { id: 'name',           label: 'Name',       always: true,  defaultOn: false, align: 'left',  format: v => String(v ?? '') },
     { id: 'action',         label: 'Action',     defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
+    // Reward-versus-risk columns are shared with the Portfolio Table (utils/riskReward).
+    ...RISK_REWARD_COLUMNS.map((c): ColDef => ({
+        id: c.id, label: c.label, defaultOn: c.defaultOn, align: c.align, title: c.title,
+        format: v => safeNum(v) != null ? safeNum(v)!.toFixed(1) : '—',
+    })),
     { id: 'currentPct',     label: 'Current %',  defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
     { id: 'recommendedPct', label: 'Target %',   defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
     { id: 'rationale',      label: 'Rationale',  defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
@@ -118,6 +131,7 @@ const COLUMNS: ColDef[] = [
 
 const DEFAULT_WIDTHS: Record<string, number> = {
     ...Object.fromEntries(PORTFOLIO_PERIODS.map(p => [p.field, 72])),
+    ...Object.fromEntries(RISK_REWARD_COLUMNS.map(c => [c.id, c.width])),
     symbol: 80, action: 185, subStrategyId: 135, fairValue: 95, currentPrice: 80, gainLoss: 85,
     change_overall: 80, sector: 115, shares: 60, book_price: 72, total_book: 80, total_market: 80, 
     upside: 85, ruleOf40: 70, growth: 80, model: 130, base: 80,
@@ -183,32 +197,17 @@ export default function ScreenerTable() {
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [sortCol, setSortCol] = useState<keyof ScreenerRow>('action');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'actionable' | 'initiate' | 'accumulate' | 'trim' | 'exit' | 'holdings' | 'watchlist' | 'portfolio_gaps' | 'watchlist_gaps'>('holdings');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'actionable' | 'initiate' | 'accumulate' | 'trim' | 'exit' | 'reduce' | 'holdings' | 'watchlist' | 'portfolio_gaps' | 'watchlist_gaps'>('holdings');
 
     const dragRef = useRef<{ colId: string; startX: number; startWidth: number } | null>(null);
 
     // Initialize Prefs
     useEffect(() => {
         const prefs = loadPrefs();
-        const defaultVisible = new Set(COLUMNS.filter(c => c.always || c.defaultOn).map(c => c.id));
-        if (prefs) {
-            // Filter out stale IDs no longer in COLUMNS (schema changes between versions)
-            const validIds = new Set<string>(COLUMNS.map(c => c.id as string));
-            const filteredOrder = prefs.columnOrder.filter(id => validIds.has(id)) as (keyof ScreenerRow)[];
-            // Merge: add any new defaultOn columns not in the saved set
-            const merged = new Set(prefs.visible.filter(id => validIds.has(id)));
-            for (const id of defaultVisible) {
-                if (!filteredOrder.includes(id)) merged.add(id); // brand-new column
-            }
-            setVisible(merged);
-            // Append any new columns to the end of columnOrder
-            const knownIds = new Set(filteredOrder);
-            const newCols = COLUMNS.map(c => c.id).filter(id => !knownIds.has(id));
-            setColumnOrder([...filteredOrder, ...newCols]);
-        } else {
-            setVisible(defaultVisible);
-            setColumnOrder(COLUMNS.map(c => c.id));
-        }
+        // Stale ids are dropped; brand-new columns become visible after Action.
+        const merged = mergeColumnPrefs(prefs, COLUMNS.map(c => ({ id: c.id as string, always: c.always, defaultOn: !!c.defaultOn })), 'action');
+        setVisible(merged.visible);
+        setColumnOrder(merged.order);
         setColumnWidths({ ...DEFAULT_WIDTHS, ...(prefs?.columnWidths ?? {}) });
     }, []);
 
@@ -378,9 +377,9 @@ export default function ScreenerTable() {
             const currentPrice = heatmapMap[p.ticker]?.price ?? p.snapshot?.price ?? 0;
             // Fair value: DCF projection (primary) → analyst consensus mean target (fallback).
             // Analyst target is sourced from the same heatmap call — no separate yfinance call.
-            const fairValue = thesis?.fairValue ?? heatmapMap[p.ticker]?.analyst_target_mean ?? null;
-            const upside = (fairValue && currentPrice) ? ((fairValue - currentPrice) / currentPrice) * 100 : null;
-            const gainLoss = (fairValue && currentPrice) ? (fairValue - currentPrice) : null;
+            // The recommendation's fair value wins, so this column, the range bar and the action agree.
+            const fairValue = recommendations[p.ticker]?.fair_value ?? thesis?.fairValue ?? heatmapMap[p.ticker]?.analyst_target_mean ?? null;
+            const { upside, gainLoss } = fairValueGap(fairValue, currentPrice);
 
             const growth = base?.growthRate ?? null;
             const margin = base?.netMargin ?? null;
@@ -396,6 +395,7 @@ export default function ScreenerTable() {
             const action = backendAction;
 
             return {
+                ...riskRewardRowFields(recommendations[p.ticker]),
                 symbol: p.ticker,
                 name: p.name,
                 model: thesis?.model || '—',
@@ -443,6 +443,7 @@ export default function ScreenerTable() {
                 // portfolio-wide current-weight total to under/over-count in the UI.
                 const hPct = allPortfolioWeights[h.ticker] ?? h.actualPct ?? null;
                 return {
+                    ...riskRewardRowFields(recommendations[h.ticker]),
                     symbol: h.ticker,
                     name: h.name,
                     model: '—',
@@ -493,6 +494,7 @@ export default function ScreenerTable() {
         let accumulate = 0;
         let trim = 0;
         let exit = 0;
+        let reduce = 0;
         let holdings = 0;
         let watchlist = 0;
         let portfolioGaps = 0;
@@ -507,6 +509,7 @@ export default function ScreenerTable() {
                 else if (act === 'TRIM') { trim++; actionable++; }
                 else if (act === 'EXIT') { exit++; actionable++; }
                 else if (['REVIEW', 'BUY', 'SELL'].includes(act)) { actionable++; }
+                if (isReduceCandidate(recommendations[row.symbol])) reduce++;
             }
             
             // Portfolio holdings include all active funded positions or active thesis targets
@@ -527,8 +530,8 @@ export default function ScreenerTable() {
             }
         }
 
-        return { all: rows.length, actionable, initiate, accumulate, trim, exit, holdings, watchlist, portfolioGaps, watchlistGaps };
-    }, [rows]);
+        return { all: rows.length, actionable, initiate, accumulate, trim, exit, reduce, holdings, watchlist, portfolioGaps, watchlistGaps };
+    }, [rows, recommendations]);
 
     const filteredRows = rows.filter(row => {
         const isCash = row.symbol.includes('CASH') || row.assetClass === 'CASH' || row.symbol === 'USD_CASH';
@@ -549,6 +552,8 @@ export default function ScreenerTable() {
             if (isCash || act !== 'TRIM') return false;
         } else if (statusFilter === 'exit') {
             if (isCash || act !== 'EXIT') return false;
+        } else if (statusFilter === 'reduce') {
+            if (isCash || !isReduceCandidate(recommendations[row.symbol])) return false;
         } else if (statusFilter === 'holdings') {
             // Portfolio holdings tab shows all active funded positions OR active thesis target allocations
             if (!isFunded && !isTarget) return false;
@@ -807,7 +812,7 @@ export default function ScreenerTable() {
                                     ? 'bg-orange-950/40 text-orange-300 border-orange-800/60 hover:bg-orange-900/50'
                                     : 'bg-slate-900/40 text-slate-500 border-slate-800 hover:text-slate-300'
                         }`}
-                        title="Positions above target weight to harvest/trim"
+                        title="Held positions more than 15% above fair value"
                     >
                         <span>🟠 Trims</span>
                         <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === 'trim' ? 'bg-orange-800 text-white' : 'bg-orange-950 text-orange-300 border border-orange-700/50'}`}>
@@ -851,19 +856,29 @@ export default function ScreenerTable() {
                                     ? 'bg-cyan-950/40 text-cyan-300 border-cyan-800/60 hover:bg-cyan-900/50'
                                     : 'bg-slate-900/40 text-slate-500 border-slate-800 hover:text-slate-300'
                         }`}
-                        title="Under-allocated core holdings to buy on dips"
+                        title="Held positions more than 15% below fair value"
                     >
                         <span>🔵 Accumulate</span>
                         <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === 'accumulate' ? 'bg-cyan-800 text-white' : 'bg-cyan-950 text-cyan-300 border border-cyan-700/50'}`}>
                             {counts.accumulate}
                         </span>
                     </button>
+
+                    {/* Reward no longer covers the risk: wider than Trims, which needs 15% above fair value */}
+                    <ReduceCandidatesChip count={counts.reduce} active={statusFilter === 'reduce'}
+                        onToggle={() => {
+                            const turningOn = statusFilter !== 'reduce';
+                            setStatusFilter(turningOn ? 'reduce' : 'holdings');
+                            setSortCol(turningOn ? 'rr_ratio' : 'action');
+                            setSortDir('asc');
+                        }} />
+                    <HelpTrigger topicId="riskReward" size={13} />
                 </div>
 
                 {/* Priority Sorting Indicator / Toggle */}
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] text-slate-400 font-mono">
-                        Sort: <span className="text-white font-bold">{String(sortCol).toUpperCase()}</span> ({sortDir})
+                        Sort: <span className="text-white font-bold">{(COLUMNS.find(c => c.id === sortCol)?.label ?? String(sortCol)).toUpperCase()}</span> ({sortDir})
                     </span>
                     <button
                         onClick={() => {
@@ -897,6 +912,7 @@ export default function ScreenerTable() {
                                             if (sortCol === col.id) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                                             else { setSortCol(col.id as any); setSortDir('desc'); }
                                         }}
+                                        title={col.title}
                                         className={`relative px-4 py-3 font-black text-[10px] uppercase tracking-widest cursor-pointer select-none whitespace-nowrap
                                             ${col.align === 'right' ? 'text-right' : 'text-left'}
                                             ${active ? 'text-indigo-400 bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200'}`}
@@ -941,9 +957,17 @@ export default function ScreenerTable() {
                                     ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}
                                     hover:bg-indigo-500/10`}
                             >
-                                {visibleCols.map(col => {
+                                {visibleCols.map((col, colIndex) => {
                                     const val = row[col.id];
                                     const numVal = typeof val === 'number' ? val : null;
+
+                                    if (isRiskRewardColumn(col.id)) {
+                                        return (
+                                            <td key={col.id} className={`px-4 py-2 overflow-hidden ${col.align === 'right' ? 'text-right' : 'text-left'}`}>
+                                                <RiskRewardCell columnId={col.id} rec={recommendations[row.symbol]} />
+                                            </td>
+                                        );
+                                    }
 
                                     // For holding rows, DCF-specific columns show as pending
                                     const isDcfCol = ['fairValue','gainLoss','upside','ruleOf40','growth','model','bear','base','bull','qualityMultiplier','lastAnalyzed'].includes(col.id);
@@ -1078,7 +1102,7 @@ export default function ScreenerTable() {
                                     return (
                                         <td
                                             key={col.id}
-                                            className={`px-4 py-4 text-ellipsis ${col.id === 'action' ? 'relative z-10' : 'overflow-hidden'} ${col.id === 'rationale' ? 'whitespace-normal align-top' : 'whitespace-nowrap'} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                                            className={`px-4 py-4 text-ellipsis ${colIndex === 0 ? riskRewardRowAccent(recommendations[row.symbol]) : ''} ${col.id === 'action' ? 'relative z-10' : 'overflow-hidden'} ${col.id === 'rationale' ? 'whitespace-normal align-top' : 'whitespace-nowrap'} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
                                             style={{
                                                 ...(col.isChange ? { backgroundColor: col.changeScale ? changeBgDaily(numVal, col.changeScale) : changeBg(numVal) } : {}),
                                                 ...(col.id === 'currentPct' ? { backgroundColor: pctHeatBg(row.currentPct, 'current') } : {}),

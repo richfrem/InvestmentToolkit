@@ -26,6 +26,25 @@ export interface HelpTopic {
 }
 
 export const helpTopics: Record<string, HelpTopic> = {
+    riskReward: {
+        title: "Reward vs Risk Columns",
+        summary: "Whether the upside at today's price is worth the downside, and how well supported the fair value is.",
+        explanation: `These columns use each stock's saved valuation: its bear, base and bull values, their probabilities, and the probability-weighted fair value. They explain and cross-check the action; they do not change it.
+
+VALUATION RANGE: draws the bear-to-bull range. The white tick is fair value and the dot is the price. A dot to the right of the tick means the price is above fair value.
+
+VS FAIR VALUE: how far the price is above (+) or below (−) fair value.
+
+REWARD:RISK: the probability-weighted gain divided by the probability-weighted loss across the three scenarios at this price. Below 1 (red) the expected loss is larger than the expected gain; 1 to 2 (amber) is thin; 2 or more (green) is favourable.
+
+SUPPORT: shows four evidence checks behind the fair value: saved within 90 days, a full and reasonable scenario range, an audited discount rate, and a recorded forward-earnings review that is not flagged for revaluation. Hover the squares to see which checks fail. A weakly supported fair value should be refreshed before acting on it.
+
+CHECK: compares the action with reward versus risk. "Review" and "Conflict" mark actions the scenarios do not fully support, for example a position held above fair value that is still inside the ±15% action band.
+
+REDUCE CANDIDATES: held positions above fair value, or with reward:risk below 1. This is wider than Trim, which needs the price to be more than 15% above fair value.`,
+        formula: "Reward:Risk = Σ probability × gain above price ÷ Σ probability × loss below price",
+        example: "Bear $20 (20%), base $100 (50%), bull $200 (30%) at a price of $80: gain = 0.5×20 + 0.3×120 = 46; loss = 0.2×60 = 12; reward:risk = 3.8",
+    },
     dcf: {
         title: "DCF (Discounted Cash Flow)",
         summary: "An estimate of today's business value from future cash flows.",
