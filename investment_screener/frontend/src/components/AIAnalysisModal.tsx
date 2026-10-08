@@ -25,6 +25,7 @@ import { DeepDiveModal } from './DeepDiveModal';
 import { getActionBadgeClass } from '../utils/actionColors';
 import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
 import { savedValuationRate } from '../utils/valuationPresentation';
+import { SavedRateRationale } from './SavedRateRationale';
 
 interface AIAnalysisModalProps {
     symbol: string;
@@ -211,6 +212,7 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                         <span>Horizon: {projection.globalSettings.timeHorizon} Years</span>
                                         <span className="inline-flex items-center justify-center gap-1">{savedRate.label}: {savedRate.value} <HelpTrigger topicId={savedRate.topicId} size={12} /></span>
                                     </div>
+                                    <SavedRateRationale rate={savedRate} />
                                 </div>
                             </div>
 

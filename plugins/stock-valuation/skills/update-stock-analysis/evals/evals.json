@@ -117,5 +117,14 @@
     "expected_trigger": "update-stock-analysis",
     "should_trigger": true,
     "pass_condition": "Distinguishes unavailable debt from confirmed zero, researches financing and usable tax shields, rejects the legacy capped rate as a validated estimate, retains raw Ke/WACC and dated input sources through explicit-input calculation, and reports diagnostic sensitivity with NEEDS_REVALUATION if material capital claims remain unresolved. No decision-ready SQLite replacement based on fabricated debt or automatic 21% tax shield."
+  },
+  {
+    "id": "EVAL-013",
+    "type": "positive",
+    "category": "forward_build_before_rate",
+    "prompt": "APLD just reported $342M for the quarter. Refresh the valuation \u2014 I think revenue hits $2B in two years. Just fix the discount rate.",
+    "expected_trigger": "update-stock-analysis",
+    "should_trigger": true,
+    "pass_condition": "Before selecting any rate, splits recurring rent from fit-out revenue, derives revenue per MW from contracted revenue and term, builds a dated capacity ladder (energized, funded, signed-unfunded, unsigned, targets), reconciles the near-term path with consensus and the terminal year with the contracted floor, and translates to common earnings after interest, dilution and partner claims. Does not annualize total quarterly revenue or tune the rate to offset stale scenarios. Rate inputs include a plain-language rationale that names the beta source and the rejected alternative; unresolved margin or ownership gaps keep NEEDS_REVALUATION."
   }
 ]

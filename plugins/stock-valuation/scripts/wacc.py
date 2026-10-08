@@ -96,6 +96,8 @@ def compute_discount_rate(inputs: dict) -> dict:
         raise ValueError("asOf must be an ISO date") from None
     if not isinstance(inputs.get("currency"), str) or not inputs["currency"].strip():
         raise ValueError("currency must be explicit")
+    if not isinstance(inputs.get("rationale"), str) or not inputs["rationale"].strip():
+        raise ValueError("rationale must explain why this rate basis and beta were chosen")
     sources = inputs.get("sources")
     if not isinstance(sources, list) or not sources:
         raise ValueError("sources must contain dated input provenance")

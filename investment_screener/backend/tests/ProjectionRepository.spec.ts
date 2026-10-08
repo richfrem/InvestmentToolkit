@@ -172,6 +172,7 @@ describe('ProjectionRepository', () => {
             const inputs = { method: 'terminal_earnings', asOf: '2026-10-07', currency: 'USD',
                 riskFreeRate: 0.04, beta: 1, erp: 0.06, marketCap: 800, totalDebt: 200,
                 costOfDebtPreTax: 0.05, taxShieldRate: 0,
+                rationale: 'Synthetic fixture rationale',
                 sources: [{ date: '2026-10-07', url: 'https://example.org/fixture', use: 'Synthetic inputs' }] };
             const inputFile = `${dbPath}.inputs.json`;
             const auditFile = `${dbPath}.audit.json`;

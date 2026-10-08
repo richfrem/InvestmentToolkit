@@ -57,6 +57,19 @@ def test_shared_guide_covers_memory_power_cashflows_and_review_readiness() -> No
         assert requirement in guide
 
 
+def test_capacity_build_precedes_rate_and_rate_needs_written_rationale() -> None:
+    """Infrastructure names get a dated capacity-to-earnings build before any rate is applied."""
+    guide = (ROOT / "plugins/stock-valuation/references/ai-forward-valuation.md").read_text()
+    for requirement in ("Capacity-to-earnings build", "before selecting a discount rate",
+                        "recurring", "fit-out", "per MW", "contracted floor", "energized",
+                        "unfunded", "common shareholders"):
+        assert requirement in guide
+    protocol = (ROOT / "plugins/stock-valuation/references/valuation-method-and-discount-rate.md").read_text()
+    assert '"rationale"' in protocol and "Why this rate" in protocol
+    skill = (ROOT / "plugins/stock-valuation/skills/update-stock-analysis/SKILL.md").read_text()
+    assert skill.index("capacity-to-earnings build") < skill.index("wacc.py --inputs")
+
+
 @pytest.mark.parametrize("period", ("daily", "weekly"))
 def test_generated_sweep_instructions_request_forward_evidence(period: str) -> None:
     """Generated prompts must carry the gate rather than relying on chat context."""

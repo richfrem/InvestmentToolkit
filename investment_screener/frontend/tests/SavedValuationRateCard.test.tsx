@@ -39,6 +39,35 @@ it.each([
     expect(within(screen.getByRole('dialog', { name: title })).getByRole('heading', { name: title })).toBeTruthy();
 });
 
+it('explains an audited cost of equity with its saved inputs and written reason', () => {
+    const projection = { ...saved, globalSettings: { discountRate: 12.75, timeHorizon: 5 }, analyticsLog: { valuationModel: { method: 'terminal_earnings',
+        discountRateAudit: { rateType: 'COST_OF_EQUITY', selectedRate: 0.127529786, asOf: '2026-10-07', readiness: 'REVIEW_REQUIRED',
+            components: { costOfEquity: 0.127529786 },
+            inputs: { riskFreeRate: 0.0515, beta: 1.810233, erp: 0.042, rationale: 'Peer beta preferred because the business changed inside every regression window.' } },
+    } } } as Projection;
+    render(<HelpModalProvider><SavedValuationRateCard projection={projection} /></HelpModalProvider>);
+    const why = screen.getByRole('group', { name: 'Why this rate' });
+    expect(within(why).getByText('5.15% risk-free + 1.81 beta × 4.2% equity risk premium = 12.75%')).toBeTruthy();
+    expect(within(why).getByText('Peer beta preferred because the business changed inside every regression window.')).toBeTruthy();
+});
+
+it('explains an audited WACC from its saved capital weights', () => {
+    const projection = { ...saved, globalSettings: { discountRate: 8.8, timeHorizon: 5 }, analyticsLog: { valuationModel: { method: 'annual_fcff',
+        discountRateAudit: { rateType: 'WACC', selectedRate: 0.088, asOf: '2026-10-07', readiness: 'REVIEW_REQUIRED',
+            components: { costOfEquity: 0.10, equityWeight: 0.8, debtWeight: 0.2, costOfDebtAfterTax: 0.04, rawWacc: 0.088 },
+            inputs: { riskFreeRate: 0.04, beta: 1, erp: 0.06, rationale: 'Firm cash flows are discounted at the blended cost of capital.' } },
+    } } } as Projection;
+    render(<HelpModalProvider><SavedValuationRateCard projection={projection} /></HelpModalProvider>);
+    const why = screen.getByRole('group', { name: 'Why this rate' });
+    expect(within(why).getByText('80% equity × 10% + 20% debt × 4% after tax = 8.8%')).toBeTruthy();
+    expect(within(why).getByText('Firm cash flows are discounted at the blended cost of capital.')).toBeTruthy();
+});
+
+it('does not invent an explanation for an unaudited rate', () => {
+    render(<HelpModalProvider><SavedValuationRateCard projection={saved} /></HelpModalProvider>);
+    expect(screen.queryByRole('group', { name: 'Why this rate' })).toBeNull();
+});
+
 it('shows unavailable when there is no saved valuation, without inventing 10%', () => {
     render(<HelpModalProvider><SavedValuationRateCard /></HelpModalProvider>);
     expect(screen.getByText('No saved valuation rate')).toBeTruthy();
