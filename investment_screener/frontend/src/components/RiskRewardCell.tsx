@@ -73,6 +73,34 @@ function AlignmentChip({ rec }: { rec: RecommendationRecord }) {
     );
 }
 
+const DEBT_TONES: Record<string, string> = {
+    SEVERE: 'text-rose-300 border-rose-500/50 bg-rose-500/10',
+    HIGH: 'text-orange-300 border-orange-500/50 bg-orange-500/10',
+    MODERATE: 'text-amber-300/90 border-amber-500/30 bg-transparent',
+    UNCHECKED: 'text-slate-400 border-slate-600 border-dashed bg-transparent',
+};
+
+/**
+ * Debt badge beside the check: the leverage grade saved with the valuation, a rate that is too
+ * low for equity earnings, or "debt ?" when the valuation was never checked for debt.
+ * Low leverage with a sound rate shows nothing.
+ */
+export function DebtBadge({ rec }: { rec: RecommendationRecord }) {
+    const debt = rec.debt;
+    if (!debt || debt.status === 'NONE') return null;
+    const key = debt.status === 'NOT_ASSESSED' ? 'UNCHECKED'
+        : debt.rate_status === 'MISMATCH' && !['HIGH', 'SEVERE'].includes(debt.tier ?? '') ? 'HIGH' : debt.tier ?? '';
+    if (!DEBT_TONES[key]) return null;
+    const label = key === 'UNCHECKED' ? 'Debt ?' : debt.rate_status === 'MISMATCH' ? 'Rate low' : `Debt ${debt.tier!.toLowerCase()}`;
+    const was = debt.previous_fair_value != null ? ` Fair value before this adjustment: $${debt.previous_fair_value.toFixed(2)}.` : '';
+    return (
+        <span title={`${debt.note}.${was}`}
+            className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${DEBT_TONES[key]}`}>
+            {label}
+        </span>
+    );
+}
+
 /** One cell of the shared columns; shows a dash rather than a guess when data is missing. */
 export function RiskRewardCell({ columnId, rec, hideValues = false }: {
     columnId: RiskRewardColumnId; rec?: RecommendationRecord | null; hideValues?: boolean;
@@ -84,7 +112,7 @@ export function RiskRewardCell({ columnId, rec, hideValues = false }: {
         case 'rr_ratio': return <RatioPill rec={rec} />;
         case 'rr_lossOdds': return <LossOdds value={view.loss_odds_pct} />;
         case 'rr_support': return <SupportPips rec={rec} />;
-        case 'rr_check': return <AlignmentChip rec={rec} />;
+        case 'rr_check': return <span className="inline-flex flex-wrap items-center gap-1"><AlignmentChip rec={rec} /><DebtBadge rec={rec} /></span>;
         case 'rr_premium': {
             if (view.premium_pct == null) return DASH;
             const above = view.premium_pct > 0;

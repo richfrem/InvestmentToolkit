@@ -862,6 +862,17 @@ export interface RecommendationRecord {
     support?: ValuationSupport;
     recent_trades?: RecentTrades;
     decision_check?: DecisionCheck;
+    debt?: DebtView;
+}
+
+/** How debt was handled in the saved valuation (leverage.py grade and rate check, via risk_reward.debt_view). */
+export interface DebtView {
+    status: 'ASSESSED' | 'NOT_ASSESSED' | 'NONE';
+    tier: 'LOW' | 'MODERATE' | 'HIGH' | 'SEVERE' | 'UNKNOWN' | null;
+    reasons: string[];
+    rate_status: 'OK' | 'MISMATCH' | 'UNKNOWN' | null;
+    previous_fair_value: number | null;
+    note: string;
 }
 
 /** Whether the owner's standing decision agrees with the action, and the stance to show (standing_decision_check.py). */

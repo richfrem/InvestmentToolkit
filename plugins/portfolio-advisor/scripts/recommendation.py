@@ -47,7 +47,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from recent_trades import summarize_recent_trades, trade_context, window_start  # noqa: E402
-from risk_reward import SCENARIO_NAMES, assess_risk_reward, reduce_view, valuation_support  # noqa: E402
+from risk_reward import SCENARIO_NAMES, assess_risk_reward, debt_view, reduce_view, valuation_support  # noqa: E402
 from standing_decision_check import check_standing_decision  # noqa: E402
 
 ACT_THRESHOLD_PCT = 15.0
@@ -143,6 +143,8 @@ def _risk_reward_fields(conn: Any, entry: dict | None, rec: dict, price: float |
         "scenarios": {name: (saved.get(name) or {}).get("price") for name in SCENARIO_NAMES},
         "risk_reward": assessment,
         "support": valuation_support(entry.get("saved_at") if entry else None, log, saved, date.today()),
+        # How debt was handled in this valuation (leverage.py, saved by the valuation scripts).
+        "debt": debt_view(log, has_valuation=bool(entry and fair_value is not None)),
     }
 
 

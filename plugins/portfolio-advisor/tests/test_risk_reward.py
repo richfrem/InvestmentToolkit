@@ -144,3 +144,29 @@ def test_unrated_positions_have_unknown_alignment() -> None:
     view = reduce_view(True, "MAINTAIN", assess_risk_reward(None, None, {}), 3.0, None)
     assert view["alignment"]["status"] == "UNKNOWN" and view["reduce_candidate"] is False
     assert view["weight_gap_pp"] is None
+
+
+def test_debt_view_reports_the_saved_leverage_grade_and_rate_check() -> None:
+    from risk_reward import debt_view
+    log = {"valuationModel": {"leverage": {"tier": "SEVERE", "reasons": ["Net debt is 12.2x EBITDA"]},
+                              "rateBasis": {"status": "OK", "note": "Discounted at 14.23%"},
+                              "rebasedFrom": {"fairValue": 249.87, "discountRate": 0.0816}}}
+    view = debt_view(log, has_valuation=True)
+    assert (view["status"], view["tier"], view["reasons"]) == ("ASSESSED", "SEVERE", ["Net debt is 12.2x EBITDA"])
+    assert view["rate_status"] == "OK" and view["previous_fair_value"] == 249.87
+    assert "Net debt is 12.2x EBITDA" in view["note"]
+
+
+def test_a_valuation_never_checked_for_debt_says_so_rather_than_looking_clean() -> None:
+    from risk_reward import debt_view
+    view = debt_view({}, has_valuation=True)
+    assert (view["status"], view["tier"]) == ("NOT_ASSESSED", None)
+    assert "has not been checked" in view["note"]
+    assert debt_view(None, has_valuation=False)["status"] == "NONE"
+
+
+def test_a_sourced_rate_audit_or_firm_cash_flow_model_counts_as_assessed() -> None:
+    from risk_reward import debt_view
+    audited = debt_view({"valuationModel": {"discountRateAudit": {"rateType": "COST_OF_EQUITY"}}}, True)
+    assert (audited["status"], audited["rate_status"]) == ("ASSESSED", "OK") and audited["tier"] is None
+    assert debt_view({"valuationModel": {"method": "annual_fcff"}}, True)["status"] == "ASSESSED"

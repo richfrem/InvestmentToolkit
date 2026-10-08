@@ -49,6 +49,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from market_data import get_fundamentals, get_estimates  # noqa: E402
 from comps_valuation import load_latest_projection, compute_ev  # noqa: E402
 from wacc import DEFAULT_TAX_RATE  # noqa: E402
+from leverage import CURRENT_RATIO, INTEREST_COVERAGE  # noqa: E402
 
 # Composite weights — must sum to 1.00, matches the doc's §5 formula exactly.
 # NOTE: the doc's own §5 formula lists fcfYield at 0.10, which sums to 1.05
@@ -87,8 +88,9 @@ FLAT_THRESHOLDS = {
     "operatingMargin": (0.20, 0.10),
     "roic": (0.15, 0.08),
     "fcfYield": (0.05, 0.02),
-    "interestCoverage": (5.0, 2.0),
-    "currentRatio": (1.5, 1.0),
+    # Shared with the valuation's leverage grade (leverage.py) so both read debt the same way.
+    "interestCoverage": INTEREST_COVERAGE,
+    "currentRatio": CURRENT_RATIO,
 }
 QUALITATIVE_RATING_SCORE = {"high": 90, "medium": 60, "low": 30,
                             "positive": 90, "neutral": 60, "negative": 30}
