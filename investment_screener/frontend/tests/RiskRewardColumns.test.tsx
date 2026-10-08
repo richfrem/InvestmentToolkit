@@ -167,3 +167,28 @@ it('ranks actions already acted on after the ones still open', () => {
     expect([...rows].sort(compareByActionPriority('asc')).map(r => r.symbol)).toEqual(['OPEN', 'TRIM', 'DONE']);
     expect([...rows].sort(compareByActionPriority('desc')).map(r => r.symbol)).toEqual(['TRIM', 'OPEN', 'DONE']);
 });
+
+it('shows how debt was handled beside the check, and says when it never was', () => {
+    const severe = { ...below, debt: { status: 'ASSESSED', tier: 'SEVERE', reasons: ['Net debt is 12.2x EBITDA'], rate_status: 'OK',
+        previous_fair_value: 249.87, note: 'Leverage severe: Net debt is 12.2x EBITDA' } } as RecommendationRecord;
+    const { unmount } = render(<RiskRewardCell columnId="rr_check" rec={severe} />);
+    const badge = screen.getByText('Debt severe');
+    expect(badge.getAttribute('title')).toContain('Net debt is 12.2x EBITDA');
+    expect(badge.getAttribute('title')).toContain('$249.87');
+    unmount();
+
+    const unchecked = { ...below, debt: { status: 'NOT_ASSESSED', tier: null, reasons: [], rate_status: null, previous_fair_value: null,
+        note: 'Debt has not been checked in this valuation' } } as RecommendationRecord;
+    const second = render(<RiskRewardCell columnId="rr_check" rec={unchecked} />);
+    expect(screen.getByText('Debt ?')).toBeTruthy();
+    second.unmount();
+
+    const lowRate = { ...below, debt: { status: 'ASSESSED', tier: 'LOW', reasons: [], rate_status: 'MISMATCH', previous_fair_value: null, note: 'Rate below cost of equity' } } as RecommendationRecord;
+    const third = render(<RiskRewardCell columnId="rr_check" rec={lowRate} />);
+    expect(screen.getByText('Rate low')).toBeTruthy();
+    third.unmount();
+
+    const clean = { ...below, debt: { status: 'ASSESSED', tier: 'LOW', reasons: [], rate_status: 'OK', previous_fair_value: null, note: 'Leverage low' } } as RecommendationRecord;
+    render(<RiskRewardCell columnId="rr_check" rec={clean} />);
+    expect(screen.queryByText(/Debt/)).toBeNull();
+});

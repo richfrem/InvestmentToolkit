@@ -10,6 +10,7 @@ Authoritative procedure for `update-stock-analysis` and `stock-research`. Apply 
 - [Project economics](#4-reconcile-project-economics-and-common-shareholder-value)
 - [Changes and uncertainty](#5-explain-changes-and-uncertainty)
 - [SQLite publication](#6-publication-and-verification)
+- [Debt and leverage](#7-debt-and-leverage)
 
 ## 1. Establish what the existing model values
 
@@ -123,3 +124,17 @@ No schema migration is needed: `projection_version.snapshot_json` stores the sel
 Never write ad hoc SQL. `recalculate_forward_valuation.py` currently forces `annual_fcff` and is not a method-neutral migration tool. Do not use it to overwrite a terminal-earnings model. The scenario engine and legacy unaudited persistence still contain rate defaults; this workflow must supply the explicit rate rather than rely on them.
 
 Read back from the **main checkout's actual database** through the supported API/repository, even when working in a worktree. Verify saved method, rate audit, rate units, fair value, scenario prices, quote timestamp and canonical recommendation agree in the app. Domain persistence, intelligence notes and closing refresh are separate operations; verify each rather than claim a transaction across both databases. Respect the standing-decision anchor and use the canonical recommendation function; a fresh valuation alone does not authorize a trade.
+
+## 7. Debt and leverage
+
+An earnings-multiple valuation has no line for debt, so debt must enter in three explicit places. `plugins/stock-valuation/scripts/leverage.py` is the only implementation of these rules.
+
+1. **Rate.** Year-5 EPS × exit P/E is discounted at the cost of equity, never WACC. WACC falls as a company borrows more, so using it here makes more debt produce a higher fair value. `rate_basis_check` returns `MISMATCH` when the rate is more than 0.5 points below the cost of equity.
+2. **Grade.** `leverage_profile` grades the balance sheet from net debt/EBITDA (above 2.5×, 4× and 8×), interest coverage (below 5× and 2×), current ratio (below 1.0) and net debt above half of market value: `LOW`, `MODERATE`, `HIGH` or `SEVERE`. Net cash caps the grade at `MODERATE`.
+3. **Scenario weights.** `apply_leverage_weights` moves 5 points (`HIGH`) or 10 points (`SEVERE`) of probability to the bear case, from the bull case first and then the base case. State the weights before and after. Interest and scheduled refinancing must also be inside each scenario's net margin; say what interest cost the margin assumes.
+
+For a `HIGH` or `SEVERE` company, prefer `annual_fcff` with the debt bridge (enterprise value + cash − debt − other claims) when the data supports it, and explain the choice.
+
+Save the grade and rate check as `valuationModel.leverage` and `valuationModel.rateBasis` in the persistence payload. The tables show them as a debt badge beside the check; a valuation without them shows "Debt ?".
+
+**Existing valuations.** `python3 plugins/stock-valuation/scripts/rebase_equity_valuations.py` recomputes saved earnings-multiple valuations with unchanged scenario assumptions, a CAPM cost of equity (two-year regression beta, Blume-adjusted, bounded to 1.0–2.0) and the leverage weight shift. It reports old against new; `--write` saves a new version and keeps the previous one. It never lowers a rate, skips audited and FCFF valuations, and refuses a valuation whose saved scenario prices it cannot reproduce. Its rate is an automated approximation marked "not a sourced rate audit": it corrects the direction of the error, and a full `/update-stock-analysis` with a sourced audit replaces it.

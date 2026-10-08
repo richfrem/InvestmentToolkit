@@ -41,6 +41,8 @@ SUPPORT: shows four evidence checks behind the fair value: saved within 90 days,
 
 CHECK: compares the action with reward versus risk. "Review" and "Conflict" mark actions the scenarios do not fully support, for example a position held above fair value that is still inside the ±15% action band.
 
+DEBT (beside Check): how the valuation handled what the company owes. "Debt high" or "Debt severe" means net debt is large against earnings, market value or short-term liquidity; for those, 5 or 10 points of probability were moved from the bull case to the bear case. "Rate low" means shareholder earnings were discounted below the cost of equity, which overstates fair value. "Debt ?" means the valuation has never been checked for debt. Hover the badge for the figures.
+
 REDUCE CANDIDATES: held positions above fair value, or with reward:risk below 1. This is wider than Trim, which needs the price to be more than 15% above fair value.`,
         formula: "Reward:Risk = Σ probability × gain above price ÷ Σ probability × loss below price",
         example: "Bear $20 (20%), base $100 (50%), bull $200 (30%) at a price of $80: gain = 0.5×20 + 0.3×120 = 46; loss = 0.2×60 = 12; reward:risk = 3.8",

@@ -13,6 +13,7 @@ Usage:
 Key Functions:
     assess_risk_reward(price, fair_value, scenarios)   premium, reward:risk, loss odds, verdict
     valuation_support(saved_at, analytics_log, scenarios, today)   four evidence checks
+    debt_view(analytics_log, has_valuation)   leverage grade and rate check saved with the valuation
     reduce_view(held, action, assessment, current, target)   reduce flag and action alignment
 Key Input Dependencies:
     Saved projection fair value, scenario prices and weights, and analytics log
@@ -206,6 +207,37 @@ def refresh_advice(ticker: str, support: dict | None, valuation: str | None = No
     reasons += [check["note"] for check in support.get("checks") or []
                 if check["id"] == "forward_review" and not check["ok"]]
     return {"command": f"{REFRESH_COMMAND} {ticker}", "reasons": reasons} if reasons else None
+
+
+def debt_view(analytics_log: dict | None, has_valuation: bool) -> dict[str, Any]:
+    """How debt was handled in the saved valuation, for display beside the fair value.
+
+    Reads what the valuation saved (leverage.py grade, rate-basis check); nothing is
+    recomputed here. A valuation never checked for debt is reported as NOT_ASSESSED so
+    it cannot pass for a clean balance sheet.
+
+    Returns:
+        {"status": ASSESSED|NOT_ASSESSED|NONE, "tier": LOW|MODERATE|HIGH|SEVERE|UNKNOWN|None,
+        "reasons", "rate_status": OK|MISMATCH|UNKNOWN|None, "previous_fair_value", "note"}.
+    """
+    empty = {"tier": None, "reasons": [], "rate_status": None, "previous_fair_value": None}
+    if not has_valuation:
+        return {**empty, "status": "NONE", "note": ""}
+    model = (analytics_log or {}).get("valuationModel") or {}
+    leverage, basis = model.get("leverage") or {}, model.get("rateBasis") or {}
+    sourced = bool(model.get("discountRateAudit")) or model.get("method") == "annual_fcff"
+    if not leverage and not basis and not sourced:
+        return {**empty, "status": "NOT_ASSESSED",
+                "note": "Debt has not been checked in this valuation: the discount rate and scenario weights "
+                        "may not reflect what the company owes"}
+    reasons = list(leverage.get("reasons") or [])
+    tier = leverage.get("tier")
+    parts = [f"Leverage {tier.lower()}" + (f": {'; '.join(reasons)}" if reasons else "")] if tier else []
+    parts.append(basis.get("note") or ("Discount rate from a sourced audit" if sourced else ""))
+    return {"status": "ASSESSED", "tier": tier, "reasons": reasons,
+            "rate_status": basis.get("status") or ("OK" if sourced else None),
+            "previous_fair_value": (model.get("rebasedFrom") or {}).get("fairValue"),
+            "note": ". ".join(part for part in parts if part)}
 
 
 # (actions, verdict) pairs the scenarios do not support, with the status and wording to show.
