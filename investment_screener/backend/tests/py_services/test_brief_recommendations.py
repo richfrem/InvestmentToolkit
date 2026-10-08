@@ -252,3 +252,52 @@ class TestEarningsAndOrdering:
             standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
         )
         assert recs == []
+
+
+def _recent(status: str, note: str, sold: float = 0, bought: float = 0) -> dict:
+    """recent_trades field as recommendation.py attaches it."""
+    return {"window_days": 14, "sold_shares": sold, "bought_shares": bought, "count": 1,
+            "last": {"date": "2026-10-06", "action": "sell" if sold else "buy", "shares": sold or bought, "price": 1, "account": "TFSA"},
+            "context": {"status": status, "note": note}}
+
+
+class TestRecentTradeContext:
+
+    def test_trim_card_says_it_was_already_acted_on_and_frames_the_rest_as_further(self):
+        """A trim the owner just made is acknowledged; any remaining sizing is a further trade."""
+        note = "Sold 1.5 shares in the last 14 days, last on 2026-10-06: TRIM already acted on"
+        s = _score("BE", -2, "TRIM", actual_weight=4.9, target_weight=4.1, weight_gap=-0.8,
+                   recent_trades=_recent("ACTED", note, sold=1.5))
+        card = build_recommendations([s], {}, [], RISK_ON, 100_000)[0]
+        assert card["recentTrades"]["context"]["status"] == "ACTED"
+        assert note in card["rationale"]
+        assert "a further" in card["rationale"]
+        assert card["proposedTrade"]["approxValueUSD"] == 800.0
+
+    def test_blocked_and_standing_decision_cards_also_carry_the_trade_note(self):
+        note = "Sold 9 shares in the last 14 days, last on 2026-10-06: TRIM already acted on"
+        within_band = _score("IREN", -2, "TRIM", recent_trades=_recent("ACTED", note, sold=9))
+        decided = _score("PANW", -2, "TRIM", recent_trades=_recent("ACTED", note, sold=9))
+        cards = build_recommendations([within_band, decided], {"PANW": {"type": "TRIM_ON_BOUNCE", "reason": "Trim on bounce."}}, [], RISK_ON, 100_000)
+        assert all(note in card["rationale"] for card in cards)
+        assert all(card["proposedTrade"] is None for card in cards)
+
+    def test_a_trade_against_the_action_is_called_out(self):
+        note = "Bought 4 shares in the last 14 days, last on 2026-10-05, while the action is TRIM"
+        s = _score("RIOT", -2, "TRIM", actual_weight=4.9, target_weight=4.1, weight_gap=-0.8,
+                   recent_trades=_recent("OPPOSED", note, bought=4))
+        card = build_recommendations([s], {}, [], RISK_ON, 100_000)[0]
+        assert note in card["rationale"] and "a further" not in card["rationale"]
+
+    def test_buy_card_acknowledges_a_recent_buy(self):
+        note = "Bought 5 shares in the last 14 days, last on 2026-10-05: ACCUMULATE already acted on"
+        s = _score("SHAZ", 5, "ACCUMULATE", actual_weight=1.0, target_weight=2.0, weight_gap=1.0,
+                   recent_trades=_recent("ACTED", note, bought=5))
+        card = build_recommendations([s], {}, [], RISK_ON, 100_000)[0]
+        assert note in card["rationale"] and "a further" in card["rationale"]
+
+    def test_cards_without_recent_trades_are_unchanged(self):
+        s = _score("BE", -2, "TRIM", actual_weight=4.9, target_weight=4.1, weight_gap=-0.8)
+        card = build_recommendations([s], {}, [], RISK_ON, 100_000)[0]
+        assert card["recentTrades"] is None
+        assert "last 14 days" not in card["rationale"] and "a further" not in card["rationale"]

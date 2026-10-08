@@ -1,0 +1,1 @@
+../../../scripts/tv_trades_import.py

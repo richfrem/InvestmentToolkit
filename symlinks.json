@@ -1176,6 +1176,12 @@
       "dst": "plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_trades_import.py",
+      "dst": "plugins/tradingview/skills/tv-portfolio-sync/scripts/tv_trades_import.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     }
   ]
 }

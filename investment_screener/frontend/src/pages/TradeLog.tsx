@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { RefreshCcw, Zap, X, Filter, Pencil, RefreshCw } from 'lucide-react';
 import {
-    fetchTradeLog, updateTradeLogEntry, fetchMarketQuotes, cancelTrade, modifyTrade, syncTradeLogFromTV,
+    fetchTradeLog, updateTradeLogEntry, fetchMarketQuotes, cancelTrade, modifyTrade, syncTradeLogFromTV, fetchBrokerSources,
     type TradeLogEntry, type TradeLogStatus, type MarketQuote,
 } from '../services/api';
 import { TradePrepModal } from '../components/TradePrepModal';
@@ -267,6 +267,9 @@ export default function TradeLog() {
     const [actionFilter, setActionFilter] = useState<ActionFilter>('all');
     const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
     const [showAll, setShowAll]           = useState(false);
+    // Questrade is offered only when the owner enabled it in .env; TradingView is always the default.
+    const [questradeEnabled, setQuestradeEnabled] = useState(false);
+    useEffect(() => { fetchBrokerSources().then(sources => setQuestradeEnabled(sources.questrade)); }, []);
 
     const loadQuotes = useCallback(async (data: TradeLogEntry[]) => {
         const unique = [...new Set(data.filter(e => e.status !== 'cancelled').map(e => e.ticker))];
@@ -307,7 +310,8 @@ export default function TradeLog() {
         setSyncing(true);
         setSyncMsg(null);
         try {
-            const r = await syncTradeLogFromTV();
+            // The button also imports executed trades from TradingView's order history.
+            const r = await syncTradeLogFromTV(true);
             setSyncMsg(r.error ? `Error: ${r.error}` : r.message);
             if (r.success) load();
         } catch (e: any) {
@@ -406,7 +410,7 @@ export default function TradeLog() {
                             ? `Latest executed trade: ${lastFill.ticker} ${lastFill.action} on ${tradeDateParts(lastFill.date).day}`
                                 + (lastFillAge != null ? ` (${lastFillAge === 0 ? 'today' : `${lastFillAge} day${lastFillAge === 1 ? '' : 's'} ago`})` : '')
                             : 'No executed trades recorded yet'}
-                        {fillsStale && ' · refresh from Questrade if you have traded since'}
+                        {fillsStale && ' · press Sync from TV if you have traded since'}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -417,12 +421,14 @@ export default function TradeLog() {
                         </button>
                     )}
                     <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={lastRefreshedAt} />
-                    <CopyCommandChip command={TRADE_SYNC_COMMAND} label="Refresh trades via" highlight={fillsStale}
-                        title="Executed trades come from Questrade. Paste this command to your agent; it needs your Questrade sign-in, then imports new fills without duplicates." />
+                    {questradeEnabled && (
+                        <CopyCommandChip command={TRADE_SYNC_COMMAND} label="Or refresh via"
+                            title="Optional: refresh from Questrade instead. Paste this command to your agent; it needs your Questrade sign-in. Trades already imported from TradingView are not duplicated." />
+                    )}
                     <button onClick={doSyncFromTV} disabled={syncing}
-                        title="Reconcile open and working orders against live TradingView orders. Executed trades come from the Questrade refresh."
+                        title="Reconcile open orders and import executed trades from TradingView's order history. TradingView will briefly switch through your accounts."
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-900/40 hover:bg-indigo-800/50 border border-indigo-700/50 text-indigo-400 hover:text-indigo-300 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} /> Sync from TV
+                        <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} /> {syncing ? 'Syncing…' : 'Sync from TV'}
                     </button>
                     <button onClick={load}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 hover:text-white text-xs font-semibold transition-colors">

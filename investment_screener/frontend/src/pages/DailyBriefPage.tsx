@@ -19,6 +19,7 @@ import { AlertTriangle, TrendingUp, TrendingDown, Minus, Calendar, Shield, Activ
 import { TradeButtons } from '../components/TradeButtons';
 import { TABriefCard } from '../components/TABriefCard';
 import { RecommendationFilters } from '../components/RecommendationFilters';
+import { RecentTradeTag } from '../components/RecentTradeTag';
 import { SmartText } from '../components/SmartText';
 import { tradeIntent, REC_CHIP_STYLES } from '../utils/recommendationPresentation';
 
@@ -354,6 +355,7 @@ export default function DailyBriefPage() {
                                         <span className={`px-2 py-0.5 rounded text-xs font-bold border ${chip.bg} ${chip.text} ${chip.border}`}>
                                             {rec.recommendation.replace('_', ' ')}
                                         </span>
+                                        <RecentTradeTag rec={recommendations[rec.ticker]} />
                                     </div>
 
                                     {/* Middle: rationale + standing decision */}
