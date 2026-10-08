@@ -170,3 +170,32 @@ def test_a_sourced_rate_audit_or_firm_cash_flow_model_counts_as_assessed() -> No
     audited = debt_view({"valuationModel": {"discountRateAudit": {"rateType": "COST_OF_EQUITY"}}}, True)
     assert (audited["status"], audited["rate_status"]) == ("ASSESSED", "OK") and audited["tier"] is None
     assert debt_view({"valuationModel": {"method": "annual_fcff"}}, True)["status"] == "ASSESSED"
+
+
+def test_a_rebased_valuation_is_as_old_as_its_analysis_not_its_save_date() -> None:
+    """Re-basing the discount rate on 2026-10-08 made 84 valuations read "0 days old" with a forward review."""
+    from risk_reward import evidence_date
+    rebased = {"valuationModel": {"method": "terminal_earnings", "leverage": {"tier": "LOW"}, "rateBasis": {"status": "OK"},
+                                  "rebasedFrom": {"version": 6, "asOf": "2026-10-08"}}}
+    assert evidence_date("2026-10-08T19:40:00+00:00", "2026-09-01T06:49:00.000Z", rebased) == "2026-09-01T06:49:00.000Z"
+    assert evidence_date("2026-10-08T19:40:00+00:00", "2026-09-01T06:49:00.000Z", {}) == "2026-10-08T19:40:00+00:00"
+    assert evidence_date("2026-10-08T19:40:00+00:00", None, rebased) == "2026-10-08T19:40:00+00:00"
+    support = valuation_support(evidence_date("2026-10-08T19:40:00+00:00", "2026-06-01T00:00:00Z", rebased),
+                                rebased, scenarios(), date(2026, 10, 8))
+    by_id = {check["id"]: check for check in support["checks"]}
+    assert support["age_days"] == 129 and by_id["fresh"]["ok"] is False
+    assert by_id["forward_review"]["ok"] is False   # re-base bookkeeping is not a forward-earnings review
+    assert by_id["rate_audit"]["ok"] is False
+
+
+def test_real_forward_content_still_counts_after_a_rebase() -> None:
+    log = {"valuationModel": {"rebasedFrom": {"version": 2}, "leverage": {"tier": "LOW"}, "capacityBuild": {"mw": 400}}}
+    checks = {c["id"]: c["ok"] for c in valuation_support("2026-10-01T00:00:00Z", log, scenarios(), date(2026, 10, 8))["checks"]}
+    assert checks["forward_review"] is True
+
+
+def test_firm_cash_flow_valuations_are_not_described_as_audited() -> None:
+    from risk_reward import debt_view
+    view = debt_view({"valuationModel": {"method": "annual_fcff"}}, True)
+    assert "audit" not in view["note"].lower() and "debt is subtracted" in view["note"].lower()
+    assert "sourced audit" in debt_view({"valuationModel": {"discountRateAudit": {"rateType": "WACC"}}}, True)["note"]
