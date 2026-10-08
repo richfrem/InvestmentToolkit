@@ -19,7 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from portfolio_performance import compute_performance, load_portfolio_data  # noqa: E402
+from portfolio_performance import compute_performance, load_portfolio_data, unpriced_holdings  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.account_repository import upsert_account  # noqa: E402
 from domain_model.investment_repository import resolve_investment  # noqa: E402
@@ -185,3 +185,36 @@ class TestSharedPeriodDefinition:
                                   lambda d: 50.0 if d.date().isoformat() == "2026-04-30" else 100.0)
         result = compute_performance(close, {"AAA": 1}, cash_value=0.0, tickers=["AAA"], now=now)
         assert result["1m"]["historicalValue"] == 50.0
+
+
+class TestHoldingsWithoutPriceHistory:
+    """A holding with no price at a past date must not count as $0 then and full value
+    now. On 2026-10-08 the $3,590 cash row (CASH_USD) did exactly that and every period
+    read about +9%."""
+
+    def test_synced_cash_is_cash_not_an_equity(self, tmp_path):
+        db_path = tmp_path / "domain_model.sqlite"
+        conn = initialize_db(str(db_path))
+        upsert_account(conn, "TFSA", "TFSA", "TFSA")
+        cash_id = resolve_investment(conn, "CASH_USD", asset_class="CASH", currency="USD")
+        upsert_account_investment(conn, "TFSA", cash_id, quantity=3590.59, average_cost=1.0,
+                                  book_value=3590.59, currency="USD", last_synced_at="2026-10-08T00:00:00Z")
+        conn.close()
+        cash_value, tickers, shares_map = load_portfolio_data("unused", db_path=db_path)
+        assert (round(cash_value, 2), tickers, shares_map) == (3590.59, [], {})
+
+    def test_a_holding_with_no_history_is_held_flat_at_its_stored_price(self):
+        dates = pd.to_datetime(["2026-10-06", "2026-10-07", "2026-10-08"])
+        close = pd.DataFrame({"AAPL": [200.0, 202.0, 204.0], "NOHIST": [float("nan")] * 3}, index=dates)
+        result = compute_performance(close, {"AAPL": 10, "NOHIST": 100}, 0.0, ["AAPL", "NOHIST"],
+                                     datetime(2026, 10, 8, 12), fallback_prices={"NOHIST": 30.0})
+        assert result["1d"]["historicalValue"] == 10 * 202.0 + 100 * 30.0
+        assert result["1d"]["change"] == 20.0   # only AAPL moved
+        assert unpriced_holdings(close, ["AAPL", "NOHIST", "ABSENT"]) == ["NOHIST", "ABSENT"]
+
+    def test_a_holding_listed_after_the_reference_date_is_held_flat_before_it_traded(self):
+        dates = pd.to_datetime(["2026-09-01", "2026-10-07", "2026-10-08"])
+        close = pd.DataFrame({"AAPL": [190.0, 202.0, 204.0], "NEWCO": [float("nan"), 50.0, 55.0]}, index=dates)
+        result = compute_performance(close, {"AAPL": 10, "NEWCO": 10}, 0.0, ["AAPL", "NEWCO"], datetime(2026, 10, 8, 12))
+        assert result["1m"]["historicalValue"] == 10 * 190.0 + 10 * 50.0   # first traded price, not $0
+        assert unpriced_holdings(close, ["AAPL", "NEWCO"]) == []

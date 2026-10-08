@@ -18,3 +18,10 @@ def test_every_broker_spelling_of_the_cash_fund_is_one_position():
 def test_other_tickers_pass_through_unchanged():
     assert normalize_ticker("ZS") == "ZS"
     assert normalize_ticker("G036247") == "G036247"  # conversion leg: deliberately not aliased
+
+
+def test_both_cash_symbols_count_as_cash():
+    """The broker sync stores cash as CASH_USD; older data used USD_CASH."""
+    from ticker_aliases import is_cash
+    assert is_cash("CASH_USD") and is_cash("CASH_CAD") and is_cash("USD_CASH") and is_cash("USD_CASH_TFSA")
+    assert not is_cash("CASHX") and not is_cash("PSU-U.TO") and not is_cash("AAPL")
