@@ -32,6 +32,7 @@ import {
     type RiskRewardRowFields,
 } from '../utils/riskReward';
 import { ReduceCandidatesChip, RiskRewardCell } from './RiskRewardCell';
+import { RecentTradeTag } from './RecentTradeTag';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1039,6 +1040,7 @@ export default function ScreenerTable() {
                                                 ) : (
                                                     <span className="text-slate-600 text-[10px]">—</span>
                                                 )}
+                                                <RecentTradeTag rec={recommendations[row.symbol]} />
                                                 {isFunded && (
                                                     <TradeButtons ticker={row.symbol} size="sm" rating={rating} />
                                                 )}

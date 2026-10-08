@@ -19,7 +19,7 @@ Queries the Questrade MCP activity ledger to display cash flow events and trade 
 
 ## Constraints
 
-- **Read-only interface**: Chat display only; this skill never modifies `domain_model.sqlite` or any other database.
+- **Read-only interface**: Chat display only; this skill never modifies `domain_model.sqlite` or any other database. To save executed trades to the Trade Log, use `questrade-sync-portfolio`, which imports them with `questrade_trades_import.py`.
 - **Active session check**: Must confirm active session with `List Accounts` before querying activity history.
 - **Date boundary**: Default search window is 30 days unless `--days` is explicitly specified.
 

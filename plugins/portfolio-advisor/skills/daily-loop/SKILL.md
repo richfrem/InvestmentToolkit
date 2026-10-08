@@ -26,7 +26,7 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 ```
 
 ## Workflow
-1. **Readiness (Step 0)**: Verify backend API health, `domain_model.sqlite` sync timestamps, and TradingView CDP connectivity.
+1. **Readiness (Step 0)**: Verify backend API health, `domain_model.sqlite` sync timestamps, and TradingView CDP connectivity. When a Questrade session is connected, also run `/questrade-sync-portfolio` so positions and executed trades are current before recommendations are read (optional augment; the TradingView sync remains the baseline).
 2. **Morning Brief (Step 1)**: Ingest macro regime, canonical recommendations with conviction ranking, and binary event flags from `daily_brief.py`; apply the AI forward-evidence gate before treating valuation signals as trade-ready.
 3. **Triage (Step 2)**: Present urgent holding alerts, thesis breaker breaches, and price catalysts one ticker at a time.
 4. **Action Cards (Step 3)**: Formulate actionable trade proposals with tranche sizing and PSU-U.TO capital sourcing.

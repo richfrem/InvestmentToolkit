@@ -17,6 +17,7 @@ from domain_model.account_investment_repository import upsert_account_investment
 from domain_model.investment_price_repository import upsert_investment_price
 from domain_model.investment_repository import resolve_investment, update_investment_fields
 from domain_model.projection_repository import add_projection_scenario, save_projection_version
+from domain_model.trade_log_entry_repository import upsert_trade_log_entry
 from recommendation import recommend_all
 
 
@@ -211,3 +212,24 @@ def test_records_carry_risk_reward_and_support_from_saved_scenarios(tmp_path):
     assert shaz["risk_reward"]["verdict"] == "UNRATED"  # fair value without scenarios is not rated
     assert shaz["risk_reward"]["reduce_candidate"] is False
     assert shaz["support"]["level"] in ("WEAK", "PARTIAL")
+
+
+def test_records_show_a_trim_that_was_already_acted_on(tmp_path):
+    """A filled sell inside the window marks the TRIM as acted on; planned orders do not count."""
+    from datetime import date, timedelta
+    db = seed_domain(tmp_path)
+    conn = initialize_db(str(db))
+    inv = resolve_investment(conn, "BE")
+    recent, old = (date.today() - timedelta(days=2)).isoformat(), (date.today() - timedelta(days=40)).isoformat()
+    base = {"investment_id": inv, "account_id": "tfsa", "action": "sell", "price": 100, "logged_at": "2026-10-06T00:00:00Z"}
+    upsert_trade_log_entry(conn, {**base, "entry_id": "fill", "shares": 3, "trade_date": recent, "status": "filled"})
+    upsert_trade_log_entry(conn, {**base, "entry_id": "plan", "shares": 9, "trade_date": recent, "status": "logged"})
+    upsert_trade_log_entry(conn, {**base, "entry_id": "old", "shares": 9, "trade_date": old, "status": "filled"})
+    conn.close()
+    records = recommend_all(str(db))
+    be = records["BE"]["recent_trades"]
+    assert records["BE"]["action"] == "TRIM"
+    assert (be["sold_shares"], be["count"], be["last"]["date"]) == (3, 1, recent)
+    assert be["context"]["status"] == "ACTED"
+    assert "Sold 3 shares" in be["context"]["note"]
+    assert records["SHAZ"]["recent_trades"]["context"] == {"status": "NONE", "note": ""}

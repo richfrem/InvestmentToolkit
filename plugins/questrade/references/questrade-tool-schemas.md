@@ -7,7 +7,7 @@ All accounts and orders are addressed by `accountId` (uuid) from `list_accounts`
 ## Read tools
 
 ### `list_accounts()`
-No params. Returns `[{id, name, productType, supportTrading}]`. `supportTrading` is `true` only for self-directed (`SD`) accounts.
+No params. Returns `[{id, name, productType, supportTrading, accountRoleType}]`. **`name` is the account type plus a masked number, e.g. `"TFSA ••••8189"`, `"Cash ••••9489"`** (captured 2026-10-08; earlier sessions returned `"TFSA - 53408189"`). `questrade_sync.py` parses both; the first word is the canonical account id (`TFSA`, `RRSP`, `CASH`). `supportTrading` is `true` only for self-directed (`SD`) accounts.
 
 ### `get_balances(accountId)`
 Returns `{accountId, balances: {maxBuyingPower, totalBuyingPower, buyingPower, totalEquity, marketValue, cash}, profit: {dayPnl, closedPnl, openPnl}}`. Each balance/profit leaf is `{cad, usd, combinedCad, combinedUsd}` as formatted currency strings (e.g. `"$131.08"`), not raw numbers.
@@ -17,6 +17,36 @@ Returns `[{id, instrument, qty, side, avgPrice}]` — flat array, `[]` if no hol
 
 ### `get_account_activities(accountId, fromDate?, toDate?, page?, transactionTypes?)`
 `fromDate`/`toDate` are plain `YYYY-MM-DD` (not ISO timestamps). `transactionTypes` is an array from the enum: `Trades | Interest | Other | Dividends | FX conversion | Dividend reinvestment | Corporate actions | Transfers | Withdrawals | Deposits | Fees and rebates`. Returns `{accountId, activities: [...], metadata: {totalCount, totalPages, count, currentPage}}`, paged 20/page. **Unfiltered results are dominated by `Trades` noise** (observed 143 trades vs 12 real cash-flow events in one 90-day window) — always pass `transactionTypes` scoped to intent rather than fetching everything and filtering client-side.
+
+**`Trades` activity shape (captured 2026-10-08, live call, `transactionTypes:["Trades"]`):**
+```json
+{"transactionId":"2861f1e0-b2b2-4c2e-9c9b-c84af5fdd544","transactionType":"Trades",
+ "description":"ZSCALER INC COMMON STOCK WE ACTED AS AGENT","amount":414.79,"currency":"USD",
+ "symbol":"ZS","quantity":-2,"price":207.4,"commission":-0.01,"tradeDate":"2026-10-06",
+ "action":"Sell","settlementDate":"2026-10-07","gross":{"currencyCode":"USD","amount":414.8}}
+```
+- **`quantity` is signed**: negative for sells, positive for buys. `action` (`"Buy"` | `"Sell"`) is the side.
+- `amount` is net of `commission`; `gross.amount` is before commission. Both are negative for buys.
+- `price` is the average fill price and can have four decimals; fractional `quantity` (e.g. `0.2`) is normal.
+- `transactionId` is unique per posted trade and stable across calls: it is the de-duplication key.
+- An account with no trades returns `activities: []` with `totalPages: 0`.
+
+**Trades import (`questrade_trades_import.py`).** Stage the raw responses unchanged and let the script map them:
+```json
+{"accounts": [...list_accounts rows...],
+ "activities": {"<accountId>": [...raw Trades activity rows...]}}
+```
+The script maps `symbol`, `action` → side, `abs(quantity)` → shares, `price`, `tradeDate` → date, `transactionId` → id and `abs(gross.amount)` → total. Add `"orders": {"<accountId>": <raw get_order_history response>}` to attach order type, limit price and market-order time. Symbols that are not already investments are rejected (broker-only symbols such as the cash fund `PSUCF` or conversion leg `G036247` appear in this feed); map the alias first or pass `--allow-new-symbols` deliberately. One activity row can cover several orders (a 22-share sale filled as orders of 4 and 18), in which case no order details are attached. A date range is not capped at 30 days: one call returned 98 rows on a single page. A pre-normalised `"trades"` list (`{accountId, symbol, side, shares, price, date, externalId?, grossAmount?}`) is also accepted for trades from other sources.
+
+### `get_order_history(accountId)`
+No date filter; returns roughly the last 30 days as `{"open": [...], "history": [...]}`. **Filled orders appear in both lists**, so de-duplicate by `id`. Row shape (captured 2026-10-08):
+```json
+{"id":"07c9363a-3848-4c82-0d81-2d540f3d6803","instrument":"KOID","qty":3,"side":"buy","type":"limit",
+ "status":"filled","filledQty":3,"avgPrice":36.99,"limitPrice":37,"lastModified":1791169238}
+```
+- `status` is `filled` | `cancelled` | ...; `type` is `market` | `limit` | ...; `limitPrice` is present only for limit orders; market orders carry `duration`.
+- **`lastModified` (epoch seconds) is when the order was last changed, not when it filled.** The limit order above was placed Sunday 23:00 ET and filled Monday. Treat it as the trade time only for market orders, which fill on submission.
+- There is no link to the activity `transactionId`: match on account, instrument, side, `filledQty` and `avgPrice`.
 
 ### `search_symbols(query, hasOptions?, limit?)`
 Returns matches with security UUID, exchange, market cap, industry. Use the UUID for `get_quotes(securityUuids=[...])` when you need Greeks/IV (option contracts); use `get_quotes(symbols=[...])` for plain equity quotes without a prior search.

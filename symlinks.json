@@ -1170,6 +1170,12 @@
       "dst": "plugins/stock-valuation/skills/forward-valuation-challenge/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": "Shared valuation workflow acceptance criteria required by plugin audit"
+    },
+    {
+      "src": "plugins/questrade/scripts/questrade_trades_import.py",
+      "dst": "plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     }
   ]
 }
