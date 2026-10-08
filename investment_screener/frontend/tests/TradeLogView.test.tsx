@@ -10,7 +10,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { CopyCommandChip } from '../src/components/CopyCommandChip';
 import type { TradeLogEntry } from '../src/services/api';
 import {
-    TRADE_LOG_PAGE_SIZE, TRADE_SYNC_COMMAND, daysSince, latestFilledTrade, recentFirst, tradeDateParts,
+    TRADE_LOG_PAGE_SIZE, TRADE_LOG_TAB_STATUSES, TRADE_SYNC_COMMAND, daysSince, latestFilledTrade, recentFirst, tradeDateParts,
 } from '../src/utils/tradeLogView';
 
 afterEach(cleanup);
@@ -61,4 +61,15 @@ it('orders trades on the same day by their time, and counts days from a timestam
     const rows = [entry('early', '2026-10-06T11:15:43-04:00', 'filled'), entry('late', '2026-10-06T11:49:05-04:00', 'filled'), entry('dayonly', '2026-10-06', 'filled')];
     expect(recentFirst(rows).map(row => row.id)).toEqual(['late', 'early', 'dayonly']);
     expect(daysSince('2026-10-06T11:49:05-04:00', new Date(2026, 9, 8))).toBe(2);
+});
+
+it('shows only open orders and executed trades by default, keeping planned and cancelled reachable', () => {
+    expect(TRADE_LOG_TAB_STATUSES.all).toEqual(['submitted', 'inactive', 'filled']);
+    expect(TRADE_LOG_TAB_STATUSES.open).toEqual(['submitted', 'inactive']);
+    expect(TRADE_LOG_TAB_STATUSES.filled).toEqual(['filled']);
+    const shown = new Set(TRADE_LOG_TAB_STATUSES.all);
+    for (const hidden of TRADE_LOG_TAB_STATUSES.other) expect(shown.has(hidden)).toBe(false);
+    // Every status is reachable from exactly one of the two top-level views.
+    expect([...TRADE_LOG_TAB_STATUSES.all, ...TRADE_LOG_TAB_STATUSES.other].sort())
+        .toEqual(['cancelled', 'filled', 'inactive', 'logged', 'submitted', 'suggested']);
 });

@@ -688,7 +688,8 @@ export default function PortfolioTable() {
                                                          <span className="font-bold text-white">{val}</span>
                                                      </div>
                                                 ) : col.id === 'action' ? (
-                                                    <span className="inline-flex items-center gap-2 text-zinc-300">
+                                                    // Stacked so the recent-trade tag is never cut off by a narrow Action column.
+                                                    <span className="inline-flex flex-col items-start gap-0.5 text-zinc-300">
                                                         {col.format(val, row)}
                                                         <RecentTradeTag rec={recommendations[row.symbol]} />
                                                     </span>

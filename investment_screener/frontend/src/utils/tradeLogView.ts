@@ -6,7 +6,21 @@
  * Key Input Dependencies: TradeLogEntry rows from GET /api/trading/log. `date` is YYYY-MM-DD, or an ISO
  *     timestamp in US Eastern time for imported market orders; its first ten characters are always the trade date.
  */
-import type { TradeLogEntry } from '../services/api';
+import type { TradeLogEntry, TradeLogStatus } from '../services/api';
+
+export type TradeLogTab = 'all' | 'open' | 'filled' | 'other';
+
+/**
+ * The page is about what is live at the broker: open orders and executed trades.
+ * Planned and cancelled entries stay in the database and sit behind the "other" view.
+ * `inactive` is a submitted limit or stop order that is resting, so it is an open order.
+ */
+export const TRADE_LOG_TAB_STATUSES: Record<TradeLogTab, TradeLogStatus[]> = {
+    all:    ['submitted', 'inactive', 'filled'],
+    open:   ['submitted', 'inactive'],
+    filled: ['filled'],
+    other:  ['suggested', 'logged', 'cancelled'],
+};
 
 /** Rows shown before "Show all" is pressed: about three months of trading at the owner's pace. */
 export const TRADE_LOG_PAGE_SIZE = 100;
