@@ -159,3 +159,10 @@ class TestComputeCurrentFromDb:
     def test_missing_db_returns_zeroed_result(self, tmp_path):
         result = verify_refresh.compute_current_from_db(tmp_path / "missing.sqlite")
         assert result == {"total": 0.0, "holdings": {}, "total_value": 0.0}
+
+
+def test_exited_positions_are_not_listed_as_no_change():
+    """HUMN was sold out on 2026-10-02; listing it made every closing refresh check fail."""
+    source = (REPO_ROOT / "plugins/portfolio-advisor/scripts/verify_refresh.py").read_text()
+    line = next(l for l in source.splitlines() if l.startswith("NO_CHANGE"))
+    assert "HUMN" not in line

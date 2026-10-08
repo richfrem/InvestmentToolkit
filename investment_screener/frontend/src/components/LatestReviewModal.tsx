@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { X, TrendingUp, TrendingDown, Minus, AlertTriangle, Clock, CheckCircle2, Loader2, FileBarChart2 } from 'lucide-react';
 import { fetchLatestReviewData } from '../services/api';
 import { getActionTextClass } from '../utils/actionColors';
+import { stanceOf } from '../utils/riskReward';
 
 interface Props { onClose: () => void; }
 
@@ -204,7 +205,7 @@ function HoldingTable({ holdings, title }: { holdings: any[]; title: string }) {
                             <tr key={h.ticker} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
                                 <td className="px-3 py-3 font-black text-white tracking-tighter">{h.ticker}</td>
                                 <td className="px-3 py-3">
-                                    <span className={`text-[10px] font-black uppercase ${getActionTextClass(recommendations[h.ticker]?.action ?? '')}`}>{recommendations[h.ticker]?.action ?? '—'}</span>
+                                    <span className={`text-[10px] font-black uppercase ${getActionTextClass(stanceOf(recommendations[h.ticker]) ?? '')}`}>{stanceOf(recommendations[h.ticker]) ?? '—'}</span>
                                 </td>
                                 <td className="px-3 py-3 font-mono text-xs text-slate-400">{(h.actualPct ?? 0).toFixed(2)}%</td>
                                 <td className="px-3 py-3 font-mono text-xs text-white">{h.recommendedTarget?.toFixed(2)}%</td>

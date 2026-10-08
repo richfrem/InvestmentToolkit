@@ -18,6 +18,7 @@
 import { useRecommendations } from '../contexts/useRecommendations';
 
 import { useState, useEffect, useCallback } from 'react';
+import type { ComponentProps } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { fetchStockData, fetchTargetPortfolio, fetchTechnicalAnalysis, type StockData, type ValuationResult, type Projection, type TechnicalAnalysisData } from '../services/api';
 import { useRecentTickers } from '../hooks/useRecentTickers';
@@ -36,6 +37,7 @@ import { PineScriptViewerModal } from '../components/PineScriptViewerModal';
 import { TradeButtons } from '../components/TradeButtons';
 import { storage } from '../services/storage';
 import { SmartText } from '../components/SmartText';
+import { stanceOf } from '../utils/riskReward';
 
 type Tab = 'overview' | 'technicals' | 'analysis' | 'valuation';
 
@@ -274,7 +276,7 @@ export default function Dashboard() {
                             <Code size={14} />
                             <span>TV Overlay</span>
                         </button>
-                        <TradeButtons ticker={stockData.symbol} size="md" rating={recommendations[stockData.symbol]?.action} />
+                        <TradeButtons ticker={stockData.symbol} size="md" rating={(stanceOf(recommendations[stockData.symbol]) ?? undefined) as ComponentProps<typeof TradeButtons>['rating']} />
                         <div className="h-6 w-px bg-slate-800" />
                         <div className="flex bg-slate-900/50 p-1 rounded-lg border border-slate-800">
                             <button
@@ -423,7 +425,7 @@ export default function Dashboard() {
                     fairValue={aiResult?.fair_value || viewingProjection?.aiThesis?.fairValue}
                     targetEntry={targetHolding?.targetEntryPrice}
                     stopLoss={targetHolding?.stopLossPrice}
-                    action={stockData ? recommendations[stockData.symbol]?.action : null}
+                    action={stockData ? stanceOf(recommendations[stockData.symbol]) : null}
                     breakerStatus={targetHolding?.breakerStatus}
                 />
             )}

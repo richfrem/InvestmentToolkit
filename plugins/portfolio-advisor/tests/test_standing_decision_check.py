@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from standing_decision_check import check_standing_decision, decision_direction  # noqa: E402
+from standing_decision_check import check_standing_decision, decision_condition, decision_direction  # noqa: E402
 
 TODAY = date(2026, 10, 8)
 
@@ -98,3 +98,39 @@ def test_a_recent_trade_against_the_decision_is_called_out():
     bought = {"sold_shares": 0, "bought_shares": 2, "count": 1, "last": {"date": "2026-10-05"}}
     assert "you bought 2 shares" in check_standing_decision("ACCUMULATE", True, decision("HOLD_NO_ADD"), bought, TODAY)["note"]
     assert "you sold" not in check_standing_decision("TRIM", True, decision("TRIM_ON_BOUNCE"), recent, TODAY)["note"]
+
+
+def test_a_recently_set_decision_that_disagrees_is_confirmed_not_an_open_question():
+    """The owner just decided: the stance is theirs and nothing is asked of them again."""
+    result = check_standing_decision("ACCUMULATE", True, decision("HOLD_NO_ADD", "user 2026-10-08"), None, TODAY)
+    assert (result["relation"], result["effective"]) == ("CONFIRMED", "MAINTAIN")
+    assert "you decided" in result["note"].lower() and "until you update" not in result["note"]
+    edge = check_standing_decision("ACCUMULATE", True, decision("HOLD_NO_ADD", "user 2026-09-08"), None, TODAY)
+    assert edge["relation"] == "CONFIRMED"   # exactly 30 days
+    old = check_standing_decision("ACCUMULATE", True, decision("HOLD_NO_ADD", "user 2026-09-07"), None, TODAY)
+    assert old["relation"] == "CONFLICT"
+
+
+def test_a_price_condition_in_the_decision_type_is_checked_against_the_price():
+    below = decision_condition(decision("ACCUMULATE_BELOW_9"), 10.26)
+    assert (below["kind"], below["level"], below["met"]) == ("below", 9.0, False)
+    assert below["distance_pct"] == 14.0 and "$10.26 is 14.0% above your $9.00 level" in below["note"]
+    assert decision_condition(decision("ACCUMULATE_BELOW_9"), 8.8)["met"] is True
+    above = decision_condition(decision("TRIM_ABOVE_54_60"), 57.0)
+    assert (above["kind"], above["level"], above["met"]) == ("above", 54.6, True)
+
+
+def test_a_moving_average_condition_uses_the_chart_level_or_the_one_written_in_the_decision():
+    stm = {"type": "HOLD_AT_200_EMA", "reason": "Hold 24 shares; add only if 200 EMA ($48.60) is tested.", "source": "user 2026-10-08"}
+    recorded = decision_condition(stm, 54.70)
+    assert (recorded["kind"], recorded["level"], recorded["met"], recorded["level_source"]) == ("ema", 48.6, False, "decision")
+    assert "200 EMA" in recorded["note"] and "12.6% above" in recorded["note"] and "recorded in your decision" in recorded["note"]
+    live = decision_condition(stm, 54.70, {"ema200": 54.0})
+    assert (live["level"], live["met"], live["level_source"]) == (54.0, True, "chart")   # within 2% counts as tested
+
+
+def test_decisions_without_a_readable_level_have_no_condition():
+    assert decision_condition(decision("HOLD_NO_ADD"), 10.0) is None
+    assert decision_condition(decision("ACCUMULATE_200_EMA_RETEST"), 10.0) is None   # no level anywhere
+    assert decision_condition(decision("ACCUMULATE_BELOW_9"), None) is None
+    assert decision_condition(None, 10.0) is None

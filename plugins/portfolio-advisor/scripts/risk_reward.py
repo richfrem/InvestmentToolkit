@@ -9,7 +9,7 @@ Purpose:
 Layer:
     Business logic (pure functions; no database, network or clock access).
 Usage:
-    from risk_reward import assess_risk_reward, valuation_support, reduce_view
+    from risk_reward import assess_risk_reward, valuation_support, reduce_view, refresh_advice
 Key Functions:
     assess_risk_reward(price, fair_value, scenarios)   premium, reward:risk, loss odds, verdict
     valuation_support(saved_at, analytics_log, scenarios, today)   four evidence checks
@@ -33,6 +33,9 @@ from datetime import date, datetime
 from typing import Any
 
 STALE_DAYS = 90
+# A top-priority card should not be acted on from a valuation older than this.
+REFRESH_BEFORE_ACTING_DAYS = 30
+REFRESH_COMMAND = "/update-stock-analysis"
 MAX_SCENARIO_SPREAD = 50.0
 UNFAVOURABLE_BELOW = 1.0
 THIN_BELOW = 2.0
@@ -176,6 +179,33 @@ def valuation_support(saved_at: str | None, analytics_log: dict | None,
     score = sum(check["ok"] for check in checks)
     level = "STRONG" if score == 4 else "PARTIAL" if score >= 2 else "WEAK"
     return {"level": level, "score": score, "max": 4, "age_days": age, "checks": checks}
+
+
+def refresh_advice(ticker: str, support: dict | None, valuation: str | None = None) -> dict[str, Any] | None:
+    """Say whether a valuation should be refreshed before acting on it, and why.
+
+    Args:
+        ticker: Symbol, used to build the command.
+        support: valuation_support() result, or None when unknown.
+        valuation: Saved valuation verdict (BUY, SELL, NEEDS_REVALUATION, ...).
+
+    Returns:
+        None when the valuation is recent and reviewed (or nothing is known), else
+        {"command": "/update-stock-analysis TICKER", "reasons": [...]}.
+    """
+    if not support:
+        return None
+    reasons: list[str] = []
+    age = support.get("age_days")
+    if support.get("level") == "NONE":
+        reasons.append("No saved valuation")
+    elif age is None or age > REFRESH_BEFORE_ACTING_DAYS:
+        reasons.append("Valuation save date unknown" if age is None else f"Valuation saved {age} days ago")
+    if valuation == "NEEDS_REVALUATION":
+        reasons.append("Flagged as needing revaluation")
+    reasons += [check["note"] for check in support.get("checks") or []
+                if check["id"] == "forward_review" and not check["ok"]]
+    return {"command": f"{REFRESH_COMMAND} {ticker}", "reasons": reasons} if reasons else None
 
 
 # (actions, verdict) pairs the scenarios do not support, with the status and wording to show.

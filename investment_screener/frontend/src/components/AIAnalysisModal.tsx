@@ -26,6 +26,7 @@ import { getActionBadgeClass } from '../utils/actionColors';
 import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
 import { savedValuationRate } from '../utils/valuationPresentation';
 import { SavedRateRationale } from './SavedRateRationale';
+import { stanceOf } from '../utils/riskReward';
 
 interface AIAnalysisModalProps {
     symbol: string;
@@ -153,7 +154,7 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                             {/* Top Stats Row */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {(() => {
-                                    const action = recommendation?.action ?? '—';
+                                    const action = stanceOf(recommendation) ?? '—';
                                     const valuationAction = recommendation?.valuation;
                                     const portfolioUrgency = (projection as any).analyticsLog?.portfolioUrgency as string | undefined;
                                     const urgencyColors: Record<string, string> = {

@@ -17,6 +17,7 @@ import React from 'react';
 import { Activity, ShieldAlert, TrendingUp, TrendingDown, Layers, Zap, Compass, CheckCircle2, AlertCircle, History } from 'lucide-react';
 import type { TechnicalAnalysisData } from '../services/api';
 import { SmartText } from './SmartText';
+import { stanceOf } from '../utils/riskReward';
 
 interface TechnicalAnalysisSummaryCardProps {
     data: TechnicalAnalysisData;
@@ -92,7 +93,7 @@ export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCard
         }
     };
 
-    const badge = { ...getActionBadge(recommendation?.action ?? '—'), label: recommendation?.action ?? 'Unavailable' };
+    const badge = { ...getActionBadge(stanceOf(recommendation) ?? '—'), label: stanceOf(recommendation) ?? 'Unavailable' };
     const regimeBadge = getRegimeLabel(regime);
 
     return (

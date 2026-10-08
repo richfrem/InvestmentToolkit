@@ -26,10 +26,10 @@ import { TradeButtons } from './TradeButtons';
 import { HelpTrigger } from './HelpModal';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgUpside, changeBgDaily, sortByColumn } from '../utils/formatters';
 import { PORTFOLIO_PERIODS, portfolioPeriodFields } from '../utils/priceChangePeriods';
-import { getActionBadgeClass, getActionPriority } from '../utils/actionColors';
+import { getActionBadgeClass } from '../utils/actionColors';
 import {
     RISK_REWARD_COLUMNS, fairValueGap, isReduceCandidate, isRiskRewardColumn, mergeColumnPrefs, riskRewardRowAccent, riskRewardRowFields,
-    type RiskRewardRowFields,
+    type RiskRewardRowFields, actedOn, compareByActionPriority, stanceOf,
 } from '../utils/riskReward';
 import { ReduceCandidatesChip, RiskRewardCell } from './RiskRewardCell';
 import { RecentTradeTag } from './RecentTradeTag';
@@ -41,6 +41,8 @@ interface ScreenerRow extends RiskRewardRowFields {
     name: string;
     model: string;
     action: string | null;
+    /** Recent filled trades already follow the action; sorts after open actions. */
+    actedOn?: boolean;
     portfolioRationale: string | null;
     currentPct: number | null;
     recommendedPct: number | null;
@@ -167,13 +169,7 @@ function savePrefs(prefs: TablePrefs) {
 const changeBg = changeBgUpside;
 const sortRows = (rows: ScreenerRow[], col: keyof ScreenerRow, dir: 'asc' | 'desc') => {
     if (col === 'action') {
-        return [...rows].sort((a, b) => {
-            const pA = getActionPriority(a.action);
-            const pB = getActionPriority(b.action);
-            if (pA !== pB) return dir === 'asc' ? pA - pB : pB - pA;
-            // Secondary sort: highest upside first
-            return (b.upside ?? -999) - (a.upside ?? -999);
-        });
+        return [...rows].sort(compareByActionPriority(dir));
     }
     return sortByColumn(rows, col, dir);
 };
@@ -389,7 +385,7 @@ export default function ScreenerTable() {
             const health = portfolioWeights[p.ticker];
             const currentPct = allPortfolioWeights[p.ticker] ?? health?.actualPct ?? rev?.actualPct ?? null;
             const recommendedPct = health?.targetPct ?? null;
-            const backendAction = recommendations[p.ticker]?.action ?? null;
+            const backendAction = stanceOf(recommendations[p.ticker]);
 
             // The action is the backend's canonical recommendation, shown verbatim.
             // The browser never derives or overrides actions (one source of truth).
@@ -401,6 +397,7 @@ export default function ScreenerTable() {
                 name: p.name,
                 model: thesis?.model || '—',
                 action,
+                actedOn: actedOn(recommendations[p.ticker]),
                 portfolioRationale: (p as any).analyticsLog?.portfolioRationale ?? null,
                 fairValue,
                 currentPrice,
@@ -448,7 +445,8 @@ export default function ScreenerTable() {
                     symbol: h.ticker,
                     name: h.name,
                     model: '—',
-                    action: recommendations[h.ticker]?.action ?? null,
+                    action: stanceOf(recommendations[h.ticker]),
+                    actedOn: actedOn(recommendations[h.ticker]),
                     portfolioRationale: null,
                     // Analyst target from heatmap as fair value fallback for holding stubs without DCF.
                     fairValue: heatmapMap[h.ticker]?.analyst_target_mean ?? null,

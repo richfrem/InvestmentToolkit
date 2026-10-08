@@ -43,10 +43,14 @@ Key Output Dependencies:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+from risk_reward import refresh_advice  # noqa: E402
+from standing_decision_check import decision_condition  # noqa: E402
 STANDING_DECISIONS_PATH = (
     REPO_ROOT / "plugins/portfolio-advisor/references/standing-decisions.json"
 )
@@ -55,6 +59,8 @@ _ACTIONABLE_BANDS = frozenset({"EXIT", "TRIM", "ACCUMULATE", "INITIATE"})
 
 # Overweight (in percentage points) beyond which a TRIM signal proposes a trim back to target.
 _TRIM_BAND_PP = 0.5
+# How many of the day's top cards are checked for a stale valuation before acting.
+REFRESH_CHECK_TOP_N = 5
 
 
 def load_standing_decisions(path: Path | None = None, db_path: str | None = None) -> dict[str, Any]:
@@ -121,6 +127,32 @@ def _decision_text(check: dict[str, Any] | None, decision: dict[str, Any]) -> st
             "Signal stands but no trade proposed without your direction.")
 
 
+_VALUATION_WORDS = {"BUY": "a buy", "ACCUMULATE": "a buy", "SELL": "a sell", "TRIM": "a sell",
+                    "HOLD": "a hold", "MAINTAIN": "a hold"}
+
+
+def _valuation_view(s: dict[str, Any]) -> str:
+    """The valuation model's opinion as a sentence, for cards whose stance is not the model's action."""
+    words = _VALUATION_WORDS.get(str(s.get("dcf_action") or "").upper())
+    fv = s.get("pct_to_fv")
+    gap = f", {fv:+.1f}% to fair value" if fv is not None else ""
+    rated = f"the valuation model rates it {words}{gap}" if words else f"the valuation score is {s['total']:+d}{gap}"
+    return f"For reference only, {rated}."
+
+
+def _held_back_rationale(s: dict[str, Any], check: dict[str, Any] | None, decision: dict[str, Any],
+                         condition: dict[str, Any] | None) -> str:
+    """Rationale for a card the standing decision holds back.
+
+    When the stance differs from the valuation action the stance leads and the valuation
+    is one closing sentence, so the card never reads as two recommendations.
+    """
+    waits = f" {condition['note']}" if condition else ""
+    if check and check.get("effective") != s.get("band"):
+        return f"{_decision_text(check, decision)}{waits} {_valuation_view(s)}"
+    return f"{_signal_summary(s)}. {_decision_text(check, decision)}{waits}"
+
+
 _PRIORITY_LABELS = ("Ready to act", "Needs your decision", "No trade proposed", "Waiting for your condition", "Already acted on")
 
 
@@ -128,22 +160,30 @@ def _priority(card: dict[str, Any]) -> dict[str, Any]:
     """Where a card ranks today and why.
 
     Tiers: 0 ready to act, 1 the standing decision and valuation disagree, 2 no trade
-    proposed, 3 waiting (owner's condition or the macro gate), 4 already acted on.
+    proposed, 3 waiting (owner's condition or the macro gate), 4 already acted on. A
+    decision condition that is met lifts the card to tier 0.
     """
     relation = (card.get("decisionCheck") or {}).get("relation")
     recent = card.get("recentTrades") or {}
+    # A level named in the owner's decision only steers cards that decision governs.
+    condition = card.get("condition") if relation in ("AGREES", "CONFIRMED", "WAITS") else None
+    label = None
     if (recent.get("context") or {}).get("status") == "ACTED":
         tier = 4
     elif card["executionStatus"] in ("READY", "LIMIT_ONLY"):
         tier = 0
+    elif condition and condition["met"]:
+        tier, label = 0, "Your condition is met"
     elif relation in ("CONFLICT", "OUTDATED", "UNCLEAR"):
         tier = 1
-    elif relation == "WAITS" or card["executionStatus"] == "QUEUED":
+    elif relation == "WAITS" or card["executionStatus"] == "QUEUED" or condition:
         tier = 3
     else:
         tier = 2
-    label = "Queued by the macro gate" if tier == 3 and card["executionStatus"] == "QUEUED" else _PRIORITY_LABELS[tier]
-    return {"tier": tier, "label": label}
+        label = "Holding by your decision" if relation == "CONFIRMED" else None
+    if tier == 3 and card["executionStatus"] == "QUEUED":
+        label = "Queued by the macro gate"
+    return {"tier": tier, "label": label or _PRIORITY_LABELS[tier]}
 
 
 def build_recommendations(
@@ -195,6 +235,9 @@ def build_recommendations(
             # One stance per card: the action, or the reconciled stance when a standing decision disagrees.
             "recommendation": check["effective"] if check else band,
             "decisionCheck": check,
+            # Is the level named in the standing decision reached (standing_decision_check.py)?
+            "condition": decision_condition(decision, s.get("price"), s.get("levels")),
+            "refreshFirst": None,
             "pctToFairValue": s.get("pct_to_fv"),
             "executionStatus": "REVIEW",
             "score": s["total"],
@@ -211,10 +254,7 @@ def build_recommendations(
                 continue   # watchlist noise — nothing to reduce
             if decision:
                 base["executionStatus"] = "BLOCKED"
-                base["rationale"] = (
-                    f"{_signal_summary(s)}. {_decision_text(check, decision)}"
-                    f"{_earnings_note(earn)}"
-                )
+                base["rationale"] = f"{_held_back_rationale(s, check, decision, base['condition'])}{_earnings_note(earn)}"
                 sells.append(base)
                 continue
             actual = s.get("actual_weight") or 0.0
@@ -259,7 +299,7 @@ def build_recommendations(
         # ── ACCUMULATE ────────────────────────────────────────────────────────
         if decision and not decision.get("maxEntryPrice"):
             base["executionStatus"] = "BLOCKED"
-            base["rationale"] = f"{_signal_summary(s)}. {_decision_text(check, decision)}"
+            base["rationale"] = _held_back_rationale(s, check, decision, base["condition"])
             buys.append(base)
             continue
         if decision and decision.get("maxEntryPrice"):
@@ -320,8 +360,12 @@ def build_recommendations(
         note = ((card["recentTrades"] or {}).get("context") or {}).get("note")
         if note:
             card["rationale"] = f"{card['rationale']} {note}."
+    supports = {s["ticker"]: (s.get("support"), s.get("dcf_action")) for s in scores}
     for i, r in enumerate(ranked, start=1):
         r["urgency"] = i
+        # The cards most likely to be acted on today must rest on a current valuation.
+        if i <= REFRESH_CHECK_TOP_N:
+            r["refreshFirst"] = refresh_advice(r["ticker"], *supports[r["ticker"]])
     return ranked
 
 
@@ -345,6 +389,7 @@ def align_current_brief(brief: dict[str, Any], db_path: str | None = None) -> di
         actual = rec["current_weight_pct"]
         target = targets.get(original["ticker"])
         score.update(band=rec["action"], dcf_action=rec["valuation"], pct_to_fv=rec["upside_pct"],
+                     price=rec.get("price"), support=rec.get("support"),
                      recent_trades=rec.get("recent_trades"), decision_check=rec.get("decision_check"),
                      actual_weight=actual, target_weight=target,
                      weight_gap=target - actual if target is not None else None)

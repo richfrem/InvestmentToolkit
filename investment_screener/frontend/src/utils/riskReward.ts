@@ -5,10 +5,12 @@
  *     verdictStyle, alignmentStyle, formatRewardRisk — shared labels and colours;
  *     rangeGeometry, riskRewardRowAccent — range-bar positions and row accent;
  *     fairValueGap — the one live gain/upside-to-fair-value calculation for table columns.
+ *     stanceOf — the one action every page shows; actedOn, compareByActionPriority — action sort.
  * Key Input Dependencies: RecommendationRecord.risk_reward / support from risk_reward.py.
  *     Nothing here estimates a valuation; it only formats saved server values.
  */
 import type { RecommendationRecord, RiskRewardView } from '../services/api';
+import { getActionPriority } from './actionColors';
 
 export type RiskRewardColumnId =
     'rr_range' | 'rr_premium' | 'rr_ratio' | 'rr_lossOdds' | 'rr_weightGap' | 'rr_support' | 'rr_check';
@@ -66,6 +68,31 @@ export function riskRewardRowFields(rec?: RecommendationRecord | null): RiskRewa
         rr_weightGap: view?.weight_gap_pp ?? null,
         rr_support: rec?.support && rec.support.level !== 'NONE' ? rec.support.score : null,
         rr_check: view ? Math.min(CHECK_RANK[view.alignment.status] ?? 3, DECISION_RANK[rec?.decision_check?.relation ?? ''] ?? 3) : null,
+    };
+}
+
+/**
+ * The action to show for a ticker: the valuation action, or the stance reconciled with the
+ * owner's standing decision when they disagree (standing_decision_check.py). Every page uses
+ * this, so a card and a table never show different actions for the same position.
+ */
+export function stanceOf(rec?: RecommendationRecord | null): string | null {
+    return rec?.decision_check?.effective ?? rec?.action ?? null;
+}
+
+/** True when recent filled trades already follow the action (recent_trades.py). */
+export function actedOn(rec?: RecommendationRecord | null): boolean {
+    return rec?.recent_trades?.context?.status === 'ACTED';
+}
+
+/** Action-column sort: open actions by priority, then upside; actions already acted on go last. */
+export function compareByActionPriority(dir: 'asc' | 'desc') {
+    type Row = { action?: string | null; actedOn?: boolean; upside?: number | null };
+    return (a: Row, b: Row): number => {
+        if (!!a.actedOn !== !!b.actedOn) return a.actedOn ? 1 : -1;
+        const pA = getActionPriority(a.action), pB = getActionPriority(b.action);
+        if (pA !== pB) return dir === 'asc' ? pA - pB : pB - pA;
+        return (b.upside ?? -999) - (a.upside ?? -999);
     };
 }
 

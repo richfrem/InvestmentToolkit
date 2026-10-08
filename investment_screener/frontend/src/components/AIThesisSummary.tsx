@@ -25,6 +25,7 @@ import { withFinancialHelp } from './SmartText';
 import { BrainCircuit, FolderOpen, X, AlertTriangle, Loader2, Sparkles, Check, Clock } from 'lucide-react';
 import { getActionBadgeClass } from '../utils/actionColors';
 import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
+import { stanceOf } from '../utils/riskReward';
 
 interface AIThesisSummaryProps {
     aiResult: any;
@@ -66,9 +67,9 @@ export function AIThesisSummary({ aiResult, isAnalyzing, aiError, symbol, onView
                         <div>
                             <div className="flex items-center gap-3">
                                 <h3 className="text-base font-bold text-white">AI Expert Thesis</h3>
-                                {recommendation?.action && (
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(recommendation.action)}`}>
-                                        {recommendation.action}
+                                {stanceOf(recommendation) && (
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(stanceOf(recommendation)!)}`}>
+                                        {stanceOf(recommendation)}
                                     </span>
                                 )}
                             </div>

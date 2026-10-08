@@ -369,3 +369,74 @@ class TestPriorityOrder:
     def test_within_a_group_the_larger_valuation_gap_ranks_first(self):
         cards = self._cards()
         assert [c["ticker"] for c in cards[:2]] == ["RDY2", "RDY1"]  # -60% before -20%
+
+
+class TestOneStancePerCard:
+
+    def test_a_card_held_by_the_owners_decision_never_reads_as_a_second_recommendation(self):
+        """MAINTAIN beside 'Score +2 (ACCUMULATE)' read as two recommendations (2026-10-08)."""
+        note = "You decided 'hold no add' today, so the stance is hold."
+        s = _score("SPCX", 2, "ACCUMULATE", pct_to_fv=219.0, decision_check=_check("CONFIRMED", "MAINTAIN", note))
+        card = build_recommendations([s], {"SPCX": {"type": "HOLD_NO_ADD", "reason": "Hold."}}, [], RISK_ON, 100_000)[0]
+        assert card["recommendation"] == "MAINTAIN" and card["rationale"].startswith(note)
+        assert "(ACCUMULATE)" not in card["rationale"] and "DCF BUY" not in card["rationale"]
+        assert "valuation model rates it a buy, +219.0% to fair value" in card["rationale"]
+
+    def test_a_confirmed_decision_is_not_asked_again(self):
+        s = _score("SPCX", 2, "ACCUMULATE", decision_check=_check("CONFIRMED", "MAINTAIN", "You decided."))
+        card = build_recommendations([s], {"SPCX": {"type": "HOLD_NO_ADD", "reason": "Hold."}}, [], RISK_ON, 100_000)[0]
+        assert card["priority"] == {"tier": 2, "label": "Holding by your decision"}
+
+    def test_cards_whose_stance_is_the_action_keep_the_score_summary(self):
+        card = build_recommendations([_score("AMAT", 5, "ACCUMULATE", actual_weight=1.0, target_weight=2.0, weight_gap=1.0)],
+                                     {}, [], RISK_ON, 100_000)[0]
+        assert card["rationale"].startswith("Score +5 (ACCUMULATE)")
+
+
+class TestDecisionConditions:
+
+    def _card(self, price):
+        s = _score("BTDR", 2, "ACCUMULATE", price=price,
+                   decision_check=_check("AGREES", "ACCUMULATE", "Standing decision 'accumulate below 9' agrees with ACCUMULATE; it sets the timing."))
+        return build_recommendations([s], {"BTDR": {"type": "ACCUMULATE_BELOW_9", "reason": "Add only below $9.00."}}, [], RISK_ON, 100_000)[0]
+
+    def test_an_unmet_condition_waits_and_says_how_far_away_it_is(self):
+        card = self._card(10.26)
+        assert card["priority"] == {"tier": 3, "label": "Waiting for your condition"}
+        assert card["condition"]["met"] is False and "14.0% above your $9.00 level" in card["rationale"]
+
+    def test_a_met_condition_moves_the_card_to_the_top_group(self):
+        card = self._card(8.80)
+        assert card["priority"] == {"tier": 0, "label": "Your condition is met"}
+        assert "condition is met" in card["rationale"]
+
+    def test_cards_without_a_price_or_condition_are_unchanged(self):
+        s = _score("PANW", -2, "TRIM", decision_check=_check("AGREES", "TRIM", "Agrees."))
+        card = build_recommendations([s], {"PANW": {"type": "TRIM_ON_BOUNCE", "reason": "Trim."}}, [], RISK_ON, 100_000)[0]
+        assert card["condition"] is None and card["priority"]["label"] == "No trade proposed"
+
+
+class TestRefreshFirst:
+
+    STALE = {"level": "PARTIAL", "age_days": 37, "checks": [
+        {"id": "fresh", "label": "Recent valuation", "ok": True, "note": "Saved 37 days ago"},
+        {"id": "forward_review", "label": "Forward-earnings review", "ok": False, "note": "No forward-earnings review recorded with this valuation"}]}
+    FRESH = {"level": "STRONG", "age_days": 3, "checks": [{"id": "fresh", "label": "Recent valuation", "ok": True, "note": "Saved 3 days ago"}]}
+
+    def _cards(self, support):
+        scores = [_score(f"T{i}", 5, "ACCUMULATE", actual_weight=1.0, target_weight=2.0, weight_gap=1.0,
+                         pct_to_fv=90.0 - i, support=support) for i in range(7)]
+        return build_recommendations(scores, {}, [], RISK_ON, 100_000)
+
+    def test_the_top_five_cards_ask_for_a_refresh_when_their_valuation_is_stale(self):
+        cards = self._cards(self.STALE)
+        assert [bool(c["refreshFirst"]) for c in cards] == [True] * 5 + [False] * 2
+        first = cards[0]["refreshFirst"]
+        assert first["command"] == "/update-stock-analysis T0"
+        assert first["reasons"] == ["Valuation saved 37 days ago", "No forward-earnings review recorded with this valuation"]
+
+    def test_fresh_fully_supported_valuations_need_no_refresh(self):
+        assert all(c["refreshFirst"] is None for c in self._cards(self.FRESH))
+
+    def test_cards_without_support_data_are_left_alone(self):
+        assert all(c["refreshFirst"] is None for c in self._cards(None))

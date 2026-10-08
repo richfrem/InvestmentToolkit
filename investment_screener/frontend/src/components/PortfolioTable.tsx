@@ -31,7 +31,7 @@ import { usePrivacy } from '../context/PrivacyContext';
 import { heatmapPrice } from '../utils/heatmapPrice';
 import {
     RISK_REWARD_COLUMNS, fairValueGap, isReduceCandidate, isRiskRewardColumn, mergeColumnPrefs, riskRewardRowAccent, riskRewardRowFields,
-    type RiskRewardRowFields,
+    type RiskRewardRowFields, stanceOf,
 } from '../utils/riskReward';
 import { ReduceCandidatesChip, RiskRewardCell } from './RiskRewardCell';
 import { RecentTradeTag } from './RecentTradeTag';
@@ -401,7 +401,7 @@ export default function PortfolioTable() {
                     // Do not default an unset action to 'WATCHLIST' — same fix as
                     // ScreenerTable.tsx/screener.ts: that mislabeled any held
                     // position with no computed Python action as watchlist-only.
-                    action: recommendations[s.symbol]?.action ?? null,
+                    action: stanceOf(recommendations[s.symbol]),
                     recommendedPct: rev?.recommendedTarget ?? null,
                     rationale: rev?.rationale ?? null,
                     fairValue: fairValue,
@@ -462,7 +462,7 @@ export default function PortfolioTable() {
         const rec = recommendations[row.symbol];
         const fairValue = rec?.fair_value ?? row.fairValue;
         return {
-            ...row, ...riskRewardRowFields(rec), action: rec?.action ?? null,
+            ...row, ...riskRewardRowFields(rec), action: stanceOf(rec),
             fairValue, ...fairValueGap(fairValue, row.currentPrice),
         };
     });
