@@ -86,6 +86,27 @@ try {
     return run_node_module(js, timeout=90)
 
 
+def fetch_complete_order_history(db_path: str = _DEFAULT_DB_PATH) -> tuple[dict, list[str]]:
+    """Read order history, re-reading until every account that holds something is covered.
+
+    Returns:
+        (snapshot, missing_accounts); an account that errored counts as missing
+        (tv_account_coverage.py, the rule shared with the position snapshot).
+    """
+    from tv_account_coverage import accounts_with_holdings, read_until_complete
+
+    conn = initialize_db(db_path)
+    try:
+        expected = accounts_with_holdings(conn)
+    finally:
+        conn.close()
+    return read_until_complete(
+        fetch_tv_order_history,
+        lambda snap: [a.get("accountType") for a in snap.get("accounts") or [] if not a.get("error")],
+        expected,
+    )
+
+
 def _eastern(iso: str | None) -> datetime | None:
     """Parse an ISO timestamp and express it in market (US Eastern) time."""
     try:
@@ -141,8 +162,12 @@ def main() -> None:
     parser.add_argument("--json", action="store_true", help="Print the report as JSON")
     args = parser.parse_args()
 
+    missing: list[str] = []
     try:
-        snapshot = json.loads(Path(args.payload).read_text()) if args.payload else fetch_tv_order_history()
+        if args.payload:
+            snapshot = json.loads(Path(args.payload).read_text())
+        else:
+            snapshot, missing = fetch_complete_order_history(args.db_path)
     except Exception as error:  # noqa: BLE001 - any failure to reach TradingView is reported, not raised
         snapshot = {"error": str(error)}
     if snapshot.get("error") or "accounts" not in snapshot:
@@ -152,13 +177,17 @@ def main() -> None:
         sys.exit(1)
 
     trades, warnings = trades_from_tv_history(snapshot)
+    if missing:
+        # Importing is additive, so the accounts that were read are still imported.
+        warnings.append(f"TradingView did not return {', '.join(missing)}; trades in "
+                        f"{'that account' if len(missing) == 1 else 'those accounts'} were not checked. Run the import again.")
     conn = initialize_db(args.db_path)
     try:
         report = import_filled_trades(conn, trades, source=SOURCE, dry_run=args.dry_run,
                                       allow_new_symbols=args.allow_new_symbols)
     finally:
         conn.close()
-    report.update(source=SOURCE, warnings=warnings, read=len(trades))
+    report.update(source=SOURCE, warnings=warnings, read=len(trades), incomplete_accounts=missing)
     if args.dry_run:
         report["would_import"] = report.pop("imported")
     if args.json:
@@ -170,7 +199,7 @@ def main() -> None:
               f"rejected {len(report['rejected'])}.")
         for line in warnings + [item["reason"] for item in report["rejected"]]:
             print(f"  note: {line}", file=sys.stderr)
-    sys.exit(2 if report["rejected"] else 0)
+    sys.exit(2 if report["rejected"] or missing else 0)
 
 
 if __name__ == "__main__":

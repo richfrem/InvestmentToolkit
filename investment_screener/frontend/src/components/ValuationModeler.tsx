@@ -36,6 +36,7 @@ import { SensitivityGrid } from './analysis/SensitivityGrid';
 import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
 import { SmartText } from './SmartText';
 import { savedValuationRate } from '../utils/valuationPresentation';
+import { stanceOf } from '../utils/riskReward';
 
 function normalizeScenario(s: any): Scenario & { weight: number } {
     return {
@@ -566,9 +567,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 <div>
                                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                         {activeCoachMetric ? `AI Coach: ${activeCoachMetric}` : 'AI Expert Thesis'}
-                                        {recommendation?.action && (
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(recommendation.action)}`}>
-                                                {recommendation.action}
+                                        {stanceOf(recommendation) && (
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(stanceOf(recommendation)!)}`}>
+                                                {stanceOf(recommendation)}
                                             </span>
                                         )}
                                     </h3>

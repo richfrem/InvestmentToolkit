@@ -34,5 +34,6 @@ def test_guide_covers_trades_decisions_priorities_and_chart_levels() -> None:
     guide = (ROOT / SOURCE).read_text()
     for requirement in ("tv-portfolio-sync", "QUESTRADE_ENABLED", "recent_trades", "decision_check",
                         "set_standing_decision.py", "CONFLICT", "OUTDATED", "Already acted on",
-                        "200 EMA", "ta_staleness_days", "refresh_all.py --publish"):
+                        "200 EMA", "ta_staleness_days", "refresh_all.py --publish",
+                        "CONFIRMED", "decision_condition", "refreshFirst", "/update-stock-analysis"):
         assert requirement in guide

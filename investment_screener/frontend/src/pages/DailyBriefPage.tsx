@@ -21,6 +21,8 @@ import { TABriefCard } from '../components/TABriefCard';
 import { RecommendationFilters } from '../components/RecommendationFilters';
 import { RecentTradeTag } from '../components/RecentTradeTag';
 import { SmartText } from '../components/SmartText';
+import { CopyCommandChip } from '../components/CopyCommandChip';
+import { stanceOf } from '../utils/riskReward';
 import { tradeIntent, REC_CHIP_STYLES } from '../utils/recommendationPresentation';
 
 interface MacroRegime {
@@ -98,6 +100,10 @@ interface Recommendation {
     /** Today's rank group and why (brief_recommendations.py). */
     priority?: { tier: number; label: string };
     decisionCheck?: { relation: string; effective: string | null; note: string } | null;
+    /** Level named in the standing decision and whether the price has reached it. */
+    condition?: { met: boolean; note: string } | null;
+    /** Set on the day's top cards when the valuation behind them should be refreshed before acting. */
+    refreshFirst?: { command: string; reasons: string[] } | null;
 }
 
 const PRIORITY_STYLES = [
@@ -200,7 +206,7 @@ export default function DailyBriefPage() {
     const macro     = brief.macro_regime;
     const regStyle  = REGIME_STYLES[macro.regime] ?? REGIME_STYLES['NEUTRAL'];
     const scores = (brief.conviction_scores ?? []).map(s => ({
-        ...s, band: recommendations[s.ticker]?.action ?? '—',
+        ...s, band: stanceOf(recommendations[s.ticker]) ?? '—',
         dcf_action: recommendations[s.ticker]?.valuation ?? null,
         pct_to_fv: recommendations[s.ticker]?.upside_pct ?? null,
     }));
@@ -214,11 +220,11 @@ export default function DailyBriefPage() {
 
     const cards = (brief.recommendations ?? []).map(saved => {
         const current = recommendations[saved.ticker];
-        // The stance shown is the reconciled one: the action, or the hold/wait stance when the
-        // owner's standing decision disagrees with it. The signal chip keeps the raw valuation action.
-        const stance = current?.decision_check?.effective ?? current?.action;
+        // One stance per card (stanceOf): the action, or the hold/wait stance when the owner's
+        // standing decision disagrees. The valuation's own view is a sentence in the rationale.
+        const stance = stanceOf(current);
         const matches = stance != null && stance === saved.recommendation;
-        return { ...saved, recommendation: stance ?? '—', signal: current?.action ?? '—',
+        return { ...saved, recommendation: stance ?? '—',
             actionable: matches && saved.actionable,
             proposedTrade: matches ? saved.proposedTrade : null,
             rationale: matches ? saved.rationale : current?.reason ?? 'Current recommendation unavailable',
@@ -371,7 +377,6 @@ export default function DailyBriefPage() {
                         {filteredCards.length === 0 && <p className="py-4 text-sm text-zinc-500">No recommendations match this filter.</p>}
                         {filteredCards.map(rec => {
                             const chip = REC_CHIP_STYLES[rec.recommendation] ?? REC_CHIP_STYLES.MAINTAIN;
-                            const sigStyle = BAND_STYLES[rec.signal] ?? BAND_STYLES.MAINTAIN;
                             const intent = tradeIntent(rec.recommendation);
                             return (
                                 <div key={rec.ticker}
@@ -380,15 +385,12 @@ export default function DailyBriefPage() {
                                     <div className="flex items-center gap-2 md:w-64 shrink-0 flex-wrap">
                                         <span className="text-zinc-600 text-xs font-mono w-5">{rec.urgency}.</span>
                                         <span className="font-mono font-bold text-white text-base">{rec.ticker}</span>
-                                        <span title="Valuation signal and score"
-                                            className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${sigStyle.bg} ${sigStyle.text} ${sigStyle.border}`}>
-                                            {rec.signal !== rec.recommendation && <span className="opacity-70">signal </span>}
-                                            {rec.signal} <ScoreBadge score={rec.score} />
-                                        </span>
-                                        <span title={rec.signal !== rec.recommendation ? 'Stance after reconciling the signal with your standing decision' : 'Recommendation'}
+                                        <span title={rec.decisionCheck?.note || 'Recommendation'}
                                             className={`px-2 py-0.5 rounded text-xs font-bold border ${chip.bg} ${chip.text} ${chip.border}`}>
                                             {rec.recommendation.replace('_', ' ')}
                                         </span>
+                                        <span title="Valuation and chart score; an input to the stance, not a second recommendation"
+                                            className="text-[10px] text-zinc-500">score <ScoreBadge score={rec.score} /></span>
                                         {rec.priority && (
                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${PRIORITY_STYLES[rec.priority.tier] ?? PRIORITY_STYLES[2]}`}>
                                                 {rec.priority.label}
@@ -400,6 +402,13 @@ export default function DailyBriefPage() {
                                     {/* Middle: rationale + standing decision */}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm text-zinc-300 leading-snug"><SmartText text={rec.rationale} /></p>
+                                        {rec.refreshFirst && (
+                                            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                                                <CopyCommandChip highlight command={rec.refreshFirst.command} label="Refresh the analysis first:"
+                                                    title="Copies the command. Run it in the agent; it walks you through the result and records your decision." />
+                                                <span className="text-xs text-amber-300/80">{rec.refreshFirst.reasons.join(' · ')}</span>
+                                            </div>
+                                        )}
                                         {rec.standingDecision && (
                                             <p className="mt-1 flex items-center gap-1.5 text-xs text-amber-400/90">
                                                 <Lock size={11} className="shrink-0" />

@@ -12,7 +12,8 @@ import { ValuationRangeBar } from '../src/components/ValuationRangeBar';
 import type { RecommendationRecord } from '../src/services/api';
 import { heatmapPrice } from '../src/utils/heatmapPrice';
 import {
-    RISK_REWARD_COLUMNS, fairValueGap, isReduceCandidate, mergeColumnPrefs, rangeGeometry, riskRewardRowAccent, riskRewardRowFields,
+    RISK_REWARD_COLUMNS, actedOn, compareByActionPriority, fairValueGap, isReduceCandidate, mergeColumnPrefs, rangeGeometry,
+    riskRewardRowAccent, riskRewardRowFields, stanceOf,
 } from '../src/utils/riskReward';
 
 afterEach(cleanup);
@@ -147,4 +148,22 @@ it('shows a standing-decision conflict in the Check column ahead of the reward:r
     const agreeing = { ...below, decision_check: { relation: 'AGREES', effective: 'ACCUMULATE', age_days: null, note: 'agrees' } } as RecommendationRecord;
     render(<RiskRewardCell columnId="rr_check" rec={agreeing} />);
     expect(screen.getByText('Aligned')).toBeTruthy();
+});
+
+it('gives every page one stance: the action, or the hold agreed with the owner', () => {
+    expect(stanceOf(below)).toBe('ACCUMULATE');
+    const held = { ...below, decision_check: { relation: 'CONFIRMED', effective: 'MAINTAIN', note: 'You decided.', age_days: 0 } } as RecommendationRecord;
+    expect(stanceOf(held)).toBe('MAINTAIN');
+    expect(stanceOf(undefined)).toBeNull();
+});
+
+it('ranks actions already acted on after the ones still open', () => {
+    const acted = { ...below, recent_trades: { window_days: 14, sold_shares: 0, bought_shares: 4, count: 1, last: null,
+        context: { status: 'ACTED', note: 'Bought 4 shares' } } } as RecommendationRecord;
+    expect(actedOn(acted)).toBe(true);
+    expect(actedOn(below)).toBe(false);
+    const rows = [{ symbol: 'DONE', action: 'ACCUMULATE', actedOn: true, upside: 90 }, { symbol: 'OPEN', action: 'ACCUMULATE', actedOn: false, upside: 10 },
+        { symbol: 'TRIM', action: 'TRIM', actedOn: false, upside: -20 }];
+    expect([...rows].sort(compareByActionPriority('asc')).map(r => r.symbol)).toEqual(['OPEN', 'TRIM', 'DONE']);
+    expect([...rows].sort(compareByActionPriority('desc')).map(r => r.symbol)).toEqual(['TRIM', 'OPEN', 'DONE']);
 });

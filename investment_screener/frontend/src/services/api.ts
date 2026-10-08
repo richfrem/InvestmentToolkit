@@ -866,7 +866,7 @@ export interface RecommendationRecord {
 
 /** Whether the owner's standing decision agrees with the action, and the stance to show (standing_decision_check.py). */
 export interface DecisionCheck {
-    relation: 'NONE' | 'AGREES' | 'CONFLICT' | 'WAITS' | 'OUTDATED' | 'UNCLEAR';
+    relation: 'NONE' | 'AGREES' | 'CONFLICT' | 'CONFIRMED' | 'WAITS' | 'OUTDATED' | 'UNCLEAR';
     effective: string | null;
     note: string;
     age_days: number | null;

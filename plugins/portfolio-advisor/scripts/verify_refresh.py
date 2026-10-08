@@ -25,7 +25,7 @@ REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 # Positions user locked to "no change" — must stay at MAINTAIN
-NO_CHANGE = {"GOOG", "HUMN", "KOID"}
+NO_CHANGE = {"GOOG", "KOID"}
 
 # Known SA LP conviction plays where DCF disagrees — warn, don't fail
 # These are intentional: SA LP holds large positions; user has not explicitly resolved the conflict

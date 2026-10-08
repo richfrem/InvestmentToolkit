@@ -75,6 +75,7 @@ def _find_scripts_dir() -> Path:
 
 sys.path.insert(0, str(_find_scripts_dir()))
 from tv_client import run_node_module
+from tv_account_coverage import MAX_READS
 
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", ".."))
 BACKEND_SRC = os.path.abspath(os.path.join(REPO_ROOT, "investment_screener", "backend", "src"))
@@ -180,6 +181,28 @@ try {
 }
 """
     return run_node_module(js, timeout=30)
+
+
+def fetch_complete_tv_snapshot(db_path: Optional[str] = None) -> tuple:
+    """Read the portfolio snapshot, re-reading until every account that holds something is covered.
+
+    Returns:
+        (snapshot, missing_accounts). ``missing_accounts`` is empty for a complete read.
+        An account whose switch failed counts as missing (tv_account_coverage.py).
+    """
+    from domain_model.db_client import initialize_db
+    from tv_account_coverage import accounts_with_holdings, read_until_complete
+
+    conn = initialize_db(db_path or DOMAIN_MODEL_DB_PATH)
+    try:
+        expected = accounts_with_holdings(conn) & REAL_ACCOUNTS
+    finally:
+        conn.close()
+    return read_until_complete(
+        fetch_tv_snapshot,
+        lambda snap: [s.get("accountType") for s in snap.get("snapshots", []) if not s.get("error")],
+        expected,
+    )
 
 
 def inspect_broker_panel() -> dict:
@@ -607,6 +630,8 @@ def main():
     parser.add_argument("--promote",   action="store_true", help="Promote TV positions to portfolio.json holdings list")
     parser.add_argument("--refresh-exchange-rate", action="store_true",
                          help="Lightweight balances-only USD->CAD rate refresh (no full snapshot sync)")
+    parser.add_argument("--allow-partial", action="store_true",
+                         help="Save a snapshot even when an account that holds positions was not read")
     parser.add_argument("--pretty",    action="store_true", default=True)
     args = parser.parse_args()
 
@@ -704,11 +729,20 @@ def main():
             balances = None
 
         print("Fetching full portfolio snapshot from TradingView...", file=sys.stderr)
-        snapshot = fetch_tv_snapshot()
+        snapshot, missing = fetch_complete_tv_snapshot()
         if "error" in snapshot:
             print(f"❌ {snapshot['error']}", file=sys.stderr)
             print("   Is TradingView Desktop running with a broker connected?", file=sys.stderr)
             sys.exit(1)
+        if missing and not args.allow_partial:
+            # A partial write left TFSA stale while reporting success (2026-10-08).
+            print(f"❌ TradingView did not return {', '.join(missing)} after {MAX_READS} reads; nothing was saved, "
+                  "so the stored positions are unchanged.", file=sys.stderr)
+            print("   Open the broker panel's account dropdown once and run the sync again, "
+                  "or pass --allow-partial if that account is really empty.", file=sys.stderr)
+            sys.exit(3)
+        if missing:
+            print(f"⚠  Saving without {', '.join(missing)} (--allow-partial).", file=sys.stderr)
 
         write_snapshot(snapshot, promote=args.promote, balances=balances)
         accts = snapshot.get("accounts", [])

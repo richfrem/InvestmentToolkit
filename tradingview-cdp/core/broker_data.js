@@ -26,6 +26,7 @@
 
 import { evaluate, evaluateAsync } from '../connection.js';
 import { parseOrderHistoryTable } from './order_history.js';
+import { settleAccountReads } from './account_reads.js';
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -116,15 +117,11 @@ async function _getAccountsOnce() {
  */
 export async function getAccounts() {
   /**
-   * Invokes _getAccountsOnce up to 3 times with retries, then maps and parses
-   * matched account type names, IDs, and raw text representations.
+   * Reads the dropdown until two consecutive reads agree (account_reads.js), then
+   * maps and parses matched account type names, IDs, and raw text representations.
+   * A single read is never trusted: the dropdown sometimes lists only some accounts.
    */
-  let raw = [];
-  for (let attempt = 0; attempt < 3; attempt++) {
-    raw = await _getAccountsOnce();
-    if (raw.length > 0) break;
-    await sleep(800);
-  }
+  const raw = await settleAccountReads(_getAccountsOnce, { attempts: 4, wait: () => sleep(800) });
 
   function parseAccount(text) {
     var m = text.match(/^(TFSA|RRSP|Cash|Margin|Individual)\s*[-–]\s*(\d+)/i);
@@ -135,9 +132,7 @@ export async function getAccounts() {
     };
   }
 
-  const seen = new Set();
-  return raw.filter(t => { if (seen.has(t)) return false; seen.add(t); return true; })
-            .map(parseAccount);
+  return raw.map(parseAccount);
 }
 
 /**
