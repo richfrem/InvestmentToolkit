@@ -24,9 +24,16 @@ import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, Arro
 import { PriceSourceBadge } from './PriceSourceBadge';
 import { TradeButtons } from './TradeButtons';
 import { TradeLogModal } from './TradeLogModal';
+import { HelpTrigger } from './HelpModal';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgDaily, sortByColumn } from '../utils/formatters';
 import { PORTFOLIO_PERIODS } from '../utils/priceChangePeriods';
 import { usePrivacy } from '../context/PrivacyContext';
+import { heatmapPrice } from '../utils/heatmapPrice';
+import {
+    RISK_REWARD_COLUMNS, fairValueGap, isReduceCandidate, isRiskRewardColumn, mergeColumnPrefs, riskRewardRowAccent, riskRewardRowFields,
+    type RiskRewardRowFields,
+} from '../utils/riskReward';
+import { ReduceCandidatesChip, RiskRewardCell } from './RiskRewardCell';
 
 function computeSuggestedShares(currentPct: number | null, targetPct: number | null, price: number | null, totalValue: number): number {
     if (!currentPct || !targetPct || !price || totalValue <= 0) return 1;
@@ -36,8 +43,10 @@ function computeSuggestedShares(currentPct: number | null, targetPct: number | n
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface StockRow {
+interface StockRow extends RiskRewardRowFields {
     symbol: string;
+    /** Live price as returned by the heatmap endpoint. */
+    price?: number;
     name: string;
     sector: string;
     industry: string;
@@ -95,6 +104,8 @@ interface ColDef {
     changeScale?: number;
     defaultOn?: boolean;
     align?: 'left' | 'right';
+    /** Header tooltip explaining the column. */
+    title?: string;
     format: (v: number | string | null | undefined, row?: StockRow) => string;
 }
 
@@ -102,6 +113,11 @@ const COLUMNS: ColDef[] = [
     { id: 'symbol',         label: 'Ticker',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
     { id: 'name',           label: 'Name',       always: true,  defaultOn: false, align: 'left',  format: v => String(v ?? '') },
     { id: 'action',         label: 'Action',     defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
+    // Reward-versus-risk columns are shared with the Portfolio Advisor table (utils/riskReward).
+    ...RISK_REWARD_COLUMNS.map((c): ColDef => ({
+        id: c.id, label: c.label, defaultOn: c.defaultOn, align: c.align, title: c.title,
+        format: v => safeNum(v) != null ? safeNum(v)!.toFixed(1) : '—',
+    })),
     { id: 'currentPct',     label: 'Current %',  defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
     { id: 'recommendedPct', label: 'Target %',   defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
     { id: 'earnings_date',  label: 'Earnings',   defaultOn: true,  align: 'right', format: (v, r) => {
@@ -145,7 +161,8 @@ const COLUMNS: ColDef[] = [
 
 const DEFAULT_WIDTHS: Record<string, number> = {
     ...Object.fromEntries(PORTFOLIO_PERIODS.map(p => [p.field, 72])),
-    symbol: 70, name: 170, currentPct: 90, recommendedPct: 85, earnings_date: 110, subStrategyId: 130, sector: 115, shares: 60, currentPrice: 72,
+    ...Object.fromEntries(RISK_REWARD_COLUMNS.map(c => [c.id, c.width])),
+    symbol: 70, name: 170, currentPct: 90, recommendedPct: 85, earnings_date: 110, subStrategyId: 130, sector: 115, shares: 60, currentPrice: 88,
     book_price: 72, change_overall: 80,
     total_book: 80, total_market: 80,
     action: 115, fairValue: 95, gainLoss: 85, upside: 85, ruleOf40: 70, growth: 80,
@@ -184,6 +201,8 @@ const sortRows = (rows: StockRow[], col: keyof StockRow, dir: 'asc' | 'desc') =>
 export default function PortfolioTable() {
     const recommendations = useRecommendations();
     const navigate = useNavigate();
+    // Hooks run before any early return (loading/error) so their order never changes between renders.
+    const { isPrivacyMode } = usePrivacy();
     const [data, setData] = useState<HeatmapResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -198,17 +217,11 @@ export default function PortfolioTable() {
     if (savedPrefs.current === null) savedPrefs.current = loadPrefs();
     const prefs = savedPrefs.current;
 
-    const validIds = new Set<string>(COLUMNS.map(c => c.id as string));
-    const defaultVisible = new Set(COLUMNS.filter(c => c.always || c.defaultOn).map(c => c.id));
-    const filteredPrefsOrder = (prefs?.columnOrder.filter(id => validIds.has(id)) ?? null) as (keyof StockRow)[] | null;
-    const [visible, setVisible] = useState<Set<string>>(
-        prefs ? new Set(prefs.visible.filter(id => validIds.has(id))) : defaultVisible
-    );
-    const [columnOrder, setColumnOrder] = useState<string[]>(
-        filteredPrefsOrder
-            ? [...filteredPrefsOrder, ...COLUMNS.map(c => c.id).filter(id => !filteredPrefsOrder.includes(id))]
-            : COLUMNS.map(c => c.id)
-    );
+    // Brand-new columns become visible after Action even for users with saved preferences.
+    const mergedPrefs = useRef(mergeColumnPrefs(prefs, COLUMNS.map(c => ({ id: c.id as string, always: c.always, defaultOn: !!c.defaultOn })), 'action')).current;
+    const [visible, setVisible] = useState<Set<string>>(mergedPrefs.visible);
+    const [columnOrder, setColumnOrder] = useState<string[]>(mergedPrefs.order);
+    const [reduceOnly, setReduceOnly] = useState(false);
     const [columnWidths, setColumnWidths] = useState<Record<string, number>>(
         { ...DEFAULT_WIDTHS, ...(prefs?.columnWidths ?? {}) }
     );
@@ -376,8 +389,12 @@ export default function PortfolioTable() {
                 const wPct = weightsMap[s.symbol];
                 const currentPct = (hmPct != null) ? hmPct : (wPct != null && wPct > 0 ? wPct : null);
 
+                // The heatmap endpoint returns `price`; reading `currentPrice` left Price, Gain and Upside blank.
+                const livePrice = heatmapPrice(s);
                 return {
                     ...s,
+                    ...riskRewardRowFields(recommendations[s.symbol]),
+                    currentPrice: livePrice ?? s.currentPrice,
                     currentPct,
                     subStrategyId: strategyMap[s.symbol] ?? null,
                     // Do not default an unset action to 'WATCHLIST' — same fix as
@@ -387,8 +404,7 @@ export default function PortfolioTable() {
                     recommendedPct: rev?.recommendedTarget ?? null,
                     rationale: rev?.rationale ?? null,
                     fairValue: fairValue,
-                    gainLoss: (fairValue && s.currentPrice) ? fairValue - s.currentPrice : null,
-                    upside: (fairValue && s.currentPrice) ? ((fairValue - s.currentPrice) / s.currentPrice) * 100 : null,
+                    ...fairValueGap(fairValue, livePrice),
                     growth: base?.growthRate ?? null,
                     ruleOf40: base ? base.growthRate + base.netMargin : null,
                     model: p?.aiThesis?.model ?? '—',
@@ -439,7 +455,19 @@ export default function PortfolioTable() {
     const orderedCols = columnOrder.map(id => COLUMNS.find(c => c.id === id)!).filter(Boolean);
     const visibleCols = orderedCols.filter(c => visible.has(c.id));
 
-    const filteredRows = (data?.stocks ?? []).map(row => ({ ...row, action: recommendations[row.symbol]?.action ?? null })).filter(row =>
+    // Recommendations load independently of the heatmap, so their fields are applied at render time.
+    // Fair value is the one the recommendation used, so this column, the range bar and the action agree.
+    const allRows = (data?.stocks ?? []).map(row => {
+        const rec = recommendations[row.symbol];
+        const fairValue = rec?.fair_value ?? row.fairValue;
+        return {
+            ...row, ...riskRewardRowFields(rec), action: rec?.action ?? null,
+            fairValue, ...fairValueGap(fairValue, row.currentPrice),
+        };
+    });
+    const reduceCount = allRows.filter(row => isReduceCandidate(recommendations[row.symbol])).length;
+    const filteredRows = allRows.filter(row =>
+        (!reduceOnly || isReduceCandidate(recommendations[row.symbol])) &&
         Object.entries(filters).every(([colId, filterVal]) => {
             if (!filterVal) return true;
             const val = row[colId as keyof StockRow];
@@ -469,8 +497,6 @@ export default function PortfolioTable() {
 
     if (!data) return null;
 
-    const { isPrivacyMode } = usePrivacy();
-
     // ─── Filter & Sort ────────────────────────────────────────────────────────
 
     return (
@@ -491,6 +517,14 @@ export default function PortfolioTable() {
                         <span className="text-zinc-400 text-sm font-semibold">{isPrivacyMode ? '$••••••' : `$${(data.total_value_cad ?? Math.round((data.total_value_usd ?? data.total_value) * exchangeRate)).toLocaleString()}`}</span>
                         <span className="text-zinc-500 text-xs font-medium">CAD</span>
                     </div>
+
+                    <HelpTrigger topicId="riskReward" size={13} />
+                    <ReduceCandidatesChip count={reduceCount} active={reduceOnly}
+                        onToggle={() => {
+                            // Turning the filter on lists the weakest reward for the risk first.
+                            if (!reduceOnly) { setSortCol('rr_ratio'); setSortDir('asc'); }
+                            setReduceOnly(on => !on);
+                        }} />
 
                     <button
                         onClick={() => setShowFilters(s => !s)}
@@ -564,6 +598,7 @@ export default function PortfolioTable() {
                                     <th
                                         key={col.id}
                                         onClick={() => handleSort(col.id)}
+                                        title={col.title}
                                         className={`relative px-3 py-2.5 font-semibold text-xs uppercase tracking-wider cursor-pointer select-none whitespace-nowrap overflow-hidden
                                             ${col.align === 'right' ? 'text-right' : 'text-left'}
                                             ${active ? 'text-amber-400' : 'text-zinc-400 hover:text-zinc-200'}`}
@@ -617,9 +652,16 @@ export default function PortfolioTable() {
                                         ${i % 2 === 0 ? 'bg-zinc-900' : 'bg-zinc-900/50'}
                                         hover:bg-zinc-800/70`}
                                 >
-                                    {visibleCols.map(col => {
+                                    {visibleCols.map((col, colIndex) => {
                                         const val = row[col.id];
                                         const numVal = typeof val === 'number' ? val : null;
+                                        if (isRiskRewardColumn(col.id)) {
+                                            return (
+                                                <td key={col.id} className={`px-3 py-1.5 overflow-hidden ${col.align === 'right' ? 'text-right' : 'text-left'}`}>
+                                                    <RiskRewardCell columnId={col.id} rec={recommendations[row.symbol]} hideValues={isPrivacyMode} />
+                                                </td>
+                                            );
+                                        }
                                         const isPctCol = col.id === 'currentPct';
                                         const pctBg = isPctCol && numVal != null
                                             ? `rgba(34,197,94,${Math.min(numVal / 15, 1) * 0.55 + (numVal > 0 ? 0.08 : 0)})`
@@ -627,7 +669,7 @@ export default function PortfolioTable() {
                                         return (
                                             <td
                                                 key={col.id}
-                                                className={`px-3 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                                                className={`px-3 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'} ${colIndex === 0 ? riskRewardRowAccent(recommendations[row.symbol]) : ''}`}
                                                 style={col.isChange ? { backgroundColor: changeBg(numVal, col.changeScale) } : isPctCol ? { backgroundColor: pctBg } : undefined}
                                             >
                                                 {col.id === 'symbol' ? (

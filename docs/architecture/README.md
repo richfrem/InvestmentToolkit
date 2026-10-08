@@ -1,8 +1,9 @@
 # InvestmentToolkit Architecture Overview
 
 Architecture decisions: [ADR-031](ADRs/031-five-surface-sync-engine.md),
-[ADR-032](ADRs/032-canonical-recommendations.md), and
-[ADR-033](ADRs/033-annual-fcff-forecasting.md).
+[ADR-032](ADRs/032-canonical-recommendations.md),
+[ADR-033](ADRs/033-annual-fcff-forecasting.md), and
+[ADR-034](ADRs/034-reward-risk-and-valuation-support.md).
 
 This document provides a high-level architectural overview of the **InvestmentToolkit** project. It serves as a map to understand how the web application, real-time data sources, and autonomous AI agents interact.
 

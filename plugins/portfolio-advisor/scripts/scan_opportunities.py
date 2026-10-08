@@ -34,7 +34,8 @@ from pathlib import Path
 REPO_ROOT      = Path(__file__).resolve().parents[3]
 THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
-STALE_DAYS     = 90
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from risk_reward import STALE_DAYS  # noqa: E402  (one staleness threshold for every surface)
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from ticker_aliases import is_cash  # noqa: E402

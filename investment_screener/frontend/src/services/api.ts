@@ -836,6 +836,36 @@ export interface RecommendationRecord {
     fair_value: number | null;
     price: number | null;
     standing_decision: { type: string | null; reason: string | null } | null;
+    /** Saved scenario present values behind fair_value (risk_reward.py). */
+    scenarios?: { bear: number | null; base: number | null; bull: number | null };
+    risk_reward?: RiskRewardView;
+    support?: ValuationSupport;
+}
+
+/** Reward versus risk at the recommendation's price; computed once in risk_reward.py. */
+export interface RiskRewardView {
+    premium_pct: number | null;
+    reward_risk: number | null;
+    expected_gain_pct: number | null;
+    expected_loss_pct: number | null;
+    loss_odds_pct: number | null;
+    downside_to_bear_pct: number | null;
+    upside_to_bull_pct: number | null;
+    no_modelled_downside: boolean;
+    verdict: 'FAVOURABLE' | 'THIN' | 'UNFAVOURABLE' | 'UNRATED';
+    reduce_candidate: boolean;
+    reduce_reasons: string[];
+    weight_gap_pp: number | null;
+    alignment: { status: 'ALIGNED' | 'REVIEW' | 'CONFLICT' | 'UNKNOWN'; note: string };
+}
+
+/** Evidence behind a saved fair value: four independent checks. */
+export interface ValuationSupport {
+    level: 'STRONG' | 'PARTIAL' | 'WEAK' | 'NONE';
+    score: number;
+    max: number;
+    age_days: number | null;
+    checks: { id: string; label: string; ok: boolean; note: string }[];
 }
 
 export async function fetchRecommendations(): Promise<Record<string, RecommendationRecord>> {

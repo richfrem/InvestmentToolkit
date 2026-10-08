@@ -16,7 +16,7 @@ from domain_model.account_repository import upsert_account
 from domain_model.account_investment_repository import upsert_account_investment
 from domain_model.investment_price_repository import upsert_investment_price
 from domain_model.investment_repository import resolve_investment, update_investment_fields
-from domain_model.projection_repository import save_projection_version
+from domain_model.projection_repository import add_projection_scenario, save_projection_version
 from recommendation import recommend_all
 
 
@@ -182,3 +182,32 @@ def test_recommendation_weights_include_uninvested_cash(tmp_path):
     upsert_account_investment(conn, "tfsa", cash, 2000, None, None, "USD", "2026-10-04T00:00:00Z")
     conn.close()
     assert recommend_all(str(db))["BE"]["current_weight_pct"] == 25.0
+
+
+def test_records_carry_risk_reward_and_support_from_saved_scenarios(tmp_path):
+    """Every page reads reward:risk, the reduce flag and valuation support from one record."""
+    db = seed_domain(tmp_path)
+    conn = initialize_db(str(db))
+    inv = resolve_investment(conn, "BE")
+    audit = json.dumps({"valuationModel": {"method": "annual_fcff", "discountRateAudit": {"rateType": "WACC"}}})
+    projection = save_projection_version(conn, inv, version=2, saved_at="2026-10-05T00:00:00Z", fair_value=50,
+                                         action="MAINTAIN", source="AI_AGENT", snapshot_json='{"price":100}',
+                                         analytics_log_json=audit)
+    for name, weight, price in (("bear", 0.2, 10), ("base", 0.5, 45), ("bull", 0.3, 85)):
+        add_projection_scenario(conn, projection, name, weight=weight, scenario_price=price)
+    conn.close()
+    records = recommend_all(str(db))
+    be = records["BE"]
+    assert be["action"] == "TRIM"
+    assert be["scenarios"] == {"bear": 10, "base": 45, "bull": 85}
+    assert be["risk_reward"]["verdict"] == "UNFAVOURABLE"
+    assert be["risk_reward"]["reward_risk"] == 0
+    assert be["risk_reward"]["loss_odds_pct"] == 100
+    assert be["risk_reward"]["reduce_candidate"] is True
+    assert be["risk_reward"]["weight_gap_pp"] == -40
+    assert be["risk_reward"]["alignment"]["status"] == "ALIGNED"
+    assert be["support"]["checks"][2] == {"id": "rate_audit", "label": "Audited discount rate", "ok": True, "note": "Rate audit saved"}
+    shaz = records["SHAZ"]
+    assert shaz["risk_reward"]["verdict"] == "UNRATED"  # fair value without scenarios is not rated
+    assert shaz["risk_reward"]["reduce_candidate"] is False
+    assert shaz["support"]["level"] in ("WEAK", "PARTIAL")

@@ -13,6 +13,7 @@ Key Functions:
     recommend(held, upside_pct, exit_signal) pure decision
     recommend_all(db_path)                  per-ticker records for the API
     _valuation_inputs()                    selected projection and current price
+    _risk_reward_fields()                  reward:risk, reduce flag and valuation support
     _triggered_tickers()                   evaluated thesis breaker signals
 Key Input Dependencies:
     domain_model.sqlite (holdings, prices, latest projection fair value),
@@ -27,6 +28,9 @@ Rules (held):    exit signal -> EXIT; SELL band -> TRIM; BUY band -> ACCUMULATE;
 Rules (not held): BUY band -> INITIATE; otherwise WATCHLIST.
 The +/-15% valuation band is the policy inherited by this refactor. Standing
 decisions remain explicit review constraints; this band is not an FV-change test.
+
+Each record also carries risk_reward and support (risk_reward.py). They explain
+and cross-check the action against the saved scenarios; they never change it.
 """
 from __future__ import annotations
 
@@ -34,7 +38,11 @@ import json
 import math
 import sys
 from pathlib import Path
+from datetime import date
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from risk_reward import SCENARIO_NAMES, assess_risk_reward, reduce_view, valuation_support  # noqa: E402
 
 ACT_THRESHOLD_PCT = 15.0
 
@@ -115,16 +123,34 @@ def _valuation_inputs(conn: Any, inv_id: str, prices: dict[str, float], symbol: 
     return entry, fv, price, "investment_price" if current_price else "projection_snapshot", upside
 
 
+def _risk_reward_fields(conn: Any, entry: dict | None, rec: dict, price: float | None,
+                        fair_value: float | None, weight: float, target: float | None) -> dict[str, Any]:
+    """Build the scenario, reward:risk and support fields from the selected projection."""
+    from domain_model.projection_repository import get_projection_scenarios
+
+    rows = get_projection_scenarios(conn, entry["projection_id"]) if entry else []
+    saved = {row["scenario_name"]: {"price": row["scenario_price"], "weight": row["weight"]} for row in rows}
+    assessment = assess_risk_reward(price, fair_value, saved)
+    assessment.update(reduce_view(rec["held"], rec["action"], assessment, weight, target))
+    log = json.loads(entry["analytics_log_json"] or "{}") if entry else None
+    return {
+        "scenarios": {name: (saved.get(name) or {}).get("price") for name in SCENARIO_NAMES},
+        "risk_reward": assessment,
+        "support": valuation_support(entry.get("saved_at") if entry else None, log, saved, date.today()),
+    }
+
+
 def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
     """Recommendation record for every investment in domain_model.sqlite."""
     py = str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services")
     sys.path.insert(0, py)
     from domain_model.db_client import initialize_db
-    from portfolio_io import compute_weights, load_portfolio_state
+    from portfolio_io import compute_weights, load_portfolio_state, load_target_weights
     from thesis_breakers import DB_PATH
 
     state = load_portfolio_state(None, db_path=db_path)
     weights = compute_weights(state["shares"], state["prices"], state["total_usd"])
+    targets = load_target_weights(db_path)
     resolved_db = Path(db_path or DB_PATH)
     triggered = _triggered_tickers(resolved_db.parent / "thesis_breaker_state.json")
     out: dict[str, dict[str, Any]] = {}
@@ -144,6 +170,7 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
                        fair_value=fv, price=price,
                        price_source=price_source,
                        standing_decision={"type": standing_type or "USER", "reason": standing_reason} if standing_type or standing_reason else None)
+            rec.update(_risk_reward_fields(conn, entry, rec, price, fv, weights.get(symbol, 0.0), targets.get(symbol)))
             out[symbol] = rec
     finally:
         conn.close()
