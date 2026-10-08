@@ -34,6 +34,7 @@ import {
     type RiskRewardRowFields,
 } from '../utils/riskReward';
 import { ReduceCandidatesChip, RiskRewardCell } from './RiskRewardCell';
+import { RecentTradeTag } from './RecentTradeTag';
 
 function computeSuggestedShares(currentPct: number | null, targetPct: number | null, price: number | null, totalValue: number): number {
     if (!currentPct || !targetPct || !price || totalValue <= 0) return 1;
@@ -165,7 +166,7 @@ const DEFAULT_WIDTHS: Record<string, number> = {
     symbol: 70, name: 170, currentPct: 90, recommendedPct: 85, earnings_date: 110, subStrategyId: 130, sector: 115, shares: 60, currentPrice: 88,
     book_price: 72, change_overall: 80,
     total_book: 80, total_market: 80,
-    action: 115, fairValue: 95, gainLoss: 85, upside: 85, ruleOf40: 70, growth: 80,
+    action: 190, fairValue: 95, gainLoss: 85, upside: 85, ruleOf40: 70, growth: 80,
     model: 130, base: 80, bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90,
     rationale: 260,
 };
@@ -686,6 +687,11 @@ export default function PortfolioTable() {
                                                          </button>
                                                          <span className="font-bold text-white">{val}</span>
                                                      </div>
+                                                ) : col.id === 'action' ? (
+                                                    <span className="inline-flex items-center gap-2 text-zinc-300">
+                                                        {col.format(val, row)}
+                                                        <RecentTradeTag rec={recommendations[row.symbol]} />
+                                                    </span>
                                                 ) : col.id === 'name' ? (
                                                     <span className="text-zinc-300 text-xs">{val}</span>
                                                 ) : col.id === 'earnings_date' ? (

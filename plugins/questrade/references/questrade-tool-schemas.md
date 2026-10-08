@@ -18,6 +18,14 @@ Returns `[{id, instrument, qty, side, avgPrice}]` — flat array, `[]` if no hol
 ### `get_account_activities(accountId, fromDate?, toDate?, page?, transactionTypes?)`
 `fromDate`/`toDate` are plain `YYYY-MM-DD` (not ISO timestamps). `transactionTypes` is an array from the enum: `Trades | Interest | Other | Dividends | FX conversion | Dividend reinvestment | Corporate actions | Transfers | Withdrawals | Deposits | Fees and rebates`. Returns `{accountId, activities: [...], metadata: {totalCount, totalPages, count, currentPage}}`, paged 20/page. **Unfiltered results are dominated by `Trades` noise** (observed 143 trades vs 12 real cash-flow events in one 90-day window) — always pass `transactionTypes` scoped to intent rather than fetching everything and filtering client-side.
 
+**Trades import payload (`questrade_trades_import.py`).** Executed trades are saved to the SQLite trade log from a staged payload, not directly from this tool:
+```json
+{"accounts": [{"id": "<uuid>", "name": "TFSA - 53408189"}],
+ "trades": [{"accountId": "<uuid>", "symbol": "ZS", "side": "sell", "shares": 2,
+             "price": 210.36, "date": "2026-10-06", "externalId": "<activity or order id>"}]}
+```
+`externalId` is the broker's own id for the fill when the activity carries one; without it the importer de-duplicates on account, symbol, date, side, shares and price. **The raw `Trades` activity field names have not yet been captured from a live session.** On the first live import, record the observed activity object here (as was done for `get_quotes`) and state which raw fields map to `symbol`, `side`, `shares`, `price`, `date` and `externalId`.
+
 ### `search_symbols(query, hasOptions?, limit?)`
 Returns matches with security UUID, exchange, market cap, industry. Use the UUID for `get_quotes(securityUuids=[...])` when you need Greeks/IV (option contracts); use `get_quotes(symbols=[...])` for plain equity quotes without a prior search.
 

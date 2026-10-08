@@ -40,7 +40,10 @@ Trigger browser login via `/mcp` or `codex mcp login questrade`.
    - Codex CLI: `codex mcp add questrade --url https://mcp.questrade.com/v1/brokerage/mcp`
    - VS Code / Cursor: Add server entry with URL `https://mcp.questrade.com/v1/brokerage/mcp`
 2. **Authenticate Session**:
-   Initiate browser OAuth sign-in flow.
+   Initiate browser OAuth sign-in flow. The owner must complete it; an agent cannot.
+   - Claude Code: call the `questrade` server's `authenticate` tool (or have the owner run `/mcp` and choose questrade) and give the owner the returned link.
+   - The owner signs in and approves access in the browser. If the page after approval shows a connection error, the owner pastes the full address-bar URL back and the agent passes it to `complete_authentication`.
+   - Sign-in is per session and expires: every sync, activities or order skill must re-check with `List Accounts` and return here when it fails.
 3. **Verify Connectivity**:
    Call MCP tool `List Accounts` to confirm live connection.
 

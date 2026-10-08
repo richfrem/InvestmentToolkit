@@ -58,6 +58,24 @@ def list_trade_log_entries(
     return [dict(row) for row in cursor.fetchall()]
 
 
+def list_filled_trades_since(conn: sqlite3.Connection, since_date: str) -> list[dict]:
+    """Filled trades on or after ``since_date`` (YYYY-MM-DD), oldest first, with ``symbol``.
+
+    Only ``filled`` rows are real executions: planned, submitted and cancelled
+    entries are excluded so recent-trade context never counts an order that did
+    not happen.
+    """
+    conn.row_factory = sqlite3.Row
+    cursor = conn.execute(
+        "SELECT t.*, i.symbol FROM trade_log_entry t "
+        "JOIN investment i ON i.investment_id = t.investment_id "
+        "WHERE lower(t.status) = 'filled' AND t.trade_date >= ? "
+        "ORDER BY t.trade_date, t.logged_at, t.entry_id;",
+        (since_date,),
+    )
+    return [dict(row) for row in cursor.fetchall()]
+
+
 def get_trade_log_entry(conn: sqlite3.Connection, entry_id: str) -> dict | None:
     conn.row_factory = sqlite3.Row
     cursor = conn.execute(

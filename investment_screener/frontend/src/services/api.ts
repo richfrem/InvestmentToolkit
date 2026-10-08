@@ -840,6 +840,17 @@ export interface RecommendationRecord {
     scenarios?: { bear: number | null; base: number | null; bull: number | null };
     risk_reward?: RiskRewardView;
     support?: ValuationSupport;
+    recent_trades?: RecentTrades;
+}
+
+/** Filled trades inside the recent window and whether they already follow the action (recent_trades.py). */
+export interface RecentTrades {
+    window_days: number;
+    sold_shares: number;
+    bought_shares: number;
+    count: number;
+    last: { date: string; action: string; shares: number; price: number | null; account: string | null } | null;
+    context: { status: 'ACTED' | 'OPPOSED' | 'RECENT' | 'NONE'; note: string };
 }
 
 /** Reward versus risk at the recommendation's price; computed once in risk_reward.py. */

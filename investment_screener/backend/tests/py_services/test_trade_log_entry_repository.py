@@ -13,6 +13,7 @@ from domain_model.trade_log_entry_repository import (  # noqa: E402
     list_trade_log_entries,
     get_trade_log_entry,
     delete_trade_log_entry,
+    list_filled_trades_since,
 )
 
 
@@ -86,3 +87,16 @@ def test_delete_trade_log_entry(tmp_path):
     upsert_trade_log_entry(conn, _entry(investment_id, entry_id="e1"))
     delete_trade_log_entry(conn, "e1")
     assert get_trade_log_entry(conn, "e1") is None
+
+
+def test_list_filled_trades_since_returns_only_filled_rows_in_range_with_symbols(tmp_path):
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    investment_id = _seed(conn)
+    upsert_trade_log_entry(conn, _entry(investment_id, entry_id="old", status="filled", trade_date="2026-09-01"))
+    upsert_trade_log_entry(conn, _entry(investment_id, entry_id="planned", status="logged", trade_date="2026-10-06"))
+    upsert_trade_log_entry(conn, _entry(investment_id, entry_id="cancelled", status="cancelled", trade_date="2026-10-06"))
+    upsert_trade_log_entry(conn, _entry(investment_id, entry_id="recent", status="FILLED", trade_date="2026-10-06", price=210.0))
+    rows = list_filled_trades_since(conn, "2026-09-24")
+    assert [row["entry_id"] for row in rows] == ["recent"]
+    assert rows[0]["symbol"] == "LITE"
+    assert rows[0]["price"] == 210.0

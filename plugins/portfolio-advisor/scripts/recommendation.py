@@ -14,6 +14,7 @@ Key Functions:
     recommend_all(db_path)                  per-ticker records for the API
     _valuation_inputs()                    selected projection and current price
     _risk_reward_fields()                  reward:risk, reduce flag and valuation support
+    _recent_trades_by_symbol()             filled trades inside the recent window
     _triggered_tickers()                   evaluated thesis breaker signals
 Key Input Dependencies:
     domain_model.sqlite (holdings, prices, latest projection fair value),
@@ -29,8 +30,9 @@ Rules (not held): BUY band -> INITIATE; otherwise WATCHLIST.
 The +/-15% valuation band is the policy inherited by this refactor. Standing
 decisions remain explicit review constraints; this band is not an FV-change test.
 
-Each record also carries risk_reward and support (risk_reward.py). They explain
-and cross-check the action against the saved scenarios; they never change it.
+Each record also carries risk_reward and support (risk_reward.py) and
+recent_trades (recent_trades.py). They explain and cross-check the action against
+the saved scenarios and the owner's filled trades; they never change it.
 """
 from __future__ import annotations
 
@@ -42,6 +44,7 @@ from datetime import date
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from recent_trades import summarize_recent_trades, trade_context, window_start  # noqa: E402
 from risk_reward import SCENARIO_NAMES, assess_risk_reward, reduce_view, valuation_support  # noqa: E402
 
 ACT_THRESHOLD_PCT = 15.0
@@ -140,6 +143,16 @@ def _risk_reward_fields(conn: Any, entry: dict | None, rec: dict, price: float |
     }
 
 
+def _recent_trades_by_symbol(conn: Any, today: date) -> dict[str, list[dict]]:
+    """Filled trades inside the recent window, grouped by symbol (one query)."""
+    from domain_model.trade_log_entry_repository import list_filled_trades_since
+
+    grouped: dict[str, list[dict]] = {}
+    for row in list_filled_trades_since(conn, window_start(today)):
+        grouped.setdefault(row["symbol"], []).append(row)
+    return grouped
+
+
 def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
     """Recommendation record for every investment in domain_model.sqlite."""
     py = str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services")
@@ -156,6 +169,8 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
     conn = initialize_db(db_path or str(DB_PATH))
     try:
+        today = date.today()
+        trades = _recent_trades_by_symbol(conn, today)
         for inv_id, symbol, standing_type, standing_reason in conn.execute(
             "SELECT investment_id, symbol, standing_decision_type, standing_decision_reason FROM investment;"
         ).fetchall():
@@ -171,6 +186,8 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
                        price_source=price_source,
                        standing_decision={"type": standing_type or "USER", "reason": standing_reason} if standing_type or standing_reason else None)
             rec.update(_risk_reward_fields(conn, entry, rec, price, fv, weights.get(symbol, 0.0), targets.get(symbol)))
+            summary = summarize_recent_trades(trades.get(symbol, []), today)
+            rec["recent_trades"] = {**summary, "context": trade_context(rec["action"], summary)}
             out[symbol] = rec
     finally:
         conn.close()
