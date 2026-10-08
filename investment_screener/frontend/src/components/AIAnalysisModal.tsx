@@ -24,6 +24,7 @@ import { HelpTrigger } from './HelpModal';
 import { DeepDiveModal } from './DeepDiveModal';
 import { getActionBadgeClass } from '../utils/actionColors';
 import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
+import { savedValuationRate } from '../utils/valuationPresentation';
 
 interface AIAnalysisModalProps {
     symbol: string;
@@ -80,6 +81,7 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
     };
 
     if (!isOpen) return null;
+    const savedRate = savedValuationRate(projection);
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -170,7 +172,7 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                             <div className="flex items-center gap-2 mt-2 flex-wrap justify-center">
                                                 {valuationAction && (
                                                     <span className="text-[9px] px-2 py-0.5 rounded-full border border-slate-600/40 bg-slate-800/60 text-slate-400 font-bold uppercase tracking-wider">
-                                                        DCF: {valuationAction}
+                                                        <SmartText text={`DCF: ${valuationAction}`} />
                                                     </span>
                                                 )}
                                                 {portfolioUrgency && (
@@ -207,7 +209,7 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                     <div className="flex flex-col gap-1 text-xs text-slate-300">
                                         <span>Model: <span className="text-indigo-300">{projection.aiThesis?.model || 'Unknown'}</span></span>
                                         <span>Horizon: {projection.globalSettings.timeHorizon} Years</span>
-                                        <span>Discount Rate: {projection.globalSettings.discountRate}%</span>
+                                        <span className="inline-flex items-center justify-center gap-1">{savedRate.label}: {savedRate.value} <HelpTrigger topicId={savedRate.topicId} size={12} /></span>
                                     </div>
                                 </div>
                             </div>
@@ -249,35 +251,11 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                                 const isBear = type === 'bear';
                                                 const isBull = type === 'bull';
 
-                                                // Calculate Price (Global Settings + Scenario Assumptions)
-                                                const qualityMultiplier = s.qualityMultiplier ?? 1.0;
-                                                const shareChange = s.shareChange ?? 0;
-                                                const timeHorizon = projection.globalSettings.timeHorizon;
-                                                const discountRate = projection.globalSettings.discountRate;
-
-                                                // 1. Future Revenue
-                                                const currentRevenue = projection.snapshot.revenue || 0;
-                                                const futureRevenue = currentRevenue * Math.pow(1 + s.growthRate / 100, timeHorizon);
-
-                                                // 2. Future Net Income
-                                                const futureNetIncome = futureRevenue * (s.netMargin / 100);
-
-                                                // 3. Future Market Cap
-                                                const futureMarketCap = futureNetIncome * s.exitPE * qualityMultiplier;
-
-                                                // 4. Future Share Count
-                                                const currentShares = projection.snapshot.shares || 1;
-                                                const futureShares = currentShares * Math.pow(1 + shareChange / 100, timeHorizon);
-
-                                                // 5. Future Price
-                                                const futurePrice = futureShares > 0 ? futureMarketCap / futureShares : 0;
-
-                                                // 6. Discount to PV
-                                                const targetPrice = futurePrice / Math.pow(1 + discountRate / 100, timeHorizon);
-
-                                                // 7. Upside
-                                                const currentPrice = projection.snapshot.price || 0;
-                                                const upside = currentPrice > 0 ? ((targetPrice - currentPrice) / currentPrice) * 100 : 0;
+                                                // The saved valuation is authoritative for every model, including FCFF.
+                                                const targetPrice = s.scenarioPrice ?? null;
+                                                const currentPrice = recommendation?.price ?? projection.snapshot.price;
+                                                const upside = targetPrice !== null && currentPrice > 0
+                                                    ? ((targetPrice - currentPrice) / currentPrice) * 100 : null;
 
                                                 const rowClass = isBear ? 'bg-red-500/5 hover:bg-red-500/10' :
                                                     isBull ? 'bg-green-500/5 hover:bg-green-500/10' :
@@ -296,10 +274,10 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                                             {(s.weight * 100).toFixed(0)}%
                                                         </td>
                                                         <td className="px-5 py-4 text-right font-black text-white">
-                                                            ${targetPrice.toFixed(2)}
+                                                            {targetPrice === null ? '—' : `$${targetPrice.toFixed(2)}`}
                                                         </td>
-                                                        <td className={`px-5 py-4 text-right font-bold ${upside >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                            {upside > 0 ? '+' : ''}{upside.toFixed(1)}%
+                                                        <td className={`px-5 py-4 text-right font-bold ${upside === null ? 'text-slate-400' : upside >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                            {upside === null ? '—' : `${upside > 0 ? '+' : ''}${upside.toFixed(1)}%`}
                                                         </td>
                                                         <td className={`px-5 py-4 text-right font-bold ${textClass}`}>
                                                             {s.growthRate}%

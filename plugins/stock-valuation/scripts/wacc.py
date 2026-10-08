@@ -13,23 +13,29 @@ Purpose:
 Layer: Backend / Python Services / Valuation Math
 
 Usage:
+    python3 wacc.py --inputs temp/evaluations/rate-inputs.json --pretty
     python3 wacc.py --ticker NVDA --market-cap 3200000000000 --cik 0001045810 --pretty
     python3 wacc.py --ticker NVDA --market-cap 3200000000000 --beta 1.8 --cost-of-debt 0.04
 
 Key Functions:
+    - capital_cost_components() - Shared CAPM and weighted capital-cost arithmetic
+    - _explicit_number() - Validate finite decimal inputs
+    - compute_discount_rate() - Reproducible, uncapped rate matched to explicit valuation method
     - compute_beta() - Local OLS slope of ticker log returns vs SPY log returns
     - compute_cost_of_debt() - After-tax cost of debt from interest expense / total debt
     - compute_risk_free_rate() - 10Y Treasury yield via market_data.get_prices(["^TNX"])
     - compute_wacc() - Primary orchestrator: combines all inputs into a capped/floored WACC
+    - main() - Explicit-input audit or legacy diagnostic CLI
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - Explicit dated input JSON, or market_data prices and fundamentals for legacy diagnostics
 """
 
 import argparse
 import json
 import math
 import sys
+from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -44,6 +50,81 @@ FALLBACK_COST_OF_DEBT = 0.05
 FALLBACK_RISK_FREE_RATE = 0.04
 TNX_TIMES_TEN_THRESHOLD = 20.0  # ^TNX closes >= this are yield*10, below are percent
 MIN_REGRESSION_OBSERVATIONS = 30
+
+
+def capital_cost_components(
+    risk_free_rate: float, beta: float, erp: float, market_cap: float,
+    total_debt: float, cost_of_debt_after_tax: float,
+) -> dict:
+    """Calculate CAPM and capital-weighted WACC without presentation rounding."""
+    cost_of_equity = risk_free_rate + beta * erp
+    total_value = market_cap + total_debt
+    equity_weight = market_cap / total_value if total_value > 0 else 1.0
+    debt_weight = 1.0 - equity_weight
+    return {
+        "costOfEquity": cost_of_equity,
+        "equityWeight": equity_weight, "debtWeight": debt_weight,
+        "costOfDebtAfterTax": cost_of_debt_after_tax,
+        "rawWacc": equity_weight * cost_of_equity + debt_weight * cost_of_debt_after_tax,
+    }
+
+
+def _explicit_number(inputs: dict, key: str, maximum: float | None = None) -> float:
+    """Require a finite, nonnegative number; rates use decimal units."""
+    value = inputs.get(key)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{key} must be an explicit number")
+    if not math.isfinite(value) or value < 0 or (maximum is not None and value > maximum):
+        raise ValueError(f"{key} has invalid value or units")
+    return float(value)
+
+
+def compute_discount_rate(inputs: dict) -> dict:
+    """Audit explicit rates for supported methods without fetching or substituting data.
+
+    Sources are retained for human review, not independently authenticated. The
+    simple capital structure supports common equity and debt; complex project or
+    preferred claims require a separately reviewed model before publication.
+    """
+    if not isinstance(inputs, dict):
+        raise ValueError("inputs must be a JSON object")
+    if inputs.get("method") not in ("annual_fcff", "terminal_earnings"):
+        raise ValueError("method must be annual_fcff or terminal_earnings")
+    try:
+        date.fromisoformat(inputs.get("asOf", ""))
+    except (ValueError, TypeError):
+        raise ValueError("asOf must be an ISO date") from None
+    if not isinstance(inputs.get("currency"), str) or not inputs["currency"].strip():
+        raise ValueError("currency must be explicit")
+    sources = inputs.get("sources")
+    if not isinstance(sources, list) or not sources:
+        raise ValueError("sources must contain dated input provenance")
+    for source in sources:
+        if not isinstance(source, dict) or not all(source.get(k) for k in ("date", "url", "use")):
+            raise ValueError("sources entries require date, url, and use")
+        try:
+            date.fromisoformat(source["date"])
+        except (ValueError, TypeError):
+            raise ValueError("sources entries require ISO dates") from None
+    numbers = {key: _explicit_number(inputs, key, maximum) for key, maximum in (
+        ("riskFreeRate", 1), ("beta", None), ("erp", 1), ("marketCap", None),
+        ("totalDebt", None), ("costOfDebtPreTax", 1), ("taxShieldRate", 1),
+    )}
+    if numbers["marketCap"] <= 0:
+        raise ValueError("marketCap must be positive")
+    components = capital_cost_components(
+        numbers["riskFreeRate"], numbers["beta"], numbers["erp"],
+        numbers["marketCap"], numbers["totalDebt"],
+        numbers["costOfDebtPreTax"] * (1 - numbers["taxShieldRate"]),
+    )
+    components["costOfDebtPreTax"] = numbers["costOfDebtPreTax"]
+    is_firm = inputs["method"] == "annual_fcff"
+    return {
+        "method": inputs["method"], "asOf": inputs["asOf"], "currency": inputs["currency"],
+        "rateType": "WACC" if is_firm else "COST_OF_EQUITY",
+        "selectedRate": components["rawWacc"] if is_firm else components["costOfEquity"],
+        "components": components, "inputs": inputs, "readiness": "REVIEW_REQUIRED",
+    }
 
 
 def compute_beta(ticker_prices: list[dict], spy_prices: list[dict]) -> dict:
@@ -183,13 +264,10 @@ def compute_wacc(
         cod_result = compute_cost_of_debt(interest_expense, total_debt, tax_rate)
 
     beta = beta_result["beta"]
-    cost_of_equity = rf["riskFreeRate"] + beta * erp
-
-    total_value = market_cap + total_debt
-    equity_weight = market_cap / total_value if total_value > 0 else 1.0
-    debt_weight = 1.0 - equity_weight
-
-    raw_wacc = equity_weight * cost_of_equity + debt_weight * cod_result["costOfDebt"]
+    components = capital_cost_components(
+        rf["riskFreeRate"], beta, erp, market_cap, total_debt, cod_result["costOfDebt"],
+    )
+    raw_wacc = components["rawWacc"]
 
     beta_warning = None
     if beta > 2.5 or beta < 0.2:
@@ -201,6 +279,7 @@ def compute_wacc(
 
     return {
         "wacc": round(final_wacc, 4),
+        "components": components,
         "riskFreeRate": rf["riskFreeRate"],
         "beta": beta,
         "erp": erp,
@@ -224,9 +303,11 @@ def compute_wacc(
 
 
 def main() -> None:
+    """Calculate an explicit audited rate or run the legacy live diagnostic."""
     parser = argparse.ArgumentParser(description="Per-company WACC calculator")
-    parser.add_argument("--ticker", required=True)
-    parser.add_argument("--market-cap", type=float, required=True, help="Equity market cap in dollars")
+    parser.add_argument("--inputs", type=Path, help="Explicit dated JSON inputs; no network or defaults")
+    parser.add_argument("--ticker")
+    parser.add_argument("--market-cap", type=float, help="Equity market cap in dollars")
     parser.add_argument("--cik", default=None, help="SEC CIK, omit for non-US tickers")
     parser.add_argument("--erp", type=float, default=DEFAULT_ERP)
     parser.add_argument("--tax-rate", type=float, default=DEFAULT_TAX_RATE)
@@ -235,6 +316,17 @@ def main() -> None:
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args()
 
+    if args.inputs:
+        if any(value is not None for value in (args.ticker, args.market_cap, args.cik, args.beta, args.cost_of_debt)) or args.erp != DEFAULT_ERP or args.tax_rate != DEFAULT_TAX_RATE:
+            parser.error("--inputs cannot be combined with live-input overrides")
+        try:
+            result = compute_discount_rate(json.loads(args.inputs.read_text()))
+        except (OSError, ValueError, TypeError) as error:
+            parser.error(str(error))
+        print(json.dumps(result, indent=2 if args.pretty else None, allow_nan=False))
+        return
+    if not args.ticker or args.market_cap is None:
+        parser.error("provide --inputs or both --ticker and --market-cap")
     result = compute_wacc(
         ticker=args.ticker,
         market_cap=args.market_cap,

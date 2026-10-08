@@ -3,6 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import Database from 'better-sqlite3';
+import { spawnSync } from 'child_process';
 import { ProjectionRepository } from '../src/services/ProjectionRepository';
 import { ProjectionSchema, Projection } from '../src/utils/zod-schemas';
 
@@ -153,6 +154,73 @@ describe('ProjectionRepository', () => {
     });
 
     describe('findByTicker / findAll', () => {
+        it('uses the Python decimal-rate contract even above 100% and preserves absent rates', () => {
+            const script = path.resolve(__dirname, '../../../plugins/stock-valuation/scripts/persist_valuation.py');
+            const payload = { symbol: 'HIGH', projection: { fair_value: 10, discount_rate: 1.20 } };
+            const result = spawnSync('python3', [script, '--db', dbPath, '--payload', JSON.stringify(payload)], { encoding: 'utf8' });
+            expect(result.status, result.stderr).to.equal(0);
+            expect(repo.findByTicker('HIGH')[0].globalSettings.discountRate).to.equal(120);
+            const db = new Database(dbPath);
+            db.prepare('UPDATE projection_version SET snapshot_json = ?, analytics_log_json = ? WHERE investment_id = ?')
+                .run('{}', '{}', 'HIGH');
+            db.close();
+            expect(repo.findByTicker('HIGH')[0].globalSettings.discountRate).to.equal(undefined);
+        });
+
+        it('serves the Python-calculated rate audit from SQLite without recalculating it', () => {
+            const scripts = path.resolve(__dirname, '../../../plugins/stock-valuation/scripts');
+            const inputs = { method: 'terminal_earnings', asOf: '2026-10-07', currency: 'USD',
+                riskFreeRate: 0.04, beta: 1, erp: 0.06, marketCap: 800, totalDebt: 200,
+                costOfDebtPreTax: 0.05, taxShieldRate: 0,
+                sources: [{ date: '2026-10-07', url: 'https://example.org/fixture', use: 'Synthetic inputs' }] };
+            const inputFile = `${dbPath}.inputs.json`;
+            const auditFile = `${dbPath}.audit.json`;
+            try {
+                fs.writeFileSync(inputFile, JSON.stringify(inputs));
+                const calculation = spawnSync('python3', [path.join(scripts, 'wacc.py'), '--inputs', inputFile], { encoding: 'utf8' });
+                expect(calculation.status, calculation.stderr).to.equal(0);
+                const audit = JSON.parse(calculation.stdout);
+                fs.writeFileSync(auditFile, calculation.stdout);
+                const payload = { symbol: 'AUDIT', projection: {
+                    fair_value: 30, current_price: 30, discount_rate: audit.selectedRate,
+                    valuationModel: { method: 'terminal_earnings' },
+                    scenarios: { base: { weight: 1, price: 30 } },
+                } };
+                const persistence = spawnSync('python3', [path.join(scripts, 'persist_valuation.py'),
+                    '--db', dbPath, '--payload', JSON.stringify(payload), '--rate-audit', auditFile], { encoding: 'utf8' });
+                expect(persistence.status, persistence.stderr).to.equal(0);
+                const [projection] = repo.findByTicker('AUDIT');
+                expect(projection.globalSettings.discountRate).to.equal(10);
+                expect((projection.analyticsLog as any).valuationModel.discountRateAudit).to.deep.equal(audit);
+                expect(projection.scenarios.base.scenarioPrice).to.equal(30);
+            } finally {
+                for (const file of [inputFile, auditFile]) if (fs.existsSync(file)) fs.unlinkSync(file);
+            }
+        });
+
+        it('normalizes the canonical Python persistence snapshot without losing scenario targets or discount settings', () => {
+            const script = path.resolve(__dirname, '../../../plugins/stock-valuation/scripts/persist_valuation.py');
+            const payload = { symbol: 'APLD', projection: {
+                fair_value: 27.67, action: 'MAINTAIN', current_price: 25.34,
+                base_revenue: 611311000, base_shares: 302387140,
+                discount_rate: 0.1277, horizon: 7,
+                researchReport: 'APLD_2026-10-07.md',
+                scenarios: { bear: { price: 2.75 }, base: { price: 21.09 }, bull: { price: 57.7 } },
+            } };
+            const result = spawnSync('python3', [script, '--db', dbPath, '--payload', JSON.stringify(payload)], { encoding: 'utf8' });
+            expect(result.status, result.stderr).to.equal(0);
+            const [projection] = repo.findByTicker('APLD');
+            expect(projection.snapshot.price).to.equal(25.34);
+            expect(projection.snapshot.revenue).to.equal(611311000);
+            expect(projection.snapshot.shares).to.equal(302387140);
+            expect(projection.globalSettings.discountRate).to.be.closeTo(12.77, 0.00001);
+            expect(projection.globalSettings.timeHorizon).to.equal(7);
+            expect(projection.aiThesis?.researchReport).to.equal('APLD_2026-10-07.md');
+            expect(projection.scenarios.bear.scenarioPrice).to.equal(2.75);
+            expect(projection.scenarios.base.scenarioPrice).to.equal(21.09);
+            expect(projection.scenarios.bull.scenarioPrice).to.equal(57.7);
+        });
+
         it('returns an empty array for an unknown ticker', () => {
             expect(repo.findByTicker('NOPE')).to.deep.equal([]);
         });

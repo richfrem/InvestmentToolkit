@@ -55,6 +55,8 @@
  *   never land on (and ON CONFLICT-overwrite) an existing row of any identity.
  *
  * Key Functions (Index):
+ *   - projectionMetadata(row) - Normalize Python snapshot fields and rate units for the API
+ *   - rowToProjection(row) - Restore saved scenarios and metadata into the shared API contract
  *   - findByTicker(ticker) - Current-state-per-identity rows for one ticker (MAX version
  *     per distinct `legacy_id`/synthetic identity — see Finding 2 fix note), version-ascending
  *   - findAll() - Current-state-per-identity rows across all tickers
@@ -157,6 +159,31 @@ export class ProjectionRepository {
         return investmentId;
     }
 
+    /** Normalize the canonical Python snapshot and discount settings once at the API boundary. */
+    private projectionMetadata(row: ProjectionVersionRow) {
+        const saved = row.snapshot_json ? JSON.parse(row.snapshot_json) : {};
+        const analyticsLog = row.analytics_log_json ? JSON.parse(row.analytics_log_json) : undefined;
+        // Structured Python persistence uses decimals; raw API JSON uses percent
+        // and bypasses this reconstruction. Never infer units from rate magnitude.
+        const rate = analyticsLog?.valuationModel?.discountRateAudit?.selectedRate
+            ?? saved.discountRate ?? analyticsLog?.wacc;
+        return {
+            snapshot: {
+                ...saved,
+                price: saved.price ?? saved.currentPrice,
+                revenue: saved.revenue ?? saved.baseRevenue,
+                shares: saved.shares ?? saved.baseShares,
+                currency: saved.currency ?? 'USD',
+                lastActualPS: saved.lastActualPS ?? null,
+            },
+            globalSettings: {
+                discountRate: rate == null ? undefined : rate * 100,
+                timeHorizon: saved.horizon ?? 5,
+            },
+            analyticsLog,
+        };
+    }
+
     /** Reconstructs a `Projection` object for one `projection_version` row. Uses
      * `raw_json` verbatim when present (full fidelity); otherwise best-effort-rebuilds
      * from the structured columns + a `projection_scenario` join (legacy migrated rows,
@@ -191,8 +218,7 @@ export class ProjectionRepository {
             };
         };
 
-        const snapshot = row.snapshot_json ? JSON.parse(row.snapshot_json) : {};
-        const analyticsLog = row.analytics_log_json ? JSON.parse(row.analytics_log_json) : undefined;
+        const { snapshot, analyticsLog, globalSettings } = this.projectionMetadata(row);
 
         const reconstructed: any = {
             ticker: row.investment_id,
@@ -211,7 +237,7 @@ export class ProjectionRepository {
                 base: toScenario('base'),
                 bull: toScenario('bull'),
             },
-            globalSettings: { discountRate: 10, timeHorizon: 5 },
+            globalSettings,
             analyticsLog,
         };
 
@@ -222,6 +248,7 @@ export class ProjectionRepository {
                 fairValue: row.fair_value ?? 0,
                 action: row.action ?? 'HOLD',
                 analyzedAt: row.analyzed_at ?? row.saved_at,
+                researchReport: snapshot.researchReport ?? undefined,
             };
         }
 

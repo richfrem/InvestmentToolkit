@@ -79,5 +79,23 @@
     "expected_not_trigger": [],
     "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
     "should_trigger": true
+  },
+  {
+    "id": "EVAL-009",
+    "type": "positive",
+    "category": "method_rate_contract",
+    "prompt": "Research APLD's earnings and explain the saved 12.77% discount rate. The saved model uses future EPS times P/E, the rate is labeled WACC, and historical inputs cannot be located.",
+    "expected_trigger": "stock-research",
+    "should_trigger": true,
+    "pass_condition": "Labels historical rate not reproducible instead of inventing inputs, flags equity-versus-firm rate mismatch, records dated guidance and financing gaps, and presents a structured revaluation card with method/rate basis and sensitivity needs. Preserves active valuation and standing decision until explicitly authorized; does not silently switch to FCFF."
+  },
+  {
+    "id": "EVAL-010",
+    "type": "positive",
+    "category": "authorized_chaining",
+    "prompt": "Research MSFT's earnings and then update the existing annual-FCFF valuation; I authorize that revaluation. Keep the existing method and save the selected rate and its evidence so the web app reads it from SQLite.",
+    "expected_trigger": "stock-research",
+    "should_trigger": true,
+    "pass_condition": "Presents the decision card and continues under existing authorization without asking again, chains to update-stock-analysis, uses dated explicit WACC inputs appropriate to FCFF, and persists the consistent rate audit and scenario results via the supported Python workflow. Explains that JSON artifacts are inputs while SQLite is the app's source; no per-view rate recomputation."
   }
 ]

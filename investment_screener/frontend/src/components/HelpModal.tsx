@@ -60,6 +60,9 @@ export function HelpModalProvider({ children }: { children: ReactNode }) {
             {isOpen && activeTopic && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={closeHelp}>
                     <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={activeTopic.title}
                         className="bg-surface border border-slate-700 rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden animate-in fade-in zoom-in duration-200"
                         onClick={e => e.stopPropagation()}
                     >
@@ -120,7 +123,7 @@ export function HelpModalProvider({ children }: { children: ReactNode }) {
                                         rel="noopener noreferrer"
                                         className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
                                     >
-                                        Read full definition on Investopedia
+                                        Read full definition
                                         <ExternalLink size={10} />
                                     </a>
                                 </div>
@@ -149,6 +152,7 @@ export function HelpTrigger({ topicId, size = 14, className = "" }: { topicId: s
     return (
         <button
             type="button"
+            aria-label={`Explain ${helpTopics[topicId]?.title ?? topicId}`}
             onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

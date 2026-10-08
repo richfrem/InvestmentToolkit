@@ -449,6 +449,20 @@ export interface Projection {
         discountRate: number;
         timeHorizon: number;
     };
+    analyticsLog?: {
+        valuationModel?: {
+            method?: string;
+            discountRateAudit?: {
+                rateType: 'WACC' | 'COST_OF_EQUITY';
+                selectedRate: number;
+                asOf: string;
+                readiness: string;
+                [key: string]: unknown;
+            };
+            [key: string]: unknown;
+        };
+        [key: string]: unknown;
+    };
 }
 
 export const fetchProjections = async (ticker: string): Promise<Projection[] | null> => {

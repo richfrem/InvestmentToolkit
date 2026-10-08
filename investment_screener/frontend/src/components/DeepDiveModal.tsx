@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { X, BookOpen, Loader } from 'lucide-react';
+import { withFinancialHelp } from './SmartText';
 
 interface DeepDiveModalProps {
     isOpen: boolean;
@@ -34,9 +35,12 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
         setError(null);
         setContent(null);
 
-        fetch(`/api/research/${filename}`)
-            .then((res) => {
-                if (!res.ok) throw new Error('Report not found');
+        fetch(`/api/research/${encodeURIComponent(filename)}`)
+            .then(async (res) => {
+                if (!res.ok) {
+                    const details = await res.json().catch(() => ({}));
+                    throw new Error(details.error || `Research request failed (${res.status})`);
+                }
                 return res.json();
             })
             .then((data) => setContent(data.content))
@@ -93,7 +97,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                     {error && (
                         <div className="flex flex-col items-center justify-center h-full gap-2 text-slate-400">
                             <p className="text-lg font-medium text-red-400">Report unavailable</p>
-                            <p className="text-sm">Please run the AI Analyst to generate this report.</p>
+                            <p className="text-sm">{error}</p>
                         </div>
                     )}
 
@@ -115,7 +119,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                                         ),
                                         // Custom Paragraph
                                         p: ({ node, ...props }) => (
-                                            <p className="text-slate-300 leading-relaxed mb-4 text-[15px]" {...props} />
+                                            <p className="text-slate-300 leading-relaxed mb-4 text-[15px]" {...props}>{withFinancialHelp(props.children)}</p>
                                         ),
                                         // Custom List Styles
                                         ul: ({ node, ...props }) => (
@@ -124,7 +128,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                                         li: ({ node, ...props }) => (
                                             <li className="relative pl-6 text-slate-300">
                                                 <span className="absolute left-0 top-2 w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
-                                                {props.children}
+                                                {withFinancialHelp(props.children)}
                                             </li>
                                         ),
                                         // Custom Blockquote (Callouts)
@@ -141,13 +145,13 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                                             <thead className="bg-slate-900 border-b border-slate-700" {...props} />
                                         ),
                                         th: ({ node, ...props }) => (
-                                            <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider" {...props} />
+                                            <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider" {...props}>{withFinancialHelp(props.children)}</th>
                                         ),
                                         tr: ({ node, ...props }) => (
                                             <tr className="border-b border-slate-800/50 last:border-none hover:bg-slate-800/30 transition-colors" {...props} />
                                         ),
                                         td: ({ node, ...props }) => (
-                                            <td className="px-4 py-3 text-sm text-slate-300 border-none" {...props} />
+                                            <td className="px-4 py-3 text-sm text-slate-300 border-none" {...props}>{withFinancialHelp(props.children)}</td>
                                         ),
                                         // Code blocks
                                         code: ({ node, inline, className, children, ...props }: any) => {

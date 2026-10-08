@@ -1134,6 +1134,42 @@
       "dst": "investment_screener/backend/py_services/recalculate_forward_valuation.py",
       "strategy": "symlink",
       "description": "Reproducible sourced annual cash-flow valuation artifacts"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-method-and-discount-rate.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/valuation-method-and-discount-rate.md",
+      "strategy": "symlink",
+      "description": "Shared method selection and reproducible discount-rate protocol"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-method-and-discount-rate.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/valuation-method-and-discount-rate.md",
+      "strategy": "symlink",
+      "description": "Shared research gate for valuation method and rate evidence"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/persist_research.py",
+      "dst": "investment_screener/backend/py_services/persist_research.py",
+      "strategy": "symlink",
+      "description": "Canonical research report publication through observations ledger and SQLite read model"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-skill-acceptance-criteria.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Shared valuation workflow acceptance criteria required by plugin audit"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-skill-acceptance-criteria.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Shared valuation workflow acceptance criteria required by plugin audit"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-skill-acceptance-criteria.md",
+      "dst": "plugins/stock-valuation/skills/forward-valuation-challenge/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Shared valuation workflow acceptance criteria required by plugin audit"
     }
   ]
 }

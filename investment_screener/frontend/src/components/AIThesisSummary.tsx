@@ -21,6 +21,7 @@ import { useRecommendations } from '../contexts/useRecommendations';
 
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { withFinancialHelp } from './SmartText';
 import { BrainCircuit, FolderOpen, X, AlertTriangle, Loader2, Sparkles, Check, Clock } from 'lucide-react';
 import { getActionBadgeClass } from '../utils/actionColors';
 import { newReviewCommand, REVIEW_COMMAND } from '../utils/reviewCommand';
@@ -124,7 +125,7 @@ export function AIThesisSummary({ aiResult, isAnalyzing, aiError, symbol, onView
                             <div className="text-sm text-slate-300 leading-relaxed font-medium mb-3">
                                 <ReactMarkdown components={{
                                     strong: ({ node, ...props }: any) => <span className="font-bold text-indigo-200" {...props} />,
-                                    p: ({ node, ...props }: any) => <p className="mb-2 last:mb-0" {...props} />
+                                    p: ({ node, ...props }: any) => <p className="mb-2 last:mb-0" {...props}>{withFinancialHelp(props.children)}</p>
                                 }}>
                                     {aiResult.rationale}
                                 </ReactMarkdown>

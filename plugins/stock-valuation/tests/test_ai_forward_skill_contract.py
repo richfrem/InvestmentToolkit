@@ -4,6 +4,7 @@ Layer: Workflow contracts. Key Functions: skill, guide and sweep-template checks
 Key Input Dependencies: eight source SKILL.md files, shared guide, sweep templates.
 """
 from pathlib import Path
+import json
 
 import pytest
 
@@ -18,6 +19,21 @@ SKILLS = (
     ("portfolio-advisor", "strategic-review"),
     ("portfolio-advisor", "weekly-review"),
 )
+
+
+@pytest.mark.parametrize("skill", ("update-stock-analysis", "stock-research"))
+def test_rate_protocol_is_packaged_as_one_managed_reference(skill: str) -> None:
+    """Both distributed skills must resolve the same authoritative procedure."""
+    source = "plugins/stock-valuation/references/valuation-method-and-discount-rate.md"
+    destination = f"plugins/stock-valuation/skills/{skill}/references/valuation-method-and-discount-rate.md"
+    link = ROOT / destination
+    assert link.is_symlink()
+    assert link.resolve() == ROOT / source
+    assert link.is_file()
+    manifest = json.loads((ROOT / "symlinks.json").read_text())
+    assert any(entry["src"] == source and entry["dst"] == destination for entry in manifest["links"])
+    cases = json.loads((ROOT / f"plugins/stock-valuation/skills/{skill}/evals/evals.json").read_text())
+    assert len({case["id"] for case in cases}) == len(cases)
 
 
 @pytest.mark.parametrize("plugin,skill", SKILLS)

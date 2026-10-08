@@ -29,6 +29,7 @@
 
 import React, { useState } from 'react';
 import { X, Copy, Check, ExternalLink, Code } from 'lucide-react';
+import { SmartText } from './SmartText';
 
 interface PineScriptViewerModalProps {
     isOpen: boolean;
@@ -132,7 +133,7 @@ if barstate.islast
                         </div>
                         <div>
                             <h3 className="font-bold text-lg text-white">TradingView Pine Script Overlay</h3>
-                            <p className="text-xs text-slate-400">Live DCF & Target Entry Indicator for <span className="text-primary font-bold">{symbol}</span></p>
+                            <p className="text-xs text-slate-400"><SmartText text="Live DCF & Target Entry Indicator for" /> <span className="text-primary font-bold">{symbol}</span></p>
                         </div>
                     </div>
                     <button
@@ -174,9 +175,9 @@ if barstate.islast
                         <ExternalLink className="w-4 h-4 shrink-0 text-sky-400 mt-0.5" />
                         <div>
                             <span className="font-semibold text-white block mb-0.5">
-                                {mode === 'universal'
+                                <SmartText text={mode === 'universal'
                                     ? 'Save once in TradingView — works dynamically for ANY stock symbol on your chart!'
-                                    : `Hardcodes ${symbol} DCF Fair Value and Target Entry directly into the script.`}
+                                    : `Hardcodes ${symbol} DCF Fair Value and Target Entry directly into the script.`} />
                             </span>
                             1. Click <strong className="text-white">Copy Code</strong>.<br />
                             2. In TradingView Desktop, open <strong className="text-white">Pine Editor</strong> at the bottom.<br />
