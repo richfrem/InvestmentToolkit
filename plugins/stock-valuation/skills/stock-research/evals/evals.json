@@ -97,5 +97,14 @@
     "expected_trigger": "stock-research",
     "should_trigger": true,
     "pass_condition": "Presents the decision card and continues under existing authorization without asking again, chains to update-stock-analysis, uses dated explicit WACC inputs appropriate to FCFF, and persists the consistent rate audit and scenario results via the supported Python workflow. Explains that JSON artifacts are inputs while SQLite is the app's source; no per-view rate recomputation."
+  },
+  {
+    "id": "EVAL-011",
+    "type": "positive",
+    "category": "forward_build_before_rate",
+    "prompt": "Research the AI data-center builder's latest quarter and tell me if the valuation needs redoing.",
+    "expected_trigger": "stock-research",
+    "should_trigger": true,
+    "pass_condition": "Completes the capacity-to-earnings build (recurring versus one-time revenue, revenue per MW, dated capacity ladder with funding status, contracted floor, common-earnings claims) before proposing a rate or re-valuation, and reports which scenario assumptions the evidence contradicts."
   }
 ]

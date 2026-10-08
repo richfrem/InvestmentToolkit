@@ -43,6 +43,7 @@ Trigger with `/research-stock {TICKER}` or natural language when material events
 2. **Execute Research Sweep**:
    - Collect recent quarterly earnings transcripts, SEC 10-Q/8-K filings, and guidance revisions.
    - Screen competitor dynamics, capacity additions, and regulatory changes.
+   - For AI-infrastructure names, complete the capacity-to-earnings build in the AI forward guide before any rate or re-valuation proposal.
 3. **Classify Catalysts**:
    - `Class A (Structural)`: Guidance revision $>10\%$, contract win $>20\%$ backlog, or thesis breaker trip $\rightarrow$ Recommend re-valuation.
    - `Class B (Material)`: Margins $\pm 200$ bps, management change $\rightarrow$ Flag for user review.

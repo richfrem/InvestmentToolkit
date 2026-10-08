@@ -21,6 +21,7 @@ def rate_inputs(method: str = "annual_fcff") -> dict:
             "riskFreeRate": 0.04, "beta": 1, "erp": 0.06,
             "marketCap": 800, "totalDebt": 200, "costOfDebtPreTax": 0.05,
             "taxShieldRate": 0.20,
+            "rationale": "Synthetic fixture: market beta of one chosen for arithmetic clarity",
             "sources": [{"date": "2026-10-07", "url": "https://example.org/test-fixture",
                          "use": "Synthetic unit-test inputs, not a researched stock"}]}
 
@@ -37,6 +38,16 @@ def test_rate_matches_business_or_common_equity_claim() -> None:
     assert fcff["components"]["costOfDebtAfterTax"] == pytest.approx(0.04)
 
 
+def test_rationale_is_retained_for_display_and_blank_text_is_rejected() -> None:
+    """Every audited rate carries the written reason the app shows beside it."""
+    audit = wacc.compute_discount_rate(rate_inputs("terminal_earnings"))
+    assert audit["inputs"]["rationale"].startswith("Synthetic fixture")
+    inputs = rate_inputs()
+    inputs["rationale"] = "   "
+    with pytest.raises(ValueError, match="rationale"):
+        wacc.compute_discount_rate(inputs)
+
+
 def test_no_tax_shield_and_no_artificial_rate_cap() -> None:
     """Loss-making borrowers can have no current shield; high equity rates survive."""
     inputs = rate_inputs()
@@ -46,7 +57,7 @@ def test_no_tax_shield_and_no_artificial_rate_cap() -> None:
     assert wacc.compute_discount_rate(inputs)["selectedRate"] == pytest.approx(0.265)
 
 
-@pytest.mark.parametrize("field", ["riskFreeRate", "erp", "beta", "totalDebt", "sources"])
+@pytest.mark.parametrize("field", ["riskFreeRate", "erp", "beta", "totalDebt", "sources", "rationale"])
 def test_missing_inputs_are_not_silently_substituted(field: str) -> None:
     """Missing debt is distinct from confirmed zero debt and requires investigation."""
     inputs = rate_inputs()

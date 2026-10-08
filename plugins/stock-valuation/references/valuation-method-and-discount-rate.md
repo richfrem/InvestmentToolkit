@@ -64,6 +64,7 @@ Required JSON shape (synthetic arithmetic example, not a stock recommendation):
   "totalDebt": 200,
   "costOfDebtPreTax": 0.05,
   "taxShieldRate": 0.20,
+  "rationale": "One or two plain sentences: why this rate basis and this beta, and what was rejected",
   "sources": [{
     "date": "2026-10-07",
     "url": "https://example.org/synthetic-fixture",
@@ -73,6 +74,10 @@ Required JSON shape (synthetic arithmetic example, not a stock recommendation):
 ```
 
 This yields WACC **8.8%**, or Ke **10%** with `method: "terminal_earnings"`. Rates and tax-shield fractions use decimals, capital values use one common currency/unit, beta is dimensionless. Output retains original inputs, unrounded Ke/WACC and capital weights, `rateType`, `selectedRate` and `readiness: REVIEW_REQUIRED`. Sources must cover every input and include the research details above; the script checks basic shape/arithmetic, not source authenticity or adequacy.
+
+`rationale` is required and is rejected when blank. The app shows it verbatim under **Why this rate**, with the saved formula, on the Stock Analysis rate card and in the thesis popup, so write it for the portfolio owner: name the rate basis, the beta source (regression window or peer industry and leverage) and the main alternative that was rejected with its numerical effect. A hand-derived input such as a relevered peer beta must show its arithmetic in `sources`.
+
+Select the rate only after the forward operating scenarios are rebuilt; for AI-infrastructure names that means the [capacity-to-earnings build](ai-forward-valuation.md#capacity-to-earnings-build) comes first.
 
 Explicit mode requires even zero debt and zero tax shield to be supplied. It has no rate cap/floor or fallback. It supports a simple common-equity/debt capital structure only. Its nonnegative-beta input contract excludes negative-beta cases; those require separate reviewed support. Preferred capital, unusual financing, time-varying rates and project waterfalls require further modeling rather than invented zero inputs.
 

@@ -8,6 +8,7 @@ import type { Projection } from '../services/api';
 import { savedValuationRate } from '../utils/valuationPresentation';
 import { fmtPrice } from '../utils/formatters';
 import { HelpTrigger } from './HelpModal';
+import { SavedRateRationale } from './SavedRateRationale';
 
 /** Display saved results only; rate estimation stays in the Python valuation workflow. */
 export function SavedValuationRateCard({ projection }: { projection?: Projection | null }) {
@@ -28,6 +29,7 @@ export function SavedValuationRateCard({ projection }: { projection?: Projection
                 {rate.auditDate && <div className="flex justify-between"><span>Input audit date</span><span>{rate.auditDate}</span></div>}
             </div>
             <p className="text-xs text-slate-500 mt-3">{rate.status}</p>
+            <SavedRateRationale rate={rate} />
         </section>
     );
 }

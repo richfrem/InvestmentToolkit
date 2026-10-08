@@ -39,8 +39,8 @@ python3 plugins/stock-valuation/scripts/fetch_financials.py {TICKER} > temp/eval
    - Run `comps_valuation.py` for its supported peer EV/Sales comparison; do not claim unsupported EBITDA/P/E corroboration.
    - Run `reverse_dcf.py` to calculate the market-implied growth rate.
 3. **Construct 3-Scenario Valuation**:
-   - Select the cash-flow claim and rate basis using the shared protocol. Run `wacc.py --inputs temp/evaluations/{TICKER}_rate_inputs.json --pretty` and save the output as `{TICKER}_rate_audit.json`; review sources, capital claims and tax-shield availability. Use the selected decimal rate in the calculation and persistence payload.
-   - Reconcile annual forward estimates and cash conversion; justify Bear/Base/Bull assumptions and weights (20%/60%/20% is a starting point).
+   - Rebuild forward scenarios first: reconcile annual forward estimates and cash conversion, and for AI-infrastructure names complete the capacity-to-earnings build in the AI forward guide. Justify Bear/Base/Bull assumptions and weights (20%/60%/20% is a starting point).
+   - Then select the cash-flow claim and rate basis using the shared protocol. Run `wacc.py --inputs temp/evaluations/{TICKER}_rate_inputs.json --pretty` and save the output as `{TICKER}_rate_audit.json`; inputs must include a plain-language `rationale`, which the app displays. Review sources, capital claims and tax-shield availability. Use the selected decimal rate in the calculation and persistence payload.
    - Run `dcf_scenarios.py` with reviewed `annual_fcff` forecasts for cash-flow requests, or retain and accurately label the existing terminal earnings mode. `recalculate_forward_valuation.py --model INPUT.json --output DIR` forces FCFF; do not use it for an unaccepted method migration.
    - Report operating scenarios separately from rate sensitivities; unresolved material financing/capex/ownership gaps mean diagnostic ranges and `NEEDS_REVALUATION`, not a validated replacement fair value.
    - Benchmark exit multiples against `references/valuation-benchmarks.md`.

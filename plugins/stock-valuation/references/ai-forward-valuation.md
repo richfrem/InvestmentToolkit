@@ -4,6 +4,16 @@ Apply this guide before valuing an AI-exposed company or treating its current
 valuation signal as a trade-ready conclusion. Keep the canonical recommendation
 separate from evidence readiness and standing-decision conditions.
 
+## Contents
+
+- [Forward estimates and dates](#forward-estimates-and-dates)
+- [Memory and storage](#memory-and-storage)
+- [Power and infrastructure](#power-and-infrastructure)
+- [Capacity-to-earnings build](#capacity-to-earnings-build)
+- [Cash-flow bridge](#cash-flow-bridge)
+- [Recommendation readiness](#recommendation-readiness)
+- [Verification cases](#verification-cases)
+
 ## Forward estimates and dates
 
 Use dated primary sources: latest earnings release, earnings-call prepared
@@ -47,6 +57,42 @@ dates, cancellation/force-majeure terms and customer financing/concentration. A
 multi-year backlog is not an annual revenue floor, and a framework's maximum
 capacity is not firm contracted revenue. Model verified delivery schedules and
 enforceability rather than multiplying the entire pipeline into valuation.
+
+## Capacity-to-earnings build
+
+For data-center, power and other AI-infrastructure names, complete this build on
+every valuation refresh and earnings review **before selecting a discount rate**.
+The rate is applied to refreshed scenarios; never lower or raise a rate to
+compensate for scenarios that were not rebuilt.
+
+1. **Split reported revenue.** Separate recurring revenue (base rent, hosting,
+   service contracts) from construction-linked or one-time revenue (tenant fit-out,
+   hardware resale, recoveries). Annualize only the recurring part, and state the
+   capacity that produced it.
+2. **Derive unit economics.** Contracted base-term revenue ÷ lease term ÷ contracted
+   capacity gives revenue per MW per year. Cross-check it against reported recurring
+   revenue ÷ energized MW and explain any gap (ramp, rate escalators, mix).
+3. **Build a dated capacity ladder.** Classify every MW as energized; funded and
+   under construction; signed but unfunded; expected but unsigned; or an option,
+   framework or management target. Record delivery dates and the funding status of
+   each campus or project.
+4. **Reconcile the near term.** Compare the implied next 1–2 fiscal years with
+   management guidance and dated consensus. A model path far below an evidenced
+   run-rate, or far above funded capacity, must be corrected or explained.
+5. **Anchor the terminal year to the contracted floor.** Signed capacity fully
+   delivered × revenue per MW is the contracted floor. Bear tests partial delivery
+   or funding failure of signed capacity; base assumes signed capacity delivers on
+   the evidenced schedule; bull adds named capacity with its catalyst. Capacity
+   with no tenant or closed funding does not enter the base case, and a management
+   capacity target is not a forecast.
+6. **Translate to earnings for common shareholders.** State capex per MW where
+   disclosed, closed versus open financing, the cost of new debt, expected dilution,
+   and project partners or noncontrolling interests. Net margin and share count
+   must reflect interest, depreciation and those claims; revenue growth is not
+   common-earnings growth.
+7. **Record the build.** Put the ladder, unit economics, changed assumptions and
+   remaining gaps in the research report and outlook audit. Unverified margins or
+   ownership waterfalls keep **NEEDS_REVALUATION** even when revenue is refreshed.
 
 ## Cash-flow bridge
 
@@ -96,6 +142,9 @@ recommendation.py; never re-derive a competing action in the research narrative.
   a post-boom normalization needs evidence on pricing, capacity and contracts.
 - BE: a grid-delay thesis must show executable manufacturing/deployment capacity;
   Oracle framework capacity must be separated from firm orders.
+- APLD: Q1 FY2027 revenue of $341.9M included $183.5M of tenant fit-out and $65.8M of
+  base rent; $36B over 15 years on 1.41 GW is about $1.7M per MW per year, so a base
+  case below roughly $2.4B of terminal rent needs a delivery or funding failure to justify it.
 - A valuation saved today using yesterday's guidance is not automatically current.
 - Strong demand with weak cash conversion can still warrant a cautious valuation.
 - A fresh model may still imply TRIM; the evidence gate must not force a bullish result.
