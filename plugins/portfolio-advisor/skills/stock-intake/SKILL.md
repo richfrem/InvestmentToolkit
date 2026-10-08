@@ -15,6 +15,7 @@ description: Autonomous end-to-end stock intake wizard pulling live financials, 
 
 ## Constraints
 - **AI forward-evidence gate**: Before valuation or action proposals for AI-exposed names, apply [AI-sector forward valuation evidence](references/ai-forward-valuation.md). Reconcile dated forward estimates, memory/storage or power demand, executable capacity and cash conversion; flag `NEEDS_REVALUATION` when material drivers are missing. This review flag does not replace the canonical action or standing decision.
+- **Recommendation coherence**: Follow [Keeping recommendations coherent](references/recommendation-coherence.md) every session: refresh positions and executed trades first (TradingView by default), present `decision_check.effective` as the stance and reconcile any CONFLICT or OUTDATED standing decision with the owner through `set_standing_decision.py`, rank by today's priority with already-acted-on items last, and state every condition against current chart levels rather than as general guidance.
 - Guide one conversational decision at a time using plain-English analogies for technical metrics.
 - Respect existing standing decisions unless Fair Value delta exceeds 15%.
 - Capital sourcing must compute advisory share counts funded by selling PSU-U.TO in the same account.
@@ -42,5 +43,6 @@ python3 investment_screener/backend/py_services/verify_screener_integrity.py
 ```
 
 ## References
+- [Keeping Recommendations Coherent](references/recommendation-coherence.md) - Trade refresh, standing-decision reconciliation, daily priority order and chart-level conditions.
 - [AI-sector Forward Valuation Evidence](references/ai-forward-valuation.md) - Forward estimates, memory/storage and power drivers, cash-flow bridge, and recommendation readiness.
 - [Stock Analysis Surface Checklist](references/stock-analysis-surface-checklist.md) - Canonical metric mappings, sources, and persistence verification rules.

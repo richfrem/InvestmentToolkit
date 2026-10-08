@@ -112,6 +112,40 @@ def _earnings_note(e: dict[str, Any] | None) -> str:
             f"binary event, size before acting.")
 
 
+def _decision_text(check: dict[str, Any] | None, decision: dict[str, Any]) -> str:
+    """Why a standing decision holds this card back: the reconciled note when available."""
+    reason = str(decision.get("reason") or "").strip()
+    if check and check.get("note"):
+        return f"{check['note']}{' Your recorded reason: ' + reason if reason else ''}"
+    return (f"Standing decision ({decision.get('type', 'USER')}): {reason} "
+            "Signal stands but no trade proposed without your direction.")
+
+
+_PRIORITY_LABELS = ("Ready to act", "Needs your decision", "No trade proposed", "Waiting for your condition", "Already acted on")
+
+
+def _priority(card: dict[str, Any]) -> dict[str, Any]:
+    """Where a card ranks today and why.
+
+    Tiers: 0 ready to act, 1 the standing decision and valuation disagree, 2 no trade
+    proposed, 3 waiting (owner's condition or the macro gate), 4 already acted on.
+    """
+    relation = (card.get("decisionCheck") or {}).get("relation")
+    recent = card.get("recentTrades") or {}
+    if (recent.get("context") or {}).get("status") == "ACTED":
+        tier = 4
+    elif card["executionStatus"] in ("READY", "LIMIT_ONLY"):
+        tier = 0
+    elif relation in ("CONFLICT", "OUTDATED", "UNCLEAR"):
+        tier = 1
+    elif relation == "WAITS" or card["executionStatus"] == "QUEUED":
+        tier = 3
+    else:
+        tier = 2
+    label = "Queued by the macro gate" if tier == 3 and card["executionStatus"] == "QUEUED" else _PRIORITY_LABELS[tier]
+    return {"tier": tier, "label": label}
+
+
 def build_recommendations(
     scores: list[dict[str, Any]],
     standing: dict[str, Any],
@@ -130,8 +164,10 @@ def build_recommendations(
             computed from shares × price).
 
     Returns:
-        Recommendation cards: sells first (worst score first), then buys
-        (best score first). MAINTAIN/WATCHLIST actions produce no cards.
+        Recommendation cards in today's priority order: ready to act, needs your
+        decision, no trade proposed, waiting, already acted on; within a group sells
+        before buys, then the larger valuation gap first. MAINTAIN/WATCHLIST actions
+        produce no cards.
     """
     earn_map = {e["ticker"]: e for e in earnings}
     regime = macro.get("regime", "NEUTRAL")
@@ -149,10 +185,17 @@ def build_recommendations(
         recent = s.get("recent_trades") if (s.get("recent_trades") or {}).get("count") else None
         acted = bool(recent) and recent["context"]["status"] == "ACTED"
         further = " a further" if acted else ""
+        # Does the owner's standing decision agree with this action (standing_decision_check.py)?
+        check = s.get("decision_check") or None
+        if check and check["relation"] == "OUTDATED":
+            decision = None   # an entry call cannot govern a position already held
         base: dict[str, Any] = {
             "ticker": s["ticker"],
             "signal": band,
-            "recommendation": band,
+            # One stance per card: the action, or the reconciled stance when a standing decision disagrees.
+            "recommendation": check["effective"] if check else band,
+            "decisionCheck": check,
+            "pctToFairValue": s.get("pct_to_fv"),
             "executionStatus": "REVIEW",
             "score": s["total"],
             "held": held,
@@ -169,9 +212,7 @@ def build_recommendations(
             if decision:
                 base["executionStatus"] = "BLOCKED"
                 base["rationale"] = (
-                    f"{_signal_summary(s)}. Standing decision "
-                    f"({decision.get('type', 'USER')}): {decision.get('reason', '')} "
-                    f"Signal stands but no trade proposed without your direction."
+                    f"{_signal_summary(s)}. {_decision_text(check, decision)}"
                     f"{_earnings_note(earn)}"
                 )
                 sells.append(base)
@@ -218,7 +259,7 @@ def build_recommendations(
         # ── ACCUMULATE ────────────────────────────────────────────────────────
         if decision and not decision.get("maxEntryPrice"):
             base["executionStatus"] = "BLOCKED"
-            base["rationale"] = f"{_signal_summary(s)}. Standing decision: {decision.get('reason', '')}. Review before trading."
+            base["rationale"] = f"{_signal_summary(s)}. {_decision_text(check, decision)}"
             buys.append(base)
             continue
         if decision and decision.get("maxEntryPrice"):
@@ -265,9 +306,15 @@ def build_recommendations(
         )
         buys.append(base)
 
-    sells.sort(key=lambda r: r["score"])
-    buys.sort(key=lambda r: -r["score"])
     ranked = sells + buys
+    for card in ranked:
+        check = card["decisionCheck"]
+        if check and check["relation"] in ("OUTDATED", "UNCLEAR"):
+            card["rationale"] = f"{card['rationale']} {check['note']}"
+        card["priority"] = _priority(card)
+    # Daily priority order, not sell-then-buy by score: almost every card shares one score.
+    ranked.sort(key=lambda r: (r["priority"]["tier"], 0 if r["signal"] in ("EXIT", "TRIM") else 1,
+                               -abs(r["score"]), -abs(r["pctToFairValue"] or 0), r["ticker"]))
     # Every card says what was already traded, so a signal never reads as if nothing happened.
     for card in ranked:
         note = ((card["recentTrades"] or {}).get("context") or {}).get("note")
@@ -298,7 +345,7 @@ def align_current_brief(brief: dict[str, Any], db_path: str | None = None) -> di
         actual = rec["current_weight_pct"]
         target = targets.get(original["ticker"])
         score.update(band=rec["action"], dcf_action=rec["valuation"], pct_to_fv=rec["upside_pct"],
-                     recent_trades=rec.get("recent_trades"),
+                     recent_trades=rec.get("recent_trades"), decision_check=rec.get("decision_check"),
                      actual_weight=actual, target_weight=target,
                      weight_gap=target - actual if target is not None else None)
         scores.append(score)

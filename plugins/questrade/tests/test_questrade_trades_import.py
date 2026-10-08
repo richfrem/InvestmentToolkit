@@ -216,12 +216,12 @@ def test_reimport_fills_in_missing_details_without_touching_owner_edits(tmp_path
 def test_unknown_symbols_are_rejected_unless_explicitly_allowed(tmp_path):
     """Broker-only symbols (cash funds, conversion legs) must not create junk investments."""
     conn = seeded_db(tmp_path)
-    odd = [trade(symbol="G036247", externalId="g"), trade(symbol="PSUCF", externalId="p")]
+    odd = [trade(symbol="G036247", externalId="g"), trade(symbol="DLR.TO", externalId="p")]
     report = import_trades(conn, ACCOUNTS, odd + [trade()])
     assert report["imported"] == 1
     assert [item["reason"] for item in report["rejected"]] == [
         "unknown symbol G036247: not an investment in the portfolio database",
-        "unknown symbol PSUCF: not an investment in the portfolio database"]
+        "unknown symbol DLR.TO: not an investment in the portfolio database"]
     assert {row["investment_id"] for row in list_trade_log_entries(conn)} == {"ZS"}
     allowed = import_trades(conn, ACCOUNTS, odd, allow_new_symbols=True)
     assert (allowed["imported"], allowed["rejected"]) == (2, [])

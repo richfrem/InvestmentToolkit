@@ -136,3 +136,15 @@ it('computes the gain and upside columns from the recommendation fair value and 
     expect(fairValueGap(null, 46.31)).toEqual({ gainLoss: null, upside: null });
     expect(fairValueGap(44.64, 0)).toEqual({ gainLoss: null, upside: null });
 });
+
+it('shows a standing-decision conflict in the Check column ahead of the reward:risk cross-check', () => {
+    const conflicted = { ...below, decision_check: { relation: 'CONFLICT', effective: 'MAINTAIN', age_days: 109,
+        note: "Valuation says ACCUMULATE, but your standing decision is 'hold no add'." } } as RecommendationRecord;
+    render(<RiskRewardCell columnId="rr_check" rec={conflicted} />);
+    expect(screen.getByText('Conflict').closest('span[title]')!.getAttribute('title')).toContain("'hold no add'");
+    expect(riskRewardRowFields(conflicted).rr_check).toBe(0);
+    cleanup();
+    const agreeing = { ...below, decision_check: { relation: 'AGREES', effective: 'ACCUMULATE', age_days: null, note: 'agrees' } } as RecommendationRecord;
+    render(<RiskRewardCell columnId="rr_check" rec={agreeing} />);
+    expect(screen.getByText('Aligned')).toBeTruthy();
+});

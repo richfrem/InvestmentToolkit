@@ -1182,6 +1182,42 @@
       "dst": "plugins/tradingview/skills/tv-portfolio-sync/scripts/tv_trades_import.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/weekly-review/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
     }
   ]
 }

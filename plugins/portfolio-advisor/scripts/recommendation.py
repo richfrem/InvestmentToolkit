@@ -31,8 +31,10 @@ The +/-15% valuation band is the policy inherited by this refactor. Standing
 decisions remain explicit review constraints; this band is not an FV-change test.
 
 Each record also carries risk_reward and support (risk_reward.py) and
-recent_trades (recent_trades.py). They explain and cross-check the action against
-the saved scenarios and the owner's filled trades; they never change it.
+recent_trades (recent_trades.py) and decision_check (standing_decision_check.py).
+They explain and cross-check the action against the saved scenarios, the owner's
+filled trades and the owner's standing decision; they never change `action`.
+decision_check.effective is the stance to show when the two disagree.
 """
 from __future__ import annotations
 
@@ -46,6 +48,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from recent_trades import summarize_recent_trades, trade_context, window_start  # noqa: E402
 from risk_reward import SCENARIO_NAMES, assess_risk_reward, reduce_view, valuation_support  # noqa: E402
+from standing_decision_check import check_standing_decision  # noqa: E402
 
 ACT_THRESHOLD_PCT = 15.0
 
@@ -171,8 +174,9 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
     try:
         today = date.today()
         trades = _recent_trades_by_symbol(conn, today)
-        for inv_id, symbol, standing_type, standing_reason in conn.execute(
-            "SELECT investment_id, symbol, standing_decision_type, standing_decision_reason FROM investment;"
+        for inv_id, symbol, standing_type, standing_reason, standing_source in conn.execute(
+            "SELECT investment_id, symbol, standing_decision_type, standing_decision_reason, "
+            "standing_decision_source FROM investment;"
         ).fetchall():
             entry, fv, price, price_source, upside = _valuation_inputs(conn, inv_id, state["prices"], symbol)
             held = (state["shares"].get(symbol) or 0) > 0
@@ -184,10 +188,13 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
                        projection_id=entry.get("projection_id") if entry else None, current_weight_pct=round(weights.get(symbol, 0.0), 2),
                        fair_value=fv, price=price,
                        price_source=price_source,
-                       standing_decision={"type": standing_type or "USER", "reason": standing_reason} if standing_type or standing_reason else None)
+                       standing_decision={"type": standing_type or "USER", "reason": standing_reason,
+                                          "source": standing_source} if standing_type or standing_reason else None)
             rec.update(_risk_reward_fields(conn, entry, rec, price, fv, weights.get(symbol, 0.0), targets.get(symbol)))
             summary = summarize_recent_trades(trades.get(symbol, []), today)
             rec["recent_trades"] = {**summary, "context": trade_context(rec["action"], summary)}
+            # One answer to "does my standing decision agree with this action, and what is the stance?"
+            rec["decision_check"] = check_standing_decision(rec["action"], held, rec["standing_decision"], summary, today)
             out[symbol] = rec
     finally:
         conn.close()

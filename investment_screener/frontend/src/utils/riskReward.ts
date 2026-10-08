@@ -43,6 +43,8 @@ export const RISK_REWARD_COLUMNS: RiskRewardColumn[] = [
 
 const COLUMN_IDS = new Set<string>(RISK_REWARD_COLUMNS.map(column => column.id));
 const CHECK_RANK: Record<string, number> = { CONFLICT: 0, REVIEW: 1, UNKNOWN: 2, ALIGNED: 3 };
+/** Sort rank when the owner's standing decision disagrees with the action (worst first). */
+const DECISION_RANK: Record<string, number> = { CONFLICT: 0, OUTDATED: 1, UNCLEAR: 1, WAITS: 1 };
 /** Sort value for "no modelled downside": better than any finite ratio. */
 const NO_DOWNSIDE_SORT = 999;
 
@@ -63,7 +65,7 @@ export function riskRewardRowFields(rec?: RecommendationRecord | null): RiskRewa
         rr_lossOdds: view?.loss_odds_pct ?? null,
         rr_weightGap: view?.weight_gap_pp ?? null,
         rr_support: rec?.support && rec.support.level !== 'NONE' ? rec.support.score : null,
-        rr_check: view ? CHECK_RANK[view.alignment.status] ?? null : null,
+        rr_check: view ? Math.min(CHECK_RANK[view.alignment.status] ?? 3, DECISION_RANK[rec?.decision_check?.relation ?? ''] ?? 3) : null,
     };
 }
 

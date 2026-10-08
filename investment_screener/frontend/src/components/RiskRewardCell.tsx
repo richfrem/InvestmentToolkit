@@ -56,8 +56,15 @@ function SupportPips({ rec }: { rec: RecommendationRecord }) {
     );
 }
 
+/** Standing-decision relations that need the owner's attention, mapped to the chip's status. */
+const DECISION_STATUS: Record<string, 'CONFLICT' | 'REVIEW'> = { CONFLICT: 'CONFLICT', OUTDATED: 'REVIEW', UNCLEAR: 'REVIEW', WAITS: 'REVIEW' };
+
 function AlignmentChip({ rec }: { rec: RecommendationRecord }) {
-    const alignment = rec.risk_reward!.alignment;
+    // A disagreement with the owner's own standing decision outranks the reward:risk cross-check.
+    const decisionStatus = DECISION_STATUS[rec.decision_check?.relation ?? ''];
+    const alignment = decisionStatus
+        ? { status: decisionStatus, note: rec.decision_check!.note }
+        : rec.risk_reward!.alignment;
     const tone = alignmentStyle(alignment.status);
     return (
         <span title={alignment.note} className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${tone.text} ${tone.bg} ${tone.border}`}>
