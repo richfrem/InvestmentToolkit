@@ -19,6 +19,7 @@ Directly queries Questrade MCP balances and positions tools to synchronize holdi
 
 ## Constraints
 
+- **Optional source**: TradingView is the default for positions and trades. Use this skill only when `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade` as available and the owner chose Questrade for this refresh; otherwise run `/tv-portfolio-sync`.
 - **Sign-in first**: Questrade tools exist only after the owner signs in through a browser, and the sign-in does not carry over between sessions. If `List Accounts` is unavailable or fails, stop and follow `questrade-setup` (start the sign-in, give the owner the link, wait for them to finish) before staging any payload. Never substitute stale data for a failed sign-in.
 - **Scope boundaries**: Syncs holdings, quantities, cash splits, and exchange rates; does not update market prices.
 - **Account resolution**: Canonical account identifiers (`TFSA`, `RRSP`, `CASH`) are mapped automatically by `questrade_sync.py`.

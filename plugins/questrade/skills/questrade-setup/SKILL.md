@@ -46,6 +46,8 @@ Trigger browser login via `/mcp` or `codex mcp login questrade`.
    - Sign-in is per session and expires: every sync, activities or order skill must re-check with `List Accounts` and return here when it fails.
 3. **Verify Connectivity**:
    Call MCP tool `List Accounts` to confirm live connection.
+4. **Record the Choice**:
+   With the owner's agreement, set `QUESTRADE_ENABLED=true` in the repository `.env` (add the line; never rewrite other lines). Refresh skills and the Trade Log page read it through `broker_sources.py`. Without it the toolkit uses TradingView only.
 
 ## Verification
 

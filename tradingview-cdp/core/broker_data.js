@@ -25,6 +25,7 @@
  */
 
 import { evaluate, evaluateAsync } from '../connection.js';
+import { parseOrderHistoryTable } from './order_history.js';
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -477,6 +478,91 @@ export async function getPortfolio() {
     snapshots,
     positions:   allPositions,
   };
+}
+
+// ── order history (executed trades) ───────────────────────────────────────────
+
+/**
+ * Read the active account's filled orders from the "Order history" tab.
+ *
+ * The panel's time column is printed in the app's local time, so each value is
+ * also converted to an ISO timestamp inside the page. `expectedCount` is the
+ * number on the Filled sub-tab; a mismatch with the rows read means the table
+ * was not fully rendered and the caller should not trust the result.
+ *
+ * @returns {Promise<object>} { orders, expectedCount, missingColumns } or { error }
+ */
+export async function getOrderHistory() {
+  /**
+   * Opens Order history, selects its Filled sub-tab, reads the visible table that
+   * has Update Time and Order ID columns, and returns to the Positions tab.
+   */
+  const opened = await clickTab('Order history');
+  if (opened.error) return { error: opened.error, orders: [] };
+  await sleep(700);
+  const filled = await clickTab('Filled');
+  await sleep(900);
+
+  const raw = await evaluate(`(function() {
+    var table = [...document.querySelectorAll('table')].find(function(tb) {
+      var heads = [...tb.querySelectorAll('thead th')].map(function(h) { return h.textContent.trim(); });
+      var box = tb.getBoundingClientRect();
+      return box.width > 0 && box.height > 0 && heads.indexOf('Update Time') >= 0 && heads.indexOf('Order ID') >= 0;
+    });
+    if (!table) return JSON.stringify({ error: 'Order history table not found' });
+    var heads = [...table.querySelectorAll('thead th')].map(function(h) { return h.textContent.trim(); });
+    var timeIndex = heads.indexOf('Update Time');
+    var rows = [...table.querySelectorAll('tbody tr')].map(function(r) {
+      return [...r.querySelectorAll('td')].map(function(t) { return t.textContent.trim(); });
+    }).filter(function(r) { return r.length >= heads.length - 1; });
+    var times = rows.map(function(r) {
+      var parsed = new Date(String(r[timeIndex] || '').replace(' ', 'T'));
+      return isNaN(parsed.getTime()) ? null : parsed.toISOString();
+    });
+    var badge = [...document.querySelectorAll('[class*="roundTabButton"], [class*="underline-tab"]')]
+      .map(function(t) { return t.textContent.trim(); })
+      .map(function(t) { var m = t.match(/^Filled\\s*(\\d+)/); return m ? Number(m[1]) : null; })
+      .find(function(n) { return n !== null; });
+    return JSON.stringify({ heads: heads, rows: rows, times: times, expectedCount: badge === undefined ? null : badge });
+  })()`).then(JSON.parse);
+
+  await clickTab('Positions');
+  if (raw.error) return { error: raw.error, orders: [] };
+  const parsed = parseOrderHistoryTable(raw.heads, raw.rows, raw.times);
+  return {
+    orders: parsed.orders.filter(order => order.status === 'filled'),
+    expectedCount: raw.expectedCount,
+    missingColumns: parsed.missingColumns,
+    filledTabError: filled.error || null,
+  };
+}
+
+/**
+ * Read filled orders for every broker account and restore the account that was selected.
+ *
+ * @returns {Promise<object>} { dataSource, timestamp, accounts: [{ accountType, orders, expectedCount, error? }] }
+ */
+export async function getOrderHistoryAllAccounts() {
+  /**
+   * Iterates the account dropdown, reads each account's Order history, then
+   * switches back to the originally selected account.
+   */
+  const original = await activeAccount();
+  const accounts = await getAccounts();
+  const results = [];
+  for (const acct of accounts) {
+    const switched = await switchAccount(acct.accountType);
+    if (switched.error) {
+      results.push({ accountType: acct.accountType, orders: [], error: switched.error });
+      continue;
+    }
+    const history = await getOrderHistory();
+    results.push({ accountType: acct.accountType, ...history });
+  }
+  if (original.accountType) {
+    await switchAccount(original.accountType).catch(() => {});
+  }
+  return { dataSource: 'tradingview-cdp', timestamp: new Date().toISOString(), accounts: results };
 }
 
 // ── account totals ────────────────────────────────────────────────────────────

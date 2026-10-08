@@ -37,5 +37,4 @@ appear, then click the matching resolution row. Close the dropdown after selecti
 ## 2026-10-04 — Skill Retrofit: Align tv-author-pine-script references and TOCs
 
 **Tier: 0 (Routine Evolution)** — Connected managed symlinks in `tv-author-pine-script/references/` to canonical references (`pinescript_overview.md`, `PineScript_Agent_Skill_Rules.md`, `Top_TradingView_Indicators_Reference.md`), added early Contents TOCs, and achieved 100% audit pass across all 27 TradingView skills (0 errors, 0 warnings).
-
-
+| 2026-10-08 | Tier 1 (Gap) | Executed trades could only be imported through the optional Questrade connection; TradingView, the baseline every user has, read open orders only. | Added `getOrderHistory()` / `getOrderHistoryAllAccounts()` (Order history > Filled, header-mapped by pure `order_history.js`), `tv_trades_import.py`, a trades step in `tv-portfolio-sync`, and trade import on the Trade Log page's Sync from TV button (ADR-036). | Engine + script + skill + tests | Live run read 31 filled orders across accounts and matched all of them to trades already in the log: none duplicated, 29 gained order ids, a second run changed nothing. |

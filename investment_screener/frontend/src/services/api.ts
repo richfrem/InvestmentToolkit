@@ -812,9 +812,29 @@ export const modifyTrade = async (params: {
     return res.json();
 };
 
-export const syncTradeLogFromTV = async (): Promise<{ success: boolean; tvOrders: number; cancelled: number; message: string; error?: string }> => {
-    const res = await fetch('/api/trading/log/sync-from-tv', { method: 'POST' });
+/**
+ * Reconcile open orders against TradingView. With importTrades, also import executed trades from
+ * TradingView's order history (it switches through every account, so only on an explicit click).
+ */
+export const syncTradeLogFromTV = async (importTrades = false): Promise<{
+    success: boolean; tvOrders: number; cancelled: number; message: string; error?: string;
+    trades?: { ok: boolean; imported: number; enriched: number; warnings: string[]; error?: string } | null;
+}> => {
+    const res = await fetch('/api/trading/log/sync-from-tv', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ importTrades }),
+    });
     return res.json();
+};
+
+/** Broker connections allowed for refreshes: TradingView always, Questrade only when enabled in .env. */
+export interface BrokerSources { default: string; available: string[]; questrade: boolean }
+
+export const fetchBrokerSources = async (): Promise<BrokerSources> => {
+    const fallback: BrokerSources = { default: 'tradingview', available: ['tradingview'], questrade: false };
+    try {
+        const res = await fetch('/api/trading/broker-sources');
+        return res.ok ? await res.json() : fallback;
+    } catch { return fallback; }
 };
 
 export const fetchTVQuote = async (ticker: string): Promise<MarketQuote> => {

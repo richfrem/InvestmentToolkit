@@ -27,7 +27,7 @@ python3 plugins/portfolio-advisor/scripts/weekly_review.py --prompt-output temp/
 ```
 
 ## Workflow
-1. **Drift Audit**: Evaluate week-over-week price changes and allocation drift across all active holdings and watchlists. When a Questrade session is connected, first run `/questrade-sync-portfolio` so the week's executed trades are in the Trade Log (optional augment).
+1. **Drift Audit**: Evaluate week-over-week price changes and allocation drift across all active holdings and watchlists. First refresh positions and executed trades with `/tv-portfolio-sync` so the week's fills are in the Trade Log. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade.
 2. **Compile Prompt**: Generate model-agnostic research prompt containing baseline anchor data (prices, 1W moves, target weights).
 3. **Multi-Model Dispatch**: Ingest responses from multiple frontier models leveraging their distinct strengths.
 4. **Fact-Check Gate**: Validate macro yield, VIX, and quoted prices against live market data before accepting findings.

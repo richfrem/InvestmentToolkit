@@ -33,61 +33,38 @@ Payload (either or both of "activities" and "trades"):
 Key Functions (Index):
     - trades_from_activities(): Map raw Questrade "Trades" activity rows to the trade contract.
     - attach_order_details(): Add order type, limit price and market-order time from get_order_history.
-    - normalize_trade()   : Validate one trade and build its trade_log_entry row, or return a rejection reason.
-    - entry_id_for()      : Stable id so the same fill always maps to the same row.
-    - import_trades()     : Write new filled rows; skip existing ones; collect rejections.
+    - import_trades()     : Resolve Questrade accounts, then import through trade_log_import (shared core).
     - main()              : CLI entry point (--payload, --db-path, --dry-run, --json).
 
 Key Input Dependencies:
+    - investment_screener/backend/py_services/trade_log_import.py (validation, de-duplication, writes)
     - investment_screener/backend/data/domain_model.sqlite (trade_log_entry, account, investment)
     - plugins/questrade/scripts/questrade_sync.py (canonical TFSA/RRSP account mapping)
 """
 
 import argparse
-import hashlib
 import json
 import math
 import sqlite3
 import sys
-from datetime import date, datetime, timezone
+from datetime import datetime
 from zoneinfo import ZoneInfo
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 _HERE = Path(__file__).resolve().parent
 _REPO_ROOT = _HERE.parents[2]
 sys.path.insert(0, str(_REPO_ROOT / "investment_screener/backend/py_services"))
 sys.path.insert(0, str(_HERE))
 
-from ticker_aliases import normalize_ticker  # noqa: E402
-from domain_model.account_repository import upsert_account  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
-from domain_model.investment_repository import get_investment, resolve_investment  # noqa: E402
-from domain_model.trade_log_entry_repository import get_trade_log_entry, upsert_trade_log_entry  # noqa: E402
+from trade_log_import import import_filled_trades  # noqa: E402
 from questrade_sync import _resolve_canonical_account_ids  # noqa: E402
 
 _DEFAULT_DB_PATH = str(_REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite")
 SOURCE = "questrade"
-FILLED = "filled"
-SIDES = ("buy", "sell")
-ORDER_TYPES = ("market", "limit", "stop", "stoplimit")
 # US and Canadian equity markets both trade on Eastern time; the trade date is an Eastern date.
 MARKET_TZ = ZoneInfo("America/New_York")
-
-
-def _positive_number(value: Any, allow_zero: bool = False) -> Optional[float]:
-    """Finite number above zero (or zero when allowed); anything else is None."""
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
-        return None
-    return float(value) if value > 0 or (allow_zero and value == 0) else None
-
-
-def entry_id_for(account: str, symbol: str, trade: dict) -> str:
-    """Stable trade-log id: the broker's own id when present, else the fill's details."""
-    external = trade.get("externalId")
-    key = f"id|{external}" if external else "|".join(
-        str(part) for part in (account, symbol, trade["date"], trade["side"], trade["shares"], trade["price"]))
-    return "qt-" + hashlib.sha1(key.encode()).hexdigest()[:16]
 
 
 def trades_from_activities(activities: dict[str, list[dict]]) -> list[dict]:
@@ -121,7 +98,7 @@ def _order_rows(orders: Any) -> list[dict]:
 
 
 def attach_order_details(trades: list[dict], orders: dict[str, Any] | None) -> list[dict]:
-    """Add order type, limit price and, for market orders, the order time to matching trades.
+    """Add order id, order type, limit price and, for market orders, the order time to matching trades.
 
     A trade matches a filled order in the same account with the same symbol, side,
     quantity and average price. `lastModified` is when the order was last changed,
@@ -141,7 +118,7 @@ def attach_order_details(trades: list[dict], orders: dict[str, Any] | None) -> l
             result.append(trade)
             continue
         candidates.remove(match)
-        extra: dict[str, Any] = {"orderType": match.get("type")}
+        extra: dict[str, Any] = {"orderType": match.get("type"), "orderId": match.get("id")}
         if match.get("limitPrice") is not None:
             extra["limitPrice"] = match["limitPrice"]
         if match.get("type") == "market" and isinstance(match.get("lastModified"), (int, float)):
@@ -150,116 +127,17 @@ def attach_order_details(trades: list[dict], orders: dict[str, Any] | None) -> l
     return result
 
 
-def _order_fields(trade: dict, trade_date: str) -> dict[str, Any]:
-    """Optional order type, limit price and timestamp; anything unusable is left out, never guessed."""
-    order_type = trade.get("orderType") if trade.get("orderType") in ORDER_TYPES else None
-    stamp = trade_date
-    try:
-        executed = datetime.fromisoformat(str(trade.get("executedAt")))
-        # Trust the time only when it falls on the broker's own trade date.
-        if executed.tzinfo and executed.date().isoformat() == trade_date:
-            stamp = executed.isoformat()
-    except ValueError:
-        pass
-    return {"order_type": order_type, "limit_price": _positive_number(trade.get("limitPrice")), "trade_date": stamp}
-
-
-def normalize_trade(trade: Any, account_ids: dict[str, str]) -> tuple[Optional[dict], str]:
-    """Validate one trade and return (row fields, "") or (None, reason).
-
-    Args:
-        trade: One payload trade in the documented contract.
-        account_ids: Questrade account uuid -> canonical account id (TFSA, RRSP, ...).
-    """
-    if not isinstance(trade, dict):
-        return None, "trade is not an object"
-    account = account_ids.get(str(trade.get("accountId")))
-    if not account or account == "UNKNOWN":
-        return None, f"unknown account {trade.get('accountId')!r}"
-    symbol = normalize_ticker(str(trade.get("symbol") or "").strip())
-    if not symbol:
-        return None, "missing symbol"
-    side = str(trade.get("side") or "").lower()
-    if side not in SIDES:
-        return None, f"side must be buy or sell, got {trade.get('side')!r}"
-    shares, price = _positive_number(trade.get("shares")), _positive_number(trade.get("price"), allow_zero=True)
-    if shares is None:
-        return None, "shares must be a positive number"
-    if price is None:
-        return None, "price must be a number"
-    try:
-        trade_date = date.fromisoformat(str(trade.get("date"))).isoformat()
-    except ValueError:
-        return None, f"date must be YYYY-MM-DD, got {trade.get('date')!r}"
-    clean = {**trade, "side": side, "shares": shares, "price": price, "date": trade_date}
-    # The broker's own gross amount is kept when reported; otherwise shares x price.
-    gross = _positive_number(trade.get("grossAmount"), allow_zero=True)
-    return {"account_id": account, "symbol": symbol, "action": side, "shares": shares, "price": price,
-            "total_cost": gross if gross is not None else round(shares * price, 2),
-            "entry_id": entry_id_for(account, symbol, clean), **_order_fields(trade, trade_date)}, ""
-
-
-def _missing_details(existing: dict, row: dict) -> dict[str, Any]:
-    """Order details the saved row lacks and this import can supply; never overwrites a saved value."""
-    gained: dict[str, Any] = {}
-    for column in ("order_type", "limit_price"):
-        if existing.get(column) is None and row[column] is not None:
-            gained[column] = row[column]
-    saved = str(existing.get("trade_date") or "")
-    if len(saved) == 10 and len(row["trade_date"]) > 10 and row["trade_date"].startswith(saved):
-        gained["trade_date"] = row["trade_date"]
-    return gained
-
-
 def import_trades(conn: sqlite3.Connection, accounts: list[dict], trades: list[dict],
                   dry_run: bool = False, allow_new_symbols: bool = False) -> dict[str, Any]:
-    """Write new executed trades as filled trade-log rows.
+    """Resolve Questrade account ids to canonical accounts and import through the shared core.
 
-    Existing rows (same stable id) are never re-created and their notes, status and
-    amounts are never changed, so a re-import is safe and owner edits survive. An
-    existing row only gains order details it does not have yet (order type, limit
-    price, order time). Rejected trades are returned with reasons. A symbol that is
-    not already an investment is rejected unless allow_new_symbols is set, so
-    broker-only symbols (cash funds, currency-conversion legs) never create
-    investments by accident.
-
-    Returns:
-        {"imported", "skipped", "enriched", "rejected": [{"trade", "reason"}], "entries": [new entry ids]}.
-        With dry_run, nothing is written and the counts say what would happen.
+    All validation, de-duplication (including against trades already imported from
+    TradingView) and writing live in trade_log_import.import_filled_trades.
     """
     account_ids = _resolve_canonical_account_ids(accounts)
-    now = datetime.now(timezone.utc).isoformat()
-    report: dict[str, Any] = {"imported": 0, "skipped": 0, "enriched": 0, "rejected": [], "entries": []}
-    seen: set[str] = set()
-    for trade in trades:
-        row, reason = normalize_trade(trade, account_ids)
-        if row is not None and not allow_new_symbols and get_investment(conn, row["symbol"]) is None:
-            row, reason = None, f"unknown symbol {row['symbol']}: not an investment in the portfolio database"
-        if row is None:
-            report["rejected"].append({"trade": trade, "reason": reason})
-            continue
-        existing = None if row["entry_id"] in seen else get_trade_log_entry(conn, row["entry_id"])
-        if existing or row["entry_id"] in seen:
-            gained = _missing_details(existing, row) if existing else {}
-            report["enriched" if gained else "skipped"] += 1
-            if gained and not dry_run:
-                upsert_trade_log_entry(conn, {**existing, **gained})
-            continue
-        seen.add(row["entry_id"])
-        report["imported"] += 1
-        report["entries"].append(row["entry_id"])
-        if dry_run:
-            continue
-        upsert_account(conn, row["account_id"], row["account_id"], row["account_id"])
-        upsert_trade_log_entry(conn, {
-            "entry_id": row["entry_id"], "investment_id": resolve_investment(conn, row["symbol"]),
-            "account_id": row["account_id"], "action": row["action"], "shares": row["shares"],
-            "price": row["price"], "total_cost": row["total_cost"],
-            "order_type": row["order_type"], "limit_price": row["limit_price"], "trade_date": row["trade_date"],
-            "notes": "Executed trade imported from Questrade", "status": FILLED, "source": SOURCE,
-            "priority": None, "logged_at": now, "tv_order_id": None,
-        })
-    return report
+    resolved = [{**trade, "account": account_ids.get(str(trade.get("accountId"))), "accountRef": trade.get("accountId")}
+                if isinstance(trade, dict) else trade for trade in trades]
+    return import_filled_trades(conn, resolved, source=SOURCE, dry_run=dry_run, allow_new_symbols=allow_new_symbols)
 
 
 def main() -> None:

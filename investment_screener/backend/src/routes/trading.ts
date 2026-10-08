@@ -57,6 +57,8 @@ const REPO_ROOT = path.resolve(__dirname, '../../../..');
 const PLACE_ORDER_PY = path.join(REPO_ROOT, 'investment_screener/backend/py_services/place_order.py');
 const GET_ORDERS_PY  = path.join(REPO_ROOT, 'plugins/tradingview/scripts/tv_get_orders.py');
 const TV_QUOTE_PY    = path.join(REPO_ROOT, 'plugins/tradingview/scripts/tv_quote.py');
+const TV_TRADES_IMPORT_PY = path.join(REPO_ROOT, 'plugins/tradingview/scripts/tv_trades_import.py');
+const BROKER_SOURCES_PY   = path.join(REPO_ROOT, 'investment_screener/backend/py_services/broker_sources.py');
 
 // ── Session State Machine ────────────────────────────────────────────────────
 
@@ -111,8 +113,13 @@ function patchSession(id: string, updates: Partial<TradeSession>): TradeSession 
 interface PyResult { stdout: string; stderr: string; exitCode: number; }
 
 function runPy(args: string[], timeoutMs = 60_000): Promise<PyResult> {
+  return runScript(PLACE_ORDER_PY, args, timeoutMs);
+}
+
+/** Run any repository Python script and collect its output; never rejects. */
+function runScript(script: string, args: string[], timeoutMs = 60_000): Promise<PyResult> {
   return new Promise(resolve => {
-    const proc = spawn('python3', [PLACE_ORDER_PY, ...args], { cwd: REPO_ROOT });
+    const proc = spawn('python3', [script, ...args], { cwd: REPO_ROOT });
     let stdout = '';
     let stderr = '';
     proc.stdout.on('data', (d: Buffer) => { stdout += d.toString(); });
@@ -514,7 +521,31 @@ router.post('/cancel', async (req, res) => {
 // Reconcile trade-log against live TV orders. Entries with status inactive/submitted
 // whose tvOrderId is no longer in TV are marked cancelled.
 
-router.post('/log/sync-from-tv', async (_req, res) => {
+/** Import executed trades from TradingView's order history (tv_trades_import.py). Never throws:
+ * the open-order reconciliation above must still succeed when the import cannot run. */
+async function importExecutedTradesFromTv(): Promise<{ ok: boolean; imported: number; enriched: number; warnings: string[]; error?: string }> {
+  // Reads every account in turn, so it needs longer than an open-order read.
+  const result = await runScript(TV_TRADES_IMPORT_PY, ['--json'], 120_000);
+  const report = extractJson(result.stdout);
+  if (!report || report.error) {
+    return { ok: false, imported: 0, enriched: 0, warnings: [], error: report?.error ?? (result.stderr.slice(0, 200) || 'no output') };
+  }
+  const rejected = (report.rejected ?? []).map((item: any) => String(item.reason));
+  return { ok: true, imported: report.imported ?? 0, enriched: report.enriched ?? 0, warnings: [...(report.warnings ?? []), ...rejected] };
+}
+
+// ── GET /api/trading/broker-sources ─────────────────────────────────────────
+// Which broker connections may refresh trades: TradingView always; Questrade only when
+// QUESTRADE_ENABLED is set in .env. One reader (broker_sources.py) for skills and the web app.
+
+router.get('/broker-sources', async (_req, res) => {
+  const result = await runScript(BROKER_SOURCES_PY, ['--json'], 10_000);
+  const sources = extractJson(result.stdout);
+  // Unknown means TradingView only: never offer Questrade on a failed read.
+  res.json(sources ?? { default: 'tradingview', available: ['tradingview'], questrade: false });
+});
+
+router.post('/log/sync-from-tv', async (req, res) => {
   try {
     const pyResult = await new Promise<PyResult>(resolve => {
       const proc = spawn('python3', [GET_ORDERS_PY, '--json'], { cwd: REPO_ROOT });
@@ -559,12 +590,19 @@ router.post('/log/sync-from-tv', async (_req, res) => {
     });
 
     writeLog(updated);
-    res.json({
-      success: true,
-      tvOrders: tvData.orders?.length ?? 0,
-      cancelled,
-      message: `Reconciled against ${tvData.orders?.length ?? 0} live TV order(s) — ${cancelled} entr${cancelled === 1 ? 'y' : 'ies'} marked cancelled`,
-    });
+    let message = `Reconciled against ${tvData.orders?.length ?? 0} live TV order(s) — ${cancelled} entr${cancelled === 1 ? 'y' : 'ies'} marked cancelled`;
+
+    // Executed trades are imported only when asked (the Sync button): it switches through every
+    // account in TradingView, which is too intrusive for the silent reconcile on page load.
+    let trades: Awaited<ReturnType<typeof importExecutedTradesFromTv>> | null = null;
+    if (req.body?.importTrades === true) {
+      trades = await importExecutedTradesFromTv();
+      message += trades.ok
+        ? `. Executed trades: ${trades.imported} new, ${trades.enriched} updated`
+          + (trades.warnings.length ? ` (${trades.warnings.length} note${trades.warnings.length === 1 ? '' : 's'}: ${trades.warnings[0]})` : '')
+        : `. Executed trades could not be imported: ${trades.error}`;
+    }
+    res.json({ success: true, tvOrders: tvData.orders?.length ?? 0, cancelled, trades, message });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }

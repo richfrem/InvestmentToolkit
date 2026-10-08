@@ -48,7 +48,8 @@ python3 plugins/tradingview/scripts/tv_health_check.py
    - Establish account architecture (TFSA primary + RRSP mirror).
    - Seed accounts into `domain_model.sqlite` via `seed_real_accounts.py`.
 3. **Ingest Active Holdings & Cash**:
-   - Sync broker positions via `/tv-portfolio-sync` (TradingView CDP) or onboard watchlist tickers via `/stock-intake`.
+   - Ask once: "Do you also use Questrade?" If no, leave `QUESTRADE_ENABLED=false` in `.env` (TradingView only, the default). If yes, run `/questrade-setup`, which records `QUESTRADE_ENABLED=true`.
+   - Sync broker positions and executed trades via `/tv-portfolio-sync` (TradingView CDP) or onboard watchlist tickers via `/stock-intake`.
 4. **Build DCF Baselines (Silent Batch Mode)**:
    - For all imported tickers, fetch financials, compute Rule of 40 and Piotroski F-Scores, and compile Bear/Base/Bull DCF scenarios.
 5. **Launch Application Suite**:

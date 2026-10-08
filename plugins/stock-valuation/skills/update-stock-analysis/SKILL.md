@@ -33,7 +33,7 @@ python3 plugins/stock-valuation/scripts/fetch_financials.py {TICKER} > temp/eval
 ## Workflow
 
 1. **Check Freshness & Context**:
-   Load prior projection, method, rate inputs and standing decision through supported API/repository scripts. Reproduce the prior result or label it not reproducible.
+   Load prior projection, method, rate inputs and standing decision through supported API/repository scripts. Reproduce the prior result or label it not reproducible. If the ticker is held and the Trade Log's latest executed trade is more than a week old, refresh trades with `/tv-portfolio-sync` first (Questrade only when `python3 investment_screener/backend/py_services/broker_sources.py --json` lists it and the owner prefers it), so the action is read against what was actually traded.
 2. **Fetch Financials & Multi-Lens Data**:
    - Run `fetch_financials.py {TICKER}` for yfinance fundamentals and consensus metrics.
    - Run `comps_valuation.py` for its supported peer EV/Sales comparison; do not claim unsupported EBITDA/P/E corroboration.
