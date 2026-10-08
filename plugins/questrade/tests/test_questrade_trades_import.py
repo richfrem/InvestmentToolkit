@@ -35,15 +35,25 @@ from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.trade_log_entry_repository import (  # noqa: E402
     list_filled_trades_since, list_trade_log_entries, upsert_trade_log_entry,
 )
-from questrade_trades_import import import_trades  # noqa: E402
+from questrade_trades_import import import_trades, trades_from_activities  # noqa: E402
 
 SCRIPT = REPO_ROOT / "plugins/questrade/scripts/questrade_trades_import.py"
 TFSA_ID = "91484e92-b210-49d2-0afe-184f9d0a1f28"
 RRSP_ID = "a35aef24-2e61-4202-079c-0d026087293a"
+# Live list_accounts shape captured 2026-10-08: the number is masked, with no " - " separator.
 ACCOUNTS = [
-    {"id": TFSA_ID, "name": "TFSA - 53408189", "productType": "SD", "supportTrading": True},
-    {"id": RRSP_ID, "name": "RRSP - 53408195", "productType": "SD", "supportTrading": True},
+    {"id": TFSA_ID, "name": "TFSA ••••8189", "productType": "SD", "supportTrading": True},
+    {"id": RRSP_ID, "name": "RRSP ••••8195", "productType": "SD", "supportTrading": True},
 ]
+# Live get_account_activities "Trades" rows captured 2026-10-08 (see questrade-tool-schemas.md).
+SELL_ACTIVITY = {"transactionId": "2861f1e0-b2b2-4c2e-9c9b-c84af5fdd544", "transactionType": "Trades",
+                 "description": "ZSCALER INC COMMON STOCK WE ACTED AS AGENT", "amount": 414.79, "currency": "USD",
+                 "symbol": "ZS", "quantity": -2, "price": 207.4, "commission": -0.01, "tradeDate": "2026-10-06",
+                 "action": "Sell", "settlementDate": "2026-10-07", "gross": {"currencyCode": "USD", "amount": 414.8}}
+BUY_ACTIVITY = {"transactionId": "7072c070-c534-4793-90e3-63ddfc97f6ec", "transactionType": "Trades",
+                "description": "MICRON TECHNOLOGY INC WE ACTED AS AGENT", "amount": -208.45, "currency": "USD",
+                "symbol": "MU", "quantity": 0.2, "price": 1042.228, "commission": 0, "tradeDate": "2026-09-28",
+                "action": "Buy", "settlementDate": "2026-09-29", "gross": {"currencyCode": "USD", "amount": -208.45}}
 
 
 def trade(**overrides) -> dict:
@@ -99,6 +109,45 @@ def test_invalid_trades_are_rejected_with_reasons_and_never_written(tmp_path):
     assert len(result["rejected"]) == 6
     assert all(item["reason"] for item in result["rejected"])
     assert len(list_trade_log_entries(conn)) == 1
+
+
+def test_raw_trade_activities_map_to_the_trade_contract() -> None:
+    """Signed quantities become positive shares, the action gives the side, and the broker id is kept."""
+    trades = trades_from_activities({TFSA_ID: [SELL_ACTIVITY, BUY_ACTIVITY]})
+    assert trades[0] == {"accountId": TFSA_ID, "symbol": "ZS", "side": "sell", "shares": 2, "price": 207.4,
+                         "date": "2026-10-06", "externalId": "2861f1e0-b2b2-4c2e-9c9b-c84af5fdd544", "grossAmount": 414.8}
+    assert (trades[1]["side"], trades[1]["shares"], trades[1]["grossAmount"]) == ("buy", 0.2, 208.45)
+
+
+def test_non_trade_activities_are_ignored_not_imported() -> None:
+    """Dividends and other ledger rows never become trades."""
+    dividend = {**SELL_ACTIVITY, "transactionType": "Dividends", "action": "Dividend"}
+    assert trades_from_activities({TFSA_ID: [dividend]}) == []
+
+
+def test_imported_activity_uses_the_broker_gross_amount_and_is_idempotent(tmp_path):
+    """The saved total is Questrade's own gross amount; importing the same activities twice adds nothing."""
+    conn = initialize_db(str(tmp_path / "db.sqlite"))
+    trades = trades_from_activities({TFSA_ID: [SELL_ACTIVITY, BUY_ACTIVITY], RRSP_ID: [SELL_ACTIVITY | {"transactionId": "other"}]})
+    first = import_trades(conn, ACCOUNTS, trades)
+    assert (first["imported"], first["rejected"]) == (3, [])
+    rows = list_trade_log_entries(conn)
+    assert sorted(row["account_id"] for row in rows) == ["RRSP", "TFSA", "TFSA"]
+    mu = next(row for row in rows if row["investment_id"] == "MU")
+    assert (mu["action"], mu["shares"], mu["price"], mu["total_cost"], mu["trade_date"]) == ("buy", 0.2, 1042.228, 208.45, "2026-09-28")
+    assert import_trades(conn, ACCOUNTS, trades)["imported"] == 0
+
+
+def test_cli_accepts_raw_activities_keyed_by_account(tmp_path):
+    """The agent can stage raw tool responses without reshaping them."""
+    db = tmp_path / "db.sqlite"
+    initialize_db(str(db)).close()
+    payload = tmp_path / "payload.json"
+    payload.write_text(json.dumps({"accounts": ACCOUNTS, "activities": {TFSA_ID: [SELL_ACTIVITY], RRSP_ID: []}}))
+    result = subprocess.run([sys.executable, str(SCRIPT), "--payload", str(payload), "--db-path", str(db), "--json"],
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["imported"] == 1
 
 
 def test_cli_dry_run_writes_nothing_and_real_run_reports_counts(tmp_path):

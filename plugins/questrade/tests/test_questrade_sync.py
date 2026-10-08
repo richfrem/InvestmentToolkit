@@ -213,3 +213,14 @@ if __name__ == "__main__":
     test_resync_does_not_duplicate_rows()
     test_resync_removes_stale_sold_position()
     test_broker_reported_total_aggregates_across_accounts()
+
+
+def test_masked_account_names_resolve_to_canonical_ids():
+    """Live list_accounts now returns "TFSA ••••8189" (captured 2026-10-08), not "TFSA - 53408189"."""
+    from questrade_sync import _parse_account_type_and_number, _resolve_canonical_account_ids
+    assert _parse_account_type_and_number("TFSA ••••8189") == ("TFSA", "••••8189")
+    assert _parse_account_type_and_number("TFSA - 53408189") == ("TFSA", "53408189")
+    assert _parse_account_type_and_number("") == ("UNKNOWN", "")
+    ids = _resolve_canonical_account_ids([
+        {"id": "a", "name": "TFSA ••••8189"}, {"id": "b", "name": "RRSP ••••8195"}, {"id": "c", "name": "Cash ••••9489"}])
+    assert ids == {"a": "TFSA", "b": "RRSP", "c": "CASH"}

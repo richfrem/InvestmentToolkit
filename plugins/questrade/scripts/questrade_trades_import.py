@@ -19,12 +19,14 @@ Usage Examples:
     # Import:
     python3 plugins/questrade/scripts/questrade_trades_import.py --payload temp/questrade_trades_payload.json --json
 
-Payload:
-    {"accounts": [list_accounts rows: {id, name, ...}],
-     "trades":   [{"accountId", "symbol", "side": "buy"|"sell", "shares", "price",
-                   "date": "YYYY-MM-DD", "externalId"?: broker id for this fill}]}
+Payload (either or both of "activities" and "trades"):
+    {"accounts":   [list_accounts rows: {id, name, ...}],
+     "activities": {accountId: [raw get_account_activities rows, transactionTypes=["Trades"]]},
+     "trades":     [{"accountId", "symbol", "side": "buy"|"sell", "shares", "price",
+                     "date": "YYYY-MM-DD", "externalId"?, "grossAmount"?}]}
 
 Key Functions (Index):
+    - trades_from_activities(): Map raw Questrade "Trades" activity rows to the trade contract.
     - normalize_trade()   : Validate one trade and build its trade_log_entry row, or return a rejection reason.
     - entry_id_for()      : Stable id so the same fill always maps to the same row.
     - import_trades()     : Write new filled rows; skip existing ones; collect rejections.
@@ -78,6 +80,29 @@ def entry_id_for(account: str, symbol: str, trade: dict) -> str:
     return "qt-" + hashlib.sha1(key.encode()).hexdigest()[:16]
 
 
+def trades_from_activities(activities: dict[str, list[dict]]) -> list[dict]:
+    """Map raw get_account_activities rows to the trade contract.
+
+    Live shape (questrade-tool-schemas.md): {transactionId, transactionType, symbol,
+    quantity (negative for sells), price, tradeDate, action "Buy"|"Sell",
+    gross: {amount}}. Rows that are not Trades are ignored. Values are copied, not
+    derived; validation happens later in normalize_trade().
+    """
+    trades = []
+    for account_id, rows in (activities or {}).items():
+        for row in rows or []:
+            if not isinstance(row, dict) or row.get("transactionType") != "Trades":
+                continue
+            quantity, gross = row.get("quantity"), (row.get("gross") or {}).get("amount")
+            trades.append({
+                "accountId": account_id, "symbol": row.get("symbol"), "side": str(row.get("action") or "").lower(),
+                "shares": abs(quantity) if isinstance(quantity, (int, float)) and not isinstance(quantity, bool) else quantity,
+                "price": row.get("price"), "date": row.get("tradeDate"), "externalId": row.get("transactionId"),
+                "grossAmount": abs(gross) if isinstance(gross, (int, float)) and not isinstance(gross, bool) else None,
+            })
+    return trades
+
+
 def normalize_trade(trade: Any, account_ids: dict[str, str]) -> tuple[Optional[dict], str]:
     """Validate one trade and return (row fields, "") or (None, reason).
 
@@ -106,8 +131,11 @@ def normalize_trade(trade: Any, account_ids: dict[str, str]) -> tuple[Optional[d
     except ValueError:
         return None, f"date must be YYYY-MM-DD, got {trade.get('date')!r}"
     clean = {**trade, "side": side, "shares": shares, "price": price, "date": trade_date}
+    # The broker's own gross amount is kept when reported; otherwise shares x price.
+    gross = _positive_number(trade.get("grossAmount"), allow_zero=True)
     return {"account_id": account, "symbol": symbol, "action": side, "shares": shares, "price": price,
-            "trade_date": trade_date, "entry_id": entry_id_for(account, symbol, clean)}, ""
+            "trade_date": trade_date, "total_cost": gross if gross is not None else round(shares * price, 2),
+            "entry_id": entry_id_for(account, symbol, clean)}, ""
 
 
 def import_trades(conn: sqlite3.Connection, accounts: list[dict], trades: list[dict],
@@ -142,7 +170,7 @@ def import_trades(conn: sqlite3.Connection, accounts: list[dict], trades: list[d
         upsert_trade_log_entry(conn, {
             "entry_id": row["entry_id"], "investment_id": resolve_investment(conn, row["symbol"]),
             "account_id": row["account_id"], "action": row["action"], "shares": row["shares"],
-            "price": row["price"], "total_cost": round(row["shares"] * row["price"], 2),
+            "price": row["price"], "total_cost": row["total_cost"],
             "order_type": None, "limit_price": None, "trade_date": row["trade_date"],
             "notes": "Executed trade imported from Questrade", "status": FILLED, "source": SOURCE,
             "priority": None, "logged_at": now, "tv_order_id": None,
@@ -166,7 +194,8 @@ def main() -> None:
     data = json.loads(payload_path.read_text())
     conn = initialize_db(args.db_path)
     try:
-        report = import_trades(conn, data.get("accounts", []), data.get("trades", []), dry_run=args.dry_run)
+        trades = trades_from_activities(data.get("activities", {})) + data.get("trades", [])
+        report = import_trades(conn, data.get("accounts", []), trades, dry_run=args.dry_run)
     finally:
         conn.close()
     if args.dry_run:

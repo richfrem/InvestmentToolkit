@@ -48,7 +48,7 @@ Use `--dry-run` to preview changes without committing to SQLite.
    ```
 4. **Import Executed Trades**:
    - For each account call `Get Account Activities` with `transactionTypes=["Trades"]` for the last 30 days (page through `metadata.totalPages`).
-   - Stage `temp/questrade_trades_payload.json` as `{"accounts": [...List Accounts rows...], "trades": [{"accountId", "symbol", "side": "buy"|"sell", "shares", "price", "date": "YYYY-MM-DD", "externalId"}]}` using the field mapping in the tool-schemas reference. Copy values exactly; never estimate a missing price, quantity or date.
+   - Stage `temp/questrade_trades_payload.json` as `{"accounts": [...List Accounts rows...], "activities": {"<accountId>": [...raw activity rows...]}}`. Copy the tool responses unchanged; the script does the mapping, so never reshape, round or fill in values.
    - Preview, then import:
    ```bash
    python3 plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py --payload temp/questrade_trades_payload.json --dry-run

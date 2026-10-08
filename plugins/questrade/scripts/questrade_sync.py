@@ -19,7 +19,7 @@ Usage Examples:
 
 Key Functions (Index):
     - _parse_money()                 : Parses a Questrade-formatted currency string (e.g. "$3,317.07") or raw number into a float.
-    - _parse_account_type_and_number(): Splits a Questrade account name (e.g. "TFSA - 53408189") into (type, number).
+    - _parse_account_type_and_number(): Splits a Questrade account name ("TFSA - 53408189" or "TFSA ••••8189") into (type, number).
     - persist_questrade_data_to_db() : Upserts accounts, balances, and holdings into SQLite.
     - _run_portfolio_refresh()       : Triggers refresh_all.py to update thesis roles.
     - main()                         : CLI entrypoint for parsing JSON payloads.
@@ -77,14 +77,20 @@ def _parse_money(value: Any) -> float:
 
 
 def _parse_account_type_and_number(name: str) -> tuple[str, str]:
-    """Split a live list_accounts `name` (e.g. "TFSA - 53408189") into (type, number).
+    """Split a live list_accounts `name` into (type, number).
 
     list_accounts has no separate type/number fields — both are embedded in
-    `name` — see references/questrade-tool-schemas.md.
+    `name`. Two live shapes exist: the older "TFSA - 53408189" and, since
+    2026-10, a masked "TFSA ••••8189" with no " - " separator — see
+    references/questrade-tool-schemas.md. An unparsed name returned
+    ("UNKNOWN", name) and would have filed every position under an UNKNOWN account.
     """
     if " - " in name:
         acc_type, _, acc_number = name.partition(" - ")
         return acc_type.strip(), acc_number.strip()
+    acc_type, _, acc_number = name.strip().partition(" ")
+    if acc_type and acc_number.strip():
+        return acc_type, acc_number.strip()
     return "UNKNOWN", name.strip()
 
 

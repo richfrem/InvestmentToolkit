@@ -7,7 +7,7 @@ All accounts and orders are addressed by `accountId` (uuid) from `list_accounts`
 ## Read tools
 
 ### `list_accounts()`
-No params. Returns `[{id, name, productType, supportTrading}]`. `supportTrading` is `true` only for self-directed (`SD`) accounts.
+No params. Returns `[{id, name, productType, supportTrading, accountRoleType}]`. **`name` is the account type plus a masked number, e.g. `"TFSA ••••8189"`, `"Cash ••••9489"`** (captured 2026-10-08; earlier sessions returned `"TFSA - 53408189"`). `questrade_sync.py` parses both; the first word is the canonical account id (`TFSA`, `RRSP`, `CASH`). `supportTrading` is `true` only for self-directed (`SD`) accounts.
 
 ### `get_balances(accountId)`
 Returns `{accountId, balances: {maxBuyingPower, totalBuyingPower, buyingPower, totalEquity, marketValue, cash}, profit: {dayPnl, closedPnl, openPnl}}`. Each balance/profit leaf is `{cad, usd, combinedCad, combinedUsd}` as formatted currency strings (e.g. `"$131.08"`), not raw numbers.
@@ -18,13 +18,25 @@ Returns `[{id, instrument, qty, side, avgPrice}]` — flat array, `[]` if no hol
 ### `get_account_activities(accountId, fromDate?, toDate?, page?, transactionTypes?)`
 `fromDate`/`toDate` are plain `YYYY-MM-DD` (not ISO timestamps). `transactionTypes` is an array from the enum: `Trades | Interest | Other | Dividends | FX conversion | Dividend reinvestment | Corporate actions | Transfers | Withdrawals | Deposits | Fees and rebates`. Returns `{accountId, activities: [...], metadata: {totalCount, totalPages, count, currentPage}}`, paged 20/page. **Unfiltered results are dominated by `Trades` noise** (observed 143 trades vs 12 real cash-flow events in one 90-day window) — always pass `transactionTypes` scoped to intent rather than fetching everything and filtering client-side.
 
-**Trades import payload (`questrade_trades_import.py`).** Executed trades are saved to the SQLite trade log from a staged payload, not directly from this tool:
+**`Trades` activity shape (captured 2026-10-08, live call, `transactionTypes:["Trades"]`):**
 ```json
-{"accounts": [{"id": "<uuid>", "name": "TFSA - 53408189"}],
- "trades": [{"accountId": "<uuid>", "symbol": "ZS", "side": "sell", "shares": 2,
-             "price": 210.36, "date": "2026-10-06", "externalId": "<activity or order id>"}]}
+{"transactionId":"2861f1e0-b2b2-4c2e-9c9b-c84af5fdd544","transactionType":"Trades",
+ "description":"ZSCALER INC COMMON STOCK WE ACTED AS AGENT","amount":414.79,"currency":"USD",
+ "symbol":"ZS","quantity":-2,"price":207.4,"commission":-0.01,"tradeDate":"2026-10-06",
+ "action":"Sell","settlementDate":"2026-10-07","gross":{"currencyCode":"USD","amount":414.8}}
 ```
-`externalId` is the broker's own id for the fill when the activity carries one; without it the importer de-duplicates on account, symbol, date, side, shares and price. **The raw `Trades` activity field names have not yet been captured from a live session.** On the first live import, record the observed activity object here (as was done for `get_quotes`) and state which raw fields map to `symbol`, `side`, `shares`, `price`, `date` and `externalId`.
+- **`quantity` is signed**: negative for sells, positive for buys. `action` (`"Buy"` | `"Sell"`) is the side.
+- `amount` is net of `commission`; `gross.amount` is before commission. Both are negative for buys.
+- `price` is the average fill price and can have four decimals; fractional `quantity` (e.g. `0.2`) is normal.
+- `transactionId` is unique per posted trade and stable across calls: it is the de-duplication key.
+- An account with no trades returns `activities: []` with `totalPages: 0`.
+
+**Trades import (`questrade_trades_import.py`).** Stage the raw responses unchanged and let the script map them:
+```json
+{"accounts": [...list_accounts rows...],
+ "activities": {"<accountId>": [...raw Trades activity rows...]}}
+```
+The script maps `symbol`, `action` → side, `abs(quantity)` → shares, `price`, `tradeDate` → date, `transactionId` → id and `abs(gross.amount)` → total. A pre-normalised `"trades"` list (`{accountId, symbol, side, shares, price, date, externalId?, grossAmount?}`) is also accepted for trades from other sources.
 
 ### `search_symbols(query, hasOptions?, limit?)`
 Returns matches with security UUID, exchange, market cap, industry. Use the UUID for `get_quotes(securityUuids=[...])` when you need Greeks/IV (option contracts); use `get_quotes(symbols=[...])` for plain equity quotes without a prior search.
