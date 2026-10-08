@@ -17,6 +17,7 @@ Layer:
 Usage:
     python3 rebase_equity_valuations.py                  # held positions, report only
     python3 rebase_equity_valuations.py --tickers CRWV CORZ --json
+    python3 rebase_equity_valuations.py --all            # every saved valuation, report only
     python3 rebase_equity_valuations.py --write          # save new versions
 
 Key Functions:
@@ -43,7 +44,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(_REPO_ROOT / "investment_screener/backend/py_services"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from dcf_scenarios import SCENARIO_NAMES, run  # noqa: E402
+from dcf_scenarios import SCENARIO_NAMES, run, valuation_signal  # noqa: E402
 from leverage import apply_leverage_weights, leverage_profile, rate_basis_check  # noqa: E402
 
 _DEFAULT_DB_PATH = str(_REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite")
@@ -53,7 +54,8 @@ _DEFAULT_DB_PATH = str(_REPO_ROOT / "investment_screener/backend/data/domain_mod
 # a short or volatile history is not taken at face value.
 BLUME_WEIGHT = 0.67
 BETA_BOUNDS = (1.0, 2.0)
-# The saved scenario prices must be reproduced this closely before a valuation is re-based.
+# Saved scenario prices reproduced this closely came from the current calculator; older
+# valuations that do not are still re-based (by discount-factor scaling) and marked.
 REPRODUCTION_TOLERANCE = 0.03
 
 
@@ -88,13 +90,22 @@ def saved_inputs(entry: dict, scenario_rows: list[dict]) -> dict[str, Any] | Non
     return {"revenue": float(revenue), "shares": float(shares), "rate": float(rate),
             "horizon": int(snapshot.get("horizon") or settings.get("timeHorizon") or 5), "scenarios": scenarios,
             "savedPrices": {name: rows[name]["scenario_price"] for name in SCENARIO_NAMES}, "log": log,
+            "price": snapshot.get("currentPrice") or snapshot.get("price"),
+            # Year-5 figures as saved: scenario assumptions are not recomputed.
+            "savedRows": {name: {"year5Revenue": rows[name].get("year5_revenue"), "year5NetIncome": rows[name].get("year5_net_income"),
+                                 "year5EPS": rows[name].get("year5_eps")} for name in SCENARIO_NAMES},
             # Weights before any earlier leverage shift, so re-running never shifts twice.
             "originalWeights": (model.get("rebasedFrom") or {}).get("weights")}
 
 
 def rebase(ticker: str, inputs: dict, price: float | None, risk_free: float, beta: float, erp: float,
            fundamentals: dict[str, Any]) -> dict[str, Any]:
-    """Recompute a saved valuation at the cost of equity with leverage-shifted weights.
+    """Re-base a saved valuation to the cost of equity with leverage-shifted weights.
+
+    Each saved scenario price is a year-N value discounted at the old rate, so the price
+    at the new rate is the saved price x ((1 + old) / (1 + new)) ** N. This is exact for
+    valuations the calculator reproduces and holds to about 1% for older ones saved by an
+    earlier engine (``reproduced`` is False for those), without needing their hidden inputs.
 
     Args:
         inputs: saved_inputs() result.
@@ -104,19 +115,16 @@ def rebase(ticker: str, inputs: dict, price: float | None, risk_free: float, bet
         fundamentals: {"totalDebt", "cash", "ebitda", "operatingIncome", "interestExpense", "currentRatio"}.
 
     Returns:
-        {"status": REBASED|UNCHANGED|NOT_REPRODUCED, "old": {...}, "new": {...}, "leverage",
+        {"status": REBASED|UNCHANGED, "reproduced", "old": {...}, "new": {...}, "leverage",
         "rateBasis", "costOfEquity", "beta", "result"}. The rate is never lowered.
     """
-    scenarios, old_rate = inputs["scenarios"], inputs["rate"]
-    before = run(ticker, inputs["revenue"], inputs["shares"], scenarios, old_rate, inputs["horizon"], price)
-    old = {"rate": old_rate, "fairValue": before["weightedFairValue"],
-           "weights": {name: scenarios[name]["weight"] for name in SCENARIO_NAMES}}
-    drift = max(abs(before["scenarios"][name]["presentValue"] - (inputs["savedPrices"][name] or 0))
-                / max(abs(inputs["savedPrices"][name] or 0), 1.0) for name in SCENARIO_NAMES)
-    if drift > REPRODUCTION_TOLERANCE:
-        return {"status": "NOT_REPRODUCED", "old": old, "note": (
-            f"Saved scenario prices differ from a recomputation by {drift * 100:.0f}%; this valuation uses "
-            "inputs the calculator cannot see and needs /update-stock-analysis")}
+    scenarios, old_rate, saved_prices = inputs["scenarios"], inputs["rate"], inputs["savedPrices"]
+    old_weights = {name: scenarios[name]["weight"] for name in SCENARIO_NAMES}
+    old = {"rate": old_rate, "weights": old_weights,
+           "fairValue": round(sum(old_weights[name] * (saved_prices[name] or 0) for name in SCENARIO_NAMES), 2)}
+    check = run(ticker, inputs["revenue"], inputs["shares"], scenarios, old_rate, inputs["horizon"], price)
+    drift = max(abs(check["scenarios"][name]["presentValue"] - (saved_prices[name] or 0))
+                / max(abs(saved_prices[name] or 0), 1.0) for name in SCENARIO_NAMES)
     adjusted_beta = BLUME_WEIGHT * beta + (1 - BLUME_WEIGHT) * 1.0
     bounded_beta = round(min(max(adjusted_beta, BETA_BOUNDS[0]), BETA_BOUNDS[1]), 3)
     cost_of_equity = risk_free + bounded_beta * erp
@@ -126,21 +134,29 @@ def rebase(ticker: str, inputs: dict, price: float | None, risk_free: float, bet
                                fundamentals.get("currentRatio"), market_cap)
     basis = rate_basis_check("terminal_earnings", old_rate, cost_of_equity)
     new_rate = round(max(old_rate, cost_of_equity), 4)
-    weights = apply_leverage_weights(inputs.get("originalWeights") or old["weights"], profile["tier"])
-    adjusted = {name: {**scenarios[name], "weight": weights[name]} for name in SCENARIO_NAMES}
-    after = run(ticker, inputs["revenue"], inputs["shares"], adjusted, new_rate, inputs["horizon"], price)
-    new = {"rate": new_rate, "fairValue": after["weightedFairValue"], "weights": weights}
-    changed = new_rate != old_rate or weights != old["weights"]
-    return {"status": "REBASED" if changed else "UNCHANGED", "old": old, "new": new, "leverage": profile,
-            "rateBasis": basis, "costOfEquity": round(cost_of_equity, 4), "beta": round(beta, 2),
-            "boundedBeta": bounded_beta, "riskFreeRate": risk_free, "erp": erp, "result": after}
+    weights = apply_leverage_weights(inputs.get("originalWeights") or old_weights, profile["tier"])
+    factor = ((1 + old_rate) / (1 + new_rate)) ** inputs["horizon"]
+    prices = {name: round((saved_prices[name] or 0) * factor, 2) for name in SCENARIO_NAMES}
+    fair_value = round(sum(weights[name] * prices[name] for name in SCENARIO_NAMES), 2)
+    upside = (fair_value - price) / price * 100 if price else None
+    new = {"rate": new_rate, "fairValue": fair_value, "weights": weights}
+    result = {"scenarios": {name: {**scenarios[name], "weight": weights[name], "presentValue": prices[name]}
+                            for name in SCENARIO_NAMES},
+              "action": valuation_signal(upside) or "HOLD", "currentPrice": price,
+              "upsidePct": round(upside, 1) if upside is not None else None}
+    changed = new_rate != old_rate or weights != old_weights
+    return {"status": "REBASED" if changed else "UNCHANGED", "reproduced": drift <= REPRODUCTION_TOLERANCE,
+            "old": old, "new": new, "leverage": profile, "rateBasis": basis,
+            "costOfEquity": round(cost_of_equity, 4), "beta": round(beta, 2), "boundedBeta": bounded_beta,
+            "riskFreeRate": risk_free, "erp": erp, "result": result}
 
 
 def projection_payload(ticker: str, entry: dict, inputs: dict, outcome: dict, as_of: str) -> dict[str, Any]:
     """Build the persist_valuation payload for a re-based valuation."""
     result, old, new = outcome["result"], outcome["old"], outcome["new"]
-    scenarios = {name: {**result["scenarios"][name], "price": result["scenarios"][name]["presentValue"]}
-                 for name in SCENARIO_NAMES}
+    saved_rows = inputs.get("savedRows") or {}
+    scenarios = {name: {**saved_rows.get(name, {}), **result["scenarios"][name],
+                        "price": result["scenarios"][name]["presentValue"]} for name in SCENARIO_NAMES}
     note = (f" Re-based {as_of}: discount rate {old['rate'] * 100:.2f}% -> {new['rate'] * 100:.2f}% (cost of equity), "
             f"leverage {outcome['leverage']['tier']}; fair value ${old['fairValue']:,.2f} -> ${new['fairValue']:,.2f}. "
             "Scenario assumptions unchanged.")
@@ -149,7 +165,9 @@ def projection_payload(ticker: str, entry: dict, inputs: dict, outcome: dict, as
              "rateBasis": {**rate_basis_check("terminal_earnings", new["rate"], outcome["costOfEquity"]),
                            "rateType": "COST_OF_EQUITY", "costOfEquity": outcome["costOfEquity"],
                            "riskFreeRate": outcome["riskFreeRate"], "erp": outcome["erp"], "beta": outcome["beta"],
-                           "boundedBeta": outcome["boundedBeta"], "basis": "automated CAPM re-base; not a sourced rate audit"},
+                           "boundedBeta": outcome["boundedBeta"], "reproduced": outcome["reproduced"],
+                           "basis": "automated CAPM re-base; not a sourced rate audit" + (
+                               "" if outcome["reproduced"] else "; saved by an earlier engine, scaled by discount factor")},
              "rebasedFrom": {"version": entry["version"], "discountRate": old["rate"],
                              "weights": inputs.get("originalWeights") or old["weights"],
                              "fairValue": old["fairValue"], "asOf": as_of}}
@@ -187,6 +205,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Re-base saved earnings-multiple valuations for debt")
     parser.add_argument("--tickers", nargs="*", help="Symbols to re-base (default: every held position)")
+    parser.add_argument("--all", action="store_true", help="Every symbol with a saved valuation, held or not")
     parser.add_argument("--db-path", default=_DEFAULT_DB_PATH)
     parser.add_argument("--write", action="store_true", help="Save each re-based valuation as a new version")
     parser.add_argument("--json", action="store_true")
@@ -194,7 +213,8 @@ def main() -> None:
 
     conn = initialize_db(args.db_path)
     try:
-        tickers = [t.upper() for t in args.tickers] if args.tickers else [row[0] for row in conn.execute(
+        from domain_model.projection_repository import list_symbols_with_projections
+        tickers = [t.upper() for t in args.tickers] if args.tickers else sorted(list_symbols_with_projections(conn)) if args.all else [row[0] for row in conn.execute(
             "SELECT DISTINCT i.symbol FROM account_investment a JOIN investment i USING(investment_id) "
             "WHERE a.quantity > 0 ORDER BY i.symbol;")]
         work = []
@@ -203,7 +223,7 @@ def main() -> None:
             entry = get_latest_projection_by_source(conn, row[0], "AI_AGENT") if row else None
             inputs = saved_inputs(entry, get_projection_scenarios(conn, entry["projection_id"])) if entry else None
             stored = get_investment_price(conn, row[0]) if row else None
-            work.append((ticker, entry, inputs, (stored or {}).get("price")))
+            work.append((ticker, entry, inputs, (stored or {}).get("price") or (inputs or {}).get("price")))
     finally:
         conn.close()
 
@@ -219,7 +239,9 @@ def main() -> None:
         except Exception as error:  # noqa: BLE001 - one ticker's data failure must not stop the batch
             report.append({"ticker": ticker, "status": "ERROR", "note": str(error)})
             continue
-        if args.write and outcome["status"] == "REBASED":
+        # An unchanged valuation is still saved once, so its debt grade and rate check are on record.
+        recorded = bool((inputs["log"].get("valuationModel") or {}).get("leverage"))
+        if args.write and (outcome["status"] == "REBASED" or not recorded):
             from persist_valuation import persist_valuation
             persist_valuation(projection_payload(ticker, entry, inputs, outcome, date.today().isoformat()), args.db_path)
             outcome["written"] = True
@@ -235,7 +257,8 @@ def main() -> None:
             print(f"{item['ticker']:<7}{item['status']:<16}{'':>15}{'':>10}{'':>13}{'':>24}  {item.get('note', '')}")
             continue
         old, new = item["old"], item["new"]
-        print(f"{item['ticker']:<7}{item['status']:<16}{old['rate'] * 100:>6.2f}% ->{new['rate'] * 100:>5.2f}%"
+        status = item["status"] + ("" if item.get("reproduced") else "~")
+        print(f"{item['ticker']:<7}{status:<16}{old['rate'] * 100:>6.2f}% ->{new['rate'] * 100:>5.2f}%"
               f"{item['leverage']['tier']:>10}{old['weights']['bear'] * 100:>5.0f}% ->{new['weights']['bear'] * 100:>3.0f}%"
               f"{old['fairValue']:>11,.2f} ->{new['fairValue']:>10,.2f}  {'; '.join(item['leverage']['reasons'])}")
 

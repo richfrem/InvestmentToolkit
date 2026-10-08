@@ -35,7 +35,10 @@ not reach fair value, the valuation range or reward:risk.
    multiple and share change, raises the rate to a CAPM cost of equity and
    applies the weight shift. It saves a new version, records the previous rate,
    weights and fair value in `rebasedFrom`, never lowers a rate, and skips
-   audited, FCFF and non-reproducible valuations.
+   audited and FCFF valuations. Scenario prices are scaled by the change in
+   discount factor, so valuations saved by an earlier engine (67 of 91, which the
+   current calculator reproduces only to within 5-50%) are re-based to about 1%
+   without their hidden inputs and marked `reproduced: false`.
 
 ## Choices and their limits
 
@@ -55,5 +58,6 @@ not reach fair value, the valuation range or reward:risk.
 
 Fair values for leveraged, high-beta holdings fall materially (CoreWeave about
 $250 to $137; Core Scientific $28.73 to $19.15), several actions change, and
-reward:risk falls with them. Three holdings (CRDO, GEV, SHAZ) cannot be
-reproduced from their saved scenario rows and need a full update.
+reward:risk falls with them. 84 of 91 saved valuations were re-based on
+2026-10-08; APLD (audited), BE, MU and ZS (FCFF with a debt bridge) and MP (an
+older format with no scenario inputs) were not.

@@ -93,12 +93,25 @@ def test_a_low_beta_stock_is_never_discounted_below_the_market_rate(tmp_path):
     assert rebase("CRWV", saved_inputs(entry, rows), 81.23, 0.05, 0.4, 0.045, NO_DEBT)["costOfEquity"] == 0.095
 
 
-def test_a_valuation_the_calculator_cannot_reproduce_is_refused(tmp_path):
-    """Saved prices that include inputs the scenario rows do not carry must not be silently recomputed."""
+def test_an_older_valuation_the_calculator_cannot_reproduce_is_scaled_by_discount_factor(tmp_path):
+    """Saved by an earlier engine: its prices are re-based by the change in discount factor, and marked."""
     _, entry, rows, _ = saved(tmp_path)
-    altered = [{**row, "scenario_price": row["scenario_price"] * 1.25} for row in rows]
-    outcome = rebase("CRWV", saved_inputs(entry, altered), 81.23, 0.0523, 2.5, 0.045, HEAVY_DEBT)
-    assert outcome["status"] == "NOT_REPRODUCED" and "new" not in outcome and "/update-stock-analysis" in outcome["note"]
+    exact = rebase("CRWV", saved_inputs(entry, rows), 81.23, 0.0523, 2.557, 0.045, HEAVY_DEBT)
+    altered = [{**row, "scenario_price": round(row["scenario_price"] * 1.25, 2)} for row in rows]
+    outcome = rebase("CRWV", saved_inputs(entry, altered), 81.23, 0.0523, 2.557, 0.045, HEAVY_DEBT)
+    assert exact["reproduced"] is True and outcome["reproduced"] is False and outcome["status"] == "REBASED"
+    factor = (1.0816 / 1.1423) ** 5
+    for name, row in zip(("bear", "base", "bull"), sorted(altered, key=lambda r: ("bear", "base", "bull").index(r["scenario_name"]))):
+        assert outcome["result"]["scenarios"][name]["presentValue"] == round(row["scenario_price"] * factor, 2)
+    assert abs(outcome["new"]["fairValue"] / exact["new"]["fairValue"] - 1.25) < 0.002
+
+
+def test_scaling_matches_a_full_recomputation_for_a_reproducible_valuation(tmp_path):
+    _, entry, rows, _ = saved(tmp_path)
+    outcome = rebase("CRWV", saved_inputs(entry, rows), 81.23, 0.0523, 2.557, 0.045, NO_DEBT)
+    recomputed = run("CRWV", REVENUE, SHARES, SCENARIOS, outcome["new"]["rate"], 5, 81.23)
+    assert abs(outcome["new"]["fairValue"] - recomputed["weightedFairValue"]) < 0.05
+    assert outcome["result"]["action"] == recomputed["action"]
 
 
 def test_writing_adds_a_version_that_records_what_changed_and_keeps_the_old_one(tmp_path):
