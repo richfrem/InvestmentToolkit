@@ -301,3 +301,71 @@ class TestRecentTradeContext:
         card = build_recommendations([s], {}, [], RISK_ON, 100_000)[0]
         assert card["recentTrades"] is None
         assert "last 14 days" not in card["rationale"] and "a further" not in card["rationale"]
+
+
+def _check(relation: str, effective: str, note: str) -> dict:
+    """decision_check field as recommendation.py attaches it."""
+    return {"relation": relation, "effective": effective, "note": note, "age_days": None}
+
+
+class TestStandingDecisionCoherence:
+
+    def test_conflicting_decision_shows_one_stance_and_says_why(self):
+        """TRIM against a hold decision is shown as MAINTAIN with the disagreement spelled out."""
+        note = "Valuation says TRIM, but your standing decision is 'hold at target' (set 109 days ago). They disagree, so the stance is hold and no trade is proposed until you update one of them."
+        s = _score("IREN", -2, "TRIM", decision_check=_check("CONFLICT", "MAINTAIN", note))
+        card = build_recommendations([s], {"IREN": {"type": "HOLD_AT_TARGET", "reason": "Hold at target weight."}}, [], RISK_ON, 100_000)[0]
+        assert (card["signal"], card["recommendation"], card["executionStatus"]) == ("TRIM", "MAINTAIN", "BLOCKED")
+        assert note in card["rationale"] and "Hold at target weight." in card["rationale"]
+        assert card["decisionCheck"]["relation"] == "CONFLICT" and card["proposedTrade"] is None
+
+    def test_outdated_entry_decision_no_longer_blocks_a_sized_trim(self):
+        """A watchlist call on a position already held is flagged, and the trim is sized as usual."""
+        note = "Standing decision 'watchlist wait for pullback' is an entry call, but you already hold this position, so it no longer applies."
+        s = _score("GEV", -2, "TRIM", actual_weight=4.9, target_weight=4.1, weight_gap=-0.8,
+                   decision_check=_check("OUTDATED", "TRIM", note))
+        card = build_recommendations([s], {"GEV": {"type": "WATCHLIST_WAIT_FOR_PULLBACK", "reason": "Wait."}}, [], RISK_ON, 100_000)[0]
+        assert (card["recommendation"], card["executionStatus"]) == ("TRIM", "READY")
+        assert card["proposedTrade"]["approxValueUSD"] == 800.0 and note in card["rationale"]
+
+    def test_agreeing_decision_keeps_the_action_and_its_timing_note(self):
+        note = "Standing decision 'trim on bounce' agrees with TRIM; it sets the timing."
+        s = _score("PANW", -2, "TRIM", decision_check=_check("AGREES", "TRIM", note))
+        card = build_recommendations([s], {"PANW": {"type": "TRIM_ON_BOUNCE", "reason": "Trim on 21 EMA bounce."}}, [], RISK_ON, 100_000)[0]
+        assert (card["recommendation"], card["executionStatus"]) == ("TRIM", "BLOCKED")
+        assert note in card["rationale"]
+
+
+class TestPriorityOrder:
+
+    def _cards(self):
+        acted = {"window_days": 14, "sold_shares": 3, "bought_shares": 0, "count": 1,
+                 "last": {"date": "2026-10-06", "action": "sell", "shares": 3, "price": 1, "account": "TFSA"},
+                 "context": {"status": "ACTED", "note": "Sold 3 shares in the last 14 days, last on 2026-10-06: TRIM already acted on"}}
+        scores = [
+            _score("ACTD", -2, "TRIM", actual_weight=4.9, target_weight=4.1, weight_gap=-0.8, pct_to_fv=-70.0, recent_trades=acted),
+            _score("BLKD", -2, "TRIM", pct_to_fv=-30.0),
+            _score("CNFL", -2, "TRIM", pct_to_fv=-25.0, decision_check=_check("CONFLICT", "MAINTAIN", "They disagree.")),
+            _score("RDY1", -2, "TRIM", actual_weight=4.9, target_weight=4.1, weight_gap=-0.8, pct_to_fv=-20.0),
+            _score("RDY2", -2, "TRIM", actual_weight=4.9, target_weight=4.1, weight_gap=-0.8, pct_to_fv=-60.0),
+            _score("BUY1", 5, "ACCUMULATE", actual_weight=1.0, target_weight=2.0, weight_gap=1.0, pct_to_fv=40.0),
+            _score("WAIT", 2, "INITIATE", actual_weight=0.0, target_weight=1.0, weight_gap=1.0, pct_to_fv=90.0,
+                   decision_check=_check("WAITS", "WATCHLIST", "Wait for your condition.")),
+        ]
+        standing = {"CNFL": {"type": "HOLD_AT_TARGET", "reason": "Hold."}, "WAIT": {"type": "WATCHLIST_WAIT_FOR_PULLBACK", "reason": "Wait."}}
+        return build_recommendations(scores, standing, [], RISK_ON, 100_000)
+
+    def test_ready_trades_lead_and_already_acted_on_trades_go_last(self):
+        """Order: ready to act, needs your decision, no trade proposed, waiting, already acted on."""
+        cards = self._cards()
+        assert [c["ticker"] for c in cards] == ["RDY2", "RDY1", "BUY1", "CNFL", "BLKD", "WAIT", "ACTD"]
+        assert [c["urgency"] for c in cards] == [1, 2, 3, 4, 5, 6, 7]
+
+    def test_each_card_says_why_it_ranks_where_it_does(self):
+        reasons = {c["ticker"]: c["priority"]["label"] for c in self._cards()}
+        assert reasons == {"RDY2": "Ready to act", "RDY1": "Ready to act", "BUY1": "Ready to act", "CNFL": "Needs your decision",
+                           "BLKD": "No trade proposed", "WAIT": "Waiting for your condition", "ACTD": "Already acted on"}
+
+    def test_within_a_group_the_larger_valuation_gap_ranks_first(self):
+        cards = self._cards()
+        assert [c["ticker"] for c in cards[:2]] == ["RDY2", "RDY1"]  # -60% before -20%

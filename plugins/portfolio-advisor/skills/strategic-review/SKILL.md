@@ -22,6 +22,7 @@ allowed-tools: Bash, Read, Write
 
 ## Constraints
 - **AI forward-evidence gate**: Before valuation or action proposals for AI-exposed names, apply [AI-sector forward valuation evidence](references/ai-forward-valuation.md). Reconcile dated forward estimates, memory/storage or power demand, executable capacity and cash conversion; flag `NEEDS_REVALUATION` when material drivers are missing. This review flag does not replace the canonical action or standing decision.
+- **Recommendation coherence**: Follow [Keeping recommendations coherent](references/recommendation-coherence.md) every session: refresh positions and executed trades first (TradingView by default), present `decision_check.effective` as the stance and reconcile any CONFLICT or OUTDATED standing decision with the owner through `set_standing_decision.py`, rank by today's priority with already-acted-on items last, and state every condition against current chart levels rather than as general guidance.
 - **SQLite Authoritative**: Live holdings and target weights come strictly from `domain_model.sqlite`; technical telemetry from `intelligence.sqlite`. Never read retired `portfolio.json`.
 - **Target Invariant**: Target weights must sum to 100.00% (±0.05%); normalize after any adjustment.
 - **Position Sizing Caps**: No holding may exceed 15.00% and no strategy pillar may exceed 40.00% of total portfolio.
@@ -74,6 +75,7 @@ python3 -m pytest plugins/portfolio-advisor/tests/test_generate_review.py
 ```
 
 ## References
+- [Keeping Recommendations Coherent](references/recommendation-coherence.md) - Trade refresh, standing-decision reconciliation, daily priority order and chart-level conditions.
 - [AI-sector Forward Valuation Evidence](references/ai-forward-valuation.md) - Forward estimates, memory/storage and power drivers, cash-flow bridge, and recommendation readiness.
 - [Investment Thesis](references/investment_thesis.md) - Canonical portfolio thesis and sub-strategy definitions.
 - [Strategic Review Prompt](references/strategic_review_prompt.md) - Qualitative criteria and JSON evaluation schema.

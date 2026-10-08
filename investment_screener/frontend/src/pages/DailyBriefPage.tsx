@@ -95,7 +95,18 @@ interface Recommendation {
     standingDecision: StandingDecision | null;
     earnings: EarningsEntry | null;
     proposedTrade: ProposedTrade | null;
+    /** Today's rank group and why (brief_recommendations.py). */
+    priority?: { tier: number; label: string };
+    decisionCheck?: { relation: string; effective: string | null; note: string } | null;
 }
+
+const PRIORITY_STYLES = [
+    'text-emerald-300 border-emerald-500/40 bg-emerald-500/10',   // ready to act
+    'text-rose-300 border-rose-500/40 bg-rose-500/10',            // needs your decision
+    'text-zinc-400 border-zinc-600/40 bg-zinc-700/20',            // no trade proposed
+    'text-sky-300 border-sky-500/40 bg-sky-500/10',               // waiting
+    'text-zinc-500 border-zinc-700/40 bg-transparent',            // already acted on
+];
 
 interface DailyBrief {
     date: string;
@@ -153,6 +164,8 @@ export default function DailyBriefPage() {
     const [error, setError] = useState<string | null>(null);
     const [activeFilter, setActiveFilter] = useState<string>('all');
     const [recommendationFilter, setRecommendationFilter] = useState<string>('all');
+    // Priority order is the default; A–Z is a convenience for finding one ticker.
+    const [cardSort, setCardSort] = useState<'priority' | 'alphabetical'>('priority');
 
     useEffect(() => {
         fetch('/api/daily-brief/latest')
@@ -201,15 +214,20 @@ export default function DailyBriefPage() {
 
     const cards = (brief.recommendations ?? []).map(saved => {
         const current = recommendations[saved.ticker];
-        const matches = current?.action === saved.recommendation;
-        return { ...saved, recommendation: current?.action ?? '—', signal: current?.action ?? '—',
+        // The stance shown is the reconciled one: the action, or the hold/wait stance when the
+        // owner's standing decision disagrees with it. The signal chip keeps the raw valuation action.
+        const stance = current?.decision_check?.effective ?? current?.action;
+        const matches = stance != null && stance === saved.recommendation;
+        return { ...saved, recommendation: stance ?? '—', signal: current?.action ?? '—',
             actionable: matches && saved.actionable,
             proposedTrade: matches ? saved.proposedTrade : null,
             rationale: matches ? saved.rationale : current?.reason ?? 'Current recommendation unavailable',
             executionStatus: matches ? saved.executionStatus : 'REVIEW' };
     });
-    const filteredCards = recommendationFilter === 'all' ? cards :
+    const matchingCards = recommendationFilter === 'all' ? cards :
         cards.filter(card => card.recommendation === recommendationFilter);
+    const filteredCards = cardSort === 'priority' ? matchingCards
+        : [...matchingCards].sort((a, b) => a.ticker.localeCompare(b.ticker));
 
     return (
         <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -332,9 +350,22 @@ export default function DailyBriefPage() {
                             Review each rationale — buttons open the order prep flow, nothing executes without your confirm.
                         </p>
                     </div>
-                    <div className="mb-4">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                         <RecommendationFilters actions={cards.map(card => card.recommendation)}
                             active={recommendationFilter} onChange={setRecommendationFilter} label="Recommendation filters" />
+                        <div role="group" aria-label="Sort recommendations" className="flex items-center gap-1 text-xs">
+                            <span className="text-zinc-500 mr-1">Sort</span>
+                            {(['priority', 'alphabetical'] as const).map(option => (
+                                <button key={option} type="button" aria-pressed={cardSort === option} onClick={() => setCardSort(option)}
+                                    title={option === 'priority'
+                                        ? 'Ready to act first, then items needing your decision, no-trade items, waiting items, and trades you already made last'
+                                        : 'Ticker A to Z'}
+                                    className={`px-2 py-1 rounded border font-semibold transition-colors ${cardSort === option
+                                        ? 'bg-zinc-700 border-zinc-500 text-white' : 'border-zinc-700 text-zinc-400 hover:text-zinc-200'}`}>
+                                    {option === 'priority' ? 'Priority' : 'A–Z'}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     <div className="space-y-3">
                         {filteredCards.length === 0 && <p className="py-4 text-sm text-zinc-500">No recommendations match this filter.</p>}
@@ -349,12 +380,20 @@ export default function DailyBriefPage() {
                                     <div className="flex items-center gap-2 md:w-64 shrink-0 flex-wrap">
                                         <span className="text-zinc-600 text-xs font-mono w-5">{rec.urgency}.</span>
                                         <span className="font-mono font-bold text-white text-base">{rec.ticker}</span>
-                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${sigStyle.bg} ${sigStyle.text} ${sigStyle.border}`}>
+                                        <span title="Valuation signal and score"
+                                            className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${sigStyle.bg} ${sigStyle.text} ${sigStyle.border}`}>
+                                            {rec.signal !== rec.recommendation && <span className="opacity-70">signal </span>}
                                             {rec.signal} <ScoreBadge score={rec.score} />
                                         </span>
-                                        <span className={`px-2 py-0.5 rounded text-xs font-bold border ${chip.bg} ${chip.text} ${chip.border}`}>
+                                        <span title={rec.signal !== rec.recommendation ? 'Stance after reconciling the signal with your standing decision' : 'Recommendation'}
+                                            className={`px-2 py-0.5 rounded text-xs font-bold border ${chip.bg} ${chip.text} ${chip.border}`}>
                                             {rec.recommendation.replace('_', ' ')}
                                         </span>
+                                        {rec.priority && (
+                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${PRIORITY_STYLES[rec.priority.tier] ?? PRIORITY_STYLES[2]}`}>
+                                                {rec.priority.label}
+                                            </span>
+                                        )}
                                         <RecentTradeTag rec={recommendations[rec.ticker]} />
                                     </div>
 
