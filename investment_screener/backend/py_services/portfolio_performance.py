@@ -17,6 +17,7 @@ Key Functions (Index):
     - safe_float()
     - load_portfolio_data()
     - fetch_history_dataframe()
+    - unpriced_holdings()
     - compute_performance()
     - main()
 
@@ -129,6 +130,11 @@ def fetch_history_dataframe(tickers: List[str]) -> pd.DataFrame:
     return close
 
 
+def unpriced_holdings(close: pd.DataFrame, tickers: List[str]) -> List[str]:
+    """Holdings the price history has no data for at all; their change cannot be measured."""
+    return [t for t in tickers if t not in close.columns or close[t].isna().all()]
+
+
 # External comment: Calculates dollar and percentage return changes over standard periods
 def compute_performance(
     close: pd.DataFrame,
@@ -137,6 +143,7 @@ def compute_performance(
     tickers: List[str],
     now: datetime,
     current_total_override: float | None = None,
+    fallback_prices: Dict[str, float] | None = None,
 ) -> Dict[str, Any]:
     """
     Pure computation over an already-fetched close-price DataFrame with forward-fill.
@@ -147,8 +154,16 @@ def compute_performance(
     yesterday's close and produce a false 0% 1-day change; TradingView has no
     historical equity API, so PAST totals are still reconstructed from yfinance
     history regardless of this override.
+
+    A holding must never be worth $0 in the past and full value today. One with no price
+    before it started trading is held flat at its first traded price; one with no history
+    at all (see unpriced_holdings) is held flat at ``fallback_prices`` (the stored
+    price), so it contributes no change instead of a false gain.
     """
-    close = close.ffill()
+    unpriced = unpriced_holdings(close, tickers)
+    close = close.ffill().bfill()
+    for ticker in unpriced:
+        close[ticker] = safe_float((fallback_prices or {}).get(ticker))
 
     current_row = close.iloc[-1]
     if current_total_override is not None:
@@ -218,18 +233,23 @@ def main() -> None:
         return
 
     current_total_override = None
+    stored_prices: Dict[str, float] = {}
     if DB_PATH.exists():
         conn = initialize_db(str(DB_PATH))
         try:
             broker_total = get_broker_reported_total(conn)
+            stored_prices = load_portfolio_state_from_db(conn)["prices"]
         finally:
             conn.close()
         if broker_total is not None:
             current_total_override = broker_total["total_usd"]
 
+    missing = unpriced_holdings(close, tickers)
+    if missing:
+        print(f"No price history for {missing}; held flat at the stored price.", file=sys.stderr)
     result = compute_performance(
         close, shares_map, cash_value, tickers, datetime.now(),
-        current_total_override=current_total_override,
+        current_total_override=current_total_override, fallback_prices=stored_prices,
     )
     print(json.dumps(result))
 

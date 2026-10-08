@@ -41,7 +41,8 @@ TICKER_ALIASES: dict[str, str] = {
 
 # Tickers that represent cash/liquidity reserves, not tradeable equities.
 # These are excluded from valuation, drift, and opportunity scans.
-CASH_SYMBOLS: frozenset[str] = frozenset({"USD_CASH"})
+# The broker sync stores cash as CASH_<currency> (CASH_USD); older data used USD_CASH.
+CASH_SYMBOLS: frozenset[str] = frozenset({"USD_CASH", "CASH_USD", "CASH_CAD"})
 
 # Human-readable display names for reserved symbols.
 CASH_DISPLAY_NAMES: dict[str, str] = {
@@ -56,4 +57,4 @@ def normalize_ticker(ticker: str) -> str:
 
 def is_cash(ticker: str) -> bool:
     """Return True if the ticker represents a cash/liquidity position."""
-    return ticker in CASH_SYMBOLS or ticker.endswith("_CASH")
+    return ticker in CASH_SYMBOLS or ticker.endswith("_CASH") or ticker.startswith("USD_CASH_")
