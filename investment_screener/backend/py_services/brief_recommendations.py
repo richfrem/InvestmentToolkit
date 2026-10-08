@@ -145,6 +145,10 @@ def build_recommendations(
         held = (s.get("actual_weight") or 0) > 0
         decision = standing.get(s["ticker"])
         earn = earn_map.get(s["ticker"])
+        # What the owner actually traded lately (recent_trades.py, via recommendation.py).
+        recent = s.get("recent_trades") if (s.get("recent_trades") or {}).get("count") else None
+        acted = bool(recent) and recent["context"]["status"] == "ACTED"
+        further = " a further" if acted else ""
         base: dict[str, Any] = {
             "ticker": s["ticker"],
             "signal": band,
@@ -154,6 +158,7 @@ def build_recommendations(
             "held": held,
             "standingDecision": decision,
             "earnings": earn,
+            "recentTrades": recent,
             "proposedTrade": None,
             "actionable": False,
         }
@@ -176,11 +181,11 @@ def build_recommendations(
             if band == "EXIT":
                 trim_pct = actual
                 base["executionStatus"] = "READY"
-                verb = f"selling the full {actual:.1f}% position"
+                verb = f"selling the {'remaining' if acted else 'full'} {actual:.1f}% position"
             elif gap is not None and gap < -_TRIM_BAND_PP:
                 trim_pct = -gap
                 base["executionStatus"] = "READY"
-                verb = f"trimming {trim_pct:.1f}% of portfolio back toward target"
+                verb = f"trimming{further} {trim_pct:.1f}% of portfolio back toward target"
             else:
                 # TRIM comes from the DCF score; with no material overweight there is no
                 # basis to size a sell (AGENTS rule 9: DCF never silently overrides targets).
@@ -255,7 +260,7 @@ def build_recommendations(
         }
         base["rationale"] = (
             f"{_signal_summary(s)}. Underweight {gap:+.1f}pp vs target — "
-            f"recommend buying ~${value:,.0f} to close the gap."
+            f"recommend buying{further} ~${value:,.0f} to close the gap."
             f"{_earnings_note(earn)}"
         )
         buys.append(base)
@@ -263,6 +268,11 @@ def build_recommendations(
     sells.sort(key=lambda r: r["score"])
     buys.sort(key=lambda r: -r["score"])
     ranked = sells + buys
+    # Every card says what was already traded, so a signal never reads as if nothing happened.
+    for card in ranked:
+        note = ((card["recentTrades"] or {}).get("context") or {}).get("note")
+        if note:
+            card["rationale"] = f"{card['rationale']} {note}."
     for i, r in enumerate(ranked, start=1):
         r["urgency"] = i
     return ranked
@@ -288,6 +298,7 @@ def align_current_brief(brief: dict[str, Any], db_path: str | None = None) -> di
         actual = rec["current_weight_pct"]
         target = targets.get(original["ticker"])
         score.update(band=rec["action"], dcf_action=rec["valuation"], pct_to_fv=rec["upside_pct"],
+                     recent_trades=rec.get("recent_trades"),
                      actual_weight=actual, target_weight=target,
                      weight_gap=target - actual if target is not None else None)
         scores.append(score)
