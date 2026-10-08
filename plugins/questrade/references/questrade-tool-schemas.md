@@ -36,7 +36,17 @@ Returns `[{id, instrument, qty, side, avgPrice}]` — flat array, `[]` if no hol
 {"accounts": [...list_accounts rows...],
  "activities": {"<accountId>": [...raw Trades activity rows...]}}
 ```
-The script maps `symbol`, `action` → side, `abs(quantity)` → shares, `price`, `tradeDate` → date, `transactionId` → id and `abs(gross.amount)` → total. A pre-normalised `"trades"` list (`{accountId, symbol, side, shares, price, date, externalId?, grossAmount?}`) is also accepted for trades from other sources.
+The script maps `symbol`, `action` → side, `abs(quantity)` → shares, `price`, `tradeDate` → date, `transactionId` → id and `abs(gross.amount)` → total. Add `"orders": {"<accountId>": <raw get_order_history response>}` to attach order type, limit price and market-order time. Symbols that are not already investments are rejected (broker-only symbols such as the cash fund `PSUCF` or conversion leg `G036247` appear in this feed); map the alias first or pass `--allow-new-symbols` deliberately. One activity row can cover several orders (a 22-share sale filled as orders of 4 and 18), in which case no order details are attached. A date range is not capped at 30 days: one call returned 98 rows on a single page. A pre-normalised `"trades"` list (`{accountId, symbol, side, shares, price, date, externalId?, grossAmount?}`) is also accepted for trades from other sources.
+
+### `get_order_history(accountId)`
+No date filter; returns roughly the last 30 days as `{"open": [...], "history": [...]}`. **Filled orders appear in both lists**, so de-duplicate by `id`. Row shape (captured 2026-10-08):
+```json
+{"id":"07c9363a-3848-4c82-0d81-2d540f3d6803","instrument":"KOID","qty":3,"side":"buy","type":"limit",
+ "status":"filled","filledQty":3,"avgPrice":36.99,"limitPrice":37,"lastModified":1791169238}
+```
+- `status` is `filled` | `cancelled` | ...; `type` is `market` | `limit` | ...; `limitPrice` is present only for limit orders; market orders carry `duration`.
+- **`lastModified` (epoch seconds) is when the order was last changed, not when it filled.** The limit order above was placed Sunday 23:00 ET and filled Monday. Treat it as the trade time only for market orders, which fill on submission.
+- There is no link to the activity `transactionId`: match on account, instrument, side, `filledQty` and `avgPrice`.
 
 ### `search_symbols(query, hasOptions?, limit?)`
 Returns matches with security UUID, exchange, market cap, industry. Use the UUID for `get_quotes(securityUuids=[...])` when you need Greeks/IV (option contracts); use `get_quotes(symbols=[...])` for plain equity quotes without a prior search.

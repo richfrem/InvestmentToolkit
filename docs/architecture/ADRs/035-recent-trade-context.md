@@ -34,6 +34,20 @@ cancelled entries from May.
    `daily-loop` and `weekly-review` route to it when a Questrade session is
    connected.
 
+5. Order type, limit price and, for market orders only, the order time come from
+   `get_order_history`. The time is stored in `trade_date` as an ISO timestamp in
+   US Eastern time whose first ten characters are always the trade date, so every
+   reader that compares or slices the date keeps working and no schema migration
+   is needed. Questrade's `lastModified` is not a fill time, so it is never used
+   for limit orders.
+6. The importer rejects symbols that are not already investments unless told
+   otherwise, because the activity feed includes broker-only symbols.
+7. The Trade Log page orders by trade date, shows the 100 newest rows with a
+   "Show all" control, shows fill price and total on the All tab, reports the
+   newest executed trade, and offers the `/questrade-sync-portfolio` command as a
+   reminder chip. Executed trades cannot be fetched by a page button: the
+   Questrade connection exists only in an agent session with the owner signed in.
+
 ## Consequences
 
 - The action rule is unchanged: a trimmed position still reads TRIM, now with

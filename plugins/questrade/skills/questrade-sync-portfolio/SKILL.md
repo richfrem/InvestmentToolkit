@@ -48,13 +48,14 @@ Use `--dry-run` to preview changes without committing to SQLite.
    ```
 4. **Import Executed Trades**:
    - For each account call `Get Account Activities` with `transactionTypes=["Trades"]` for the last 30 days (page through `metadata.totalPages`).
-   - Stage `temp/questrade_trades_payload.json` as `{"accounts": [...List Accounts rows...], "activities": {"<accountId>": [...raw activity rows...]}}`. Copy the tool responses unchanged; the script does the mapping, so never reshape, round or fill in values.
+   - Also call `Get Order History` per account: it supplies order type, limit price and market-order time.
+   - Stage `temp/questrade_trades_payload.json` as `{"accounts": [...List Accounts rows...], "activities": {"<accountId>": [...raw activity rows...]}, "orders": {"<accountId>": <raw order history response>}}`. Copy the tool responses unchanged; the script does the mapping, so never reshape, round or fill in values.
    - Preview, then import:
    ```bash
    python3 plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py --payload temp/questrade_trades_payload.json --dry-run
    python3 plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py --payload temp/questrade_trades_payload.json --json
    ```
-   - Exit code 2 means some trades were rejected: report each reason; do not edit values to force them through.
+   - Exit code 2 means some trades were rejected: report each reason; do not edit values to force them through. An "unknown symbol" rejection is usually a broker-only symbol (cash fund, currency conversion): leave it out unless the owner asks for it.
 5. **Trigger Refresh & Invariant Check**:
    - Run `python3 investment_screener/backend/py_services/verify_portfolio_invariants.py`.
    - Remove temporary JSON payload and display sync summary.

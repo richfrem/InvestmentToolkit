@@ -6,6 +6,11 @@ import {
 } from '../services/api';
 import { TradePrepModal } from '../components/TradePrepModal';
 import { PriceSourceBadge } from '../components/PriceSourceBadge';
+import { CopyCommandChip } from '../components/CopyCommandChip';
+import {
+    TRADE_LOG_PAGE_SIZE, TRADE_REFRESH_NUDGE_DAYS, TRADE_SYNC_COMMAND, daysSince, latestFilledTrade, recentFirst,
+    tradeDateParts,
+} from '../utils/tradeLogView';
 
 // ── Chips ─────────────────────────────────────────────────────────────────────
 
@@ -268,6 +273,7 @@ export default function TradeLog() {
     const [tickerFilter, setTickerFilter] = useState('');
     const [actionFilter, setActionFilter] = useState<ActionFilter>('all');
     const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
+    const [showAll, setShowAll]           = useState(false);
 
     const loadQuotes = useCallback(async (data: TradeLogEntry[]) => {
         const unique = [...new Set(data.filter(e => e.status !== 'cancelled').map(e => e.ticker))];
@@ -359,15 +365,24 @@ export default function TradeLog() {
         cancelled: entries.filter(e => resolvedStatus(e) === 'cancelled').length,
     };
 
-    const filtered = entries.filter(e => {
+    // Newest trade date first; imported fills share one import time, so loggedAt alone would not order them.
+    const matching = recentFirst(entries).filter(e => {
         if (!TAB_STATUS_MAP[tab].includes(resolvedStatus(e))) return false;
         if (actionFilter !== 'all' && e.action !== actionFilter) return false;
         if (tickerFilter && !e.ticker.includes(tickerFilter.toUpperCase())) return false;
         return true;
     });
+    // The page opens on the most recent rows; "Show all" lifts the limit.
+    const filtered = showAll ? matching : matching.slice(0, TRADE_LOG_PAGE_SIZE);
+
+    // Executed trades arrive only when the owner runs the Questrade sync, so their freshness is shown.
+    const lastFill = latestFilledTrade(entries);
+    const lastFillAge = daysSince(lastFill?.date);
+    const fillsStale = lastFillAge == null || lastFillAge > TRADE_REFRESH_NUDGE_DAYS;
 
     const showOrderIdCol = tab === 'working' || tab === 'inactive';
-    const showFillCols   = tab === 'filled';
+    // Executed trades appear on the All tab too, so their fill price and total are shown there as well.
+    const showFillCols   = tab === 'filled' || tab === 'all';
 
     // ── Selection ─────────────────────────────────────────────────────────────
 
@@ -401,6 +416,13 @@ export default function TradeLog() {
                         {entries.length} entries
                         {quotesLoading && <span className="ml-2 text-sky-500">· fetching quotes…</span>}
                     </p>
+                    <p className={`text-xs mt-0.5 ${fillsStale ? 'text-amber-400' : 'text-slate-500'}`}>
+                        {lastFill
+                            ? `Latest executed trade: ${lastFill.ticker} ${lastFill.action} on ${tradeDateParts(lastFill.date).day}`
+                                + (lastFillAge != null ? ` (${lastFillAge === 0 ? 'today' : `${lastFillAge} day${lastFillAge === 1 ? '' : 's'} ago`})` : '')
+                            : 'No executed trades recorded yet'}
+                        {fillsStale && ' · refresh from Questrade if you have traded since'}
+                    </p>
                 </div>
                 <div className="flex items-center gap-3">
                     {selectedIds.size > 0 && (
@@ -410,8 +432,10 @@ export default function TradeLog() {
                         </button>
                     )}
                     <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={lastRefreshedAt} />
+                    <CopyCommandChip command={TRADE_SYNC_COMMAND} label="Refresh trades via" highlight={fillsStale}
+                        title="Executed trades come from Questrade. Paste this command to your agent; it needs your Questrade sign-in, then imports new fills without duplicates." />
                     <button onClick={doSyncFromTV} disabled={syncing}
-                        title="Reconcile trade log against live TradingView orders (source of truth)"
+                        title="Reconcile open and working orders against live TradingView orders. Executed trades come from the Questrade refresh."
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-900/40 hover:bg-indigo-800/50 border border-indigo-700/50 text-indigo-400 hover:text-indigo-300 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} /> Sync from TV
                     </button>
@@ -481,21 +505,19 @@ export default function TradeLog() {
                     </div>
                 ) : (
                     <table className="w-full text-xs table-fixed">
+                        {/* One width per column, in header order; built as a list so no stray whitespace lands in <colgroup>. */}
                         <colgroup>
-                            <col style={{ width: '2.5rem' }} />   {/* ☐ */}
-                            <col style={{ width: '9rem' }} />     {/* Ticker + date */}
-                            <col style={{ width: '4.5rem' }} />   {/* Side */}
-                            <col style={{ width: '4rem' }} />     {/* Qty */}
-                            <col style={{ width: '5rem' }} />     {/* Type */}
-                            <col style={{ width: '5.5rem' }} />   {/* Limit */}
-                            {showFillCols && <col style={{ width: '5.5rem' }} />} {/* Fill */}
-                            {showFillCols && <col style={{ width: '5.5rem' }} />} {/* Total */}
-                            <col style={{ width: '5rem' }} />     {/* Account */}
-                            {showOrderIdCol && <col style={{ width: '8rem' }} />} {/* Order ID */}
-                            <col style={{ width: '6.5rem' }} />   {/* Last / Chg% */}
-                            <col style={{ width: '6rem' }} />     {/* Status */}
-                            <col style={{ width: '8rem' }} />     {/* Actions */}
-                            <col />                                {/* Notes (fills rest) */}
+                            {[
+                                '2.5rem',                                   // select
+                                '6rem',                                     // ticker
+                                '7.5rem',                                   // date and order time
+                                '4.5rem', '4rem', '5rem', '5.5rem',         // side, qty, type, limit
+                                ...(showFillCols ? ['5.5rem', '5.5rem'] : []), // fill, total
+                                '5rem',                                     // account
+                                ...(showOrderIdCol ? ['8rem'] : []),        // order id
+                                '6.5rem', '6rem', '8rem',                   // last / chg%, status, actions
+                                undefined,                                  // notes fills the rest
+                            ].map((width, index) => <col key={index} style={width ? { width } : undefined} />)}
                         </colgroup>
                         <thead>
                             <tr className="border-b border-slate-800 text-[10px] uppercase tracking-wider">
@@ -506,6 +528,7 @@ export default function TradeLog() {
                                     }} className="accent-indigo-500 cursor-pointer" />
                                 </th>
                                 <th className="px-3 py-3 text-left text-slate-500 font-semibold">Ticker</th>
+                                <th className="px-3 py-3 text-left text-slate-500 font-semibold" title="Trade date. A time is shown for imported market orders, in US Eastern time.">Date</th>
                                 <th className="px-3 py-3 text-left text-slate-500 font-semibold">Side</th>
                                 <th className="px-3 py-3 text-right text-slate-500 font-semibold">Qty</th>
                                 <th className="px-3 py-3 text-left text-slate-500 font-semibold">Type</th>
@@ -542,10 +565,17 @@ export default function TradeLog() {
                                             )}
                                         </td>
 
-                                        {/* Ticker + date (stacked) */}
+                                        {/* Ticker */}
                                         <td className="px-3 py-2.5">
                                             <div className="font-mono font-bold text-white text-[13px]">{e.ticker}</div>
-                                            <div className="text-[10px] text-slate-600 mt-0.5">{e.date}</div>
+                                        </td>
+
+                                        {/* Trade date and, when known, order time */}
+                                        <td className="pl-3 pr-5 py-2.5 whitespace-nowrap">
+                                            <div className="font-mono text-slate-200 text-xs">{tradeDateParts(e.date).day}</div>
+                                            {tradeDateParts(e.date).time && (
+                                                <div className="text-[10px] text-slate-500 mt-0.5">{tradeDateParts(e.date).time}</div>
+                                            )}
                                         </td>
 
                                         {/* Side */}
@@ -555,7 +585,7 @@ export default function TradeLog() {
                                         <td className="px-3 py-2.5 text-right font-mono text-slate-200">{e.shares.toLocaleString()}</td>
 
                                         {/* Type */}
-                                        <td className="px-3 py-2.5 text-slate-400 uppercase text-[10px] tracking-wide">{e.orderType ?? 'market'}</td>
+                                        <td className="px-3 py-2.5 text-slate-400 uppercase text-[10px] tracking-wide">{e.orderType ?? <span className="text-slate-700">—</span>}</td>
 
                                         {/* Limit */}
                                         <td className="px-3 py-2.5 text-right font-mono text-slate-400">
@@ -643,6 +673,15 @@ export default function TradeLog() {
                             })}
                         </tbody>
                     </table>
+                )}
+                {matching.length > TRADE_LOG_PAGE_SIZE && (
+                    <div className="flex items-center justify-between px-4 py-2.5 border-t border-slate-800 text-xs text-slate-500">
+                        <span>Showing {filtered.length} of {matching.length} entries, newest first</span>
+                        <button type="button" onClick={() => setShowAll(on => !on)}
+                            className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white font-semibold transition-colors">
+                            {showAll ? `Show latest ${TRADE_LOG_PAGE_SIZE}` : `Show all ${matching.length}`}
+                        </button>
+                    </div>
                 )}
             </div>
 
