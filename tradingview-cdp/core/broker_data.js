@@ -26,7 +26,7 @@
 
 import { evaluate, evaluateAsync } from '../connection.js';
 import { parseOrderHistoryTable } from './order_history.js';
-import { settleAccountReads } from './account_reads.js';
+import { settleAccountReads, switchWithRetry } from './account_reads.js';
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -136,6 +136,45 @@ export async function getAccounts() {
 }
 
 /**
+ * Whether the account dropdown is showing its rows. TV keeps the row spans in the
+ * DOM while the dropdown is closed, so a row counts only when it is rendered and
+ * is not the label inside the dropdown button.
+ *
+ * @returns {Promise<boolean>} True when at least one account row is visible
+ */
+async function dropdownIsOpen() {
+  return evaluate(`(function() {
+    var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
+    return [...document.querySelectorAll('span')].some(function(s) {
+      if (!((s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim()))) return false;
+      if (s.closest('[class*="dropdownButton"]')) return false;
+      var r = s.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    });
+  })()`);
+}
+
+/** Click the account dropdown button with the full mouse event sequence. */
+async function toggleDropdown() {
+  await evaluate(`(function() {
+    var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
+      return /TFSA|RRSP|Cash|Margin|Individual|\\d{6,}/i.test(b.textContent);
+    }) || document.querySelector('[class*="dropdownButton"]');
+    if (btn) {
+      ['mousedown', 'mouseup', 'click'].forEach(function(t) {
+        btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
+      });
+    }
+  })()`);
+}
+
+/** Close the account dropdown. */
+async function closeDropdown() {
+  await evaluate(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`);
+  await sleep(200);
+}
+
+/**
  * switchAccount(accountType) — switches the broker panel to a specific account.
  *
  * TV CSS-toggles dropdown visibility so MutationObserver misses items. Same fix as
@@ -155,39 +194,30 @@ export async function switchAccount(accountType) {
    */
   const target = accountType.toUpperCase();
 
-  // Open dropdown
-  await evaluate(`(function() {
-    var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
-      return /TFSA|RRSP|Cash|Margin|Individual|\\d{6,}/i.test(b.textContent);
-    }) || document.querySelector('[class*="dropdownButton"]');
-    if (btn) {
-      ['mousedown', 'mouseup', 'click'].forEach(function(t) {
-        btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
+  const result = await switchWithRetry({
+    isOpen: dropdownIsOpen,
+    toggle: toggleDropdown,
+    close: closeDropdown,
+    wait: () => sleep(800),
+    selectRow: () => evaluate(`(function() {
+      var target = ${JSON.stringify(target)};
+      var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
+      var spans = [...document.querySelectorAll('span')].filter(function(s) {
+        return (s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim());
       });
-    }
-  })()`);
-
-  await sleep(800);
-
-  // Find and click the target account span
-  const result = await evaluate(`(function() {
-    var target = ${JSON.stringify(target)};
-    var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
-    var spans = [...document.querySelectorAll('span')].filter(function(s) {
-      return (s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim());
-    });
-    var match = spans.find(function(s) {
-      return s.textContent.trim().toUpperCase().startsWith(target);
-    });
-    if (!match) return JSON.stringify({ error: 'Account not found in dropdown: ' + target });
-    // Dispatch mouse events to span and parent — .click() is unreliable on TV dropdown rows
-    [match, match.parentElement].filter(Boolean).forEach(function(el) {
-      ['mousedown', 'mouseup', 'click'].forEach(function(t) {
-        el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
+      var match = spans.find(function(s) {
+        return s.textContent.trim().toUpperCase().startsWith(target);
       });
-    });
-    return JSON.stringify({ switched: match.textContent.trim() });
-  })()`).then(JSON.parse);
+      if (!match) return JSON.stringify({ error: 'Account not found in dropdown: ' + target });
+      // Dispatch mouse events to span and parent — .click() is unreliable on TV dropdown rows
+      [match, match.parentElement].filter(Boolean).forEach(function(el) {
+        ['mousedown', 'mouseup', 'click'].forEach(function(t) {
+          el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
+        });
+      });
+      return JSON.stringify({ switched: match.textContent.trim() });
+    })()`).then(JSON.parse),
+  });
 
   await sleep(1200); // wait for account data to reload
   return result;

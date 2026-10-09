@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { settleAccountReads } from '../core/account_reads.js';
+import { settleAccountReads, switchWithRetry } from '../core/account_reads.js';
 
 const TFSA = 'TFSA - 12345678';
 const RRSP = 'RRSP - 87654321';
@@ -42,5 +42,46 @@ describe('settleAccountReads', () => {
   it('removes duplicates and returns an empty list when nothing is ever read', async () => {
     expect(await settleAccountReads(reader([[TFSA, TFSA], [TFSA]]), { wait: noWait })).toEqual([TFSA]);
     expect(await settleAccountReads(reader([[]]), { attempts: 3, wait: noWait })).toEqual([]);
+  });
+});
+
+describe('switchWithRetry', () => {
+  const noWait = async () => {};
+  const deps = ({ open = false, rows = [{ switched: 'TFSA - 1' }] } = {}) => {
+    const log = [];
+    let isOpen = open;
+    let i = 0;
+    return {
+      log,
+      isOpen: async () => isOpen,
+      toggle: async () => { log.push('toggle'); isOpen = !isOpen; },
+      close: async () => { log.push('close'); isOpen = false; },
+      selectRow: async () => { log.push('select'); return rows[Math.min(i++, rows.length - 1)]; },
+    };
+  };
+
+  it('does not toggle a dropdown that is already open (a blind toggle would close it)', async () => {
+    const d = deps({ open: true });
+    expect(await switchWithRetry({ ...d, wait: noWait })).toEqual({ switched: 'TFSA - 1' });
+    expect(d.log).toEqual(['select']);
+  });
+
+  it('opens a closed dropdown once before selecting', async () => {
+    const d = deps({ open: false });
+    expect(await switchWithRetry({ ...d, wait: noWait })).toEqual({ switched: 'TFSA - 1' });
+    expect(d.log).toEqual(['toggle', 'select']);
+  });
+
+  it('closes and retries when the row is not found, then succeeds', async () => {
+    const d = deps({ open: false, rows: [{ error: 'Account not found in dropdown: TFSA' }, { switched: 'TFSA - 1' }] });
+    expect(await switchWithRetry({ ...d, wait: noWait })).toEqual({ switched: 'TFSA - 1' });
+    expect(d.log).toEqual(['toggle', 'select', 'close', 'toggle', 'select']);
+  });
+
+  it('returns the last error after the attempts are used up', async () => {
+    const d = deps({ rows: [{ error: 'Account not found in dropdown: TFSA' }] });
+    const result = await switchWithRetry({ ...d, attempts: 3, wait: noWait });
+    expect(result.error).toMatch(/not found in dropdown: TFSA/);
+    expect(d.log.filter(x => x === 'select')).toHaveLength(3);
   });
 });
