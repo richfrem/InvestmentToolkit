@@ -7,7 +7,7 @@
  */
 import { afterEach, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ReduceCandidatesChip, RiskRewardCell } from '../src/components/RiskRewardCell';
+import { ReduceCandidatesChip, RiskRewardCell, ValuationStrip } from '../src/components/RiskRewardCell';
 import { ValuationRangeBar } from '../src/components/ValuationRangeBar';
 import type { RecommendationRecord } from '../src/services/api';
 import { heatmapPrice } from '../src/utils/heatmapPrice';
@@ -191,4 +191,17 @@ it('shows how debt was handled beside the check, and says when it never was', ()
     const clean = { ...below, debt: { status: 'ASSESSED', tier: 'LOW', reasons: [], rate_status: 'OK', previous_fair_value: null, note: 'Leverage low' } } as RecommendationRecord;
     render(<RiskRewardCell columnId="rr_check" rec={clean} />);
     expect(screen.queryByText(/Debt/)).toBeNull();
+});
+
+it('gives cards the same valuation visuals as the tables, and nothing when there is no valuation', () => {
+    const severe = { ...below, debt: { status: 'ASSESSED', tier: 'SEVERE', reasons: [], rate_status: 'OK', previous_fair_value: null, note: 'Leverage severe' } } as RecommendationRecord;
+    const { unmount } = render(<ValuationStrip rec={severe} />);
+    const strip = screen.getByRole('group', { name: 'CRWV valuation' });
+    expect(strip.querySelector('[data-mark="price"]')).toBeTruthy();
+    expect(screen.getByRole('img', { name: /Valuation support 2 of 4/ })).toBeTruthy();
+    expect(screen.getByText('reward:risk')).toBeTruthy();
+    expect(screen.getByText('Debt severe')).toBeTruthy();
+    unmount();
+    const { container } = render(<ValuationStrip rec={{ ticker: 'NEW', action: 'WATCHLIST' } as RecommendationRecord} />);
+    expect(container.innerHTML).toBe('');
 });

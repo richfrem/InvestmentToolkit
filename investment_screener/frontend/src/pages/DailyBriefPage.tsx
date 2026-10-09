@@ -22,6 +22,7 @@ import { RecommendationFilters } from '../components/RecommendationFilters';
 import { RecentTradeTag } from '../components/RecentTradeTag';
 import { SmartText } from '../components/SmartText';
 import { CopyCommandChip } from '../components/CopyCommandChip';
+import { ValuationStrip } from '../components/RiskRewardCell';
 import { stanceOf } from '../utils/riskReward';
 import { tradeIntent, REC_CHIP_STYLES } from '../utils/recommendationPresentation';
 
@@ -401,6 +402,8 @@ export default function DailyBriefPage() {
 
                                     {/* Middle: rationale + standing decision */}
                                     <div className="flex-1 min-w-0">
+                                        {/* Same valuation visuals as the holdings tables, from the same record. */}
+                                        <ValuationStrip rec={recommendations[rec.ticker]} />
                                         <p className="text-sm text-zinc-300 leading-snug"><SmartText text={rec.rationale} /></p>
                                         {rec.refreshFirst && (
                                             <div className="mt-1.5 flex flex-wrap items-center gap-2">

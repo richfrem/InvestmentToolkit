@@ -134,9 +134,24 @@ def _scenario_check(scenarios: dict | None) -> tuple[bool, str]:
     return True, "Bear, base and bull saved with probabilities"
 
 
+# valuationModel keys written by the debt re-base; they record a rate change, not a review.
+_REBASE_KEYS = frozenset({"method", "leverage", "rateBasis", "rebasedFrom"})
+
+
+def evidence_date(saved_at: str | None, analyzed_at: str | None, analytics_log: dict | None) -> str | None:
+    """The date the valuation's analysis dates from.
+
+    A re-based valuation (leverage.py) is saved again with a new rate but the same
+    scenario assumptions, so its evidence is as old as the original analysis.
+    """
+    rebased = ((analytics_log or {}).get("valuationModel") or {}).get("rebasedFrom")
+    return analyzed_at if rebased and analyzed_at else saved_at
+
+
 def _forward_check(analytics_log: dict) -> tuple[bool, str]:
     """A recorded forward review that is not flagged for revaluation."""
-    model = analytics_log.get("valuationModel") or {}
+    model = {key: value for key, value in (analytics_log.get("valuationModel") or {}).items()
+             if key not in _REBASE_KEYS}
     outlook = analytics_log.get("outlookAudit") or {}
     flag = next((value for value in (model.get("readiness"), outlook.get("reviewReadiness"))
                  if value in REVIEW_FLAGS), None)
@@ -152,7 +167,7 @@ def valuation_support(saved_at: str | None, analytics_log: dict | None,
     """Score the evidence behind a saved fair value on four independent checks.
 
     Args:
-        saved_at: ISO timestamp of the saved projection (None when there is none).
+        saved_at: ISO timestamp the analysis dates from (evidence_date); None when there is none.
         analytics_log: Saved analytics log (rate audit, readiness, outlook audit).
         scenarios: Saved scenario prices and weights.
         today: Date used for the age check.
@@ -233,7 +248,8 @@ def debt_view(analytics_log: dict | None, has_valuation: bool) -> dict[str, Any]
     reasons = list(leverage.get("reasons") or [])
     tier = leverage.get("tier")
     parts = [f"Leverage {tier.lower()}" + (f": {'; '.join(reasons)}" if reasons else "")] if tier else []
-    parts.append(basis.get("note") or ("Discount rate from a sourced audit" if sourced else ""))
+    parts.append(basis.get("note") or ("Discount rate from a sourced audit" if model.get("discountRateAudit")
+                                       else "Firm cash flows; debt is subtracted in the equity bridge" if sourced else ""))
     return {"status": "ASSESSED", "tier": tier, "reasons": reasons,
             "rate_status": basis.get("status") or ("OK" if sourced else None),
             "previous_fair_value": (model.get("rebasedFrom") or {}).get("fairValue"),

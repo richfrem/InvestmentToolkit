@@ -135,6 +135,29 @@ export function RiskRewardCell({ columnId, rec, hideValues = false }: {
     }
 }
 
+/**
+ * The table's valuation columns as one compact row, for cards: range bar, gap to fair value,
+ * reward:risk, evidence checks and the debt badge. Renders nothing without a saved valuation.
+ */
+export function ValuationStrip({ rec, hideValues = false }: { rec?: RecommendationRecord | null; hideValues?: boolean }) {
+    if (!rec?.risk_reward || rec.fair_value == null) return null;
+    const cell = (columnId: RiskRewardColumnId) => <RiskRewardCell columnId={columnId} rec={rec} hideValues={hideValues} />;
+    const labelled = (label: string, columnId: RiskRewardColumnId) => (
+        <span className="inline-flex items-center gap-1.5">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-500">{label}</span>{cell(columnId)}
+        </span>
+    );
+    return (
+        <div role="group" aria-label={`${rec.ticker} valuation`} className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div className="w-56 shrink-0">{cell('rr_range')}</div>
+            {labelled('vs fair value', 'rr_premium')}
+            {labelled('reward:risk', 'rr_ratio')}
+            {labelled('support', 'rr_support')}
+            <DebtBadge rec={rec} />
+        </div>
+    );
+}
+
 /** Counted toggle for held positions whose reward no longer covers the risk. */
 export function ReduceCandidatesChip({ count, active, onToggle }: { count: number; active: boolean; onToggle: () => void }) {
     return (
