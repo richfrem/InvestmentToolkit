@@ -349,6 +349,7 @@ def test_load_thesis_holdings_returns_empty_for_no_holdings(tmp_path):
 # ── lifecycle vocabulary and thesisBreakers ──────────────────────────────────
 
 def test_lifecycle_vocabulary_is_one_definition():
+    """Lifecycle vocabulary is one definition."""
     import portfolio_io
     import market_regime
     assert portfolio_io.LIFECYCLE_STATUSES == {"accumulate", "trim", "exit", "initiate", "watchlist"}
@@ -357,6 +358,7 @@ def test_lifecycle_vocabulary_is_one_definition():
 
 
 def test_validate_lifecycle_status_accepts_vocabulary_and_rejects_the_rest():
+    """Validate lifecycle status accepts vocabulary and rejects the rest."""
     import portfolio_io
     for ok in ("accumulate", "trim", "exit", "initiate", "watchlist", "exited", "avoid"):
         assert portfolio_io.validate_lifecycle_status(ok) == ok
@@ -366,6 +368,7 @@ def test_validate_lifecycle_status_accepts_vocabulary_and_rejects_the_rest():
 
 
 def test_load_thesis_holdings_exposes_thesis_breakers(tmp_path):
+    """Load thesis holdings exposes thesis breakers."""
     import portfolio_io
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import resolve_investment, update_investment_fields
@@ -385,6 +388,7 @@ def test_load_thesis_holdings_exposes_thesis_breakers(tmp_path):
 
 
 def test_lifecycle_cli_reports_the_stored_status_not_a_guess(tmp_path):
+    """Lifecycle cli reports the stored status not a guess."""
     import portfolio_io
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import resolve_investment, update_investment_fields

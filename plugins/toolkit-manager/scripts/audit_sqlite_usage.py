@@ -92,12 +92,14 @@ SKIP_DIRS = {"node_modules", ".venv", "venv", "__pycache__", "ARCHIVE", "worktre
 
 
 def link_parents(tree):
+    """Link parents."""
     for n in ast.walk(tree):
         for c in ast.iter_child_nodes(n):
             c._p = n
 
 
 def doc_ids(tree):
+    """Doc ids."""
     out = set()
     for n in ast.walk(tree):
         if isinstance(n, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and n.body \
@@ -107,6 +109,7 @@ def doc_ids(tree):
 
 
 def callee_name(call):
+    """Callee name."""
     f = call.func
     if isinstance(f, ast.Name):
         return f.id
@@ -116,6 +119,7 @@ def callee_name(call):
 
 
 def open_is_write(call):
+    """Open is write."""
     for a in list(call.args[1:2]) + [k.value for k in call.keywords if k.arg == "mode"]:
         if isinstance(a, ast.Constant) and isinstance(a.value, str) and any(c in a.value for c in "wax"):
             return True
@@ -123,6 +127,7 @@ def open_is_write(call):
 
 
 def enclosing_func(node):
+    """Enclosing func."""
     cur = node
     while cur is not None:
         cur = getattr(cur, "_p", None)
@@ -132,39 +137,105 @@ def enclosing_func(node):
 
 
 def is_env_get(call):
+    """Is env get."""
     return callee_name(call) in {"get", "getenv"} and isinstance(call.func, ast.Attribute)
 
 
+_TRANSPARENT_ATTRS = {"resolve", "absolute", "parent", "expanduser", "with_suffix", "with_name"}
+
+
+def _passes_through(cur, p):
+    """True when parent ``p`` keeps the path value held by ``cur`` (so the climb continues)."""
+    if isinstance(p, (ast.JoinedStr, ast.FormattedValue, ast.BoolOp)):
+        return True
+    if isinstance(p, ast.BinOp):
+        return isinstance(p.op, (ast.Div, ast.Add))      # d / "x.json"; path + ".tmp"
+    if isinstance(p, ast.IfExp):
+        return cur is not p.test
+    if isinstance(p, ast.Call):
+        if cur in p.args and callee_name(p) in WRAPPERS:
+            return True
+        return is_env_get(p) and len(p.args) >= 2 and cur is p.args[1]   # os.environ.get("X", <this>)
+    return False
+
+
 def climb(node):
-    """Climb through value-preserving wrappers to the node that finally consumes the path."""
+    """Climb through value-preserving wrappers to the node that finally consumes the path.
+
+    Returns:
+        (node, parent): the outermost wrapper still holding the path and the node consuming it;
+        parent is None when the climb reaches the module root.
+    """
     cur = node
     while True:
         p = getattr(cur, "_p", None)
         if p is None:
             return cur, None
-        if isinstance(p, ast.BinOp) and isinstance(p.op, ast.Div):
+        if _passes_through(cur, p):
             cur = p
-        elif isinstance(p, (ast.JoinedStr, ast.FormattedValue)):
-            cur = p
-        elif isinstance(p, ast.BoolOp):
-            cur = p
-        elif isinstance(p, ast.IfExp) and cur is not p.test:
-            cur = p
-        elif isinstance(p, ast.Call) and cur in p.args and callee_name(p) in WRAPPERS:
-            cur = p
-        elif isinstance(p, ast.Call) and is_env_get(p) and len(p.args) >= 2 and cur is p.args[1]:
-            cur = p                                  # os.environ.get("X", <this default>)
-        elif isinstance(p, ast.Attribute) and p.attr in {"resolve", "absolute", "parent", "expanduser", "with_suffix", "with_name"} \
-                and isinstance(getattr(p, "_p", None), ast.Call):
+        elif isinstance(p, ast.Attribute) and p.attr in _TRANSPARENT_ATTRS and isinstance(getattr(p, "_p", None), ast.Call):
             cur = p._p
-        elif isinstance(p, ast.BinOp) and isinstance(p.op, ast.Add):
-            cur = p                                  # path + ".tmp"
         else:
             return cur, p
 
 
 def T(kind, node):
+    """T."""
     return (kind, getattr(node, "lineno", 0), enclosing_func(node))
+
+
+def _classify_attribute_parent(parent):
+    """Use of a path held in ``Path(...).<attr>``: read, write, stat or unresolved."""
+    call = getattr(parent, "_p", None)
+    if parent.attr in WRITE_ATTRS:
+        return {T("WRITE", parent)}
+    if parent.attr == "open" and isinstance(call, ast.Call):
+        return {T("WRITE" if open_is_write(call) else "READ_CONTENT", parent)}
+    if parent.attr in READ_ATTRS:
+        return {T("READ_CONTENT", parent)}
+    if parent.attr in STAT_ATTRS:
+        return {T("STAT_ONLY", parent)}
+    return {T("UNRESOLVED", parent)}
+
+
+def _classify_known_call(call, kw, cn):
+    """Use sites for calls whose behaviour is known from the callee name; None when not known."""
+    if cn == "open":
+        return {T("WRITE" if open_is_write(call) else "READ_CONTENT", call)}
+    if cn in STAT_ATTRS:
+        return {T("STAT_ONLY", call)}
+    if cn in {"copyfile", "copy", "copy2", "move", "remove", "unlink", "rmtree", "replace", "rename"}:
+        return {T("WRITE", call)}
+    if cn in {"load", "loads"} and call.args and not isinstance(call.args[0], ast.Constant):
+        return {T("READ_CONTENT", call)}
+    if cn == "add_argument":
+        return {T("CLI_DEFAULT" if kw == "default" else "MESSAGE", call)}
+    if cn in IGNORES_PATH:
+        return {T("VESTIGIAL", call)}
+    if cn in MESSAGE_CALLS:
+        return {T("MESSAGE", call)}
+    return None
+
+
+def _classify_call_parent(node, parent, tree, depth, funcs, seen):
+    """Use of a path passed to a call: a known callee, or follow it into a function in this file."""
+    call = parent if isinstance(parent, ast.Call) else parent._p
+    kw = parent.arg if isinstance(parent, ast.keyword) else None
+    cn = callee_name(call)
+    known = _classify_known_call(call, kw, cn)
+    if known is not None:
+        return known
+    if cn in funcs and depth < 5:
+        fn = funcs[cn]
+        names = [a.arg for a in fn.args.posonlyargs + fn.args.args]
+        target = kw
+        if target is None and node in call.args:
+            i = call.args.index(node)
+            target = names[i] if i < len(names) else None
+        if target:
+            got = resolve_param_uses(fn, target, tree, depth + 1, funcs, seen)
+            return got or {T("UNRESOLVED", call)}
+    return {T(f"PASSED({cn})", call)}
 
 
 def classify_expr_use(expr, tree, depth, funcs, seen):
@@ -181,45 +252,9 @@ def classify_expr_use(expr, tree, depth, funcs, seen):
     if isinstance(parent, ast.AnnAssign) and isinstance(parent.target, ast.Name):
         return resolve_name_uses(parent.target.id, tree, depth + 1, funcs, seen)
     if isinstance(parent, ast.Attribute):
-        call = getattr(parent, "_p", None)
-        if parent.attr in WRITE_ATTRS:
-            return {T("WRITE", parent)}
-        if parent.attr == "open" and isinstance(call, ast.Call):
-            return {T("WRITE" if open_is_write(call) else "READ_CONTENT", parent)}
-        if parent.attr in READ_ATTRS:
-            return {T("READ_CONTENT", parent)}
-        if parent.attr in STAT_ATTRS:
-            return {T("STAT_ONLY", parent)}
-        return {T("UNRESOLVED", parent)}
+        return _classify_attribute_parent(parent)
     if isinstance(parent, (ast.Call, ast.keyword)):
-        call = parent if isinstance(parent, ast.Call) else parent._p
-        kw = parent.arg if isinstance(parent, ast.keyword) else None
-        cn = callee_name(call)
-        if cn == "open":
-            return {T("WRITE" if open_is_write(call) else "READ_CONTENT", call)}
-        if cn in STAT_ATTRS:
-            return {T("STAT_ONLY", call)}
-        if cn in {"copyfile", "copy", "copy2", "move", "remove", "unlink", "rmtree", "replace", "rename"}:
-            return {T("WRITE", call)}
-        if cn in {"load", "loads"} and call.args and not isinstance(call.args[0], ast.Constant):
-            return {T("READ_CONTENT", call)}
-        if cn == "add_argument":
-            return {T("CLI_DEFAULT" if kw == "default" else "MESSAGE", call)}
-        if cn in IGNORES_PATH:
-            return {T("VESTIGIAL", call)}
-        if cn in MESSAGE_CALLS:
-            return {T("MESSAGE", call)}
-        if cn in funcs and depth < 5:
-            fn = funcs[cn]
-            names = [a.arg for a in fn.args.posonlyargs + fn.args.args]
-            target = kw
-            if target is None and node in call.args:
-                i = call.args.index(node)
-                target = names[i] if i < len(names) else None
-            if target:
-                got = resolve_param_uses(fn, target, tree, depth + 1, funcs, seen)
-                return got or {T("UNRESOLVED", call)}
-        return {T(f"PASSED({cn})", call)}
+        return _classify_call_parent(node, parent, tree, depth, funcs, seen)
     if isinstance(parent, (ast.Set, ast.List, ast.Tuple, ast.Dict)):
         return {T("NAME_LIST", parent)}
     if isinstance(parent, ast.Compare):
@@ -228,6 +263,7 @@ def classify_expr_use(expr, tree, depth, funcs, seen):
 
 
 def resolve_param_uses(fn, param, tree, depth, funcs, seen):
+    """Resolve param uses."""
     key = (fn.name, param)
     if key in seen:
         return set()
@@ -240,6 +276,7 @@ def resolve_param_uses(fn, param, tree, depth, funcs, seen):
 
 
 def resolve_name_uses(name, tree, depth, funcs, seen):
+    """Resolve name uses."""
     if depth > 6:
         return {("UNRESOLVED", 0, "<depth>")}
     key = ("name", name)
@@ -337,7 +374,38 @@ def cli_flows(tree, funcs, names_rx):
     return found
 
 
+def _unresolved(uses):
+    """Unresolved."""
+    return not uses or all(k == "UNRESOLVED" for k, *_ in uses)
+
+
+def _literal_uses(node, tree, func, funcs, root, rel, all_files):
+    """Use sites of one legacy string literal, falling back to UNUSED / EXPORTED for module constants."""
+    uses = classify_expr_use(node, tree, 0, funcs, frozenset())
+    if _unresolved(uses):
+        p = climb(node)[1]
+        if isinstance(p, ast.Assign) and isinstance(p.targets[0], ast.Name) and func == "<module>":
+            nm = p.targets[0].id
+            if _unresolved(resolve_name_uses(nm, tree, 0, funcs, frozenset())):
+                ext = external_name_uses(root, nm, rel, all_files)
+                uses = {("UNUSED" if not ext else "EXPORTED", node.lineno, f"{nm} <- {ext[:3]}")}
+    return uses
+
+
+def _param_findings(funcs, funcs_by_line_done, funcs_tree):
+    """(function, parameter, uses) for parameters named like a legacy path that reach file I/O."""
+    tree = funcs_tree
+    for fn in funcs.values():
+        for a in fn.args.posonlyargs + fn.args.args + fn.args.kwonlyargs:
+            if PARAM_RX.match(a.arg):
+                uses = {u for u in resolve_param_uses(fn, a.arg, tree, 0, funcs, frozenset())
+                        if u[0] in ("READ_CONTENT", "STAT_ONLY", "WRITE")}
+                if uses:
+                    yield fn, a.arg, uses
+
+
 def audit_file(path: Path, root: Path, names_rx, all_files):
+    """Findings for one Python file: literal and imported-constant bindings, CLI options, path parameters."""
     src = path.read_text()
     try:
         tree = ast.parse(src)
@@ -349,6 +417,7 @@ def audit_file(path: Path, root: Path, names_rx, all_files):
     out = []
 
     def add(line, legacy, func, uses, via=""):
+        """Add."""
         io = {k for k, *_ in uses} & {"READ_CONTENT", "STAT_ONLY", "WRITE"}
         refs = {fn: function_refs(tree, fn) for k, ln, fn in uses if k in io and fn in funcs}
         out.append({"file": rel, "line": line, "legacy": legacy + via, "func": func,
@@ -361,34 +430,22 @@ def audit_file(path: Path, root: Path, names_rx, all_files):
             for nm in names:
                 uses |= resolve_name_uses(nm, tree, 0, funcs, frozenset())
             add(node.lineno, legacy, "<module>", uses)
-            continue
-        uses = classify_expr_use(node, tree, 0, funcs, frozenset())
-        func = enclosing_func(node)
-        if not uses or all(k == "UNRESOLVED" for k, *_ in uses):
-            p = climb(node)[1]
-            if isinstance(p, ast.Assign) and isinstance(p.targets[0], ast.Name) and func == "<module>":
-                nm = p.targets[0].id
-                again = resolve_name_uses(nm, tree, 0, funcs, frozenset())
-                if not again or all(k == "UNRESOLVED" for k, *_ in again):
-                    ext = external_name_uses(root, nm, rel, all_files)
-                    uses = {("UNUSED" if not ext else "EXPORTED", node.lineno, f"{nm} <- {ext[:3]}")}
-        add(node.lineno, legacy, func, uses)
+        else:
+            func = enclosing_func(node)
+            add(node.lineno, legacy, func, _literal_uses(node, tree, func, funcs, root, rel, all_files))
 
     for call, hit, dest, uses in cli_flows(tree, funcs, names_rx):
         add(call.lineno, hit, "<cli>", uses or {("CLI_DEFAULT", call.lineno, dest)}, via=f" (via --{dest.replace('_','-')})")
 
     # parameters named like a legacy path that reach file I/O, with no literal in sight
-    for fn in funcs.values():
-        for a in fn.args.posonlyargs + fn.args.args + fn.args.kwonlyargs:
-            if PARAM_RX.match(a.arg):
-                uses = {u for u in resolve_param_uses(fn, a.arg, tree, 0, funcs, frozenset())
-                        if u[0] in ("READ_CONTENT", "STAT_ONLY", "WRITE")}
-                if uses and not any(o["line"] == fn.lineno and o["func"] == "<param>" for o in out):
-                    add(fn.lineno, f"<param {a.arg}>", "<param>", uses)
+    for fn, param, uses in _param_findings(funcs, None, tree):
+        if not any(o["line"] == fn.lineno and o["func"] == "<param>" for o in out):
+            add(fn.lineno, f"<param {param}>", "<param>", uses)
     return out
 
 
 def verdict(uses):
+    """Verdict."""
     kinds = {k for k, *_ in uses}
     for k in ("WRITE", "READ_CONTENT", "STAT_ONLY", "VESTIGIAL", "EXPORTED", "UNUSED"):
         if k in kinds:
@@ -402,6 +459,7 @@ def verdict(uses):
 
 
 def referenced_by(root, rel):
+    """Referenced by."""
     base = Path(rel).name
     r = subprocess.run(["grep", "-rIl", "--include=*.py", "--include=*.md", "--include=*.json", "--include=*.sh", "--include=*.ts",
                         "-e", base, "plugins", "investment_screener", "AGENTS.md", "run_tests.py"],
@@ -411,6 +469,7 @@ def referenced_by(root, rel):
 
 
 def collect(root: Path):
+    """Collect."""
     files = []
     for top in ("plugins", "investment_screener"):
         for p in sorted((root / top).rglob("*.py")):
@@ -422,6 +481,7 @@ def collect(root: Path):
 
 
 def run(root: Path, artifacts: bool):
+    """Run."""
     names_rx = dict(LEGACY)
     if artifacts:
         names_rx.update(ARTIFACTS)
@@ -478,11 +538,13 @@ def ts_violations(root: Path):
 
 
 def exists_on_disk(root, legacy):
+    """Exists on disk."""
     d = root / "investment_screener/backend/data"
     return any((d / x).exists() for x in (legacy, "theses/" + legacy))
 
 
 def report(root, found):
+    """Report."""
     live = [f for f in found if f["verdict"] in ("READ_CONTENT", "STAT_ONLY", "WRITE")]
     print(f"{len(found)} legacy references in {len({f['file'] for f in found})} files; "
           f"{len(live)} are live I/O in {len({f['file'] for f in live})} files\n")
@@ -546,6 +608,7 @@ FIXTURES = {
 
 
 def self_test():
+    """Self test."""
     ok = True
     for name, (src, want) in FIXTURES.items():
         with tempfile.TemporaryDirectory() as d:
@@ -562,6 +625,7 @@ def self_test():
 
 
 def main():
+    """Main."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=".")
     ap.add_argument("--json")

@@ -1,29 +1,21 @@
 #!/usr/bin/env python3
 """
-portfolio_io.py - Python utility script.
+portfolio_io.py - single source of truth for portfolio data I/O.
 
 Purpose:
-    portfolio_io.py — Single source of truth for portfolio data I/O.
-
-Safe primitives shared by ALL portfolio scripts (sync_portfolio_roles,
-generate_portfolio_blueprint, refresh_all, etc.).
-
-Critical invariant:
-  load_portfolio_state() delegates to domain_model.portfolio_repository's
-  SQLite-backed load_portfolio_state_from_db() (Wave 3 cutover). It NEVER
-  computes the portfolio total from shares×price in this module — that
-  computation lives exactly once, in portfolio_repository.py.
-
-Layer: Backend / py_services / Shared I/O
-
-Key Input Dependencies:
-    - investment_screener/backend/data/domain_model.sqlite (holdings, prices, targets, totals)
+    Safe primitives shared by all portfolio scripts (sync_portfolio_roles,
+    generate_portfolio_blueprint, refresh_all, ...). Holds the one lifecycle (role)
+    vocabulary. ``load_portfolio_state()`` delegates to
+    ``domain_model.portfolio_repository.load_portfolio_state_from_db()`` and never computes the
+    portfolio total from shares x price here; that computation lives once, in portfolio_repository.py.
 
 Layer:
-    Backend / Python Services
+    Backend / Python Services / Shared I/O
 
 Usage Examples:
-    TBD
+    python3 portfolio_io.py                   # portfolio summary
+    python3 portfolio_io.py --ticker NVDA     # holding status, target weight, stored lifecycle status
+    python3 portfolio_io.py --pillars --json  # strategy pillars and sub-strategies
 
 Key Functions (Index):
     - LIFECYCLE_STATUSES, INACTIVE_STATUSES: the one lifecycle (role) vocabulary
@@ -34,9 +26,10 @@ Key Functions (Index):
     - load_thesis_holdings()
     - compute_weights()
     - replace_block()
+    - main()
 
 Key Input Dependencies:
-    None
+    - investment_screener/backend/data/domain_model.sqlite (holdings, prices, targets, totals, breakers)
 
 Key Output Dependencies:
     None
@@ -51,8 +44,7 @@ _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 from ticker_aliases import normalize_ticker  # noqa: E402
 
-# Wave 3 cutover: domain_model.sqlite is the sole source of truth for
-# load_portfolio_state(). See domain_model/portfolio_repository.py.
+# domain_model.sqlite is the sole source of truth. See domain_model/portfolio_repository.py.
 _DB_PATH = str(_HERE / ".." / "data" / "domain_model.sqlite")
 
 # ── constants ───────────────────────────────────────────────────────────────
@@ -101,14 +93,11 @@ def lookup_lifecycle_status(symbol: str, db_path: str | None = None) -> str | No
 # ── portfolio state loading ──────────────────────────────────────────────────
 
 def load_portfolio_state(portfolio_path: Path, db_path: str | None = None) -> dict[str, Any]:
-    """Read the portfolio state from domain_model.sqlite (Wave 3 cutover).
+    """Read the portfolio state from domain_model.sqlite.
 
-    ``portfolio_path`` is accepted for call-site compatibility with the 7+
-    existing callers but is no longer read — SQLite (via
-    ``domain_model.portfolio_repository.load_portfolio_state_from_db``) is the
-    sole source of truth for this domain after Wave 3. This is a thin
-    delegation, not a reimplementation: all aggregation/query logic lives in
-    portfolio_repository.py.
+    ``portfolio_path`` is accepted for call-site compatibility and is not read; SQLite (via
+    ``domain_model.portfolio_repository.load_portfolio_state_from_db``) is the sole source. This
+    is a thin delegation: all aggregation and query logic lives in portfolio_repository.py.
 
     Args:
         portfolio_path: Retained for signature compatibility; unused.
@@ -164,6 +153,25 @@ def load_target_weights(db_path: str | None = None) -> dict[str, float]:
     return result
 
 
+def _thesis_holding(row: dict, price_levels: dict | None, breakers: list[dict]) -> dict:
+    """Map one ``investment`` row, its price levels and its breakers to the thesis holding dict."""
+    target_entry = price_levels["target_entry"]["price"] if price_levels and price_levels.get("target_entry") else None
+    return {
+        "ticker": row["symbol"],
+        "name": row.get("name") or row["symbol"],
+        "pillarId": row.get("pillar_id") or "other",
+        "subStrategyId": row.get("sub_strategy_id"),
+        "targetWeight": row.get("target_weight") or 0,
+        "thesisForInclusion": row.get("thesis_for_inclusion") or "",
+        "role": row.get("lifecycle_status") or "watchlist",
+        "agentRationale": row.get("agent_rationale") or "",
+        "standingDecisionReason": row.get("standing_decision_reason") or "",
+        "standingDecisionType": row.get("standing_decision_type") or "",
+        "targetEntryPrice": target_entry,
+        "thesisBreakers": breakers,
+    }
+
+
 def load_thesis_holdings(db_path: str | None = None) -> list[dict]:
     """Read the thesis holdings array from investment.* columns.
 
@@ -190,27 +198,11 @@ def load_thesis_holdings(db_path: str | None = None) -> list[dict]:
     try:
         rows = list_investments(conn)
         breakers = list_breakers(conn)
-        result = []
-        for row in rows:
-            if row.get("target_weight") is None:
-                continue
-            pl = get_price_levels(conn, row["symbol"])
-            target_entry = pl["target_entry"]["price"] if pl and pl.get("target_entry") else None
-            result.append({
-                "ticker": row["symbol"],
-                "name": row.get("name") or row["symbol"],
-                "pillarId": row.get("pillar_id") or "other",
-                "subStrategyId": row.get("sub_strategy_id"),
-                "targetWeight": row.get("target_weight") or 0,
-                "thesisForInclusion": row.get("thesis_for_inclusion") or "",
-                "role": row.get("lifecycle_status") or "watchlist",
-                "agentRationale": row.get("agent_rationale") or "",
-                "standingDecisionReason": row.get("standing_decision_reason") or "",
-                "standingDecisionType": row.get("standing_decision_type") or "",
-                "targetEntryPrice": target_entry,
-                "thesisBreakers": breakers.get(row["symbol"], []),
-            })
-        return result
+        return [
+            _thesis_holding(row, get_price_levels(conn, row["symbol"]), breakers.get(row["symbol"], []))
+            for row in rows
+            if row.get("target_weight") is not None
+        ]
     finally:
         conn.close()
 
@@ -282,6 +274,7 @@ def replace_block(content: str, name: str, body: str) -> str:
 # ── CLI entrypoint ────────────────────────────────────────────────────────────
 
 def main() -> None:
+    """CLI: portfolio summary, per-ticker status (--ticker) or strategy pillars (--pillars)."""
     import argparse
     import json
 
