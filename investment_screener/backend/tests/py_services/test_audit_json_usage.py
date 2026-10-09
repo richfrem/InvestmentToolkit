@@ -355,3 +355,20 @@ def test_write_reports_allowed_register_only_contains_allowed_classifications(tm
     allowed_paths = {e["path_or_pattern"] for e in register["allowed_files"]}
     assert "unclassified_mystery.json" not in allowed_paths
     assert any("PLTR.json" in p for p in allowed_paths)
+
+
+def test_classify_file_flags_retired_portfolio_files_as_retired():
+    for name in (
+        "portfolio.json", "trade-log.json", "cash_flows.json", "watchlist.json", "watchlists.json",
+        "account_policy.json", "tradingview_alerts_actual.json", "thesis_breaker_state.json",
+        "theses/target-portfolio.json", "orders_executed.jsonl",
+    ):
+        assert classify_file(f"investment_screener/backend/data/{name}", references=[]) == "RETIRED_PORTFOLIO_DATA", name
+
+
+def test_retired_portfolio_files_are_not_in_the_allowed_register(tmp_path):
+    repo = _make_repo(tmp_path)
+    (repo / "portfolio.json").write_text("{}")
+    result = run_audit(str(repo))
+    write_reports(result, str(repo / "out"))
+    assert "portfolio.json" not in (repo / "out" / "allowed-json-register.md").read_text()
