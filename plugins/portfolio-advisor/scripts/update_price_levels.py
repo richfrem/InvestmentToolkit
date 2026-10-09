@@ -2,9 +2,9 @@
 """
 update_price_levels.py — Tiered buy/sell price level manager for portfolio holdings.
 
-Derives structured price tiers from DCF projections and writes them to:
-  - target-portfolio.json: priceLevels block per holding
-  - portfolio.json: priceLevelSnapshot (denormalized, read by skills at runtime)
+Derives structured price tiers from DCF projections and stores them in domain_model.sqlite
+(price_level_set / price_level_tier). The priceLevelSnapshot (next buy/sell tier and
+proximity flags) is computed from those tables and the stored price, never stored separately.
 
 Derivation formulas (source=dcf):
   buyTier[1].price  = round(base_fv * 0.75, 2)   # 25% margin of safety
@@ -22,6 +22,18 @@ Usage:
   python3 update_price_levels.py --ticker GOOG --source dcf --write
   python3 update_price_levels.py --ticker GOOG --source dcf --dry-run
   python3 update_price_levels.py --all --source dcf --dry-run
+  python3 update_price_levels.py --all --write --db /path/to/domain_model.sqlite
+
+Key Functions (Index):
+  - derive_tiers_from_dcf(): the tier formulas
+  - compute_proximity_flags(): flags for a price against stored levels
+  - load_latest_projection(): the latest AI_AGENT projection scenarios
+  - compute_price_level_snapshot_from_db(): next tiers and flags from SQLite
+  - derive_and_write(): one ticker
+  - derive_and_write_all(): every thesis holding; reports updated, skipped and failed
+
+Key Input Dependencies:
+  - investment_screener/backend/data/domain_model.sqlite (projections, prices, thesis holdings)
 """
 
 import argparse
@@ -33,25 +45,15 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-TARGET_JSON = REPO_ROOT / 'investment_screener/backend/data/theses/target-portfolio.json'
-PORTFOLIO_JSON = REPO_ROOT / 'investment_screener/backend/data/portfolio.json'
 DB_PATH = REPO_ROOT / 'investment_screener/backend/data/domain_model.sqlite'
 
-# Import locked_write_json
 sys.path.insert(0, str(REPO_ROOT / 'investment_screener/backend/py_services'))
-try:
-    from file_lock import locked_write_json
-except ImportError:
-    # Fallback if file_lock is not importable (e.g. running in testing environments with specific sys.path)
-    def locked_write_json(file_path: Path, data: Any) -> None:
-        with open(file_path, 'w') as f:
-            json.dump(data, f, indent=2)
-
 from domain_model.db_client import initialize_db
 from domain_model.projection_repository import get_latest_projection_by_source, get_projection_scenarios
 from domain_model.investment_repository import resolve_investment
 from domain_model.price_level_repository import replace_price_levels, get_price_levels
 from domain_model.investment_price_repository import get_investment_price
+from portfolio_io import load_thesis_holdings
 
 MAX_BEAR_LEVEL_DISTANCE = 0.50  # bear-derived levels further than this below price are suppressed
 
@@ -218,11 +220,9 @@ def compute_proximity_flags(current_price: float, price_levels: dict | None) -> 
 def load_latest_projection(ticker: str, db_path: Path | None = None) -> dict | None:
     """Reads latest AI_AGENT projection entry for a given ticker.
 
-    Storage backend (Wave 1 Task 7B): reads `projection_version`/
-    `projection_scenario` via `domain_model.projection_repository`, not
-    `projections/{TICKER}.json` directly (ADR-029). The original code filtered
-    strictly by `source == 'AI_AGENT'` with no fallback to other sources, so
-    this uses `get_latest_projection_by_source` only.
+    Reads `projection_version` / `projection_scenario` through
+    `domain_model.projection_repository.get_latest_projection_by_source`, strictly
+    `AI_AGENT` with no fallback to other sources.
 
     Returns:
         `{"source": "AI_AGENT", "scenarios": {"bear"/"base"/"bull": {
@@ -315,13 +315,14 @@ def derive_and_write(
     ticker: str,
     source: str = 'dcf',
     note: str = '',
-    ta_overrides: dict | None = None,
     dry_run: bool = False,
-    target_json_path: Path | None = None,
-    portfolio_json_path: Path | None = None,
     db_path: Path | None = None
 ) -> dict:
-    """Derives price levels for a ticker and updates the files."""
+    """Derive price levels for a ticker and store them in domain_model.sqlite (unless dry_run).
+
+    Raises:
+        ValueError: No AI_AGENT projection, or one without bear/base/bull scenario prices.
+    """
     proj = load_latest_projection(ticker, db_path)
     if not proj:
         raise ValueError(f"No projection found for {ticker}")
@@ -344,30 +345,9 @@ def derive_and_write(
         if level.get('status') == 'suppressed':
             print(f"WARNING: {ticker} {level['basis']}", file=sys.stderr)
     
-    if ta_overrides:
-        # Merge or append TA levels if provided
-        pass
-        
-    # 1. Persist priceLevels via the domain-model repository (Wave 2 Task 9 producer
-    #    cutover) instead of rewriting target-portfolio.json in place. Full-object
-    #    replace semantics preserved exactly: replace_price_levels() deletes and
-    #    re-inserts the whole price_level_set for this investment, matching the old
-    #    JSON write's "always rewrite the whole priceLevels block" behavior. Any
-    #    pre-existing targetEntryPrice (a separate, TARGET_ENTRY-kind row this script
-    #    never sets) is read back first and carried through unchanged so this write
-    #    doesn't silently wipe it out.
-    #
-    #    This write is unconditional (not gated on target-portfolio.json holdings
-    #    membership). Bug caught live 2026-08-28: target-portfolio.json is fully
-    #    retired per CLAUDE.md Rule #30 (archived, Wave 7/8 migration) and no longer
-    #    exists anywhere in production, so the old `holding_found` gate (computed by
-    #    reading that file) was always False -- this SQL write was silently dead
-    #    code for every ticker since the migration, not just first-time analyses
-    #    like AMAT. Every existing test synthesized a fake target-portfolio.json
-    #    fixture, which is why this was never caught. Watchlist-only/new tickers
-    #    legitimately want price levels stored too (that's how you track a buy zone
-    #    for a stock you don't own yet) -- there was never a real reason to gate the
-    #    DB write on holdings membership in the first place.
+    # Store the whole priceLevels set (replace semantics). Any existing targetEntryPrice, a
+    # separate TARGET_ENTRY row this script never sets, is read back and carried through.
+    # Watchlist and new tickers get levels too, so the write is not gated on holding a position.
     if not dry_run:
         dbp = db_path or DB_PATH
         conn = initialize_db(str(dbp))
@@ -392,23 +372,8 @@ def derive_and_write(
         finally:
             conn.close()
 
-    # 2. Compute the priceLevelSnapshot (Wave 3 Task 5.8 rewire).
-    #
-    # The prior code here iterated `portfolio_data.get('accounts', [])` looking
-    # for `holdings[]` per account -- but real portfolio.json has no top-level
-    # `accounts` key at all (its real shape is `{holdings, totals, tvSnapshot}`,
-    # confirmed against portfolio.json.example and the real migrated file).
-    # `portfolio_data.get('accounts', [])` therefore always returned `[]` in
-    # production: `snapshot_written` was always False and this write path was
-    # dead code, never actually persisting a priceLevelSnapshot anywhere. Since
-    # this snapshot is fully derivable at read time from tables this wave has
-    # already migrated (price_level_tier: Wave 2 Task 9; investment_price:
-    # Wave 3 Task 1) -- see compute_price_level_snapshot_from_db's docstring --
-    # there is no working portfolio.json write to "rewire": the equivalent data
-    # already lives in SQLite via step 1's replace_price_levels() call above,
-    # and this function now returns the same computed shape a caller reading
-    # `res['price_level_snapshot']` would have gotten from the dead JSON path,
-    # sourced correctly instead of from code that could never fire.
+    # The priceLevelSnapshot is derived from price_level_tier and investment_price at read
+    # time (see compute_price_level_snapshot_from_db) and returned, not stored.
     price_level_snapshot = None
     if not dry_run:
         dbp = db_path or DB_PATH
@@ -427,44 +392,63 @@ def derive_and_write(
         'snapshot_written': price_level_snapshot is not None,
     }
 
-def derive_and_write_all(source: str = 'dcf', dry_run: bool = False) -> list[dict]:
-    """Batch updates price levels for all holdings in target-portfolio.json."""
-    results = []
-    if not TARGET_JSON.exists():
-        return results
-    with open(TARGET_JSON) as f:
-        target_data = json.load(f)
-    for holding in target_data.get('holdings', []):
-        ticker = holding.get('ticker')
-        if ticker:
-            try:
-                res = derive_and_write(ticker, source=source, dry_run=dry_run)
-                results.append(res)
-            except Exception as e:
-                print(f"Error updating {ticker}: {e}")
-    return results
+def derive_and_write_all(source: str = 'dcf', dry_run: bool = False, db_path: Path | None = None) -> dict:
+    """Derive price levels for every thesis holding in domain_model.sqlite.
+
+    Returns:
+        {"updated": [derive_and_write results], "skipped": [{"ticker", "reason"}] for holdings
+        with no usable projection, "failed": [{"ticker", "reason"}] for unexpected errors}.
+
+    Raises:
+        ValueError: The database has no thesis holdings (nothing to iterate is an error, not
+            an empty success).
+    """
+    dbp = db_path or DB_PATH
+    holdings = load_thesis_holdings(str(dbp))
+    if not holdings:
+        raise ValueError(f"no thesis holdings in {dbp}; set target weights first")
+    out: dict = {"updated": [], "skipped": [], "failed": []}
+    for holding in holdings:
+        ticker = holding["ticker"]
+        try:
+            out["updated"].append(derive_and_write(ticker, source=source, dry_run=dry_run, db_path=dbp))
+        except ValueError as e:
+            out["skipped"].append({"ticker": ticker, "reason": str(e)})
+        except Exception as e:  # keep going: one bad ticker must not stop the batch, but it is reported
+            out["failed"].append({"ticker": ticker, "reason": f"{type(e).__name__}: {e}"})
+    return out
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Update structured price levels from DCF.")
     parser.add_argument('--ticker', type=str, help="Specific ticker to update")
-    parser.add_argument('--all', action='store_true', help="Update all tickers in target portfolio")
+    parser.add_argument('--all', action='store_true', help="Update every thesis holding in domain_model.sqlite")
     parser.add_argument('--source', type=str, default='dcf', choices=['dcf', 'ta', 'news', 'earnings', '13f', 'manual'])
     parser.add_argument('--note', type=str, default='', help="Optional note to persist with price levels")
-    parser.add_argument('--write', action='store_true', help="Persist updates to files (default is dry-run)")
+    parser.add_argument('--write', action='store_true', help="Persist updates to domain_model.sqlite (default is dry-run)")
     parser.add_argument('--dry-run', action='store_true', help="Dry run only")
+    parser.add_argument('--db', type=str, default=None, help="Path to domain_model.sqlite (default: the real database)")
     args = parser.parse_args()
+    db = Path(args.db) if args.db else None
     
     is_dry = not args.write or args.dry_run
     
     if args.ticker:
         try:
-            res = derive_and_write(args.ticker, source=args.source, note=args.note, dry_run=is_dry)
+            res = derive_and_write(args.ticker, source=args.source, note=args.note, dry_run=is_dry, db_path=db)
             print(json.dumps(res, indent=2))
         except Exception as e:
             print(f"Error: {e}")
             sys.exit(1)
     elif args.all:
-        results = derive_and_write_all(source=args.source, dry_run=is_dry)
-        print(f"Batch updated {len(results)} tickers. Dry run: {is_dry}")
+        try:
+            out = derive_and_write_all(source=args.source, dry_run=is_dry, db_path=db)
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
+        print(f"Updated {len(out['updated'])} tickers, skipped {len(out['skipped'])}, failed {len(out['failed'])}. Dry run: {is_dry}")
+        for item in out['skipped'] + out['failed']:
+            print(f"  {item['ticker']}: {item['reason']}", file=sys.stderr)
+        if out['failed']:
+            sys.exit(1)
     else:
         parser.print_help()
