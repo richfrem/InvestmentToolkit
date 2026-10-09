@@ -29,7 +29,7 @@ Usage:
 Layer: Plugin / portfolio-advisor / Orchestrator
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    None directly (runs the steps listed above as subprocesses; they read domain_model.sqlite)
 """
 
 import argparse

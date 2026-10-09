@@ -11,7 +11,7 @@ Purpose:
 Layer: Backend / Python Services / Fundamental Analysis
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - Raw financial JSON (path argument, or '-' for stdin), as written by fetch_financials.py
 """
 
 import json

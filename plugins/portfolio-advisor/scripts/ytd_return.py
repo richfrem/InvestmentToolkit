@@ -20,10 +20,8 @@ Key Functions (Index):
     - calculate_twr() - Main execution pipeline orchestrator
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Live portfolio balances)
-    - investment_screener/backend/data/domain_model.sqlite's cash_flow /
-      cash_flow_baseline tables (Wave 4 cutover; formerly cash_flows.json,
-      now archived)
+    - investment_screener/backend/data/domain_model.sqlite (balances, and the
+      cash_flow / cash_flow_baseline tables)
 
 Key Output Dependencies:
     - investment_screener/backend/data/ytd_performance_report.json (TWR performance metrics)
@@ -47,8 +45,7 @@ def load_current_balance_cad() -> float:
     both come from ``portfolio_io.load_portfolio_state()`` — ``total_usd`` is the
     single computed authoritative total (``portfolio_repository.get_portfolio_total_value``)
     and ``exchange_rate`` is the broker-reported USD→CAD scalar
-    (``exchange_rate_repository.get_exchange_rate``, default 1.38). This replaces
-    the old read of ``portfolio.json``'s stored ``totals.totalCAD``.
+    (``exchange_rate_repository.get_exchange_rate``, default 1.38).
     """
     sys.path.insert(0, str(PY_SERVICES))
     from portfolio_io import load_portfolio_state

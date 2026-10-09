@@ -1,7 +1,6 @@
 """All ``portfolio_change_log`` table reads and writes live here.
 
-Portfolio-wide version history (target-portfolio.json's former top-level
-``changeLog`` array: {version, date, note} per entry) -- append-only, never
+Portfolio-wide version history ({version, date, note} per entry) -- append-only, never
 overwrite/replace an existing entry.
 """
 

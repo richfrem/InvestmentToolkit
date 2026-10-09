@@ -13,10 +13,9 @@ domain_model.sqlite's ``get_portfolio_total_value()`` — a live, read-time-only
 rollup of account_investment x investment_price, never a stored total and
 never independently re-summed here. The cached broker-side comparison total
 (``get_tv_totals_cached()``) now reads domain_model.sqlite's
-``broker_reported_total`` singleton (Wave 3 Task 8, tvSnapshot closure) — the
-broker's own reported ``totals.totalUSD`` captured at sync time, no longer
-portfolio.json's ``tvSnapshot`` cache. It remains the broker's own reported
-figure being audited against, not a substitute for the computed total.
+``broker_reported_total`` singleton — the broker's own reported total
+captured at sync time. It is the broker's own reported figure being audited
+against, not a substitute for the computed total.
 
 Usage:
     python3 verify_portfolio_total.py            # live TV + stored prices
@@ -24,8 +23,7 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/domain_model.sqlite (both the computed
-      equity sum AND the broker_reported_total comparison side; Wave 3 Tasks 6+8
-      cutover — previously portfolio.json)
+      equity sum AND the broker_reported_total comparison side)
 
 Layer:
     Backend / Python Services
@@ -87,14 +85,13 @@ try {
 
 def get_tv_totals_cached(db_path: Path = DB_PATH) -> dict:
     """Read the broker's own last-reported total from domain_model.sqlite's
-    ``broker_reported_total`` singleton (Wave 3 Task 8 — tvSnapshot closure).
+    ``broker_reported_total`` singleton.
 
     This is the audited-against comparison figure for the reconciliation check:
-    the broker's own reported ``totals.totalUSD`` (formerly read from
-    portfolio.json's ``tvSnapshot`` cache, now captured at sync time into SQLite
-    by ``_persist_snapshot_to_db``/``persistSnapshotToDb``). Only the scalar total
-    is stored (ADR-030 addendum), so the per-account TV breakdown is no longer
-    reconstructed here — the reconciliation itself only ever used ``grandTotalUSD``.
+    the broker's own reported total, captured at sync time into SQLite by
+    ``_persist_snapshot_to_db``/``persistSnapshotToDb``. Only the scalar total
+    is stored (ADR-030 addendum), so there is no per-account TV breakdown here —
+    the reconciliation only uses ``grandTotalUSD``.
     """
     if not db_path.exists():
         return {"error": "domain_model.sqlite not found — run a TV sync first."}

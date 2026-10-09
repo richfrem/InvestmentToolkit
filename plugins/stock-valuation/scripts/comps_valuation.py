@@ -23,7 +23,6 @@ Key Functions:
     - comps_implied_range() - Primary orchestrator: peer-median EV/Sales -> implied price range
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
     - investment_screener/backend/data/domain_model.sqlite (projection_version, ADR-029)
 """
 

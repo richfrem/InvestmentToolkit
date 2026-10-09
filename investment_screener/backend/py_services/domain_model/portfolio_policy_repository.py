@@ -1,9 +1,8 @@
 """All ``portfolio_policy`` table reads and writes live here (ADR-029 anti-duplication rule).
 
 Singleton table (one row, policy_id='default'): the account/portfolio-level policy
-config Wave 5E migrates from account_policy.json (accountPreferenceRules, psuFundingRule,
-riskBudgetCaps, bandConfig) plus target-portfolio.json's globalSettings sub-object
-(rebalanceFrequency, portfolioValueUSD). The two JSON rule-blob columns
+config (accountPreferenceRules, psuFundingRule, riskBudgetCaps, bandConfig,
+rebalanceFrequency, portfolioValueUSD). The two JSON rule-blob columns
 (account_preference_rules_json, psu_funding_rule_json) are the approved retained-JSON
 exception per spec §2.14/§2.17 -- variable-shape rule lists, not column-queried.
 """

@@ -15,7 +15,7 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/domain_model.sqlite (Finds upcoming holdings
-      earnings; Wave 3 Task 6 cutover — previously portfolio.json)
+      earnings)
 
 Layer:
     Backend / Python Services
@@ -32,11 +32,8 @@ Key Functions (Index):
     - get_earnings_calendar()
     - main()
 
-Key Input Dependencies:
-    None
-
 Key Output Dependencies:
-    None
+    - Prints the calendar (or JSON with --json) to stdout; writes no files
 """
 from __future__ import annotations
 
@@ -74,8 +71,7 @@ class EarningsEntry:
 
 
 def _load_tickers(db_path: Path = DB_PATH) -> list[str]:
-    """Load active ticker list from domain_model.sqlite (Wave 3 Task 6 cutover
-    — previously portfolio.json).
+    """Load active ticker list from domain_model.sqlite.
 
     Returns:
         Sorted list of equity ticker symbols.

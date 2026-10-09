@@ -355,8 +355,7 @@ def _load_dcf(ticker: str, db_path: Path | None = None) -> dict[str, Any]:
 
 
 def _load_actual_weights(db_path: Path = DB_PATH) -> dict[str, float]:
-    """Load actual portfolio weight per ticker from domain_model.sqlite
-    (Wave 3 Task 6 cutover — previously portfolio.json).
+    """Load actual portfolio weight per ticker from domain_model.sqlite.
 
     Reuses ``portfolio_io.compute_weights`` so the weight-% formula stays
     identical to every other consumer of ``load_portfolio_state()``/
@@ -377,8 +376,7 @@ def _load_actual_weights(db_path: Path = DB_PATH) -> dict[str, float]:
 
 def _load_target_weights(db_path: str | None = None) -> dict[str, float]:
     """Load target weight per ticker from the domain_model SQLite ``investment``
-    table (``target_weight`` column), replacing the former
-    ``target-portfolio.json`` read (Wave 2 consumer cutover).
+    table (``target_weight`` column).
 
     Returns:
         Dict of ticker (symbol) → target weight percentage.

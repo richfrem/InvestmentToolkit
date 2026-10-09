@@ -60,6 +60,7 @@ from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
+# Unused default for portfolio_path; load_portfolio_state() reads domain_model.sqlite.
 PORTFOLIO_PATH = DATA_DIR / "portfolio.json"
 RISK_SNAPSHOT_PATH = DATA_DIR / "risk_snapshot.json"
 
@@ -271,14 +272,14 @@ def compute_cluster_exposure(
 ) -> list[dict[str, Any]]:
     """Pillar-level weight and variance-contribution exposure.
 
-    Groups holdings by their existing target-portfolio.json `pillarId` (the
+    Groups holdings by their `pillarId` (the
     curated taxonomy, not a correlation-derived cluster) and sums weight and
     marginal-risk-contribution within each pillar. Produces the "72% of
     portfolio variance from one cluster" sentence.
 
     Args:
         weights: {ticker: weight_fraction}, need not sum to 1.0.
-        pillar_map: {ticker: pillarId}, from target-portfolio.json holdings.
+        pillar_map: {ticker: pillarId}, from investment.pillar_id.
         mrc: Output of compute_marginal_risk_contribution() — {ticker: fraction}.
 
     Returns:
@@ -454,12 +455,9 @@ def compute_risk_snapshot(
     Does not write to disk — see main() for the CLI's --no-save-gated write.
 
     Args:
-        db_path: Path to domain_model.sqlite (pillar_id per investment --
-            Wave 2 consumer cutover, previously read target-portfolio.json
-            directly; this function was missed by the Wave 2 plan's original
-            producer/consumer inventory and found only by the
-            archive-readiness grep before archiving).
-        portfolio_path: Path to portfolio.json (actual broker state).
+        db_path: Path to domain_model.sqlite (pillar_id per investment).
+        portfolio_path: Retained for signature compatibility; no longer read
+            (actual broker state comes from domain_model.sqlite).
         benchmark: Benchmark ticker for beta/relative calcs.
 
     Returns:

@@ -12,7 +12,7 @@ Usage:
     python3 investment_screener/backend/py_services/extract_portfolio_symbols.py
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Extracts active tickers)
+    - temp/stocks.xlsx (table TABLE_PORTFOLIO_SUMMARY; stock symbols in the 2nd column)
 
 Layer:
     Backend / Python Services
@@ -24,11 +24,8 @@ Key Functions (Index):
     - extract_symbols()
     - main()
 
-Key Input Dependencies:
-    None
-
 Key Output Dependencies:
-    None
+    - temp/portfolio_symbols.json (symbol list written by main())
 """
 import json
 import pandas as pd

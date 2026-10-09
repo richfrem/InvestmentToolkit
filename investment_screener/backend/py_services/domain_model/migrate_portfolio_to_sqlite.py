@@ -1,16 +1,42 @@
-"""Migrate portfolio.json (gitignored, real broker/account holdings) into
-account_investment/investment_price. Dry-run by default; --write is gated,
-same discipline as migrate_target_portfolio_to_sqlite.py (Wave 2).
+"""migrate_portfolio_to_sqlite.py - One-time migration of a portfolio.json export into SQLite.
 
-Per ADR-030 and Task 0's real-shape finding: per-account attribution comes
-from tvSnapshot.snapshots[].positions[] (real accountType/accountId, real
-quantity/avgFillPrice) -- NOT from the flat, cross-account-aggregated
-holdings[] array, which carries no per-account field in real data. Cash
-(balances.cashUSD/cashCAD per account) becomes CASH_USD/CASH_CAD
-account_investment rows per Wave 0's resolved decision 5, not a separate
-table. The current market price for each symbol still comes from the flat
-holdings[] array (the only place a live per-symbol price appears), joined
-by symbol.
+Purpose:
+    Migrate portfolio.json (gitignored, real broker/account holdings) into
+    account_investment/investment_price. Dry-run by default; --write is gated,
+    same discipline as migrate_target_portfolio_to_sqlite.py.
+    
+    Per ADR-030 and Task 0's real-shape finding: per-account attribution comes
+    from tvSnapshot.snapshots[].positions[] (real accountType/accountId, real
+    quantity/avgFillPrice) -- NOT from the flat, cross-account-aggregated
+    holdings[] array, which carries no per-account field in real data. Cash
+    (balances.cashUSD/cashCAD per account) becomes CASH_USD/CASH_CAD
+    account_investment rows per Wave 0's resolved decision 5, not a separate
+    table. The current market price for each symbol still comes from the flat
+    holdings[] array (the only place a live per-symbol price appears), joined
+    by symbol.
+
+Layer:
+    Backend / Python Services / Domain Model
+
+Usage Examples:
+    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path PORTFOLIO.json
+    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path PORTFOLIO.json --write
+
+Key Functions (Index):
+    - _load_portfolio_json(): read the JSON file
+    - _load_snapshots(): the per-account tvSnapshot.snapshots[] list
+    - _load_prices_by_symbol(): symbol -> price from the flat holdings[] array
+    - run_dry_run_migration(): count positions and accounts without writing
+    - run_real_migration(): write accounts, cash, prices and positions to SQLite
+    - main(): CLI entry point
+
+Key Input Dependencies:
+    - A portfolio.json export (--portfolio-path) with tvSnapshot.snapshots[] and holdings[]
+    - investment_screener/backend/data/domain_model.sqlite (--db-path)
+    - ticker_aliases.py (normalize_ticker), domain_model repositories
+
+Key Output Dependencies:
+    - account, investment, investment_price and account_investment rows
 """
 
 import argparse
@@ -27,15 +53,18 @@ from ticker_aliases import normalize_ticker
 
 
 def _load_portfolio_json(portfolio_path: str) -> dict:
+    """Return the parsed JSON document at ``portfolio_path``."""
     with open(portfolio_path) as f:
         return json.load(f)
 
 
 def _load_snapshots(data: dict) -> list[dict]:
+    """Return ``tvSnapshot.snapshots`` (one entry per broker account), or an empty list."""
     return data.get("tvSnapshot", {}).get("snapshots", [])
 
 
 def _load_prices_by_symbol(data: dict) -> dict[str, float]:
+    """Map canonical symbol to price from the flat ``holdings[]`` array (price, else book_price)."""
     prices = {}
     for h in data.get("holdings", []):
         symbol = h.get("symbol") or h.get("ticker")
@@ -46,6 +75,7 @@ def _load_prices_by_symbol(data: dict) -> dict[str, float]:
 
 
 def run_dry_run_migration(portfolio_path: str) -> dict:
+    """Report positions_count and accounts_found without touching the database."""
     data = _load_portfolio_json(portfolio_path)
     snapshots = _load_snapshots(data)
     accounts_found = {s["accountType"] for s in snapshots}
@@ -57,6 +87,7 @@ def run_dry_run_migration(portfolio_path: str) -> dict:
 
 
 def run_real_migration(portfolio_path: str, db_path: str) -> dict:
+    """Write TFSA/RRSP/CASH positions, cash and prices to ``db_path``; return the rows written."""
     data = _load_portfolio_json(portfolio_path)
     snapshots = _load_snapshots(data)
     prices_by_symbol = _load_prices_by_symbol(data)
@@ -106,6 +137,7 @@ def run_real_migration(portfolio_path: str, db_path: str) -> dict:
 
 
 def main() -> None:
+    """CLI: dry run by default, ``--write`` to migrate."""
     parser = argparse.ArgumentParser(description="Migrate portfolio.json into account_investment/investment_price.")
     parser.add_argument("--portfolio-path", default="investment_screener/backend/data/portfolio.json")
     parser.add_argument("--db-path", default="investment_screener/backend/data/domain_model.sqlite")

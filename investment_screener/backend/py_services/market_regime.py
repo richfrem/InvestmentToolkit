@@ -167,20 +167,15 @@ def _classify_regime_v2(score: int, unavailable: int) -> tuple[str, bool]:
 
 def _load_active_tickers(db_path: Path = _DB_PATH) -> list[str]:
     """Read domain_model.sqlite's investment table and return active-holding
-    tickers (Wave 2 consumer cutover -- previously read target-portfolio.json
-    directly; this function was missed by the Wave 2 plan's original
-    producer/consumer inventory and found only by the archive-readiness grep).
+    tickers.
 
-    Active = lifecycle_status not in INACTIVE_ROLES. target-portfolio.json's
-    "role" field maps 1:1 to investment.lifecycle_status per
-    migrate_target_portfolio_to_sqlite.py's own field mapping. update_thesis.py's
-    VALID_ROLES is a different enum for a different file and doesn't apply
-    here; the real values observed in target-portfolio.json's live data are
-    {watchlist, accumulate, trim, initiate, exit, avoid}. `exited` is also
-    excluded defensively per CLAUDE.md rule 9's documented sold-position
-    convention, even though it hasn't appeared in live data yet. Not
-    portfolio_io.load_portfolio_state(): that loader reads portfolio.json
-    (broker shares/prices) and has no role field.
+    Active = lifecycle_status not in INACTIVE_ROLES. The holding's "role" is
+    the investment.lifecycle_status column. update_thesis.py's VALID_ROLES is a
+    different enum and doesn't apply here. The statuses in use are
+    {watchlist, accumulate, initiate, trim, exit}; INACTIVE_ROLES also lists
+    `exited` and `avoid` defensively. Not
+    portfolio_io.load_portfolio_state(): that loader reads broker shares/prices from
+    domain_model.sqlite and has no role field.
 
     Args:
         db_path: Path to domain_model.sqlite.

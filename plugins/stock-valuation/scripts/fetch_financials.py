@@ -23,7 +23,8 @@ Key Functions (Index):
     - main() - Main CLI entry point
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - Ticker symbol argument; yfinance (network)
+    - investment_screener/backend/py_services/cache/ (cached quote responses)
 
 Key Output Dependencies:
     - investment_screener/backend/py_services/cache/ (cache folder containing JSON quote metrics)

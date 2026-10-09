@@ -17,8 +17,7 @@ Critical invariant:
 Layer: Backend / py_services / Shared I/O
 
 Key Input Dependencies:
-    - investment_screener/backend/data/domain_model.sqlite (Wave 3+; was
-      portfolio.json prior to this cutover)
+    - investment_screener/backend/data/domain_model.sqlite (holdings, prices, targets, totals)
 
 Layer:
     Backend / Python Services
@@ -104,15 +103,8 @@ def load_portfolio_state(portfolio_path: Path, db_path: str | None = None) -> di
 def load_target_weights(db_path: str | None = None) -> dict[str, float]:
     """Read per-symbol target weights from ``investment.target_weight``.
 
-    Wave 8: single canonical target-weight reader, replacing the several
-    independent direct reads of target-portfolio.json's per-holding
-    ``targetWeight`` field (generate_review_json.py's compute_target(),
-    validate_weights.py's compute_target()/normalize_target(), etc.) that
-    drifted out of sync with each other and with this same domain's already-
-    migrated ``investment.target_weight`` column (mirrors
-    portfolio_action.py's own ``_load_target_weights()``, promoted here so
-    every consumer shares one implementation instead of each script keeping
-    its own copy).
+    Single canonical target-weight reader: every consumer shares this one
+    implementation (mirrors portfolio_action.py's ``_load_target_weights()``).
 
     Args:
         db_path: Optional override; defaults to the real domain_model.sqlite.
@@ -140,10 +132,9 @@ def load_target_weights(db_path: str | None = None) -> dict[str, float]:
 def load_thesis_holdings(db_path: str | None = None) -> list[dict]:
     """Read the thesis holdings array from investment.* columns.
 
-    Wave 8: single canonical thesis-holdings reader, replacing per-script
-    direct reads of target-portfolio.json's `holdings` array (JSON shape:
+    Single canonical thesis-holdings reader. Each holding is a dict with keys
     ticker/name/pillarId/subStrategyId/targetWeight/thesisForInclusion/role/
-    agentRationale). Mirrors InvestmentRepository.ts's listThesisHoldings() --
+    agentRationale. Mirrors InvestmentRepository.ts's listThesisHoldings() --
     only rows with a non-null target_weight are thesis holdings.
 
     Args:

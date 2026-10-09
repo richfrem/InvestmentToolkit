@@ -14,7 +14,8 @@ Usage:
     locked_write_json(path, data)          # acquire → atomic write → release
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - The JSON file path supplied by the caller (no fixed data file)
+    - A sibling .lock sentinel file, shared with Node's proper-lockfile
 
 Layer:
     Backend / Python Services
@@ -26,11 +27,8 @@ Key Functions (Index):
     - file_lock()
     - locked_write_json()
 
-Key Input Dependencies:
-    None
-
 Key Output Dependencies:
-    None
+    - The JSON file passed to locked_write_json() (atomic write) and its .lock file
 """
 import json
 import os

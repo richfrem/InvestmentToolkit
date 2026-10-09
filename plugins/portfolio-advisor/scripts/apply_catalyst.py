@@ -44,9 +44,8 @@ Key Functions:
 
 Key Input Dependencies:
     - investment_screener/backend/data/domain_model.sqlite (projection_version / projection_scenario /
-      investment / investment_note; Wave 2 Task 10 cutover: --update-thesis now appends an
-      investment_note row + refreshes investment.agent_rationale instead of rewriting
-      target-portfolio.json directly)
+      investment / investment_note; --update-thesis appends an
+      investment_note row and refreshes investment.agent_rationale)
 """
 
 import argparse
@@ -315,8 +314,7 @@ def _run_apply_catalyst(conn, args, bull_delta: float, bear_delta: float) -> Non
     print(f"\n✅ {args.ticker} updated  FV ${old_fv:.2f}→${new_fv:.2f}  action {old_action}→{new_action}")
 
     if args.update_thesis:
-        # Wave 2 Task 10 cutover: agentRationale is no longer hand-concatenated into
-        # target-portfolio.json. Each new catalyst note becomes its own append-only
+        # agentRationale is not hand-concatenated: each new catalyst note becomes its own append-only
         # investment_note row (note_type=AGENT_RATIONALE), and investment.agent_rationale
         # is refreshed as the denormalized "latest note body" convenience column.
         existing_investment = get_investment(conn, investment_id)

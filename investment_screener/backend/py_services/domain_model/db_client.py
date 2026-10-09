@@ -130,13 +130,12 @@
 #     as the reconciliation comparison SOURCE (the audited-against figure), not as
 #     "the" total. Singleton (CHECK(id = 1), one row ever, overwritten each sync),
 #     mirroring broker_exchange_rate's "store this one broker fact" shape. `source`
-#     holds the portfolio.json totals.totalSource value (e.g. "tv_authoritative").
+#     holds the broker's source label for the reported total (e.g. "tv_authoritative").
 #   - investment.sector / investment.industry: not present in either named source
-#     design document. Added post-hoc (Wave 3 completion, last-portfolio.json-write
-#     closure) per an explicit user design decision. sector/industry are the only
-#     enriched holding-display facts GET /api/portfolio needed from portfolio.json
-#     that the schema did not already carry (name and pillar_id were added in
-#     Wave 0/2). They are resolved by the SAME real code path that resolves them
+#     design document. Added post-hoc (Wave 3 completion) per an explicit user design
+#     decision. sector/industry are the only enriched holding-display facts
+#     GET /api/portfolio needs that the schema did not already carry (name and
+#     pillar_id were added in Wave 0/2). They are resolved by the SAME real code path that resolves them
 #     today — fetch_portfolio_heatmap.py's yfinance info.get("sector")/("industry")
 #     lookup (with SECTOR_OVERRIDES) during a /refresh-prices call — and persisted
 #     alongside the fresh price into investment via update_investment_sector(). Both
@@ -145,6 +144,31 @@
 #     fetch_portfolio_heatmap.py's own fallback). Registered in SCHEMA_EVOLUTIONS so
 #     the real, already-existing domain_model.sqlite self-heals these two columns.
 #   - (no other deviations found as of this transcription)
+"""db_client.py - Open the domain-model SQLite database at its newest schema.
+
+Purpose:
+    Single entry point for opening investment_screener/backend/data/domain_model.sqlite
+    (the sole source of truth for holdings, accounts, prices, theses and trades; the
+    JSON files that preceded it are retired). Opens in WAL mode with foreign keys on and
+    delegates all table creation and change to schema_migrator.migrate. The comment
+    block above records where the schema deviates from its source design documents.
+
+Layer:
+    Backend / Python Services / Domain Model
+
+Usage Examples:
+    from domain_model.db_client import initialize_db
+    conn = initialize_db("investment_screener/backend/data/domain_model.sqlite")
+
+Key Functions (Index):
+    - initialize_db(): open (creating if absent) the database at its newest schema
+
+Key Input Dependencies:
+    - investment_screener/backend/schema/domain_model/*.sql (numbered migrations, via schema_migrator)
+
+Key Output Dependencies:
+    - The sqlite3 connection every domain_model repository takes as its first argument
+"""
 import sqlite3
 
 from .schema_migrator import migrate

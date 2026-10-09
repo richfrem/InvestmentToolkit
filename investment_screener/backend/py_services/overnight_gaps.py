@@ -15,8 +15,7 @@ Usage:
     python3 overnight_gaps.py --threshold 3.0  # custom threshold (default: 2.0%)
 
 Key Input Dependencies:
-    - investment_screener/backend/data/domain_model.sqlite (Measures pre-market gaps;
-      Wave 3 Task 6 cutover — previously portfolio.json)
+    - investment_screener/backend/data/domain_model.sqlite (Measures pre-market gaps)
 
 Layer:
     Backend / Python Services
@@ -87,8 +86,7 @@ def _load_tickers(db_path: Path = DB_PATH) -> list[str]:
     watchlist names, minus Canadian and futures symbols.
 
     Both holdings (``account_investment``) and watchlist membership
-    (``investment.is_watchlisted``) are read from domain_model.sqlite (Wave 3
-    Task 6 cutover — previously portfolio.json for holdings).
+    (``investment.is_watchlisted``) are read from domain_model.sqlite.
 
     Returns:
         Deduplicated list of US equity ticker symbols, order: holdings first.

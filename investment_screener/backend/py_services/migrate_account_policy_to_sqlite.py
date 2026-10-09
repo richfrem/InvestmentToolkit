@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""One-time migration: backfill account_policy.json + target-portfolio.json's
-globalSettings sub-object into the domain_model.sqlite portfolio_policy singleton
-row (Wave 5E, ADR-029).
+"""One-time migration: backfill account_policy.json + the globalSettings sub-object of
+a target-portfolio.json file into the domain_model.sqlite portfolio_policy singleton
+row (ADR-029).
 
 account_policy.json fields (accountPreferenceRules, psuFundingRule, riskBudgetCaps,
 bandConfig) map onto portfolio_policy's numeric caps/bands and the two JSON rule-blob
-columns. target-portfolio.json's globalSettings sub-object (rebalanceFrequency,
-portfolioValueUSD) maps onto rebalance_frequency/portfolio_value_usd_target -- this
-is a value-only backfill, NOT a consumer cutover for globalSettings (see the wave
-plan's Retained-JSON Rationale Bar: target-portfolio.json itself stays JSON per
-Wave 2's approved exception).
+columns. The globalSettings sub-object (rebalanceFrequency, portfolioValueUSD)
+maps onto rebalance_frequency/portfolio_value_usd_target -- a value-only backfill
+that leaves the source file untouched.
 
 Usage:
     python3 migrate_account_policy_to_sqlite.py --dry-run
@@ -33,15 +31,15 @@ DEFAULT_DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sql
 def migrate(
     account_policy_path: Path, target_portfolio_path: Path, db_path: Path, dry_run: bool = True
 ) -> dict:
-    """Backfill account_policy.json + target-portfolio.json's globalSettings into
+    """Backfill account_policy.json + a target-portfolio.json file's globalSettings into
     the portfolio_policy singleton row.
 
     Args:
-        account_policy_path: Path to account_policy.json (source of truth for 4 of
-            the 5 mapped fields until this wave's archive step).
+        account_policy_path: Path to account_policy.json (source of 4 of
+            the 5 mapped fields).
         target_portfolio_path: Path to target-portfolio.json (source of
             globalSettings.rebalanceFrequency/portfolioValueUSD only -- the rest of
-            this file is untouched, per Wave 2's retained-JSON exception).
+            this file is untouched).
         db_path: domain_model.sqlite to write the portfolio_policy row into.
         dry_run: When True (default), report the fields that would be migrated
             without writing anything.

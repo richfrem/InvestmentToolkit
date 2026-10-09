@@ -124,9 +124,9 @@ def execute_migration(
         for item in watchlist if isinstance(item, dict) and item.get("ticker")
     }
 
-    # target-portfolio.json's holdings reference subStrategyId inline but the file
-    # carries no separate subStrategies definition array (unlike pillars) -- real
-    # data confirmed during Wave 2 Task 6. Auto-create a minimal sub_strategy row
+    # The input's holdings reference subStrategyId inline but the file
+    # carries no separate subStrategies definition array (unlike pillars).
+    # Auto-create a minimal sub_strategy row
     # (placeholder name = the id itself) the first time each id is seen, scoped to
     # that holding's own pillar, so the investment.sub_strategy_id FK can resolve.
     known_sub_strategies: set[str] = set()
