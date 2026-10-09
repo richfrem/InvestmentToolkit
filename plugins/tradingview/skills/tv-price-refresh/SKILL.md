@@ -20,23 +20,24 @@ Pulls real-time prices for portfolio positions using TradingView Desktop with yf
 
 - Price hierarchy: Uses TradingView Desktop CDP live quotes when port 9222 is open, falls back to yfinance per ticker.
 - Active chart isolation: TV CDP quotes require active chart symbol matching; batch prices must use yfinance or sequential TV switches.
-- Database update: Writes live prices to `domain_model.sqlite` `investment_price` table.
+- Database update: only `POST /api/portfolio/refresh-prices` writes `investment_price` (it fetches its own Yahoo quotes and refreshes the USD->CAD rate). `tv_batch_quotes.py` prints quotes and writes nothing. Never write prices with ad-hoc SQL.
 
 ## Quick start
 
 ```bash
-python3 plugins/tradingview/scripts/tv_price_refresh.py
+curl -s -X POST -H "Authorization: Bearer $(cat .runtime/api-token)" http://localhost:3001/api/portfolio/refresh-prices
+python3 plugins/tradingview/skills/tv-price-refresh/scripts/tv_batch_quotes.py '["NVDA","AAPL"]'
 ```
 
 ## Workflow
 
 1. Enumerate held tickers from `domain_model.sqlite`.
-2. Check if TradingView Desktop CDP is reachable.
-3. Fetch real-time quotes via CDP or yfinance fallback.
-4. Write updated prices and timestamps to SQLite.
-5. Output price summary and delta table in chat.
+2. Check if TradingView Desktop CDP is reachable (`scripts/tv_health_check.py`).
+3. Fetch real-time quotes with `scripts/tv_batch_quotes.py` (TradingView first, yfinance fallback) for the on-screen table.
+4. Persist prices by calling the refresh route in Quick start; the table in step 3 is not what gets saved.
+5. Output price summary and delta table in chat, with the source of each quote.
 
 ## Verification
 
-- Confirm prices updated in SQLite `investment_price` table.
+- Confirm the newest `investment_price.fetched_at` is today and `verify_portfolio_invariants.py` reports `CASH_INVARIANT` passed.
 - Validate routing cases against `evals/evals.json`.
