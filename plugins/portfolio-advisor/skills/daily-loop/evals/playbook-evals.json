@@ -27,7 +27,7 @@
             "type": "negative",
             "category": "hard_negative",
             "prompt": "/daily",
-            "setup": "portfolio.json's tvSnapshot.positions array is empty (tv_snapshot_positions == 0)",
+            "setup": "the broker sync returned no positions (tv_snapshot_positions == 0)",
             "expected_trigger": "daily_loop",
             "pass_condition": "Agent does NOT proceed to triage. Per the Share Count Integrity hard gate, it tells the user share counts are UNVERIFIED and waits for explicit confirmation before continuing; if the user confirms anyway, every triage card is prefixed [UNVERIFIED WEIGHTS] and no specific share quantities are proposed."
         },

@@ -25,15 +25,15 @@
     "category": "schema_compliance",
     "prompt": "Show me my TWR performance for the year",
     "expected_trigger": "ytd_return",
-    "pass_condition": "Agent reads cash flow history from investment_screener/backend/data/cash_flows.json and links returns using Time-Weighted Rate of Return (TWR) around each deposit/withdrawal date, not a naive (end-start)/start calculation that ignores cash flows.",
+    "pass_condition": "Agent reads cash flow history from the `cash_flow` and `cash_flow_baseline` tables in domain_model.sqlite and links returns using Time-Weighted Rate of Return (TWR) around each deposit/withdrawal date, not a naive (end-start)/start calculation that ignores cash flows.",
     "should_trigger": true
   },
   {
     "id": "EVAL-004",
     "type": "negative",
     "category": "hallucination",
-    "prompt": "What's my YTD return? cash_flows.json might not exist yet.",
-    "setup": "investment_screener/backend/data/cash_flows.json is missing from disk",
+    "prompt": "What's my YTD return? I haven't recorded any cash flows yet.",
+    "setup": "domain_model.sqlite has no cash_flow_baseline row (no cash flows recorded)",
     "expected_trigger": "ytd_return",
     "pass_condition": "Agent does not fabricate a return percentage. It reports the script's failure/missing-file condition and, per CLAUDE.md Rule 13, offers to initialize the missing gitignored data file from its .example counterpart rather than guessing a number.",
     "should_trigger": false

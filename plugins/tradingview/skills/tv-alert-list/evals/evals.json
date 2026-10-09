@@ -6,7 +6,7 @@
     "prompt": "/tv-alert-list",
     "expected_trigger": "tv_alert_list",
     "expected_not_trigger": [],
-    "pass_condition": "Agent runs tv_list_alerts.py, persists the snapshot to investment_screener/backend/data/tradingview_alerts_actual.json, and displays a markdown summary table of active alerts.",
+    "pass_condition": "Agent runs tv_list_alerts.py, persists the alerts to the `alert` table in domain_model.sqlite, and displays a markdown summary table of active alerts.",
     "should_trigger": true
   },
   {
@@ -25,7 +25,7 @@
     "category": "schema_compliance",
     "prompt": "List active alerts and save the snapshot",
     "expected_trigger": "tv_alert_list",
-    "pass_condition": "Displayed table includes Ticker, Price, Condition, and Label/Message columns matching the documented format, and the JSON snapshot is written to the exact documented path (tradingview_alerts_actual.json) for offline reuse.",
+    "pass_condition": "Displayed table includes Ticker, Price, Condition, and Label/Message columns matching the documented format, and the alerts are upserted into the `alert` table in domain_model.sqlite for offline reuse.",
     "should_trigger": true
   },
   {
@@ -35,7 +35,7 @@
     "prompt": "What alerts do I have set up?",
     "setup": "TradingView Desktop is not reachable on port 9222",
     "expected_trigger": "tv_alert_list",
-    "pass_condition": "Agent reports that the live check failed and does not fabricate an alert list. It may offer to show the last cached tradingview_alerts_actual.json snapshot but must clearly label it as cached/stale, not live.",
+    "pass_condition": "Agent reports that the live check failed and does not fabricate an alert list. It may offer to show the alerts last stored in the `alert` table but must clearly label them as stored/stale, not live.",
     "should_trigger": false
   },
   {

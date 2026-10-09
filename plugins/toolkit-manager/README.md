@@ -13,9 +13,9 @@ A utility skill that executes the unified `run_investment_toolkit.py` script to 
 
 ## Data Architecture
 
-The toolkit's portfolio/target/watchlist/valuation data is currently JSON-file based. A
-SQLite-backed domain data model (`account` / `investment` / `account_investment`, replacing
-`portfolio.json` + `target-portfolio.json` + `watchlist.json`) is in active design — see
-`references/data-architecture/domain-data-model.md` for the model and
-`references/data-architecture/sql/` for the DDL. Not yet implemented; nothing in this plugin
-currently depends on it.
+All portfolio data (holdings, targets, thesis state, trades, cash, price levels, alerts, valuations,
+thesis breakers) lives in `investment_screener/backend/data/domain_model.sqlite`; research and
+analysis live in `intelligence.sqlite`. See ADR-038 (`docs/architecture/ADRs/038-sqlite-single-source-of-truth.md`)
+and `INIT_AGENTS.md` for setup. The `sqlite-admin` skill backs up, exports, verifies and rebuilds
+both databases. `references/data-architecture/domain-data-model.md` and `references/data-architecture/sql/`
+document the model and its DDL.

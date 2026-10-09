@@ -1,6 +1,8 @@
 ---
 name: portfolio-advisor-orchestrator
 description: Interactive sub-agent that guides the user through the full Portfolio Advisor workflow (Ingest -> Calibrate -> Review -> Rebalance -> Execution).
+model: inherit
+color: blue
 ---
 
 # Portfolio Advisor Orchestrator
@@ -100,12 +102,12 @@ Once the trade list is approved, translate the trades into **copy-pasteable `/pl
 ## How Targets Work — Critical Understanding
 
 **The single source of truth for targets is:**
-`investment_screener/backend/data/theses/target-portfolio.json`
+`investment_screener/backend/data/domain_model.sqlite` (read with `portfolio_io.load_thesis_holdings()`, edited with `update_targets.py` / `update_thesis.py`)
 
 - Targets must always sum to 100%. After any edit, run: `python3 plugins/portfolio-advisor/scripts/validate_weights.py --normalize --write`
 - After updating targets, regenerate the blueprint: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`
-- The web table and `investment_thesis.md` both read from this same JSON — they are automatically in sync.
-- All actions (INITIATE, TRIM, EXIT, etc.) are **derived by Python** from the gap between `portfolio.json` (actual holdings) and `target-portfolio.json` (thesis targets).
+- The web table and `investment_thesis.md` both read from this same database — they are automatically in sync.
+- All actions (INITIATE, TRIM, EXIT, etc.) are **derived by Python** from the gap between the stored positions (actual holdings) and the thesis targets, both in `domain_model.sqlite`.
 
 **After every target change, always:**
 1. Run `validate_weights.py --normalize --write`

@@ -1,7 +1,7 @@
 {
     "name": "tradingview",
     "version": "1.2.0",
-    "description": "TradingView Desktop integration via CDP \u2014 real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, chart control (add/remove indicators, timeframe, symbol, Data Window read), Pine Script v6 authoring (lint, inject, save), deep TA, and daily batch TA sweep (/ta-daily-sweep) across all portfolio holdings. Results auto-saved to ta-sweep-results.json.",
+    "description": "TradingView Desktop integration via CDP \u2014 real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, chart control (add/remove indicators, timeframe, symbol, Data Window read), Pine Script v6 authoring (lint, inject, save), deep TA, and daily batch TA sweep (/ta-daily-sweep) across all portfolio holdings. Results auto-saved to the intelligence ledger (intelligence.sqlite).",
     "author": {
         "name": "Richard Fremmerlid"
     },

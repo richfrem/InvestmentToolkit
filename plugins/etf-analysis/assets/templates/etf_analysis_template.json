@@ -42,5 +42,5 @@
   "upsideCatalysts": ["..."],
   "risks": ["..."],
   "entryNote": "<any timing or sizing note>",
-  "agentRationale": "<one-liner for target-portfolio.json>"
+  "agentRationale": "<one-liner for the stored thesis>"
 }

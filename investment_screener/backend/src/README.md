@@ -53,7 +53,7 @@ The Node.js backend handles HTTP connections and API routing, but offloads compl
 The `BrokerSyncService.ts` queries the active TradingView CDP session center (listening on port 9222) to fetch live positions. If TradingView is unreachable, it defaults back to local caching. Authoritative equity totals are preserved across operations to prevent pricing refreshes from resetting broker balance records.
 
 ### 3. Zod-Driven Contract Validation
-All core files (`portfolio.json`, `target-portfolio.json`, projections, etc.) are validated at both the route and database layers against schemas defined in [`zod-schemas.ts`](file://investment_screener/backend/src/utils/zod-schemas.ts). This ensures type safety and structure consistency across the TypeScript API and Python sub-processes.
+Thesis, projection, account-policy and health payloads are validated at both the route and database layers against schemas defined in [`zod-schemas.ts`](file://investment_screener/backend/src/utils/zod-schemas.ts). This ensures type safety and structure consistency across the TypeScript API and Python sub-processes.
 
 ---
 

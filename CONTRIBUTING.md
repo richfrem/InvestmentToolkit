@@ -15,7 +15,7 @@ To maintain institutional code quality and ensure strict compliance with broker 
    - Python calculations (`py_services/`) and Frontend mirrors (`valuationMath.ts`) must maintain strict mathematical parity within $0.01 tolerance (verified via `python3 run_tests.py`).
    - No financial calculation may be performed inline—always extract to versioned Python services.
 3. **Strict Privacy by Design**:
-   - Private broker files (`domain_model.sqlite`, `intelligence.sqlite`, `trade-log.json`, `cash_flows.json`, `.env`) are gitignored and must never be committed.
+   - Private broker files (`domain_model.sqlite`, `intelligence.sqlite`, `.env`) are gitignored and must never be committed.
    - Always use **Demo / Privacy Mode** (`formatPrivateMoney`) for any user-facing screenshots or demo assets.
 
 ---

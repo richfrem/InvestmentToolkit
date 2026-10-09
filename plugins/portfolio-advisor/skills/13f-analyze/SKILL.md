@@ -1,7 +1,7 @@
 ---
 name: 13f-analyze
 plugin: portfolio-advisor
-description: Surgical 13F analysis skill. Cross-references the latest SA LP 13F filing diff against target-portfolio.json to produce gated INITIATE/ACCUMULATE/TRIM/EXIT recommendations and updates targets.
+description: Surgical 13F analysis skill. Cross-references the latest SA LP 13F filing diff against the thesis holdings in domain_model.sqlite to produce gated INITIATE/ACCUMULATE/TRIM/EXIT recommendations and updates targets.
 ---
 
 # 13F Analysis
@@ -24,7 +24,7 @@ python3 plugins/portfolio-advisor/scripts/fetch_13f.py --cik 0002045724 --poll
 ```
 
 ## Workflow
-1. **Poll & Load**: Check EDGAR for new filings via `fetch_13f.py --poll`. Load diff JSON and `investment_screener/backend/data/theses/target-portfolio.json`.
+1. **Poll & Load**: Check EDGAR for new filings via `fetch_13f.py --poll`. Load the diff JSON and the thesis holdings (`portfolio_io.load_thesis_holdings()`).
 2. **Cross-Reference**: Match SA LP changes against portfolio targets, standing decisions, and DCF fair-value ratings.
 3. **Gate Signals**: Evaluate gates A through E (INTC call options, weight ceilings, conviction exceptions).
 4. **Present Gated Table**: Display approved, conflict, and blocked actions with rationale.

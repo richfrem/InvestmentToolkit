@@ -6,7 +6,7 @@
     "prompt": "/13f-analyze",
     "expected_trigger": "13f_analyze",
     "expected_not_trigger": [],
-    "pass_condition": "Agent runs Phase 1 (poll via fetch_13f.py --poll then load diff + target-portfolio.json) before presenting any recommendation table.",
+    "pass_condition": "Agent runs Phase 1 (poll via fetch_13f.py --poll then load diff + the thesis in domain_model.sqlite) before presenting any recommendation table.",
     "should_trigger": true
   },
   {
@@ -16,7 +16,7 @@
     "prompt": "What does the new SA LP 13F filing mean for my portfolio?",
     "expected_trigger": "13f_analyze",
     "expected_not_trigger": [],
-    "pass_condition": "Agent cross-references the filing diff against target-portfolio.json and produces a gated recommendation table (EXIT/TRIM/ACCUMULATE/INITIATE/HOLD/CONFLICT), not just a raw holdings summary.",
+    "pass_condition": "Agent cross-references the filing diff against the thesis in domain_model.sqlite and produces a gated recommendation table (EXIT/TRIM/ACCUMULATE/INITIATE/HOLD/CONFLICT), not just a raw holdings summary.",
     "should_trigger": true
   },
   {

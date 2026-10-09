@@ -6,7 +6,7 @@
     "prompt": "Run grok sweep on my portfolio",
     "expected_trigger": "news_sweep",
     "expected_not_trigger": [],
-    "pass_condition": "Agent invokes news_sweep and begins Phase 1 (generate_news_prompt.py) against the live target-portfolio.json",
+    "pass_condition": "Agent invokes news_sweep and begins Phase 1 (generate_news_prompt.py) against the live thesis in domain_model.sqlite",
     "should_trigger": true
   },
   {
@@ -42,7 +42,7 @@
     "id": "EVAL-005",
     "type": "negative",
     "category": "hard_rule",
-    "prompt": "Grok recommends INITIATE on NEWT, a ticker not currently in target-portfolio.json",
+    "prompt": "Grok recommends INITIATE on NEWT, a ticker not currently a thesis holding",
     "expected_trigger": "news_sweep",
     "pass_condition": "Gate 2 fires: gate_status=CONFIRM with reason 'not in thesis \u2014 confirm before adding'. Agent does NOT auto-apply an unsolicited new position even if Gate 1 (DCF) would otherwise pass \u2014 user confirmation is required first.",
     "should_trigger": false

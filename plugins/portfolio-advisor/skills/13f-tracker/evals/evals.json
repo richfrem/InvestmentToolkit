@@ -55,7 +55,7 @@
     "expected_not_trigger": [
       "13f_tracker"
     ],
-    "pass_condition": "Agent routes to 13f_analyze (gated cross-reference against target-portfolio.json with recommendations) rather than staying in 13f_tracker, which only polls/parses/diffs raw filing data and does not produce portfolio recommendations.",
+    "pass_condition": "Agent routes to 13f_analyze (gated cross-reference against the thesis in domain_model.sqlite with recommendations) rather than staying in 13f_tracker, which only polls/parses/diffs raw filing data and does not produce portfolio recommendations.",
     "should_trigger": true
   }
 ]

@@ -37,3 +37,29 @@ def test_no_typescript_access_to_retired_files():
     """No typescript access to retired files."""
     hits = audit.ts_violations(REPO_ROOT)
     assert not hits, "TypeScript/JavaScript references to retired files:\n" + "\n".join(f"{f}:{n} {t}" for f, n, t in hits)
+
+
+def test_no_document_describes_a_retired_file_as_current():
+    """Docs, skills, evals and templates may name a retired file only as history (see audit_sqlite_usage.DOC_HISTORY_*)."""
+    hits = audit.doc_violations(REPO_ROOT)
+    assert not hits, "Documents that name a retired file without saying it is retired:\n" + "\n".join(f"{f}:{n} {t}" for f, n, t in hits)
+
+
+def test_doc_check_allows_history_words_and_history_files(tmp_path):
+    """A line saying the file is retired passes; a present-tense instruction fails; history folders are skipped."""
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "good.md").write_text("`portfolio.json` is retired; use SQLite.\nformerly read target-portfolio.json\n")
+    (tmp_path / "docs" / "bad.md").write_text("Run the tool, it reads portfolio.json and writes trade-log.json.\n")
+    (tmp_path / "docs" / "plans").mkdir()
+    (tmp_path / "docs" / "plans" / "plan.md").write_text("portfolio.json is read by x\n")
+    hits = audit.doc_violations(tmp_path)
+    assert sorted({f for f, _n, _t in hits}) == ["docs/bad.md"]
+
+
+def test_doc_check_window_covers_wrapped_sentence(tmp_path):
+    """A history word on the adjacent line covers a sentence wrapped across two lines."""
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "wrapped.md").write_text("The file `portfolio.json`\nis retired and unused.\n")
+    (tmp_path / "docs" / "far.md").write_text("The file `portfolio.json` holds the data.\n\n\nThis is retired.\n")
+    hits = audit.doc_violations(tmp_path)
+    assert sorted({f for f, _n, _t in hits}) == ["docs/far.md"]

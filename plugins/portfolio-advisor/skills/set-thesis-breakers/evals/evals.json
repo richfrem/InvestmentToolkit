@@ -6,7 +6,7 @@
     "prompt": "/set-thesis-breakers NVDA",
     "expected_trigger": "set_thesis_breakers",
     "expected_not_trigger": [],
-    "pass_condition": "Agent reads target-portfolio.json's existing thesisForInclusion/thesisBreakers and the ticker's projections/{TICKER}.json aiThesis.rationale BEFORE asking the user anything, per Step 1 \u2014 the first message to the user already contains a real proposal, not a blank 'what are your breakers?' question.",
+    "pass_condition": "Agent reads the holding's stored thesisForInclusion and thesis breakers (domain_model.sqlite) and the ticker's projections/{TICKER}.json aiThesis.rationale BEFORE asking the user anything, per Step 1 \u2014 the first message to the user already contains a real proposal, not a blank 'what are your breakers?' question.",
     "should_trigger": true
   },
   {

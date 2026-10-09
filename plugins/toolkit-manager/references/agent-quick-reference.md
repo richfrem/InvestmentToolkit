@@ -14,15 +14,15 @@ Open **Claude Code** or **GitHub Copilot CLI** in the project terminal and type 
 
 `domain_model.sqlite` (`account` / `investment` / `account_investment` / `price_level_set` /
 `price_level_tier` / `portfolio_policy` tables, among others) is the sole source of truth for
-portfolio holdings, thesis targets, pillars, price levels, and standing decisions. `portfolio.json`
-and `theses/target-portfolio.json` were both retired (Waves 7/8) and are archived under
-`ARCHIVE/investment_screener/backend/data/` — commands below now read/write SQLite via
+portfolio holdings, thesis targets, pillars, price levels, standing decisions, trades, cash flows and
+thesis breakers. `portfolio.json`, `theses/target-portfolio.json`, `trade-log.json`, `cash_flows.json` and
+`thesis_breaker_state.json` are retired — commands below read/write SQLite via
 `investment_screener/backend/py_services/portfolio_io.py`'s `load_portfolio_state()`/
 `load_thesis_holdings()`/`load_target_weights()` (Python) or `InvestmentRepository`/
-`ThesisService`/`PriceLevelRepository` (TypeScript backend). A small number of other JSON files
-remain as deliberate, still-current exceptions (`cash_flows.json`, `trade-log.json`,
-`thesis_breaker_state.json`, `projections/*.json`) — see `data-architecture/domain-data-model.md`
-for the current schema (entities, ERD, rationale) and `data-architecture/sql/` for the DDL.
+`ThesisService`/`PriceLevelRepository` (TypeScript backend). Only the `projections/*.json` copies of
+valuations remain on disk (the valuations themselves are in `projection_version`) — see
+`data-architecture/domain-data-model.md` for the schema and `data-architecture/sql/` for the DDL.
+Back up and export the databases with the `sqlite-admin` skill.
 
 ---
 
@@ -66,7 +66,7 @@ Outputs:
 ---
 
 ### `/place-order {ACTION} {N} {TICKER} in {ACCOUNT}`
-**Live order execution via TradingView.** Places buy or sell orders through TradingView's built-in TradingView connected broker integration using CDP automation. Three-step HITL flow: preflight card (broker check + buying power) → CONFIRM → form filled + submitted → portfolio.json synced.
+**Live order execution via TradingView.** Places buy or sell orders through TradingView's built-in TradingView connected broker integration using CDP automation. Three-step HITL flow: preflight card (broker check + buying power) → CONFIRM → form filled + submitted → positions re-synced into domain_model.sqlite.
 
 Requires: TradingView Desktop running with connected broker connected (the broker panel visible at the bottom of TradingView).
 
@@ -159,7 +159,7 @@ Update a single holding target directly:
 
 ```bash
 python3 investment_screener/backend/py_services/update_thesis.py \
-  --pillar "ASI / Compute" --holding NVDA --target 8.5 \
+  --holding NVDA --target 8.5 --patch other-weights.json \
   --note "Elevated after earnings beat"
 
 # List all current targets and weights

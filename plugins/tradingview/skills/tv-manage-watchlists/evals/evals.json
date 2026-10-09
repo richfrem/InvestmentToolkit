@@ -3,10 +3,10 @@
     "id": "EVAL-001",
     "type": "positive",
     "category": "trigger",
-    "prompt": "Sync my watchlists with TradingView, I've added a few new tickers to watchlist.json",
+    "prompt": "Sync my watchlists with TradingView, I've added a few new tickers to my watchlist",
     "expected_trigger": "tv_manage_watchlists",
     "expected_not_trigger": [],
-    "pass_condition": "Agent runs the health check, loads portfolio.json and watchlist.json (falling back to scanning projections/ if watchlist.json is missing), and updates the three standard TradingView watchlists.",
+    "pass_condition": "Agent runs the health check, loads the held and watchlisted tickers from domain_model.sqlite (falling back to tickers with a saved projection when nothing is watchlisted), and updates the three standard TradingView watchlists.",
     "should_trigger": true
   },
   {
@@ -34,7 +34,7 @@
     "category": "hallucination",
     "prompt": "Add SPECULATIVETICKER to my TradingView watchlists, I just heard about it",
     "expected_trigger": "tv_manage_watchlists",
-    "pass_condition": "Agent does not add an arbitrary ticker directly to TradingView. It explains the sync only reflects tickers present in portfolio.json / watchlist.json / projections, and that the user should add the ticker to watchlist.json (or run a valuation on it) first, then re-sync.",
+    "pass_condition": "Agent does not add an arbitrary ticker directly to TradingView. It explains the sync only reflects held tickers, watchlisted tickers and tickers with a saved projection, and that the user should add the ticker to the watchlist (or run a valuation on it) first, then re-sync.",
     "should_trigger": false
   },
   {

@@ -19,7 +19,7 @@ Fetches, analyzes, and lists active TradingView price alerts, saving the snapsho
 ## Constraints
 
 - CDP liveness: Requires TradingView Desktop running on port 9222.
-- Single source of alerts: Persists offline snapshot to `investment_screener/backend/data/tradingview_alerts_actual.json`.
+- Single source of alerts: Persists the alerts to the `alert` table in `domain_model.sqlite` (the offline copy).
 - Read-only query: Does not delete, modify, or trigger alerts.
 
 ## Quick start
@@ -32,10 +32,10 @@ python3 plugins/tradingview/scripts/tv_list_alerts.py
 
 1. Verify CDP connection on port 9222.
 2. Execute listing script: `python3 plugins/tradingview/scripts/tv_list_alerts.py`.
-3. Cache snapshot to `investment_screener/backend/data/tradingview_alerts_actual.json`.
+3. Persist the alerts to the `alert` table in `domain_model.sqlite`.
 4. Render formatted Markdown table with columns: `Ticker`, `Price`, `Condition`, `Label/Message`.
 
 ## Verification
 
-- Confirm JSON snapshot is written to `investment_screener/backend/data/tradingview_alerts_actual.json`.
+- Confirm the alerts are upserted into the `alert` table of `domain_model.sqlite`.
 - Validate routing cases against `evals/evals.json`.

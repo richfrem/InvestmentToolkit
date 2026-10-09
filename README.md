@@ -209,16 +209,14 @@ sqlite3 investment_screener/backend/data/intelligence.sqlite ".tables"
 
 ```
 
-`portfolio.json` and `theses/target-portfolio.json` (Waves 7/8) are fully retired — archived under
-`ARCHIVE/investment_screener/backend/data/`, with `domain_model.sqlite` as the sole source of truth
-for portfolio holdings, thesis targets, pillars, price levels, and standing decisions.
+`portfolio.json` and `theses/target-portfolio.json` are retired, with `domain_model.sqlite` as the sole
+source of truth for portfolio holdings, thesis targets, pillars, price levels, standing decisions and
+thesis breakers (ADR-038).
 
-A small set of other JSON files remain intentionally retained, each with a documented Retained-JSON
-Rationale Bar (not "out of scope" hand-waving): `thesis_breaker_state.json` (per-breaker evaluation
-detail — `thesisBreakers` still has no SQLite schema), `projections/*.json`, `trade-log.json`,
-`cash_flows.json`. See `docs/superpowers/status/wave6-program-closure-report.md` for the final
-program-wide state, and each wave's own exit report under `docs/superpowers/status/` for what was
-cut over vs. retained, with rationale.
+`thesis_breaker_state.json`, `trade-log.json` and `cash_flows.json` are retired too: breaker definitions
+and state, trades and cash flows are in SQLite tables. Only the `projections/*.json` copies of valuations
+remain on disk, until the research consolidation moves them. A test (`test_no_retired_file_access`) fails
+if any code or document reintroduces a retired file. History: `docs/superpowers/status/`.
 
 ---
 

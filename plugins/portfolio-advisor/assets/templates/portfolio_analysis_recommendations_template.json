@@ -4,7 +4,7 @@
   "reviewFile": "PortfolioAnalysis/strategic-reviews/<YYYY-MM-DD>-PortfolioAnalysisRecommendations.md",
   "thesisName": "<Name of target portfolio>",
   "targetPortfolioVersion": 1,
-  "targetPortfolioFile": "investment_screener/backend/data/theses/target-portfolio.json",
+  "targetPortfolioFile": "investment_screener/backend/data/domain_model.sqlite",
   "status": "<PROPOSED | APPROVED | APPLIED>",
   "approvedAt": null,
   "appliedAt": null,
@@ -38,7 +38,7 @@
       "action": "<ACCUMULATE | TRIM | INITIATE | EXIT>",
       "actualPct": 0.0,
       "actualDelta": 0.0,
-      "rationale": "<Agent rationale from target-portfolio.json>",
+      "rationale": "<Agent rationale from the stored thesis>",
       "urgency": "<URGENT | NORMAL | LOW>"
     }
   ],
@@ -53,7 +53,7 @@
       "action": "MAINTAIN",
       "actualPct": 0.0,
       "actualDelta": 0.0,
-      "rationale": "<Agent rationale from target-portfolio.json>",
+      "rationale": "<Agent rationale from the stored thesis>",
       "urgency": "LOW"
     }
   ],

@@ -6,7 +6,7 @@
     "prompt": "Let's go through each stock and calibrate my targets",
     "expected_trigger": "calibrate_targets",
     "expected_not_trigger": [],
-    "pass_condition": "Agent loads the full ledger (portfolio_action.py --all, target-portfolio.json, validate_weights.py, DCF valuations) in Step 0, then opens the session with the header format from Step 1 before presenting the first holding.",
+    "pass_condition": "Agent loads the full ledger (portfolio_action.py --all, the thesis in domain_model.sqlite, validate_weights.py, DCF valuations) in Step 0, then opens the session with the header format from Step 1 before presenting the first holding.",
     "should_trigger": true
   },
   {
@@ -45,7 +45,7 @@
     "prompt": "I'm done reviewing, let's finalize the targets.",
     "setup": "Agreed targets currently sum to 101.3%",
     "expected_trigger": "calibrate_targets",
-    "pass_condition": "Agent does not write to target-portfolio.json while the sum is off. Per Step 5, it presents the three-option prompt (agent distributes proportionally / user names tickers to adjust / user specifies exact adjustment) and waits for direction before recalculating to exactly 100.00% (\u00b10.05% tolerance).",
+    "pass_condition": "Agent does not save targets to domain_model.sqlite while the sum is off. Per Step 5, it presents the three-option prompt (agent distributes proportionally / user names tickers to adjust / user specifies exact adjustment) and waits for direction before recalculating to exactly 100.00% (\u00b10.05% tolerance).",
     "should_trigger": true
   },
   {
