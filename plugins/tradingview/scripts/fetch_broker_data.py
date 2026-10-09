@@ -29,16 +29,13 @@ Usage Examples:
     # Consolidated snapshot of all accounts, persisted to domain_model.sqlite:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot
 
-    # Cross-validate TV vs Broker (diff side-by-side):
+    # Diff the live TradingView positions against the positions stored in domain_model.sqlite:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --compare
 
-    # Once validated, promote the consolidated TV snapshot:
-    python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot --promote
-
 Key Functions:
-    - fetch_tv()        - Reads all data from TradingView broker panel via CDP
-    - fetch_broker() - Reads from broker API (requires .broker_cache)
-    - compare()         - Diffs TV vs broker positions and balances
+    - fetch_tv_snapshot() - Reads every account's positions and balances from the TradingView broker panel via CDP
+    - fetch_stored_positions() - The positions stored in domain_model.sqlite, summed per symbol
+    - compare_snapshots() - Diffs live TV positions against the stored positions
     - write_snapshot()  - Persists the snapshot to domain_model.sqlite (SQLite only)
     - emit_snapshot_json() - Emits the snapshot as one JSON line on stdout (Node IPC return channel)
 
@@ -225,13 +222,23 @@ try {
 
 # ── Broker source ──────────────────────────────────────────────────────────
 
-def fetch_broker_snapshot() -> Optional[dict]:
-    """Read current portfolio.json as broker baseline."""
-    portfolio_path = os.path.join(DATA_DIR, "portfolio.json")
-    if not os.path.exists(portfolio_path):
+def fetch_stored_positions(db_path: Optional[str] = None) -> Optional[dict]:
+    """The positions stored in domain_model.sqlite, summed across accounts per symbol.
+
+    This is the baseline ``--compare`` diffs a live TradingView read against.
+
+    Args:
+        db_path: Database to read; defaults to the real domain_model.sqlite.
+
+    Returns:
+        {"holdings": [{"symbol", "shares"}, ...]}, or None when the database does not exist.
+    """
+    path = str(db_path or DOMAIN_MODEL_DB_PATH)
+    if not os.path.exists(path):
         return None
-    with open(portfolio_path) as f:
-        return json.load(f)
+    from portfolio_io import load_portfolio_state
+    state = load_portfolio_state(None, db_path=path)
+    return {"holdings": [{"symbol": sym, "shares": qty} for sym, qty in state["shares"].items()]}
 
 
 # ── compare ───────────────────────────────────────────────────────────────────
@@ -244,7 +251,7 @@ def compare_snapshots(tv: dict, qt: dict) -> dict:
     tv_pos = {p["symbol"]: p for p in tv.get("positions", [])}
     qt_pos = {}
 
-    # portfolio.json is a top-level list of {symbol, shares, book_price, ...}
+    # qt is {"holdings": [{symbol, shares, ...}]} (fetch_stored_positions)
     if isinstance(qt, list):
         qt_holdings = qt
     else:
@@ -320,7 +327,7 @@ def print_compare_report(report: dict):
             print(f"   {row['symbol']:<8}  TV={row['tv_qty']}  QT={row['qt_qty']}")
 
     if report["tv_only"]:
-        print("\n📺  TV ONLY (not in baseline portfolio.json):")
+        print("\n📺  TV ONLY (not in the stored positions):")
         for row in report["tv_only"]:
             print(f"   {row['symbol']:<8}  qty={row['qty']}")
 
@@ -330,9 +337,9 @@ def print_compare_report(report: dict):
             print(f"   {row['symbol']:<8}  qty={row['qty']}")
 
     if s["mismatched"] == 0 and s["tv_only"] == 0 and s["qt_only"] == 0:
-        print("\n✅  All positions match — TV scraper validated. Safe to promote TV as primary source.")
+        print("\n✅  All positions match the stored positions.")
     else:
-        print("\n❌  Discrepancies found. Fix scraper before promoting TV as primary source.")
+        print("\n❌  Discrepancies found between TradingView and the stored positions.")
 
 
 # ── snapshot writer ───────────────────────────────────────────────────────────
@@ -531,7 +538,7 @@ def _persist_snapshot_to_db(
     return written
 
 
-def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dict] = None) -> dict:
+def write_snapshot(snapshot: dict, balances: Optional[dict] = None) -> dict:
     """Persist a TV snapshot to the domain model (SQLite) — SQLite only.
 
     Persists per-account positions/cash (and the broker-reported total inferred from
@@ -613,9 +620,8 @@ def main():
     parser.add_argument("--positions", action="store_true")
     parser.add_argument("--orders",    action="store_true")
     parser.add_argument("--snapshot",  action="store_true", help="Full snapshot → domain_model.sqlite + JSON on stdout")
-    parser.add_argument("--compare",   action="store_true", help="Diff TV vs broker positions")
+    parser.add_argument("--compare",   action="store_true", help="Diff live TV positions against the stored positions in domain_model.sqlite")
     parser.add_argument("--inspect",   action="store_true", help="Dump broker panel DOM for debugging")
-    parser.add_argument("--promote",   action="store_true", help="Promote TV positions to portfolio.json holdings list")
     parser.add_argument("--refresh-exchange-rate", action="store_true",
                          help="Lightweight balances-only USD->CAD rate refresh (no full snapshot sync)")
     parser.add_argument("--allow-partial", action="store_true",
@@ -658,10 +664,10 @@ def main():
             acct_counts[at] = acct_counts.get(at, 0) + 1
         print(f"   TV: {len(tv['positions'])} unique symbols across {len(snapshot.get('accounts', []))} accounts {acct_counts}")
 
-        print("Reading baseline portfolio.json...")
-        qt = fetch_broker_snapshot()
+        print("Reading stored positions from domain_model.sqlite...")
+        qt = fetch_stored_positions()
         if qt is None:
-            print("❌ portfolio.json not found — run broker sync first.", file=sys.stderr)
+            print("❌ domain_model.sqlite not found — start the app once, then run broker sync.", file=sys.stderr)
             sys.exit(1)
 
         report = compare_snapshots(tv, qt)
@@ -732,14 +738,14 @@ def main():
         if missing:
             print(f"⚠  Saving without {', '.join(missing)} (--allow-partial).", file=sys.stderr)
 
-        write_snapshot(snapshot, promote=args.promote, balances=balances)
+        write_snapshot(snapshot, balances=balances)
         accts = snapshot.get("accounts", [])
         snaps = snapshot.get("snapshots", [])
         for s in snaps:
             n = len(s.get("positions", []))
             print(f"   {s.get('accountType','?')} ({s.get('accountId','?')}): {n} positions", file=sys.stderr)
         print(f"✓ {len(snapshot.get('positions', []))} total positions across {len(accts)} accounts", file=sys.stderr)
-        print("✓ Persisted to domain_model.sqlite (SQLite-only; portfolio.json no longer written)", file=sys.stderr)
+        print("✓ Persisted to domain_model.sqlite", file=sys.stderr)
 
         # stdout IPC channel: the ONLY thing on stdout is this single JSON line.
         emit_snapshot_json(snapshot)

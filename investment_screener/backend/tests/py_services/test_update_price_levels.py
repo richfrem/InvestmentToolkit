@@ -6,15 +6,13 @@ Tests cover:
   - DCF tier derivation formulas
   - Schema field completeness
   - Proximity flag computation
-  - Atomic write to target-portfolio.json
-  - Denormalized snapshot write to portfolio.json
-  - Dry-run safety (no file modification)
+  - Persisting price levels and returning the snapshot computed from SQLite
+  - Batch (--all) over the thesis holdings in SQLite
+  - Dry-run safety (nothing stored)
   - Error handling for missing projections
 
-Wave 1 Task 7B rewired `load_latest_projection` off `projections/{TICKER}.json`
-onto `domain_model.sqlite` (ADR-029) — projection fixtures below seed a
-`tmp_path`-backed SQLite database via `initialize_db` instead of writing a
-projections directory, never touching the real `data/domain_model.sqlite` file.
+Projection fixtures seed a `tmp_path`-backed SQLite database via `initialize_db`, never
+touching the real `data/domain_model.sqlite` file.
 """
 
 import json
@@ -79,51 +77,6 @@ SAMPLE_PROJECTION = [
     }
 ]
 
-# Minimal valid target-portfolio.json
-SAMPLE_TARGET = {
-    "id": "target-portfolio",
-    "name": "Target Portfolio",
-    "schemaVersion": "1.0",
-    "version": 1,
-    "createdAt": "2026-01-01T00:00:00Z",
-    "updatedAt": "2026-01-01T00:00:00Z",
-    "description": "Test",
-    "pillars": [{"id": "ai", "name": "AI Titans", "targetWeight": 100.0}],
-    "holdings": [
-        {
-            "ticker": "GOOG",
-            "name": "Alphabet",
-            "pillarId": "ai",
-            "targetWeight": 100.0,
-            "role": "core",
-        }
-    ],
-    "globalSettings": {
-        "driftThresholdPct": 3.0,
-        "criticalDriftPct": 5.0,
-        "rebalanceFrequency": "quarterly",
-    },
-}
-
-# Minimal valid portfolio.json
-SAMPLE_PORTFOLIO = {
-    "accounts": [
-        {
-            "name": "TFSA",
-            "holdings": [
-                {
-                    "symbol": "GOOG",
-                    "shares": 4,
-                    "price": 383.22,
-                    "market_value": 1532.88,
-                    "book_price": 350.00,
-                    "last_updated": "2026-06-21T00:00:00Z",
-                }
-            ],
-        }
-    ]
-}
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -156,235 +109,24 @@ def _make_db(tmp_path: Path, ticker: str = "GOOG") -> Path:
     return db_path
 
 
-def _make_target_json(tmp_path: Path) -> Path:
-    target_path = tmp_path / "target-portfolio.json"
-    target_path.write_text(json.dumps(SAMPLE_TARGET, indent=2))
-    return target_path
-
-
-def _make_portfolio_json(tmp_path: Path) -> Path:
-    portfolio_path = tmp_path / "portfolio.json"
-    portfolio_path.write_text(json.dumps(SAMPLE_PORTFOLIO, indent=2))
-    return portfolio_path
-
-
-# ── Tests: derive_tiers_from_dcf ─────────────────────────────────────────────
-
-class TestDeriveTiersFromDcf:
-    def setup_method(self):
-        self.tiers = derive_tiers_from_dcf(BEAR_FV, BASE_FV, BULL_FV, TODAY)
-
-    def test_buy_tier_1_price(self):
-        assert self.tiers["buyTiers"][0]["price"] == round(BASE_FV * 0.75, 2)
-
-    def test_buy_tier_2_price(self):
-        assert self.tiers["buyTiers"][1]["price"] == round(BEAR_FV * 1.05, 2)
-
-    def test_sell_tier_1_price(self):
-        assert self.tiers["sellTiers"][0]["price"] == round(BASE_FV, 2)
-
-    def test_sell_tier_2_price(self):
-        assert self.tiers["sellTiers"][1]["price"] == round(BULL_FV, 2)
-
-    def test_sell_tier_3_price(self):
-        assert self.tiers["sellTiers"][2]["price"] == round(BULL_FV * 1.20, 2)
-
-    def test_stop_loss_price(self):
-        assert self.tiers["stopLoss"]["price"] == round(BEAR_FV * 0.95, 2)
-
-    def test_schema_version(self):
-        assert self.tiers["schemaVersion"] == "1.0"
-
-    def test_last_updated(self):
-        assert self.tiers["lastUpdated"] == TODAY
-
-    def test_last_updated_by(self):
-        assert self.tiers["lastUpdatedBy"] == "dcf"
-
-    def test_buy_tier_count(self):
-        assert len(self.tiers["buyTiers"]) == 2
-
-    def test_sell_tier_count(self):
-        assert len(self.tiers["sellTiers"]) == 3
-
-
-class TestDeriveTiersSchemaFields:
-    def setup_method(self):
-        self.tiers = derive_tiers_from_dcf(BEAR_FV, BASE_FV, BULL_FV, TODAY)
-
-    def test_all_buy_tiers_active(self):
-        for t in self.tiers["buyTiers"]:
-            assert t["status"] == "active"
-
-    def test_all_sell_tiers_active(self):
-        for t in self.tiers["sellTiers"]:
-            assert t["status"] == "active"
-
-    def test_all_buy_tiers_source_dcf(self):
-        for t in self.tiers["buyTiers"]:
-            assert t["source"] == "dcf"
-
-    def test_all_sell_tiers_source_dcf(self):
-        for t in self.tiers["sellTiers"]:
-            assert t["source"] == "dcf"
-
-    def test_all_tiers_order_type_limit(self):
-        for t in self.tiers["buyTiers"] + self.tiers["sellTiers"]:
-            assert t["orderType"] == "limit"
-
-    def test_buy_tier_actions(self):
-        assert self.tiers["buyTiers"][0]["action"] == "accumulate"
-        assert self.tiers["buyTiers"][1]["action"] == "accumulate_aggressive"
-
-    def test_sell_tier_actions(self):
-        assert self.tiers["sellTiers"][0]["action"] == "trim"
-        assert self.tiers["sellTiers"][1]["action"] == "trim"
-        assert self.tiers["sellTiers"][2]["action"] == "exit"
-
-    def test_sell_trim_percentages(self):
-        assert self.tiers["sellTiers"][0]["trimPct"] == 30
-        assert self.tiers["sellTiers"][1]["trimPct"] == 50
-        assert self.tiers["sellTiers"][2]["trimPct"] == 100
-
-    def test_stop_loss_type(self):
-        assert self.tiers["stopLoss"]["type"] == "thesis_breaker"
-
-    def test_stop_loss_status(self):
-        assert self.tiers["stopLoss"]["status"] == "active"
-
-    def test_tier_numbers_sequential(self):
-        for i, t in enumerate(self.tiers["buyTiers"], start=1):
-            assert t["tier"] == i
-        for i, t in enumerate(self.tiers["sellTiers"], start=1):
-            assert t["tier"] == i
-
-
-# ── Tests: compute_proximity_flags ───────────────────────────────────────────
-
-class TestComputeProximityFlags:
-    def setup_method(self):
-        self.price_levels = derive_tiers_from_dcf(BEAR_FV, BASE_FV, BULL_FV, TODAY)
-        # buyTier[1].price = round(BASE_FV * 0.75, 2) = 356.64
-        # sellTier[1].price = 475.52
-        # stopLoss.price = round(BEAR_FV * 0.95, 2) = 121.76
-
-    def test_at_buy_tier_1(self):
-        buy_tier_1_price = round(BASE_FV * 0.75, 2)
-        # Price is exactly at buy tier (within 2%)
-        flags = compute_proximity_flags(buy_tier_1_price, self.price_levels)
-        assert "AT_BUY_TIER_1" in flags
-
-    def test_at_buy_tier_1_slightly_below(self):
-        buy_tier_1_price = round(BASE_FV * 0.75, 2)
-        # Price is 1% below (within 2% of tier) — still triggers
-        price = buy_tier_1_price * 0.99
-        flags = compute_proximity_flags(price, self.price_levels)
-        assert "AT_BUY_TIER_1" in flags
-
-    def test_not_at_buy_tier_when_above(self):
-        buy_tier_1_price = round(BASE_FV * 0.75, 2)
-        # Price is above buy tier — not in the "approaching" zone
-        price = buy_tier_1_price * 1.05
-        flags = compute_proximity_flags(price, self.price_levels)
-        assert "AT_BUY_TIER_1" not in flags
-
-    def test_above_sell_tier_1(self):
-        # Price well above sellTier[1]
-        flags = compute_proximity_flags(BASE_FV * 1.10, self.price_levels)
-        assert "ABOVE_SELL_TIER_1" in flags
-
-    def test_at_sell_tier_1(self):
-        sell_tier_1_price = round(BASE_FV, 2)
-        # Price within 2% below sell tier
-        price = sell_tier_1_price * 0.99
-        flags = compute_proximity_flags(price, self.price_levels)
-        assert "AT_SELL_TIER_1" in flags
-
-    def test_at_stop_loss(self):
-        stop_price = round(BEAR_FV * 0.95, 2)
-        # Price within 3% above stop loss
-        price = stop_price * 1.02
-        flags = compute_proximity_flags(price, self.price_levels)
-        assert "AT_STOP_LOSS" in flags
-
-    def test_below_stop_loss(self):
-        stop_price = round(BEAR_FV * 0.95, 2)
-        # Price below stop loss
-        flags = compute_proximity_flags(stop_price * 0.95, self.price_levels)
-        assert "BELOW_STOP_LOSS" in flags
-
-    def test_no_levels_when_none(self):
-        flags = compute_proximity_flags(100.0, None)
-        assert flags == ["NO_PRICE_LEVELS"]
-
-    def test_no_levels_when_empty(self):
-        flags = compute_proximity_flags(100.0, {})
-        assert flags == ["NO_PRICE_LEVELS"]
-
-    def test_no_flags_for_neutral_price(self):
-        # A price well away from all tiers (between buy and sell, not near any)
-        # BASE_FV * 0.75 ≈ 357, BASE_FV ≈ 476 — midpoint ~416 is neutral
-        flags = compute_proximity_flags(416.0, self.price_levels)
-        assert "AT_BUY_TIER_1" not in flags
-        assert "AT_SELL_TIER_1" not in flags
-        assert "ABOVE_SELL_TIER_1" not in flags
-        assert "AT_STOP_LOSS" not in flags
-        assert "BELOW_STOP_LOSS" not in flags
-
-
-# ── Tests: load_latest_projection ────────────────────────────────────────────
-
-class TestLoadLatestProjection:
-    def test_loads_ai_agent_entry(self, tmp_path):
-        db_path = _make_db(tmp_path)
-        entry = load_latest_projection("GOOG", db_path=db_path)
-        assert entry is not None
-        assert entry["source"] == "AI_AGENT"
-
-    def test_case_insensitive_ticker(self, tmp_path):
-        db_path = _make_db(tmp_path)
-        entry = load_latest_projection("goog", db_path=db_path)
-        assert entry is not None
-
-    def test_returns_none_for_missing_file(self, tmp_path):
-        db_path = tmp_path / "test.sqlite"
-        initialize_db(str(db_path)).close()
-        entry = load_latest_projection("NVDA", db_path=db_path)
-        assert entry is None
-
-    def test_returns_none_for_empty_dir(self, tmp_path):
-        db_path = tmp_path / "test.sqlite"
-        initialize_db(str(db_path)).close()
-        entry = load_latest_projection("GOOG", db_path=db_path)
-        assert entry is None
+def _seed_thesis_holding(db_path: Path, ticker: str, weight: float = 5.0) -> None:
+    """Give an investment a target weight so it counts as a thesis holding."""
+    from domain_model.investment_repository import update_investment_fields
+    conn = initialize_db(str(db_path))
+    update_investment_fields(conn, resolve_investment(conn, ticker), target_weight=weight)
+    conn.close()
 
 
 # ── Tests: derive_and_write ───────────────────────────────────────────────────
 
 class TestDeriveAndWrite:
     def test_write_price_levels_to_sqlite(self, tmp_path):
-        """Wave 2 Task 9 producer cutover: priceLevels now persist via
-        replace_price_levels() into domain_model.sqlite, not a rewrite of
-        target-portfolio.json (which stays untouched by this write path until
-        Task 10's consumer cutover)."""
+        """priceLevels persist through replace_price_levels() into domain_model.sqlite."""
         db_path = _make_db(tmp_path)
-        target_path = _make_target_json(tmp_path)
-        portfolio_path = _make_portfolio_json(tmp_path)
-        original_target = target_path.read_text()
 
-        result = derive_and_write(
-            "GOOG",
-            source="dcf",
-            dry_run=False,
-            target_json_path=target_path,
-            portfolio_json_path=portfolio_path,
-            db_path=db_path,
-        )
+        result = derive_and_write("GOOG", source="dcf", dry_run=False, db_path=db_path)
 
         assert result["dry_run"] is False
-        # target-portfolio.json is no longer rewritten by this producer.
-        assert target_path.read_text() == original_target
-
         conn = initialize_db(str(db_path))
         investment_id = resolve_investment(conn, "GOOG")
         stored = get_price_levels(conn, investment_id)
@@ -396,56 +138,12 @@ class TestDeriveAndWrite:
         assert len(stored["sell_tiers"]) == 3
         assert stored["stop_loss"] is not None
 
-    def test_writes_price_levels_even_when_target_portfolio_json_is_absent(self, tmp_path):
-        """Caught live 2026-08-28 running AMAT's first-ever /update-stock-analysis:
-        target-portfolio.json is fully retired per CLAUDE.md Rule #30 (archived,
-        Wave 7/8 migration) and no longer exists ANYWHERE on disk in production.
-        The SQL write to price_level_tier was gated behind `holding_found`, which
-        is computed by reading that now-nonexistent file -- so `holding_found` was
-        always False and this write was silently dead code for every ticker since
-        the migration, not just first-time analyses. Every pre-existing test in
-        this file synthesizes a fake target-portfolio.json fixture via
-        _make_target_json(), which is exactly why this was never caught: the real
-        production absence of that file was never exercised. This test passes a
-        target_json_path that does not exist, matching production reality."""
-        db_path = _make_db(tmp_path)
-        portfolio_path = _make_portfolio_json(tmp_path)
-        nonexistent_target_path = tmp_path / "target-portfolio.json"  # never created
-
-        result = derive_and_write(
-            "GOOG",
-            source="dcf",
-            dry_run=False,
-            target_json_path=nonexistent_target_path,
-            portfolio_json_path=portfolio_path,
-            db_path=db_path,
-        )
-
-        assert result["dry_run"] is False
-
-        conn = initialize_db(str(db_path))
-        investment_id = resolve_investment(conn, "GOOG")
-        stored = get_price_levels(conn, investment_id)
-        conn.close()
-
-        assert stored is not None, (
-            "price_level_tier must be written regardless of target-portfolio.json's "
-            "existence -- that file is retired and reading it for a write-gate "
-            "re-introduces a dependency Rule #30 explicitly forbids"
-        )
-        assert len(stored["buy_tiers"]) == 2
-        assert len(stored["sell_tiers"]) == 3
-
     def test_replace_preserves_existing_target_entry_price(self, tmp_path):
-        """A pre-existing targetEntryPrice (a separate TARGET_ENTRY-kind row this
-        script never sets) must survive a priceLevels replace, not be silently
-        wiped by the full-object-rewrite semantics of replace_price_levels()."""
+        """A pre-existing targetEntryPrice (a separate TARGET_ENTRY row this script never sets)
+        survives a priceLevels replace."""
         from domain_model.price_level_repository import replace_price_levels
 
         db_path = _make_db(tmp_path)
-        target_path = _make_target_json(tmp_path)
-        portfolio_path = _make_portfolio_json(tmp_path)
-
         conn = initialize_db(str(db_path))
         investment_id = resolve_investment(conn, "GOOG")
         replace_price_levels(
@@ -455,11 +153,7 @@ class TestDeriveAndWrite:
         )
         conn.close()
 
-        derive_and_write(
-            "GOOG", source="dcf", dry_run=False,
-            target_json_path=target_path, portfolio_json_path=portfolio_path,
-            db_path=db_path,
-        )
+        derive_and_write("GOOG", source="dcf", dry_run=False, db_path=db_path)
 
         conn = initialize_db(str(db_path))
         stored = get_price_levels(conn, investment_id)
@@ -467,141 +161,104 @@ class TestDeriveAndWrite:
         assert stored["target_entry"] is not None
         assert stored["target_entry"]["price"] == 250.0
 
-    def test_write_snapshot_to_portfolio_json(self, tmp_path):
-        """Wave 3 Task 5.8 rewire: the old code read
-        `portfolio_data['accounts'][...]['holdings'][...]`, a shape real
-        portfolio.json never actually has (confirmed against
-        portfolio.json.example: real shape is `{holdings, totals,
-        tvSnapshot}`) -- so `snapshot_written` was always False and
-        portfolio.json was never actually written by this step in production.
-        The priceLevelSnapshot is now computed straight from already-migrated
-        SQLite tables (price_level_tier + investment_price) and returned in
-        the result dict instead of a JSON write that could never fire; this
-        also requires a real current price to exist (via investment_price),
-        which the old dead code never actually validated either."""
+    def test_returns_the_price_level_snapshot_computed_from_sqlite(self, tmp_path):
+        """With a stored current price the result carries the next buy/sell tiers and proximity flags."""
         from domain_model.investment_price_repository import upsert_investment_price
 
         db_path = _make_db(tmp_path)
-        target_path = _make_target_json(tmp_path)
-        portfolio_path = _make_portfolio_json(tmp_path)
-
         conn = initialize_db(str(db_path))
         investment_id = resolve_investment(conn, "GOOG")
         upsert_investment_price(conn, investment_id, price=383.22, currency="USD", fetched_at="2026-06-21T00:00:00Z")
         conn.close()
 
-        result = derive_and_write(
-            "GOOG",
-            source="dcf",
-            dry_run=False,
-            target_json_path=target_path,
-            portfolio_json_path=portfolio_path,
-            db_path=db_path,
-        )
-
-        # portfolio.json itself is untouched -- no working write path existed here.
-        assert json.loads(portfolio_path.read_text()) == SAMPLE_PORTFOLIO
+        result = derive_and_write("GOOG", source="dcf", dry_run=False, db_path=db_path)
 
         assert result["snapshot_written"] is True
         snap = result["price_level_snapshot"]
         assert snap is not None
-        assert "nextBuyTier" in snap
-        assert "nextSellTier" in snap
-        assert "proximityFlags" in snap
+        assert "nextBuyTier" in snap and "nextSellTier" in snap and "proximityFlags" in snap
 
-    def test_dry_run_does_not_write_target(self, tmp_path):
+    def test_dry_run_writes_nothing(self, tmp_path):
+        """A dry run returns the derived levels and stores none."""
         db_path = _make_db(tmp_path)
-        target_path = _make_target_json(tmp_path)
-        portfolio_path = _make_portfolio_json(tmp_path)
 
-        original_target = target_path.read_text()
-        original_portfolio = portfolio_path.read_text()
-
-        result = derive_and_write(
-            "GOOG",
-            source="dcf",
-            dry_run=True,
-            target_json_path=target_path,
-            portfolio_json_path=portfolio_path,
-            db_path=db_path,
-        )
+        result = derive_and_write("GOOG", source="dcf", dry_run=True, db_path=db_path)
 
         assert result["dry_run"] is True
-        assert target_path.read_text() == original_target
-        assert portfolio_path.read_text() == original_portfolio
+        conn = initialize_db(str(db_path))
+        assert get_price_levels(conn, resolve_investment(conn, "GOOG")) is None
+        conn.close()
 
     def test_invalid_projection_raises(self, tmp_path):
+        """A ticker with no AI projection raises instead of writing anything."""
         db_path = tmp_path / "test.sqlite"
         initialize_db(str(db_path)).close()
-        target_path = _make_target_json(tmp_path)
-        portfolio_path = _make_portfolio_json(tmp_path)
 
         with pytest.raises(ValueError, match="No projection found"):
-            derive_and_write(
-                "NVDA",
-                source="dcf",
-                dry_run=False,
-                target_json_path=target_path,
-                portfolio_json_path=portfolio_path,
-                db_path=db_path,
-            )
+            derive_and_write("NVDA", source="dcf", dry_run=False, db_path=db_path)
 
     def test_result_contains_price_levels(self, tmp_path):
-        db_path = _make_db(tmp_path)
-        target_path = _make_target_json(tmp_path)
-        portfolio_path = _make_portfolio_json(tmp_path)
-
-        result = derive_and_write(
-            "GOOG",
-            source="dcf",
-            dry_run=True,
-            target_json_path=target_path,
-            portfolio_json_path=portfolio_path,
-            db_path=db_path,
-        )
+        """The result includes the derived priceLevels block."""
+        result = derive_and_write("GOOG", source="dcf", dry_run=True, db_path=_make_db(tmp_path))
 
         assert "price_levels" in result
         assert result["price_levels"]["schemaVersion"] == "1.0"
 
-    def test_target_portfolio_json_untouched(self, tmp_path):
-        """Since priceLevels now round-trips through domain_model.sqlite
-        (Wave 2 Task 9), target-portfolio.json's updatedAt is no longer bumped
-        by this producer — the JSON file is intentionally left as-is until
-        Task 10's consumer cutover."""
+    def test_retired_file_parameters_are_gone(self):
+        """derive_and_write no longer takes the JSON path parameters and the module names no retired file."""
+        import inspect
+        import update_price_levels
+        params = inspect.signature(derive_and_write).parameters
+        assert "target_json_path" not in params and "portfolio_json_path" not in params
+        source = Path(update_price_levels.__file__).read_text()
+        assert "target-portfolio.json" not in source and "portfolio.json" not in source
+        assert not hasattr(update_price_levels, "TARGET_JSON") and not hasattr(update_price_levels, "PORTFOLIO_JSON")
+
+
+# ── Tests: derive_and_write_all ───────────────────────────────────────────────
+
+class TestDeriveAndWriteAll:
+    def test_batch_writes_levels_for_every_thesis_holding_with_a_projection(self, tmp_path):
+        """--all iterates the thesis holdings in SQLite, not a JSON file, and stores each one's levels."""
+        from update_price_levels import derive_and_write_all
         db_path = _make_db(tmp_path)
-        target_path = _make_target_json(tmp_path)
-        portfolio_path = _make_portfolio_json(tmp_path)
+        _seed_thesis_holding(db_path, "GOOG")
 
-        derive_and_write(
-            "GOOG",
-            source="dcf",
-            dry_run=False,
-            target_json_path=target_path,
-            portfolio_json_path=portfolio_path,
-            db_path=db_path,
-        )
+        out = derive_and_write_all(source="dcf", dry_run=False, db_path=db_path)
 
-        written = json.loads(target_path.read_text())
-        assert written["updatedAt"] == "2026-01-01T00:00:00Z"
+        assert [r["ticker"] for r in out["updated"]] == ["GOOG"] and out["skipped"] == [] and out["failed"] == []
+        conn = initialize_db(str(db_path))
+        assert get_price_levels(conn, resolve_investment(conn, "GOOG")) is not None
+        conn.close()
 
-    def test_missing_portfolio_holding_does_not_crash(self, tmp_path):
-        """derive_and_write should warn but not fail if ticker not in portfolio.json."""
+    def test_holding_without_a_projection_is_reported_as_skipped_not_silently_dropped(self, tmp_path):
+        """A thesis holding with no AI projection appears under 'skipped' with the reason."""
+        from update_price_levels import derive_and_write_all
         db_path = _make_db(tmp_path)
-        target_path = _make_target_json(tmp_path)
-        # Portfolio with no GOOG holding
-        portfolio_path = tmp_path / "portfolio.json"
-        portfolio_path.write_text(json.dumps({"accounts": [{"name": "TFSA", "holdings": []}]}))
+        _seed_thesis_holding(db_path, "GOOG")
+        _seed_thesis_holding(db_path, "NOPROJ")
 
-        # Should not raise
-        result = derive_and_write(
-            "GOOG",
-            source="dcf",
-            dry_run=False,
-            target_json_path=target_path,
-            portfolio_json_path=portfolio_path,
-            db_path=db_path,
-        )
-        assert result["ticker"] == "GOOG"
+        out = derive_and_write_all(source="dcf", dry_run=True, db_path=db_path)
+
+        assert [r["ticker"] for r in out["updated"]] == ["GOOG"]
+        assert [s["ticker"] for s in out["skipped"]] == ["NOPROJ"] and "No projection" in out["skipped"][0]["reason"]
+
+    def test_empty_database_is_an_error_not_an_empty_result(self, tmp_path):
+        """No thesis holdings at all raises; the old behaviour returned an empty list silently."""
+        from update_price_levels import derive_and_write_all
+        db_path = tmp_path / "empty.sqlite"
+        initialize_db(str(db_path)).close()
+        with pytest.raises(ValueError, match="thesis holdings"):
+            derive_and_write_all(source="dcf", dry_run=True, db_path=db_path)
+
+    def test_cli_all_exits_nonzero_when_nothing_to_do(self, tmp_path):
+        """`--all` on a database with no thesis holdings exits 1 with a message."""
+        import subprocess
+        db_path = tmp_path / "empty.sqlite"
+        initialize_db(str(db_path)).close()
+        script = REPO_ROOT / "plugins/portfolio-advisor/scripts/update_price_levels.py"
+        r = subprocess.run(["python3", str(script), "--all", "--db", str(db_path)], capture_output=True, text=True)
+        assert r.returncode == 1 and "thesis holdings" in r.stderr
 
 
 # ── Tests: bear-derived level sanity guard ───────────────────────────────────
@@ -640,9 +297,7 @@ class TestBearLevelSanityGuard:
         bear = SAMPLE_PROJECTION[0]["scenarios"]["bear"]["scenarioPrice"]
         upsert_investment_price(conn, resolve_investment(conn, "GOOG"), bear * 3, "USD", TODAY)
         conn.close()
-        derive_and_write("GOOG", source="dcf", dry_run=False,
-                         target_json_path=_make_target_json(tmp_path),
-                         portfolio_json_path=_make_portfolio_json(tmp_path), db_path=db_path)
+        derive_and_write("GOOG", source="dcf", dry_run=False, db_path=db_path)
         conn = initialize_db(str(db_path))
         stored = get_price_levels(conn, resolve_investment(conn, "GOOG"))
         conn.close()

@@ -32,7 +32,6 @@ NO_CHANGE = {"GOOG", "KOID"}
 SA_DCF_CONFLICTS = {"CORZ", "LITE", "BE", "INTC", "IONQ", "QBTS", "OKLO", "CEG", "IREN", "EQT"}
 
 sys.path.insert(0, str(Path(__file__).parent))
-from validate_weights import compute_target
 from portfolio_action import derive_action
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))

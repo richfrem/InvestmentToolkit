@@ -66,25 +66,61 @@ def _make_db(tmp_path):
 
 
 def test_compute_thesis_summary_reads_target_weight_from_sqlite(tmp_path):
+    """EXIT and INITIATE lists come from investment.target_weight."""
     db_path = _make_db(tmp_path)
     portfolio = [
         {"symbol": "EXITME", "shares": 10},
         {"symbol": "HELD", "shares": 5},
     ]
-    thesis_meta = {"name": "Investment Thesis", "version": "9.8"}
 
-    summary = gr.compute_thesis_summary(thesis_meta, portfolio, db_path=db_path)
+    summary = gr.compute_thesis_summary(portfolio, db_path=db_path)
 
     assert summary["exit_count"] == 1
     assert summary["exit_tickers"] == ["EXITME"]
     assert summary["initiate_count"] == 1
     assert summary["initiate_tickers"] == ["NEWCO"]
     assert summary["thesis_name"] == "Investment Thesis"
-    assert summary["thesis_version"] == "9.8"
 
 
-def test_compute_thesis_summary_missing_db_returns_empty(tmp_path):
-    missing_db = tmp_path / "missing.sqlite"
-    summary = gr.compute_thesis_summary({}, [], db_path=missing_db)
-    assert summary["exit_count"] == 0
-    assert summary["initiate_count"] == 0
+def test_thesis_version_is_the_latest_change_log_version(tmp_path):
+    """The version shown in the review is the newest portfolio_change_log version."""
+    from domain_model.portfolio_change_log_repository import record_change
+    db_path = _make_db(tmp_path)
+    assert gr.compute_thesis_summary([], db_path=db_path)["thesis_version"] == "unversioned"
+    conn = initialize_db(str(db_path))
+    record_change(conn, "first")
+    record_change(conn, "second")
+    conn.close()
+    assert gr.compute_thesis_summary([], db_path=db_path)["thesis_version"] == "2"
+
+
+def test_held_ticker_with_no_target_is_not_exit_flagged(tmp_path):
+    """A NULL target weight means no thesis, not a zero target, so it is not an EXIT."""
+    db_path = _make_db(tmp_path)
+    conn = initialize_db(str(db_path))
+    resolve_investment(conn, "NOTARGET")
+    conn.close()
+    summary = gr.compute_thesis_summary([{"symbol": "NOTARGET", "shares": 3}], db_path=db_path)
+    assert "NOTARGET" not in summary["exit_tickers"]
+
+
+def test_no_thesis_holdings_fails_loudly(tmp_path):
+    """An empty thesis is an error, never an empty review header."""
+    import pytest
+    db_path = tmp_path / "empty.sqlite"
+    initialize_db(str(db_path)).close()
+    with pytest.raises(ValueError, match="thesis"):
+        gr.compute_thesis_summary([], db_path=db_path)
+
+
+def test_missing_db_fails_loudly(tmp_path):
+    """A missing database is an error."""
+    import pytest
+    with pytest.raises(ValueError, match="not found"):
+        gr.compute_thesis_summary([], db_path=tmp_path / "missing.sqlite")
+
+
+def test_module_has_no_json_thesis_path():
+    """generate_review.py no longer knows about a thesis JSON file."""
+    source = Path(gr.__file__).read_text()
+    assert "target-portfolio.json" not in source and not hasattr(gr, "THESIS_PATH") and not hasattr(gr, "load_json")
