@@ -5,7 +5,7 @@
 | **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
 | **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-10-06 |
+| **Last Updated** | 2026-10-09 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
 | **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
 | **Portfolio Data** | Live — synced from Broker via app or `python3 investment_screener/backend/src/BrokerDataEngine.py` |
@@ -87,17 +87,17 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 ## IV. Portfolio Blueprint
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
-*Generated 2026-10-06 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
-*Portfolio value: $35,743. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
+*Generated 2026-10-09 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
+*Portfolio value: $33,714. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **TSM** | 🔵 ACCUMULATE | BUY | 4.06% | 4.04% | +36.1% | Foundational AI hardware monopoly: wide margin of safety vs $658 DCF fair value. Accumulate at 21/50 EMA support. |
-| **STM** | 🔵 ACCUMULATE | BUY | 3.93% | 3.90% | +59.4% | Hold core: Cyclical troughing underway, but maintain position discipline until SiC margin expansion proves durable. |
-| **CBRS** | 🔵 ACCUMULATE | BUY | 2.25% | 2.13% | +60.5% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
-| **AMAT** | ⚪ MAINTAIN | HOLD | 2.23% | 2.30% | +2.2% | AMAT |
+| **TSM** | 🔵 ACCUMULATE | BUY | 4.02% | 4.04% | +18.3% | Foundational AI hardware monopoly: wide margin of safety vs $658 DCF fair value. Accumulate at 21/50 EMA support. |
+| **STM** | 🔵 ACCUMULATE | BUY | 3.71% | 3.90% | +51.5% | Hold core: Cyclical troughing underway, but maintain position discipline until SiC margin expansion proves durable. |
+| **AMAT** | ⚪ MAINTAIN | HOLD | 2.27% | 2.30% | -8.6% | AMAT |
+| **CBRS** | 🔵 ACCUMULATE | BUY | 2.21% | 2.13% | +56.7% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
 | **ALAB** | 👁️ WATCHLIST | SELL | — | — | — | Dominant fabless semiconductor provider of PCIe Gen 6/7 retimers, CXL memory controllers (Leo), and smart connectivity switches (Scorpio) for AI accelerators. |
 | **AMD** | 👁️ WATCHLIST | SELL | — | — | — | Hedge against NVDA dominance. |
 | **ASML** | 👁️ WATCHLIST | HOLD | — | — | — | Absolute monopoly on EUV lithography. |
@@ -105,29 +105,29 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **INTC** | 👁️ WATCHLIST | SELL | — | — | — | EXIT: Position closed 2026-06. Semis sector overextended — waiting for pullback before re-entry. Terafab JV (Intel + Tesla + SpaceX/xAI) thesis intact long-term but valuation stretched. |
 | **NVDA** | 🟢 INITIATE | BUY | — | — | — | Highest-conviction BUY. Target increased to absorb freed capital from IREN, COHR, and EQT exits. |
 | **ARM** | 👁️ WATCHLIST | SELL | — | — | — | ARM |
-| **SNPS** | 🟢 INITIATE | BUY | — | — | — | SNPS |
+| **SNPS** | 👁️ WATCHLIST | HOLD | — | — | — | SNPS |
 | **CDNS** | 👁️ WATCHLIST | HOLD | — | — | — | CDNS |
 | **IBM** | 👁️ WATCHLIST | HOLD | — | — | — | IBM |
 | **QCOM** | 🟢 INITIATE | BUY | — | — | — | QCOM |
-| **Subtotal** | | **12.47%** | **12.36%** | -0.11pp | |
+| **Subtotal** | | **12.20%** | **12.36%** | +0.16pp | |
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **ZS** | 🟡 TRIM | SELL | 5.33% | 6.75% | -74.1% | Core Zero Trust compounder: Accumulate at 200 EMA retest ($176-$178) with +47% DCF margin of safety. |
-| **PANW** | 🟡 TRIM | SELL | 2.13% | 1.91% | -38.6% | Tactical trim 0.5 shares @ $355 resistance to liberate capital into deeper discount infrastructure. |
+| **ZS** | 🟡 TRIM | SELL | 6.08% | 6.75% | -75.9% | Core Zero Trust compounder: Accumulate at 200 EMA retest ($176-$178) with +47% DCF margin of safety. |
+| **PANW** | 🟡 TRIM | SELL | 2.21% | 1.91% | -46.0% | Tactical trim 0.5 shares @ $355 resistance to liberate capital into deeper discount infrastructure. |
 | **CRWD** | 👁️ WATCHLIST | SELL | — | — | — | Q2 FY27 revenue $1.47B (+26% YoY), ARR $5.84B (+25%), record net new ARR $333M (+51%). Falcon Flex ARR $2.29B (+101% YoY). Full recovery from July outage with strong customer retention and net expansion. |
 | **FTNT** | 👁️ WATCHLIST | SELL | — | — | — | FTNT |
 | **NET** | 👁️ WATCHLIST | SELL | — | — | — | NET |
-| **Subtotal** | | **7.46%** | **8.66%** | +1.20pp | |
+| **Subtotal** | | **8.29%** | **8.66%** | +0.37pp | |
 
 ### Sub-Strategy 3 — Sovereign Finance
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
 | **SOFI** | 🟢 INITIATE | BUY | — | — | — | SOFI |
-| **HOOD** | 🟢 INITIATE | BUY | — | — | — | HOOD |
+| **HOOD** | 👁️ WATCHLIST | HOLD | — | — | — | HOOD |
 | **PYPL** | 🟢 INITIATE | BUY | — | — | — | PYPL |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
@@ -156,15 +156,22 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CASH_USD** | ⚪ MAINTAIN | — | 10.40% | 12.80% | — | CASH_USD |
+| **CASH_USD** | ⚪ MAINTAIN | — | 10.30% | 12.80% | — | CASH_USD |
 | **PSU-U.TO** | 👁️ WATCHLIST | — | — | — | — | USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date). |
-| **Subtotal** | | **10.40%** | **12.80%** | +2.41pp | |
+| **Subtotal** | | **10.30%** | **12.80%** | +2.50pp | |
+
+### Untracked / Thesis Pending
+
+| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
+| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **HUMN** | 👁️ WATCHLIST | — | — | — | — | HUMN |
+| **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Portfolio Totals
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **30.33%** | **33.82%** | +3.49pp |
+| **All holdings** | **30.79%** | **33.82%** | +3.03pp |
 | *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
 <!-- AUTO_UPDATE_END: portfolio_blueprint -->
 
