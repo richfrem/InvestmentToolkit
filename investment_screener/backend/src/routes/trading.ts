@@ -34,7 +34,6 @@
  *
  * Key Input Dependencies:
  *   - investment_screener/backend/data/domain_model.sqlite's trade_log_entry table
- *     (Wave 4 cutover; formerly trade-log.json, now archived)
  *   - plugins/tradingview/audit/ (reads logs)
  *
  * Key Output Dependencies:
@@ -271,9 +270,8 @@ router.get('/session/:id', (req, res) => {
 // readLog()/writeLog() keep the exact same external shape every route handler
 // already relies on (a plain array of {id, ticker, action, shares, price,
 // totalCost, account, orderType, limitPrice, date, notes, status, source,
-// priority, loggedAt, tvOrderId} objects) — only the storage underneath moved
-// from trade-log.json (retired/archived) to the trade_log_entry table via
-// TradeLogRepository. No route handler below needed to change its own logic.
+// priority, loggedAt, tvOrderId} objects); storage is the trade_log_entry table via
+// TradeLogRepository.
 
 /** DB row -> the original JSON entry shape every route handler expects. */
 function rowToEntry(row: TradeLogEntryRow): Record<string, any> {

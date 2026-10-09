@@ -276,11 +276,9 @@ export class PortfolioRepository {
     }
 
     /** The most recent `account_investment.last_synced_at` across every row — the
-     * real, per-sync "when was this data last refreshed" timestamp. Unlike
-     * `portfolio.json`'s `totals.timestamp`/`positions[].last_updated` (which Wave 3
-     * stopped writing entirely once sync cut over to SQLite-only writes), this
-     * value updates on every real sync because `upsertAccountInvestment` always
-     * writes a fresh `last_synced_at`. Returns null when there are no rows yet
+     * real, per-sync "when was this data last refreshed" timestamp. It updates on
+     * every real sync because `upsertAccountInvestment` always writes a fresh
+     * `last_synced_at`. Returns null when there are no rows yet
      * (matches `getPortfolioTotalUsdFromDb`'s null-not-zero convention). */
     getLastSyncedAt(): string | null {
         const row = this.db

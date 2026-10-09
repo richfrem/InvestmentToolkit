@@ -4,31 +4,30 @@
  *
  * Purpose:
  *     Broker-agnostic portfolio sync. Resolves the data source in priority order:
- *     TradingView CDP (primary) → portfolio.json cache.
+ *     TradingView CDP (primary) → the positions stored in domain_model.sqlite.
  *     TV CDP is the default and works for any TradingView-connected broker.
  *
  * Layer: Backend / Services / Data Sync
  *
  * Key Input Dependencies:
- *     - investment_screener/backend/data/portfolio.json (Maintains aggregate holdings and TV snapshots)
- *     - investment_screener/backend/data/theses/target-portfolio.json (Maintains active conviction weight mappings)
+ *     - investment_screener/backend/data/domain_model.sqlite (stored positions, written by persistSnapshotToDb)
+ *     - py_services/fetch_broker_data.py (the TradingView CDP snapshot subprocess)
  *
  * Key Functions:
  *     - syncFromTV()      — Fetches all accounts from TradingView broker panel via CDP
- *     - syncAuto()        — Auto-picks source (TV if reachable, else cache)
- *     - mergeIntoPortfolio() — Merges TV positions into portfolio.json format (preserves thesis/pillar/price)
+ *     - syncAuto()        — Auto-picks source (TV if reachable, else the stored positions)
+ *     - storedPositionsResult() — The stored positions and when they were last synced
+ *     - mergeIntoPortfolio() — Merges TV positions into the stored holdings shape (preserves thesis/pillar/price)
  */
 
 import { spawn } from 'child_process';
 import path from 'path';
 import net from 'net';
-import fs from 'fs';
 import { normalizeTicker } from '../utils/tickerAliases';
 import { InvestmentRepository } from './InvestmentRepository';
 import { PortfolioRepository } from './PortfolioRepository';
 import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 
-const PORTFOLIO_FILE    = path.resolve(__dirname, '../../data/portfolio.json');
 const PY_SERVICES_DIR   = path.resolve(__dirname, '../../py_services');
 const FETCH_BROKER_PY   = path.join(PY_SERVICES_DIR, 'fetch_broker_data.py');
 
@@ -48,13 +47,10 @@ function isTVReachable(port = 9222): Promise<boolean> {
 /**
  * Parse the snapshot JSON out of fetch_broker_data.py --snapshot's stdout.
  *
- * Wave 3 completion: the Python script now emits the snapshot as a single-line
- * JSON blob on stdout (all progress on stderr — see emit_snapshot_json). This
- * replaced the former IPC channel where BrokerSyncService re-read
- * portfolio.json.tvSnapshot off disk after the subprocess exited. We parse the
- * LAST non-empty line as JSON so any stray earlier stdout output (e.g. a child
- * process that leaked to stdout) cannot corrupt the parse — the emitted JSON is
- * always the final line.
+ * The Python script emits the snapshot as a single-line JSON blob on stdout (all
+ * progress on stderr — see emit_snapshot_json). We parse the LAST non-empty line as
+ * JSON so any stray earlier stdout output (e.g. a child process that leaked to
+ * stdout) cannot corrupt the parse — the emitted JSON is always the final line.
  */
 export function parseSnapshotStdout(stdout: string): any {
     const lines = stdout.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
@@ -98,8 +94,7 @@ export function spawnFetchBroker(
                 reject(new Error(`fetch_broker_data.py failed (exit ${code}): ${stderr.trim().slice(0, 400)}`));
                 return;
             }
-            // stdout IPC channel: parse the snapshot straight from stdout — no
-            // portfolio.json re-read. Works even when portfolio.json is absent.
+            // stdout IPC channel: parse the snapshot straight from stdout.
             try {
                 resolve(parseSnapshotStdout(stdout));
             } catch (err: any) {
@@ -131,7 +126,7 @@ export interface TVSnapshot {
 }
 
 export interface SyncResult {
-    dataSource:    'tradingview-cdp' | 'cache';
+    dataSource:    'tradingview-cdp' | 'domain_model_sqlite' | 'empty';
     positionCount: number;
     message:       string;
     tvSnapshot?:   TVSnapshot;
@@ -148,12 +143,12 @@ export async function syncFromTV(): Promise<TVSnapshot> {
 }
 
 /**
- * Merge TV positions into existing portfolio.json format.
+ * Merge TV positions into the existing holdings (the stored positions from the database).
  * Preserves fields that TV doesn't provide (thesis, pillar, price, sector, etc.)
  * by overlaying TV's symbol/shares/book_price onto the existing records.
  *
- * Positions present in TV but not in portfolio.json are added as new entries.
- * Positions present in portfolio.json but not in TV are removed (closed positions).
+ * Positions present in TV but not in the existing holdings are added as new entries.
+ * Positions present in the existing holdings but not in TV are removed (closed positions).
  *
  * Returns { merged, added, removed, changed } for HITL diff display.
  */
@@ -174,7 +169,7 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
 
     // Aggregate TV positions by symbol (sum quantities across accounts, weighted avg fill price).
     // Symbols are normalized through the broker alias map (PSU.U.TO → PSU-U.TO) —
-    // skipping this re-creates the duplicate PSU row in portfolio.json and the thesis.
+    // skipping this re-creates the duplicate PSU row in the holdings and the thesis.
     const tvMap = new Map<string, { quantity: number; avgFillPrice: number; accountType: string; costBasis: number }>();
     for (const pos of tvSnapshot.positions) {
         if (!pos.symbol) continue;
@@ -230,7 +225,7 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
         }
     }
 
-    // Positions in portfolio.json but not in TV → closed/removed
+    // Positions in the existing holdings but not in TV → closed/removed
     for (const [symbol, item] of existingMap) {
         removed.push(symbol);
         void item;
@@ -260,16 +255,9 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
  * anything else is unrecognized and intentionally skipped, matching the
  * migration script's own account allowlist.
  *
- * Wave 3 Task 8 (final dual-write reduction): this is now the SOLE write in
- * `syncAuto()` below — the former `portfolio.json` `tvSnapshot` cache write there
- * was removed. It was safe to drop because `routes/portfolio.ts`'s
- * `/position/:ticker` and `/holdings/:ticker` routes were migrated to read
- * per-account quantities from SQLite (`account_investment`) in Task 6.
- *
- * Wave 3 completion: `fetch_broker_data.py` no longer writes `portfolio.json` at
- * all either — its `--snapshot` mode is now SQLite-only and returns the raw
- * snapshot to us over stdout (parsed by `spawnFetchBroker` via
- * `parseSnapshotStdout`), so the entire live TV sync pipeline is JSON-write-free.
+ * This is the sole write in `syncAuto()` below. `fetch_broker_data.py --snapshot`
+ * persists to SQLite itself and returns the raw snapshot over stdout (parsed by
+ * `spawnFetchBroker` via `parseSnapshotStdout`).
  */
 /**
  * Infer the live USD->CAD rate from TV's own native equity totals — replicates
@@ -367,14 +355,14 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
             }
         }
 
-        // Wave 3 Task 8: store the single broker-reported FX fact (USD->CAD),
+        // Store the single broker-reported FX fact (USD->CAD),
         // inferred from the SAME native TV totals helpers.ts::getLiveUsdCadRate()
         // uses (the same `rate` already computed above for CAD cash conversion —
         // one shared computation, not a second independent call). Only the scalar
         // rate is stored (ADR-030 addendum), never a CAD total.
         if (rate !== null) portfolioRepo.upsertExchangeRate(rate, now);
 
-        // Wave 3 Task 8 (tvSnapshot closure): store the broker's own last-reported
+        // Store the broker's own last-reported
         // portfolio total for verify_portfolio_total.py's reconciliation audit.
         // 'tv_authoritative' matches the totalSource fetch_broker_data.py stamps.
         const brokerTotal = computeBrokerReportedTotalFromSnapshot(snapshot);
@@ -388,8 +376,8 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
 }
 
 /**
- * Auto-pick source and sync portfolio.json.
- * Priority: TV CDP → cache.
+ * Auto-pick source and sync domain_model.sqlite.
+ * Priority: TV CDP → the positions already stored in SQLite.
  */
 export async function syncAuto(): Promise<SyncResult> {
     const tvReachable = await isTVReachable();
@@ -399,13 +387,7 @@ export async function syncAuto(): Promise<SyncResult> {
             const snapshot = await syncFromTV();
             const posCount = snapshot.positions?.length ?? 0;
             if (posCount > 0) {
-                // Wave 3 Task 8 (final dual-write reduction): the raw tvSnapshot is
-                // persisted to the domain model (SQLite) via persistSnapshotToDb —
-                // reading the same in-memory `snapshot` object, no portfolio.json
-                // read/merge/write. The former portfolio.json tvSnapshot cache write
-                // here was redundant (fetch_broker_data.py already wrote it during
-                // syncFromTV) and its read-side consumers (/position, /holdings) were
-                // migrated to SQLite in Task 6, so this JSON write was removed.
+                // The raw tvSnapshot is persisted to the domain model (SQLite) via persistSnapshotToDb.
                 try {
                     persistSnapshotToDb(snapshot);
                 } catch (dbErr: any) {
@@ -424,16 +406,37 @@ export async function syncAuto(): Promise<SyncResult> {
         }
     }
 
-    const rawExisting = fs.existsSync(PORTFOLIO_FILE)
-        ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'))
-        : [];
-    const existing = Array.isArray(rawExisting) ? rawExisting : (rawExisting.holdings ?? []);
+    return storedPositionsResult(tvReachable);
+}
+
+/**
+ * The positions already stored in domain_model.sqlite, for when TradingView cannot supply a fresh
+ * snapshot. Reports when they were last synced; an empty database is the explicit state 'empty'.
+ */
+export function storedPositionsResult(tvReachable: boolean, dbPath: string = DOMAIN_MODEL_DB_FILE): SyncResult {
+    const repo = new PortfolioRepository(dbPath);
+    let positionCount: number;
+    let lastSyncedAt: string | null;
+    try {
+        positionCount = repo.listPositionsBySymbol().filter(p => p.symbol !== 'CASH_USD' && p.symbol !== 'USD_CASH').length;
+        lastSyncedAt = repo.getLastSyncedAt();
+    } finally {
+        repo.close();
+    }
+    const why = tvReachable
+        ? 'TradingView connected but returned no positions'
+        : 'TradingView not reachable';
+    if (lastSyncedAt == null) {
+        return {
+            dataSource:    'empty',
+            positionCount: 0,
+            message:       `${why}. No positions have been synced into domain_model.sqlite yet.`,
+        };
+    }
     return {
-        dataSource:    'cache',
-        positionCount: existing.length,
-        message:       tvReachable 
-            ? 'TradingView connected but returned no positions — returning cached portfolio.'
-            : 'TradingView not reachable — returning cached portfolio.',
+        dataSource:    'domain_model_sqlite',
+        positionCount,
+        message:       `${why} — returning the stored positions, last synced ${lastSyncedAt}.`,
     };
 }
 

@@ -60,7 +60,7 @@ export default function Sidebar() {
             setSyncFeedback('Failed');
         } finally {
             // Always broadcast so pages refresh from the latest data — domain_model.sqlite
-            // is the primary source; portfolio.json is only a manual-edit fallback
+            // is the only source
             window.dispatchEvent(new CustomEvent('portfolio-synced'));
             setIsSyncing(false);
             setTimeout(() => setSyncFeedback(null), 3000);

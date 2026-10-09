@@ -57,6 +57,15 @@ describe('routes/portfolio.ts SQLite-backed read helpers (Wave 3 Task 6)', () =>
         portfolioRepo.close();
     }
 
+    it('getPositionPriceFromDb is read-only: an unknown ticker returns null and creates no investment row', () => {
+        seed();
+        expect(getPositionPriceFromDb('ZZZZ', dbPath)).to.equal(null);
+        const investmentRepo = new InvestmentRepository(dbPath);
+        const row = investmentRepo.getInvestment('ZZZZ');
+        investmentRepo.close();
+        expect(row == null, 'GET /position/:ticker must not insert a row for a ticker it does not know').to.equal(true);
+    });
+
     it('getPortfolioTotalUsdFromDb returns null on an empty db', () => {
         // Touch the file so ensureSchema runs, but write nothing.
         const repo = new PortfolioRepository(dbPath);

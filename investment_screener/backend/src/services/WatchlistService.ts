@@ -19,13 +19,9 @@
  *   - removeFromWatchlist(ticker: string) - Deletes a ticker from the list
  *
  * Key Input Dependencies:
- *   - investment_screener/backend/data/domain_model.sqlite (Wave 2 Task 10/11 read-path
- *     cutover: getWatchlist() now reads `investment.is_watchlisted` /
- *     `investment.watchlist_added_at` via InvestmentRepository.listWatchlisted()
- *     instead of watchlist.json. Verified byte-identical ticker set and addedAt
- *     timestamps against watchlist.json before the cutover — see
- *     InvestmentRepository.ts's module docstring. watchlist.json itself is left
- *     untouched on disk, unmodified and unread by this service now.)
+ *   - investment_screener/backend/data/domain_model.sqlite (getWatchlist() reads
+ *     `investment.is_watchlisted` / `investment.watchlist_added_at` via
+ *     InvestmentRepository.listWatchlisted())
  *
  * Key Output Dependencies:
  *   - investment_screener/backend/data/domain_model.sqlite (Wave 2 Task 9.4 producer

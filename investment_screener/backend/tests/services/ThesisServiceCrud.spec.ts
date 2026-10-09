@@ -6,6 +6,7 @@ import { ThesisService } from '../../src/services/ThesisService';
 import { InvestmentRepository } from '../../src/services/InvestmentRepository';
 import { PriceLevelRepository } from '../../src/services/PriceLevelRepository';
 import { PortfolioChangeLogRepository } from '../../src/services/PortfolioChangeLogRepository';
+import { ThesisBreakerRepository } from '../../src/services/ThesisBreakerRepository';
 import { ThesisSchema, PriceTierSchema } from '../../src/utils/zod-schemas';
 
 /**
@@ -51,6 +52,28 @@ describe('ThesisService CRUD (Wave 8 SQLite cutover)', () => {
     });
 
     describe('getThesis', () => {
+        it('carries each holding\'s stored thesis breakers and validates them', async () => {
+            const investmentRepo = new InvestmentRepository(dbPath);
+            investmentRepo.updateThesisFields('NVDA', { targetWeight: 100 });
+            investmentRepo.close();
+            const breakers = new ThesisBreakerRepository(dbPath);
+            breakers.upsertBreaker('NVDA', { id: 'rsi-low', type: 'auto', metric: 'rsi', operator: '<', threshold: 30, horizon: 3 });
+            breakers.close();
+
+            const thesis = await service.getThesis('target-portfolio');
+            const nvda = thesis!.holdings.find(h => h.ticker === 'NVDA')!;
+            expect(nvda.thesisBreakers).to.deep.equal([
+                { id: 'rsi-low', type: 'auto', metric: 'rsi', operator: '<', threshold: 30, horizon: 3 },
+            ]);
+            const parsed = ThesisSchema.safeParse(thesis);
+            expect(parsed.success, JSON.stringify((parsed as any).error?.issues)).to.equal(true);
+        });
+
+        it('gives a holding with no breakers an empty list', async () => {
+            const thesis = await service.getThesis('target-portfolio');
+            expect(thesis!.holdings.find(h => h.ticker === 'NVDA')!.thesisBreakers).to.deep.equal([]);
+        });
+
         it('validates persisted legacy price levels without inventing missing metadata', async () => {
             const investmentRepo = new InvestmentRepository(dbPath);
             investmentRepo.updateThesisFields('NVDA', { targetWeight: 100 });

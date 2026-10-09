@@ -2,8 +2,8 @@
  * zod-schemas.ts - Shared Zod validation schemas and type inferences.
  * 
  * Purpose:
- *   Validates and parses JSON files (e.g. portfolio.json, target-portfolio.json,
- *   projections, account policy, health checks) to ensure structure integrity
+ *   Validates and parses JSON payloads (e.g. thesis, projections,
+ *   account policy, health checks) to ensure structure integrity
  *   across frontend, backend, and agent plugins.
  * 
  * Key Input Dependencies:
@@ -77,7 +77,7 @@ export const PriceLevelsSchema = z.object({
     stopLoss: StopLossSchema.optional(),
 }).optional();
 
-// Denormalized snapshot written into portfolio.json by update_price_levels.py.
+// Price-level snapshot (next buy/sell tier and proximity flags) computed by update_price_levels.py.
 // Refreshed on every /tv-portfolio-sync. Read-only — always derived from priceLevels.
 export const PriceLevelSnapshotSchema = z.object({
     nextBuyTier: PriceTierSchema.nullable().optional(),
@@ -177,6 +177,22 @@ export type Projection = z.infer<typeof ProjectionSchema>;
 
 // === THESIS SCHEMAS ===
 
+// A thesis breaker definition (thesis_breaker table): auto breakers watch a metric against a
+// threshold for `horizon` runs; manual breakers carry a hand-set status reviewed on a cadence.
+export const ThesisBreakerSchema = z.object({
+    id: z.string().min(1),
+    type: z.enum(['auto', 'manual']),
+    metric: z.string().optional(),
+    operator: z.enum(['<', '<=', '>', '>=', '==', 'in']),
+    threshold: z.any().optional(),
+    horizon: z.any().optional(),
+    note: z.string().optional(),
+    status: z.enum(['OK', 'WATCHING', 'TRIGGERED']).optional(),
+    statusSetAt: z.string().optional(),
+    reviewCadenceDays: z.number().optional(),
+});
+export type ThesisBreaker = z.infer<typeof ThesisBreakerSchema>;
+
 export const ThesisHoldingSchema = z.object({
     ticker: z.string().regex(tickerRegex),
     name: z.string().max(100),
@@ -184,14 +200,13 @@ export const ThesisHoldingSchema = z.object({
     targetWeight: z.number().min(0).max(100),
     targetEntryPrice: z.number().positive().nullable().optional(),
     thesisForInclusion: z.string().max(2000).optional(),
-    thesisBreakers: z.array(z.string().max(500)).max(5).optional(),
+    thesisBreakers: z.array(ThesisBreakerSchema).optional(),
     role: z.enum(ACCEPTED_LIFECYCLE_STATUSES).default('watchlist'),
     // Structured tiered price levels — written by update_price_levels.py
     priceLevels: PriceLevelsSchema,
 }).passthrough(); // allow agentRationale, shares, subStrategyId and other free fields
 
-// Live portfolio holding schema (portfolio.json) — broker-synced snapshot.
-// priceLevelSnapshot is denormalized from target-portfolio.json on every sync.
+// Live portfolio holding schema — a broker-synced position as served by the portfolio routes.
 export const PortfolioHoldingSchema = z.object({
     symbol: z.string().regex(tickerRegex),
     shares: z.number().nonnegative(),
@@ -210,7 +225,6 @@ export const ThesisPillarSchema = z.object({
     name: z.string().max(100),
     targetWeight: z.number().min(0).max(100),
     description: z.string().max(2000).optional(),
-    thesisBreakers: z.array(z.string().max(500)).max(5).optional(),
 });
 
 export const ThesisSchema = z.object({
@@ -235,7 +249,7 @@ export const ThesisSchema = z.object({
 });
 
 // === ACCOUNT POLICY SCHEMA (E2 — Rebalancer v2) ===
-// account_policy.json — drift-band config, risk-budget caps, account/tax
+// Account policy (portfolio_policy table) — drift-band config, risk-budget caps, account/tax
 // placement rules. Read by both rebalancer.py (Python) and this service
 // (TypeScript, independently re-implemented, not shelled out to Python).
 

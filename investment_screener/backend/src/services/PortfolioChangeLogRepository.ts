@@ -3,10 +3,9 @@
  *
  * Purpose:
  *   TS-side counterpart to
- *   `py_services/domain_model/portfolio_change_log_repository.py` (Wave 8).
- *   Portfolio-wide version history (target-portfolio.json's former top-level
- *   `changeLog` array: {version, date, note} per entry) -- append-only, never
- *   overwrite/replace an existing entry.
+ *   `py_services/domain_model/portfolio_change_log_repository.py`.
+ *   Portfolio-wide version history ({version, date, note} per entry) -- append-only,
+ *   never overwrite/replace an existing entry.
  */
 import Database from 'better-sqlite3';
 import { ensureSchemaReady } from '../utils/schemaVersion';
