@@ -60,6 +60,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 # ── individual checks ─────────────────────────────────────────────────────────
 
 def _check_backend_build() -> dict:
+    """Check backend build."""
     result = subprocess.run(
         ["npx", "tsc", "--noEmit"],
         capture_output=True, text=True,
@@ -69,6 +70,7 @@ def _check_backend_build() -> dict:
     return {"status": "PASS" if ok else "FAIL", "detail": result.stderr.strip()[:300] or "clean"}
 
 def _check_python_scripts() -> dict:
+    """Check python scripts."""
     scripts = [
         BACKEND / "py_services/place_order.py",
         BACKEND / "py_services/fetch_financials.py",
@@ -156,6 +158,7 @@ def _check_projections(db_path: Path = DB_PATH) -> dict:
     }
 
 def _check_cdp() -> dict:
+    """Check cdp."""
     import socket
     try:
         s = socket.create_connection(("127.0.0.1", TV_CDP_PORT), timeout=0.5)
@@ -173,6 +176,7 @@ def _check_cdp() -> dict:
         return {"status": "WARN", "detail": f"port {TV_CDP_PORT} not reachable (TradingView not running — yfinance fallback active)"}
 
 def _check_api_auth() -> dict:
+    """Check api auth."""
     token_file = RUNTIME / "api-token"
     if token_file.exists():
         tok = token_file.read_text().strip()
@@ -180,6 +184,7 @@ def _check_api_auth() -> dict:
     return {"status": "WARN", "detail": "no .runtime/api-token — backend not yet started or auth disabled"}
 
 def _check_last_audit() -> dict:
+    """Check last audit."""
     audit_dir = REPO_ROOT / "plugins/tradingview/audit"
     if not audit_dir.exists():
         return {"status": "INFO", "detail": "no audit directory (no orders placed yet)"}
@@ -194,6 +199,7 @@ def _check_last_audit() -> dict:
         return {"status": "WARN", "detail": str(e)}
 
 def _check_stale_locks() -> dict:
+    """Check stale locks."""
     import glob as _glob
     locks = list(BACKEND.rglob("*.pylock")) + list(BACKEND.rglob("*.lock"))
     stale = []
@@ -227,6 +233,7 @@ STATUS_ICON = {"PASS": "✅", "WARN": "⚠️ ", "FAIL": "❌", "INFO": "ℹ️ 
 
 
 def main():
+    """Main."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true", help="Output JSON instead of human-readable")
     parser.add_argument("--quiet", action="store_true", help="No output — exit code only (0=healthy, 1=degraded)")

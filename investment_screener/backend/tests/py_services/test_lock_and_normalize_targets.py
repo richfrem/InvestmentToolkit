@@ -31,10 +31,12 @@ def _make_db(tmp_path: Path, weights: dict) -> Path:
 
 
 def _run(*args):
+    """Run."""
     return subprocess.run(["python3", str(SCRIPT_PATH), *args], capture_output=True, text=True, cwd=str(REPO_ROOT))
 
 
 def _weights(db_path: Path, symbols) -> dict:
+    """Weights."""
     conn = initialize_db(str(db_path))
     out = {s: get_investment(conn, resolve_investment(conn, s))["target_weight"] for s in symbols}
     conn.close()

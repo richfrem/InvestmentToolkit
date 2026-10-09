@@ -2,7 +2,8 @@
 """
 update_price_levels.py — Tiered buy/sell price level manager for portfolio holdings.
 
-Derives structured price tiers from DCF projections and stores them in domain_model.sqlite
+Purpose:
+  Derives structured price tiers from DCF projections and stores them in domain_model.sqlite
 (price_level_set / price_level_tier). The priceLevelSnapshot (next buy/sell tier and
 proximity flags) is computed from those tables and the stored price, never stored separately.
 

@@ -33,6 +33,7 @@ def db(tmp_path):
 
 
 def _sync(db, age_minutes):
+    """Sync."""
     conn = initialize_db(str(db))
     synced = (datetime.now(timezone.utc) - timedelta(minutes=age_minutes)).isoformat()
     upsert_account(conn, "TFSA", "TFSA", "TFSA")
@@ -41,6 +42,7 @@ def _sync(db, age_minutes):
 
 
 def _targets(db, weights):
+    """Targets."""
     conn = initialize_db(str(db))
     for symbol, weight in weights.items():
         update_investment_fields(conn, resolve_investment(conn, symbol), target_weight=weight)

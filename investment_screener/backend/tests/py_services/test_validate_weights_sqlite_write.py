@@ -33,6 +33,7 @@ def _make_db(tmp_path: Path, weights: dict) -> Path:
 
 
 def _run(*args):
+    """Run."""
     return subprocess.run(["python3", str(SCRIPT_PATH), *args], capture_output=True, text=True, cwd=str(REPO_ROOT))
 
 

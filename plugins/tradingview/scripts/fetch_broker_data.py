@@ -33,8 +33,8 @@ Usage Examples:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --compare
 
 Key Functions:
-    - fetch_tv()        - Reads all data from TradingView broker panel via CDP
-    - fetch_broker() - Reads from broker API (requires .broker_cache)
+    - fetch_tv_snapshot() - Reads every account's positions and balances from the TradingView broker panel via CDP
+    - fetch_stored_positions() - The positions stored in domain_model.sqlite, summed per symbol
     - compare_snapshots() - Diffs live TV positions against the stored positions
     - write_snapshot()  - Persists the snapshot to domain_model.sqlite (SQLite only)
     - emit_snapshot_json() - Emits the snapshot as one JSON line on stdout (Node IPC return channel)

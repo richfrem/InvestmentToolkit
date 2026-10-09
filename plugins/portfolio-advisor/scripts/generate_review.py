@@ -3,6 +3,18 @@
 generate_review.py — Bootstrap a dated PortfolioAnalysisRecommendations.md from the
 canonical template, pre-populating header metadata from live portfolio and thesis data.
 
+Purpose:
+    Fills the review header (totals, cash, EXIT and INITIATE counts, thesis version) from
+    domain_model.sqlite and leaves every {{PLACEHOLDER}} needing analysis for the agent.
+    Fails with an error when the database is missing or holds no thesis holdings.
+
+Layer:
+    Plugin script (portfolio-advisor)
+
+Key Input Dependencies:
+    - investment_screener/backend/data/domain_model.sqlite (holdings, prices, targets, change log)
+    - plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md
+
 Usage (run from repo root):
     python3 plugins/portfolio-advisor/scripts/generate_review.py [--date YYYY-MM-DD] [--dry-run]
 
