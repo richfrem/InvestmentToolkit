@@ -35,8 +35,7 @@ Key Functions:
     - sync_portfolio() - Refreshes stored positions after fill (Express API, else direct CDP snapshot)
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (PLACE_ORDER_PORTFOLIO_PATH overrides it; its modification time drives the data-freshness gate)
-    - investment_screener/backend/data/domain_model.sqlite (last-synced holdings and prices, via portfolio_io)
+    - investment_screener/backend/data/domain_model.sqlite (PLACE_ORDER_DB_PATH overrides it): last-synced holdings and prices via portfolio_io; the newest account_investment.last_synced_at drives the data-freshness gate
 """
 
 import sys
@@ -96,9 +95,9 @@ from ticker_aliases import normalize_ticker  # noqa: E402
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
-PORTFOLIO_PATH = os.environ.get(
-    "PLACE_ORDER_PORTFOLIO_PATH",
-    os.path.join(DATA_DIR, "portfolio.json"),
+DB_PATH = os.environ.get(
+    "PLACE_ORDER_DB_PATH",
+    os.path.join(DATA_DIR, "domain_model.sqlite"),
 )
 DATA_FRESHNESS_LIMIT_MINUTES = 60
 
@@ -178,16 +177,32 @@ def _check_market_hours() -> dict | None:
 
 
 def _check_data_freshness(ack_stale: bool = False) -> dict | None:
-    """Returns a freshness warning dict if portfolio.json is stale, else None.
-    If ack_stale is True, logs a warning but does not block."""
-    if not os.path.exists(PORTFOLIO_PATH):
-        return {"stale": True, "reason": "portfolio.json not found — run /tv-portfolio-sync first"}
-    import time as _time
-    age_minutes = (_time.time() - os.path.getmtime(PORTFOLIO_PATH)) / 60
+    """Returns a freshness warning dict if the synced positions are stale or missing, else None.
+
+    Age is the newest ``account_investment.last_synced_at`` in domain_model.sqlite, the same
+    freshness signal every other portfolio number uses. If ack_stale is True the caller
+    does not block on the warning.
+    """
+    sync_hint = "Run /tv-portfolio-sync"
+    if not os.path.exists(DB_PATH):
+        return {"stale": True, "reason": f"domain_model.sqlite not found - {sync_hint} first"}
+    from domain_model.db_client import initialize_db
+    from domain_model.portfolio_repository import get_last_synced_at
+    conn = initialize_db(DB_PATH)
+    try:
+        last_synced = get_last_synced_at(conn)
+    finally:
+        conn.close()
+    if last_synced is None:
+        return {"stale": True, "reason": f"no synced positions in domain_model.sqlite - {sync_hint} first"}
+    synced_at = datetime.fromisoformat(last_synced)
+    if synced_at.tzinfo is None:
+        synced_at = synced_at.replace(tzinfo=timezone.utc)
+    age_minutes = (datetime.now(timezone.utc) - synced_at).total_seconds() / 60
     if age_minutes > DATA_FRESHNESS_LIMIT_MINUTES and not ack_stale:
         return {"stale": True, "age_minutes": round(age_minutes, 1),
-                "reason": f"portfolio.json is {age_minutes:.0f} min old (limit {DATA_FRESHNESS_LIMIT_MINUTES} min). "
-                          "Run /tv-portfolio-sync or pass --ack-stale to override."}
+                "reason": f"positions last synced {age_minutes:.0f} min ago (limit {DATA_FRESHNESS_LIMIT_MINUTES} min). "
+                          f"{sync_hint} or pass --ack-stale to override."}
     return None
 
 # ── Node.js runner ───────────────────────────────────────────────────────────
@@ -346,7 +361,7 @@ def sync_portfolio() -> bool:
         with urllib.request.urlopen(req, timeout=30) as response:
             res_data = json.loads(response.read().decode())
             if res_data.get("success") and res_data.get("tvAvailable"):
-                print("✓ Sync complete: portfolio.json updated via Express API.")
+                print("✓ Sync complete: positions updated in domain_model.sqlite via Express API.")
                 return True
     except Exception as e:
         print(f"⚠️  Express API unavailable ({e}). Falling back to direct CDP snapshot...")
@@ -489,7 +504,7 @@ def main():
             sys.exit(1)
 
         # ── data freshness gate ──────────────────────────────────────────
-        # Warn if portfolio.json was not updated recently (stale prices).
+        # Warn if positions were not synced recently (stale prices).
         freshness = _check_data_freshness(ack_stale=args.ack_stale)
         card["stale"] = False
         if freshness and freshness.get("stale"):
@@ -514,7 +529,7 @@ def main():
             order_price = args.limit_price
         else:
             try:
-                _state = load_portfolio_state(Path(PORTFOLIO_PATH))
+                _state = load_portfolio_state(None, db_path=DB_PATH)
                 order_price = _state["prices"].get(normalize_ticker(args.ticker.upper()), 0.0)
             except Exception:
                 order_price = 0.0
@@ -642,9 +657,9 @@ def main():
         }
         print(json.dumps(output, indent=2))
 
-        print("\n⏳ Syncing portfolio.json...")
+        print("\n⏳ Syncing positions...")
         if sync_portfolio():
-            print("✓ portfolio.json updated.")
+            print("✓ Positions updated.")
 
             # ── post-trade validation (Task 5E-7) ────────────────────────
             # --ticker/--action/--shares may be omitted on a --submit call

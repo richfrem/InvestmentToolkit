@@ -19,7 +19,7 @@ Exit code contract:
   1  — generic error (Node/CDP failure, missing required arg)
   2  — argparse error (missing required argument)
   3  — order exceeds max-order-value cap
-  4  — portfolio.json stale (DATA_STALE_BLOCKED, before any CDP call)
+  4  — synced positions stale or missing in domain_model.sqlite (DATA_STALE_BLOCKED, before any CDP call)
   5  — market closed (MARKET_CLOSED_BLOCKED)
   6  — risk gate(s) failed (RISK_GATES_BLOCKED, unless --override-risk-gates)
 """
@@ -106,24 +106,33 @@ def test_limit_order_missing_limit_price():
 # ── Freshness gate tests (no TV required) ─────────────────────────────────────
 
 def _make_portfolio(tmp_path: Path, age_minutes: float) -> Path:
-    """Create a minimal portfolio.json with an mtime offset in minutes."""
-    p = tmp_path / "portfolio.json"
-    p.write_text(json.dumps([{"symbol": "AAPL", "shares": 10, "price": 150}]))
-    if age_minutes > 0:
-        old_time = time.time() - age_minutes * 60
-        os.utime(str(p), (old_time, old_time))
-    return p
+    """Create a domain_model.sqlite whose newest position sync is ``age_minutes`` old."""
+    from datetime import datetime, timedelta, timezone
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from domain_model.account_investment_repository import upsert_account_investment
+    from domain_model.account_repository import upsert_account
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment
+
+    db = tmp_path / "domain_model.sqlite"
+    conn = initialize_db(str(db))
+    synced = (datetime.now(timezone.utc) - timedelta(minutes=age_minutes)).isoformat()
+    upsert_account(conn, "TFSA", "TFSA", "TFSA")
+    investment_id = resolve_investment(conn, "AAPL")
+    upsert_account_investment(conn, "TFSA", investment_id, 10, 150.0, 1500.0, "USD", synced)
+    conn.close()
+    return db
 
 
 def test_stale_portfolio_exits_4(tmp_path):
-    """A portfolio.json older than 60 minutes must exit 4 BEFORE any CDP call.
+    """Positions last synced more than 60 minutes ago must exit 4 BEFORE any CDP call.
     TV is NOT required — this gate fires before any Node.js invocation."""
     portfolio = _make_portfolio(tmp_path, age_minutes=120)
     r = _run(
         "--ticker", "AAPL", "--action", "buy", "--shares", "1",
         "--order-type", "market", "--account", "tfsa", "--preflight",
         env_overrides={
-            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_DB_PATH": str(portfolio),
             "PLACE_ORDER_NOW_OVERRIDE": IN_HOURS_NOW,
         },
     )
@@ -137,6 +146,50 @@ def test_stale_portfolio_exits_4(tmp_path):
     )
 
 
+def test_missing_database_exits_4(tmp_path):
+    """No database file means no synced positions: exit 4 before any CDP call."""
+    r = _run(
+        "--ticker", "AAPL", "--action", "buy", "--shares", "1",
+        "--order-type", "market", "--account", "tfsa", "--preflight",
+        env_overrides={
+            "PLACE_ORDER_DB_PATH": str(tmp_path / "absent.sqlite"),
+            "PLACE_ORDER_NOW_OVERRIDE": IN_HOURS_NOW,
+        },
+    )
+    assert r.returncode == 4, f"got {r.returncode}\n{r.stdout[:300]}\n{r.stderr[:300]}"
+    assert "tv-portfolio-sync" in r.stdout + r.stderr
+
+
+def test_database_with_no_synced_positions_exits_4(tmp_path):
+    """An initialised database with an empty account_investment table is stale, not fresh."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from domain_model.db_client import initialize_db
+    db = tmp_path / "empty.sqlite"
+    initialize_db(str(db)).close()
+    r = _run(
+        "--ticker", "AAPL", "--action", "buy", "--shares", "1",
+        "--order-type", "market", "--account", "tfsa", "--preflight",
+        env_overrides={"PLACE_ORDER_DB_PATH": str(db), "PLACE_ORDER_NOW_OVERRIDE": IN_HOURS_NOW},
+    )
+    assert r.returncode == 4, f"got {r.returncode}\n{r.stdout[:300]}\n{r.stderr[:300]}"
+
+
+def test_freshness_check_reads_last_synced_at_not_file_mtime(tmp_path):
+    """Age comes from the newest last_synced_at; touching the file does not freshen it."""
+    import importlib.util
+    db = _make_portfolio(tmp_path, age_minutes=120)
+    os.utime(str(db), None)  # file mtime = now
+    spec = importlib.util.spec_from_file_location("place_order_freshness_probe", PLACE_ORDER)
+    mod = importlib.util.module_from_spec(spec)
+    os.environ["PLACE_ORDER_DB_PATH"] = str(db)
+    try:
+        spec.loader.exec_module(mod)
+        stale = mod._check_data_freshness(ack_stale=False)
+    finally:
+        os.environ.pop("PLACE_ORDER_DB_PATH", None)
+    assert stale and stale["stale"] and 110 < stale["age_minutes"] < 130
+
+
 def test_stale_with_ack_stale_proceeds(tmp_path):
     """--ack-stale must bypass the stale gate (not exit 4).
     May still exit non-zero if TV is absent, but must not exit 4."""
@@ -145,7 +198,7 @@ def test_stale_with_ack_stale_proceeds(tmp_path):
         "--ticker", "AAPL", "--action", "buy", "--shares", "1",
         "--order-type", "market", "--account", "tfsa", "--preflight",
         "--ack-stale",
-        env_overrides={"PLACE_ORDER_PORTFOLIO_PATH": str(portfolio)},
+        env_overrides={"PLACE_ORDER_DB_PATH": str(portfolio)},
     )
     assert r.returncode != 4, (
         f"Expected --ack-stale to bypass stale gate (not exit 4), got {r.returncode}.\n"
@@ -164,7 +217,7 @@ def test_market_closed_exits_5_and_ack_closed_bypasses(tmp_path):
         "--ticker", "AAPL", "--action", "buy", "--shares", "1",
         "--order-type", "market", "--account", "tfsa", "--preflight",
         env_overrides={
-            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_DB_PATH": str(portfolio),
             "PLACE_ORDER_NOW_OVERRIDE": saturday_utc,
         },
     )
@@ -182,7 +235,7 @@ def test_market_closed_exits_5_and_ack_closed_bypasses(tmp_path):
         "--order-type", "market", "--account", "tfsa", "--preflight",
         "--ack-closed",
         env_overrides={
-            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_DB_PATH": str(portfolio),
             "PLACE_ORDER_NOW_OVERRIDE": saturday_utc,
         },
     )
@@ -204,7 +257,7 @@ def test_tradingview_connection_and_broker_login(tmp_path):
     r = _run(
         "--ticker", "AAPL", "--action", "buy", "--shares", "1",
         "--order-type", "market", "--account", "tfsa", "--preflight",
-        env_overrides={"PLACE_ORDER_PORTFOLIO_PATH": str(portfolio)},
+        env_overrides={"PLACE_ORDER_DB_PATH": str(portfolio)},
     )
     combined = r.stdout + r.stderr
     assert "No broker connected" not in combined, (
@@ -221,7 +274,7 @@ def test_fresh_portfolio_exits_0(tmp_path):
         "--ticker", "AAPL", "--action", "buy", "--shares", "1",
         "--order-type", "market", "--account", "tfsa", "--preflight",
         env_overrides={
-            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_DB_PATH": str(portfolio),
             "PLACE_ORDER_NOW_OVERRIDE": IN_HOURS_NOW,
         },
     )
@@ -246,7 +299,7 @@ def test_size_cap_exits_3(tmp_path):
         "--account", "tfsa", "--preflight",
         "--max-order-value", "100",   # $100 cap — $10,000 order will exceed it
         env_overrides={
-            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_DB_PATH": str(portfolio),
             "PLACE_ORDER_NOW_OVERRIDE": IN_HOURS_NOW,
         },
     )
@@ -272,12 +325,8 @@ def test_size_cap_exits_3(tmp_path):
 # check_risk_gates()'s five composed gate functions.
 
 def _make_fresh_portfolio(tmp_path: Path) -> Path:
-    p = tmp_path / "portfolio.json"
-    p.write_text(json.dumps({
-        "holdings": [{"symbol": "AAPL", "shares": 10, "price": 150.0}],
-        "totals": {"totalUSD": 1500.0, "cashUSD": 10_000.0, "exchangeRate": 1.38},
-    }))
-    return p
+    """A database whose positions were synced just now (passes the freshness gate)."""
+    return _make_portfolio(tmp_path, age_minutes=0)
 
 
 def _import_fresh_place_order_module(tmp_path: Path, module_name: str):
@@ -313,7 +362,7 @@ def test_risk_gates_blocked_exits_6_and_logs_blocked(tmp_path, monkeypatch, caps
     """check_risk_gates() (monkeypatched) returning passed=False must exit 6
     with RISK_GATES_BLOCKED in the output, and log a BLOCKED decision."""
     portfolio = _make_fresh_portfolio(tmp_path)
-    monkeypatch.setenv("PLACE_ORDER_PORTFOLIO_PATH", str(portfolio))
+    monkeypatch.setenv("PLACE_ORDER_DB_PATH", str(portfolio))
     monkeypatch.setenv("PLACE_ORDER_NOW_OVERRIDE", IN_HOURS_NOW)
 
     mod = _import_fresh_place_order_module(tmp_path, "place_order_test_blocked_output")
@@ -353,7 +402,7 @@ def test_override_risk_gates_bypasses_block_and_logs_overridden(tmp_path, monkey
     """--override-risk-gates must bypass the exit-6 block (not exit 6) and
     log an OVERRIDDEN decision instead of BLOCKED."""
     portfolio = _make_fresh_portfolio(tmp_path)
-    monkeypatch.setenv("PLACE_ORDER_PORTFOLIO_PATH", str(portfolio))
+    monkeypatch.setenv("PLACE_ORDER_DB_PATH", str(portfolio))
     monkeypatch.setenv("PLACE_ORDER_NOW_OVERRIDE", IN_HOURS_NOW)
 
     mod = _import_fresh_place_order_module(tmp_path, "place_order_test_override")
@@ -395,7 +444,7 @@ def test_passing_risk_gates_does_not_block_or_log(tmp_path, monkeypatch, capsys)
     decision point; the real audit record for an executed order belongs at
     --submit time)."""
     portfolio = _make_fresh_portfolio(tmp_path)
-    monkeypatch.setenv("PLACE_ORDER_PORTFOLIO_PATH", str(portfolio))
+    monkeypatch.setenv("PLACE_ORDER_DB_PATH", str(portfolio))
     monkeypatch.setenv("PLACE_ORDER_NOW_OVERRIDE", IN_HOURS_NOW)
 
     mod = _import_fresh_place_order_module(tmp_path, "place_order_test_passing")

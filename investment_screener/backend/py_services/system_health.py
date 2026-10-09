@@ -12,9 +12,6 @@ Usage:
     python3 investment_screener/backend/py_services/system_health.py --json
     python3 investment_screener/backend/py_services/system_health.py --quiet   # exit code only
 
-Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Diagnostics metrics check)
-
 Layer:
     Backend / Python Services
 
@@ -26,7 +23,7 @@ Usage Examples:
 Key Functions (Index):
     - _check_backend_build()
     - _check_python_scripts()
-    - _check_portfolio_file()
+    - _check_synced_positions()
     - _check_target_weights()
     - _check_projections()
     - _check_cdp()
@@ -36,10 +33,11 @@ Key Functions (Index):
     - main()
 
 Key Input Dependencies:
-    None
+    - investment_screener/backend/data/domain_model.sqlite (positions sync time, target weights, projections)
+    - tsc / node (backend build check), TradingView CDP port (optional)
 
 Key Output Dependencies:
-    None
+    - Report on stdout (or JSON); exit status 0 healthy, 1 degraded or blocked
 """
 import argparse
 import json
@@ -52,9 +50,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BACKEND   = REPO_ROOT / "investment_screener/backend"
 DATA      = BACKEND / "data"
+DB_PATH   = DATA / "domain_model.sqlite"
 SCRIPTS   = REPO_ROOT / "plugins/portfolio-advisor/scripts"
 RUNTIME   = REPO_ROOT / ".runtime"
 TV_CDP_PORT = int(os.environ.get("TV_CDP_PORT", "9222"))
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 # ── individual checks ─────────────────────────────────────────────────────────
 
@@ -85,49 +86,74 @@ def _check_python_scripts() -> dict:
     ok = len(failures) == 0
     return {"status": "PASS" if ok else "FAIL", "detail": f"{len(scripts)} scripts checked" + (f", failed: {failures}" if failures else "")}
 
-def _check_portfolio_file() -> dict:
-    p = DATA / "portfolio.json"
-    if not p.exists():
-        return {"status": "FAIL", "detail": "portfolio.json not found"}
-    age_min = (time.time() - p.stat().st_mtime) / 60
+def _missing_db(db_path: Path) -> dict | None:
+    """A FAIL result when the database file is absent (a health check must not create it)."""
+    if not Path(db_path).exists():
+        return {"status": "FAIL", "detail": f"{Path(db_path).name} not found - start the app once to create it"}
+    return None
+
+
+def _check_synced_positions(db_path: Path = DB_PATH) -> dict:
+    """Age of the newest broker position sync (``account_investment.last_synced_at``)."""
+    missing = _missing_db(db_path)
+    if missing:
+        return missing
+    from datetime import datetime, timezone
+    from domain_model.db_client import initialize_db
+    from domain_model.portfolio_repository import get_last_synced_at
+    conn = initialize_db(str(db_path))
+    try:
+        last = get_last_synced_at(conn)
+    finally:
+        conn.close()
+    if last is None:
+        return {"status": "FAIL", "detail": "no synced positions - run /tv-portfolio-sync"}
+    synced = datetime.fromisoformat(last)
+    if synced.tzinfo is None:
+        synced = synced.replace(tzinfo=timezone.utc)
+    age_min = (datetime.now(timezone.utc) - synced).total_seconds() / 60
     fresh = age_min <= 60
     return {
         "status": "PASS" if fresh else "WARN",
-        "detail": f"age {age_min:.0f} min {'(fresh)' if fresh else '(stale — run /tv-portfolio-sync)'}",
+        "detail": f"age {age_min:.0f} min {'(fresh)' if fresh else '(stale - run /tv-portfolio-sync)'}",
         "age_minutes": round(age_min, 1),
     }
 
-def _check_target_weights() -> dict:
-    p = DATA / "theses/target-portfolio.json"
-    if not p.exists():
-        return {"status": "FAIL", "detail": "target-portfolio.json not found"}
-    try:
-        data = json.loads(p.read_text())
-        total = sum(h.get("targetWeight", 0) or 0 for h in data.get("holdings", []))
-        ok = abs(total - 100.0) <= 0.5
-        return {"status": "PASS" if ok else "FAIL", "detail": f"weights sum to {total:.4f}%"}
-    except Exception as e:
-        return {"status": "FAIL", "detail": str(e)}
 
-def _check_projections() -> dict:
-    proj_dir = DATA / "projections"
-    thesis_p = DATA / "theses/target-portfolio.json"
-    if not proj_dir.exists():
-        return {"status": "WARN", "detail": "projections/ directory not found"}
+def _check_target_weights(db_path: Path = DB_PATH) -> dict:
+    """Target weights in ``investment.target_weight`` must sum to 100 (within 0.5)."""
+    missing = _missing_db(db_path)
+    if missing:
+        return missing
+    from portfolio_io import load_target_weights
+    weights = load_target_weights(str(db_path))
+    if not weights:
+        return {"status": "FAIL", "detail": "no target weights set"}
+    total = sum(weights.values())
+    ok = abs(total - 100.0) <= 0.5
+    return {"status": "PASS" if ok else "FAIL", "detail": f"weights sum to {total:.4f}%"}
+
+
+def _check_projections(db_path: Path = DB_PATH) -> dict:
+    """Every thesis holding should have at least one saved ``projection_version``."""
+    missing_db = _missing_db(db_path)
+    if missing_db:
+        return missing_db
+    from domain_model.db_client import initialize_db
+    from domain_model.projection_repository import list_symbols_with_projections
+    from portfolio_io import load_thesis_holdings
+    tickers = [h["ticker"] for h in load_thesis_holdings(str(db_path))]
+    conn = initialize_db(str(db_path))
     try:
-        thesis = json.loads(thesis_p.read_text()) if thesis_p.exists() else {}
-        tickers = [h["ticker"] for h in thesis.get("holdings", []) if h.get("ticker")]
-        total = len(tickers)
-        has_proj = [t for t in tickers if (proj_dir / f"{t}.json").exists()]
-        missing = [t for t in tickers if t not in has_proj]
-        ok = len(missing) == 0
-        return {
-            "status": "PASS" if ok else "WARN",
-            "detail": f"{len(has_proj)}/{total} holdings have projections",
-            "missing": missing[:10],
-        }
-    except Exception as e:
-        return {"status": "FAIL", "detail": str(e)}
+        with_projection = set(list_symbols_with_projections(conn))
+    finally:
+        conn.close()
+    missing = [t for t in tickers if t not in with_projection]
+    return {
+        "status": "PASS" if not missing else "WARN",
+        "detail": f"{len(tickers) - len(missing)}/{len(tickers)} holdings have projections",
+        "missing": missing[:10],
+    }
 
 def _check_cdp() -> dict:
     import socket
@@ -188,7 +214,7 @@ def _check_stale_locks() -> dict:
 CHECKS = [
     ("Backend TS build",      _check_backend_build),
     ("Python scripts syntax", _check_python_scripts),
-    ("portfolio.json",        _check_portfolio_file),
+    ("Synced positions",      _check_synced_positions),
     ("Target weights sum",    _check_target_weights),
     ("DCF projections",       _check_projections),
     ("CDP / TradingView",     _check_cdp),
