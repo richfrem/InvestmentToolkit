@@ -164,7 +164,7 @@ def main() -> None:
     parser.add_argument("--write", action="store_true",
                         help="Persist changes to projection JSON")
     parser.add_argument("--update-thesis", action="store_true",
-                        help="Append catalyst note to agentRationale in target-portfolio.json")
+                        help="Append the catalyst note to the holding's agent rationale in domain_model.sqlite")
     parser.add_argument("--record-sweep", action="store_true",
                         help="Stamp lastGrokSweep date only — no weight shifts (use when sweep "
                              "finds no material catalyst)")

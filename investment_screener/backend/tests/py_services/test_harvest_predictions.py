@@ -290,12 +290,29 @@ class TestBuildBreakerForecastClaims:
 
 
 class TestHarvestRebalanceAndBreakerClaims:
+    @staticmethod
+    def _db(tmp_path, with_triggered_breaker=False):
+        """A temporary database, optionally holding one TRIGGERED breaker on NBIS evaluated 2026-07-10."""
+        from domain_model.db_client import initialize_db
+        from domain_model.investment_repository import resolve_investment, update_investment_fields
+        from domain_model.thesis_breaker_repository import replace_breaker_state, upsert_breaker
+        db_path = tmp_path / "domain_model.sqlite"
+        conn = initialize_db(str(db_path))
+        if with_triggered_breaker:
+            update_investment_fields(conn, resolve_investment(conn, "NBIS"), target_weight=5.0)
+            upsert_breaker(conn, "NBIS", {"id": "rsi_breach", "type": "auto", "metric": "rsi", "operator": "<", "threshold": 30, "horizon": 3})
+            replace_breaker_state(conn, {"NBIS": {"rsi_breach": {
+                "type": "auto", "currentValue": 20.0, "conditionMet": True, "currentStreak": 3,
+                "lastEvaluatedAt": "2026-07-10T14:00:00Z", "status": "TRIGGERED"}}})
+        conn.close()
+        return db_path
+
     @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
-    def test_missing_rebalance_plan_file_is_not_an_error(self, _mock_prices, tmp_path):
+    def test_missing_rebalance_plan_and_no_breaker_state_is_not_an_error(self, _mock_prices, tmp_path):
+        """No plan file and no evaluated breaker state harvests nothing, without error."""
         result = harvest_rebalance_and_breaker_claims(
             rebalance_plan_path=tmp_path / "no_such_plan.json",
-            thesis_breaker_state_path=tmp_path / "no_such_state.json",
-            target_portfolio_path=tmp_path / "no_such_target.json",
+            db_path=self._db(tmp_path),
             predictions_path=tmp_path / "predictions.jsonl",
             intel_db_path=tmp_path / "intelligence.sqlite",
             jsonl_path=tmp_path / "observations.jsonl",
@@ -303,28 +320,30 @@ class TestHarvestRebalanceAndBreakerClaims:
         assert result == []
 
     @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
-    def test_harvests_from_both_artifacts_when_present(self, _mock_prices, tmp_path):
+    def test_harvests_from_both_sources_when_present(self, _mock_prices, tmp_path):
+        """A rebalance plan file plus a TRIGGERED breaker in SQLite give both claim types."""
         plan_path = tmp_path / "rebalance_plan.json"
         plan_path.write_text(json.dumps({
             "generatedAt": "2026-07-10T14:00:00Z",
             "orders": [{"ticker": "CORZ", "action": "buy", "riskGateWarnings": [], "breakerWarnings": []}],
         }))
-        state_path = tmp_path / "thesis_breaker_state.json"
-        state_path.write_text(json.dumps({
-            "generatedAt": "2026-07-10T14:00:00Z",
-            "holdings": {"NBIS": {"rsi_breach": {"status": "TRIGGERED"}}},
-        }))
-        target_path = tmp_path / "target-portfolio.json"
-        target_path.write_text(json.dumps({
-            "holdings": [{"ticker": "NBIS", "thesisBreakers": [{"id": "rsi_breach", "metric": "rsi"}]}]
-        }))
         result = harvest_rebalance_and_breaker_claims(
             rebalance_plan_path=plan_path,
-            thesis_breaker_state_path=state_path,
-            target_portfolio_path=target_path,
+            db_path=self._db(tmp_path, with_triggered_breaker=True),
             predictions_path=tmp_path / "predictions.jsonl",
             intel_db_path=tmp_path / "intelligence.sqlite",
             jsonl_path=tmp_path / "observations.jsonl",
         )
         types = {r["type"] for r in result}
         assert types == {"rebalance_order", "breaker_forecast"}
+        breaker = next(r for r in result if r["type"] == "breaker_forecast")
+        assert breaker["claim"] == {"breakerId": "rsi_breach", "metric": "rsi", "status": "TRIGGERED"}
+        assert breaker["date"] == "2026-07-10"
+
+    def test_harvester_takes_no_json_file_parameters(self):
+        """The retired target-portfolio and breaker-state file parameters are gone."""
+        import inspect
+        params = inspect.signature(harvest_rebalance_and_breaker_claims).parameters
+        assert "target_portfolio_path" not in params and "thesis_breaker_state_path" not in params
+        import harvest_predictions
+        assert not hasattr(harvest_predictions, "THESIS_BREAKER_STATE_PATH") and not hasattr(harvest_predictions, "TARGET_PATH")

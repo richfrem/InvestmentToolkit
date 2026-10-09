@@ -24,6 +24,7 @@ Key Functions (Index):
     - load_portfolio_state()
     - load_target_weights()
     - load_thesis_holdings()
+    - load_breaker_state()
     - compute_weights()
     - replace_block()
     - main()
@@ -210,6 +211,33 @@ def load_thesis_holdings(db_path: str | None = None) -> list[dict]:
         ]
     finally:
         conn.close()
+
+
+def load_breaker_state(db_path: str | Path | None = None) -> dict:
+    """The evaluated thesis breaker state from domain_model.sqlite, in the evaluator's shape.
+
+    The one reader of breaker state; the order gates, the rebalancer, prediction harvesting and
+    recommendations all call it. Never raises for an empty table: no evaluated state is
+    ``{"generatedAt": None, "holdings": {}}``. Database errors propagate (a broken database must
+    stop an order, not skip a veto).
+
+    Args:
+        db_path: Database to read; None reads the real database.
+
+    Returns:
+        {"generatedAt": newest last_evaluated_at or None,
+         "holdings": {ticker: {breakerId: state entry}}}.
+    """
+    from domain_model.db_client import initialize_db
+    from domain_model.thesis_breaker_repository import list_breaker_state
+
+    conn = initialize_db(str(db_path) if db_path else _DB_PATH)
+    try:
+        holdings = list_breaker_state(conn)
+    finally:
+        conn.close()
+    stamps = [e["lastEvaluatedAt"] for ticker in holdings.values() for e in ticker.values() if e.get("lastEvaluatedAt")]
+    return {"generatedAt": max(stamps) if stamps else None, "holdings": holdings}
 
 
 # ── weight computation ───────────────────────────────────────────────────────

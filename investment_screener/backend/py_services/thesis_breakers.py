@@ -8,15 +8,13 @@ Purpose:
 Evaluates each holding's `thesisBreakers` list against data
 `daily_brief.py` already computes this run (conviction scores, market_regime,
 pillar_health) — never refetches. Breaker *definitions* stay human-owned
-(edited only via update_thesis.py's --set-breaker path);
-this module owns the *evaluated state* file, data/thesis_breaker_state.json,
-exclusively. See docs/superpowers/specs/2026-07-09-thesis-breakers-design.md.
+(edited only via update_thesis.py's --set-breaker path); this module owns the
+*evaluated state* (thesis_breaker_state in domain_model.sqlite) exclusively and
+writes it through thesis_breaker_repository.replace_breaker_state().
+See docs/superpowers/specs/2026-07-09-thesis-breakers-design.md.
 
 Usage:
     python3 investment_screener/backend/py_services/thesis_breakers.py
-
-Key Input Dependencies:
-    - investment_screener/backend/data/thesis_breaker_state.json (Evaluates thesis logic)
 
 Layer:
     Backend / Python Services
@@ -36,15 +34,16 @@ Key Functions (Index):
     - main()
 
 Key Input Dependencies:
-    None
+    - investment_screener/backend/data/domain_model.sqlite (breaker definitions, prior evaluated state)
+    - theses/breaker-overrides.jsonl (accountability trail for override decisions)
 
 Key Output Dependencies:
-    None
+    - thesis_breaker_state rows and investment.thesis_breaker_status in domain_model.sqlite
+    - theses/breaker-overrides.jsonl (log_breaker_override only)
 """
 from __future__ import annotations
 
 import json
-import os
 import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -52,13 +51,12 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-STATE_PATH = DATA_DIR / "thesis_breaker_state.json"
 OVERRIDES_PATH = DATA_DIR / "theses/breaker-overrides.jsonl"
 DB_PATH = DATA_DIR / "domain_model.sqlite"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from domain_model.thesis_breaker_repository import AUTO_METRICS, VALID_OPERATORS  # noqa: E402,F401
-from portfolio_io import load_thesis_holdings  # noqa: E402
+from portfolio_io import load_breaker_state, load_thesis_holdings  # noqa: E402
 
 
 
@@ -297,53 +295,48 @@ def compute_breaker_state(
     conviction_scores: list[dict[str, Any]],
     market_regime: dict[str, Any] | None,
     pillar_health: list[dict[str, Any]],
-    target_portfolio_path: Path | None = None,
-    state_path: Path = STATE_PATH,
     db_path: Path = DB_PATH,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Load, evaluate, and persist thesis breaker state for this run.
 
-    I/O wrapper around the pure evaluate_breakers(). Never mutates
-    domain_model.sqlite — only reads it. Owns state_path exclusively.
+    I/O wrapper around the pure evaluate_breakers(). Reads breaker definitions and the prior
+    evaluated state from domain_model.sqlite and replaces the stored state with this run's
+    (``thesis_breaker_repository.replace_breaker_state``, which also re-derives
+    ``investment.thesis_breaker_status``).
 
     Args:
         conviction_scores: This run's conviction score rows — pass the same
             list daily_brief.py already computed, never recompute here.
         market_regime: This run's market_regime output, or None.
         pillar_health: This run's pillar health list.
-        target_portfolio_path: Unused; thesis holdings come from
-            load_thesis_holdings(db_path) below. Kept so call sites keep their
-            signature; it has no effect.
-        state_path: Path to thesis_breaker_state.json.
         db_path: Path to domain_model.sqlite.
 
     Returns:
-        (full_state_dict, triggered_list) — full_state_dict is the exact
-        shape written to state_path; triggered_list is every breaker whose
-        status is "TRIGGERED" this run, each entry merging its definition
+        (full_state_dict, triggered_list) — full_state_dict is
+        {"generatedAt", "holdings": {ticker: {breakerId: entry}}}; triggered_list is every
+        breaker whose status is "TRIGGERED" this run, each entry merging its definition
         (metric/operator/threshold/horizon/note/type) with its evaluated
         state and the holding's targetWeight (for triage sort order).
     """
-    target_data = {"holdings": load_thesis_holdings(str(db_path))}
+    from domain_model.db_client import initialize_db
+    from domain_model.thesis_breaker_repository import replace_breaker_state
 
-    prev_state: dict[str, Any] = {}
-    if state_path.exists():
-        with open(state_path) as f:
-            prev_state = json.load(f).get("holdings", {})
+    target_data = {"holdings": load_thesis_holdings(str(db_path))}
+    prev_state = load_breaker_state(db_path)["holdings"]
 
     today = date.today().isoformat()
     holdings_state = evaluate_breakers(
         target_data, conviction_scores, market_regime, pillar_health, prev_state, today
     )
 
+    conn = initialize_db(str(db_path))
+    try:
+        replace_breaker_state(conn, holdings_state)
+    finally:
+        conn.close()
+
     now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     full_state = {"generatedAt": now_iso, "holdings": holdings_state}
-
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = state_path.with_suffix(".tmp")
-    with open(tmp, "w") as f:
-        json.dump(full_state, f, indent=2)
-    os.replace(tmp, state_path)
 
     breakers_by_id = {
         (h["ticker"], b["id"]): b
@@ -420,15 +413,13 @@ def _cli_log_override(
     breaker_id: str,
     rationale: str,
     overridden_by: str = "user",
-    target_portfolio_path: Path | None = None,
-    state_path: Path = STATE_PATH,
     overrides_path: Path = OVERRIDES_PATH,
     db_path: Path = DB_PATH,
 ) -> None:
     """Resolve a breaker's definition + current state, then log an override.
 
     Thin wrapper so a caller (the daily-loop skill, via `--log-override`) only
-    needs a ticker, breaker id, and rationale — not thesis_breaker_state.json's
+    needs a ticker, breaker id, and rationale — not the evaluated state's
     internal shape.
 
     Args:
@@ -436,11 +427,6 @@ def _cli_log_override(
         breaker_id: The breaker's id, as defined in domain_model.sqlite.
         rationale: The user's stated reason for holding through.
         overridden_by: Who made the call — defaults to "user".
-        target_portfolio_path: Unused; thesis holdings come from
-            load_thesis_holdings(db_path) below. Kept so call sites keep their
-            signature; it has no effect.
-        state_path: Path to thesis_breaker_state.json (missing file is fine —
-            streak/currentValue are logged as None if state hasn't run yet).
         overrides_path: Target JSONL file.
         db_path: Path to domain_model.sqlite.
 
@@ -455,11 +441,7 @@ def _cli_log_override(
     if definition is None:
         raise ValueError(f"breaker id '{breaker_id}' not found on {ticker}")
 
-    state: dict[str, Any] = {}
-    if state_path.exists():
-        with open(state_path) as f:
-            state = json.load(f).get("holdings", {})
-    entry = state.get(ticker, {}).get(breaker_id, {})
+    entry = load_breaker_state(db_path)["holdings"].get(ticker, {}).get(breaker_id, {})
 
     log_breaker_override(
         ticker=ticker, breaker_id=breaker_id, metric=definition["metric"],

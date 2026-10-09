@@ -6,8 +6,8 @@ Purpose:
     Turns E2's warn-only riskGateWarnings/breakerWarnings (rebalance_plan.json)
     into real veto power. Reuses E2's exact thresholds — an order is vetoed
     iff either warning list is non-empty; no new numeric caps are introduced.
-    Never mutates rebalance_plan.json, risk_snapshot.json, or
-    thesis_breaker_state.json — read-only on all three. Owns
+    Reads only rebalance_plan.json (the breaker warnings in it come from the evaluated breaker
+    state in domain_model.sqlite) and never mutates it. Owns
     data/risk_officer_review.json and data/risk_officer_overrides.jsonl
     exclusively. See docs/superpowers/specs/
     2026-07-10-g2-risk-officer-red-team-design.md.

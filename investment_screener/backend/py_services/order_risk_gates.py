@@ -38,16 +38,15 @@ never a simulated post-trade increase.
 
 check_breaker_veto() (5E-3) checks whether a single, ad-hoc BUY order's
 ticker has a TRIGGERED thesis breaker (Phase 3 B5) and vetoes if so. It
-reads the REAL data/thesis_breaker_state.json (machine-owned by
-thesis_breakers.py) — NEVER the domain_model.sqlite investment table, which only stores
-human-authored breaker DEFINITIONS, never live triggered/OK status.
+reads the evaluated breaker state in domain_model.sqlite (thesis_breaker_state,
+written by thesis_breakers.py) through portfolio_io.load_breaker_state().
 Unlike rebalancer.py's compute_breaker_warnings() (Phase 3 E2, warn-only,
 never vetoes, batch-shaped), this function returns a REAL veto for a
 single ad-hoc order — Task 5E's own veto authority.
 
 This module reuses the same real data sources (risk_snapshot.json's
 "marginalRiskContribution" and "clusterExposure" fields, Phase 3 E1;
-thesis_breaker_state.json's "holdings" map, Phase 3 B5) and the same
+the evaluated breaker state's "holdings" map, Phase 3 B5) and the same
 real check logic from rebalancer.py's compute_risk_budget_check() and
 compute_breaker_warnings() (Phase 3 E2) but does NOT call into or
 modify rebalancer.py, risk_engine.py, or thesis_breakers.py — their
@@ -128,9 +127,8 @@ Key Input Dependencies:
       real "maxMarginalRiskContributionPct" and
       "maxClusterVarianceContributionPct" defaults mirrored here as
       mrc_cap_pct's / cluster_cap_pct's own defaults)
-    - investment_screener/backend/data/thesis_breaker_state.json (Phase 3
-      B5's real live triggered/OK breaker status, machine-owned by
-      thesis_breakers.py — never domain_model.sqlite)
+    - investment_screener/backend/data/domain_model.sqlite thesis_breaker_state table (Phase 3
+      B5's live triggered/OK breaker status, written by thesis_breakers.py)
     - investment_screener/backend/data/domain_model.sqlite's investment table
       (pillarId per ticker, used by build_portfolio_state_for_order() — same
       table risk_engine.py's compute_risk_snapshot() reads for its own pillar_map)
@@ -166,7 +164,7 @@ from typing import Any, Dict, List, Optional
 # codebase's established same-directory import convention, e.g. how
 # risk_engine.py itself reuses portfolio_io.load_portfolio_state()/
 # compute_weights() for its own compute_risk_snapshot()).
-from portfolio_io import compute_weights, load_portfolio_state
+from portfolio_io import compute_weights, load_breaker_state, load_portfolio_state
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys_path_entry = str(REPO_ROOT / "investment_screener/backend/py_services")
@@ -180,7 +178,6 @@ from domain_model.investment_repository import resolve_investment  # noqa: E402
 from domain_model.order_execution_repository import insert_order_execution  # noqa: E402
 
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
-THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
 # TRADE_LOG_PATH / ORDERS_EXECUTED_PATH removed Wave 4 Task 12: get_trade_log_entries()
 # and log_order_execution() were cut over to DB_PATH (trade_log_entry / order_execution
@@ -453,36 +450,27 @@ def check_cluster_variance(
     return {"passed": True, "pillar": pillar, "variance_pct": variance_pct, "reason": "Within cluster variance budget"}
 
 
-def _load_thesis_breaker_state() -> Dict[str, Any]:
-    """Load the real data/thesis_breaker_state.json, never raising.
-
-    Mirrors _load_risk_snapshot()'s (Task 5E-1) exact pattern for a
-    different real data file — machine-owned by thesis_breakers.py
-    (Phase 3 B5).
+def _load_thesis_breaker_state(db_path: Optional[Path] = None) -> Dict[str, Any]:
+    """Load the evaluated breaker state from domain_model.sqlite.
 
     Returns:
-        Parsed dict, or {} if the file is missing, unreadable, or
-        malformed JSON.
+        {"generatedAt": ..., "holdings": {ticker: {breakerId: entry}}}; an empty table gives
+        empty holdings (nothing to veto). Database errors propagate: a broken database must stop
+        an order rather than skip the veto.
     """
-    try:
-        if not THESIS_BREAKER_STATE_PATH.exists():
-            return {}
-        return json.loads(THESIS_BREAKER_STATE_PATH.read_text())
-    except (OSError, json.JSONDecodeError):
-        return {}
+    return load_breaker_state(db_path)
 
 
 def check_breaker_veto(
     order: Dict[str, Any],
     thesis_breaker_state: Optional[Dict[str, Any]] = None,
+    db_path: Optional[Path] = None,
 ) -> Dict[str, Any]:
     """Check whether a BUY order's ticker has a TRIGGERED thesis breaker
     (Phase 3 B5) and veto if so.
 
-    Reads the real data/thesis_breaker_state.json (machine-owned by
-    thesis_breakers.py, B5) — NOT domain_model.sqlite's investment table, which only
-    stores breaker DEFINITIONS, never live triggered/OK status. A
-    breaker is TRIGGERED iff its "status" field is the literal string
+    Reads the evaluated breaker state from domain_model.sqlite (written by
+    thesis_breakers.py, B5). A breaker is TRIGGERED iff its "status" field is the literal string
     "TRIGGERED", matching rebalancer.py's real
     compute_breaker_warnings() check exactly.
 
@@ -495,13 +483,14 @@ def check_breaker_veto(
     SELL orders are never vetoed — matches E2's own real "buy actions
     only" scope for the equivalent check.
 
-    Never raises: missing state file, a ticker with no breaker entries,
-    or no TRIGGERED breaker for this ticker all degrade to passed=True.
+    No evaluated state, a ticker with no breaker entries, or no TRIGGERED breaker for this
+    ticker all give passed=True. A database error raises.
 
     Args:
         order: {"ticker": str, "side": "BUY"|"SELL", ...}.
-        thesis_breaker_state: Parsed thesis_breaker_state.json. If
-            None, loaded via _load_thesis_breaker_state().
+        thesis_breaker_state: The evaluated state ({"holdings": {...}}). If None, loaded
+            via _load_thesis_breaker_state(db_path).
+        db_path: Database to read the state from when it is not passed; None reads the real one.
 
     Returns:
         {"passed": bool, "breaker": str | None, "reason": str} —
@@ -514,7 +503,7 @@ def check_breaker_veto(
         return {"passed": True, "breaker": None, "reason": "Not a buy order — breaker veto only applies to buys"}
 
     if thesis_breaker_state is None:
-        thesis_breaker_state = _load_thesis_breaker_state()
+        thesis_breaker_state = _load_thesis_breaker_state(db_path)
 
     ticker = order.get("ticker")
     breakers = (thesis_breaker_state or {}).get("holdings", {}).get(ticker, {})
