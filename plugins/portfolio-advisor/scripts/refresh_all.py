@@ -2,7 +2,7 @@
 refresh_all.py — Master portfolio refresh orchestrator.
 
 Called after any event that changes portfolio state:
-  - TV portfolio sync     (fetch_broker_data.py --snapshot --promote)
+  - TV portfolio sync     (fetch_broker_data.py --snapshot)
   - Trade execution       (place_order.py after fill)
   - Target weight changes (update_targets.py --write)
   - Thesis updates        (update_thesis.py)
