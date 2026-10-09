@@ -18,6 +18,7 @@ description: The single master daily command. Provides fast non-interactive morn
 - **Recommendation coherence**: Follow [Keeping recommendations coherent](references/recommendation-coherence.md) every session: refresh positions and executed trades first (TradingView by default), present `decision_check.effective` as the stance and reconcile any CONFLICT or OUTDATED standing decision with the owner through `set_standing_decision.py`, rank by today's priority with already-acted-on items last, and state every condition against current chart levels rather than as general guidance.
 - Fast scan (`--scan`) runs non-interactively; full loop guides step-by-step triage.
 - Check database freshness against `domain_model.sqlite` (never retired `portfolio.json`).
+- **Fresh prices before the brief**: refresh `investment_price` in Step 0. If the refresh fails, mark every card as priced on stale data; never write prices with ad-hoc SQL.
 - Adhere to the single-decision pacing rule; never prompt multiple conflicting choices at once.
 - Enforce the macro gate and binary-event protocol from the methodology reference.
 
@@ -27,7 +28,11 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 ```
 
 ## Workflow
-1. **Readiness (Step 0)**: Verify backend API health, `domain_model.sqlite` sync timestamps, and TradingView CDP connectivity. Refresh positions and executed trades with `/tv-portfolio-sync` so recommendations reflect recent fills. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade for this refresh.
+1. **Readiness (Step 0)**: Verify backend API health, `domain_model.sqlite` sync timestamps, and TradingView CDP connectivity. Refresh positions and executed trades with `/tv-portfolio-sync` so recommendations reflect recent fills. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade for this refresh. Then refresh prices, because the brief, weights and totals read `investment_price`, not the sync:
+   ```bash
+   python3 plugins/tradingview/scripts/tv_price_refresh.py
+   ```
+   The script is the only price writer: it reads the symbols from `domain_model.sqlite`, saves through the repositories and also refreshes the USD->CAD rate. Exit 0 means every symbol was written; on exit 1 report the `stale` symbols before building the brief.
 2. **Morning Brief (Step 1)**: Ingest macro regime, canonical recommendations with conviction ranking, and binary event flags from `daily_brief.py`; apply the AI forward-evidence gate before treating valuation signals as trade-ready.
 3. **Triage (Step 2)**: Present urgent holding alerts, thesis breaker breaches, and price catalysts one ticker at a time.
 4. **Action Cards (Step 3)**: Formulate actionable trade proposals with tranche sizing and PSU-U.TO capital sourcing. For any of the five highest-priority cards marked `refreshFirst` (stale valuation), run `/update-stock-analysis TICKER` first, walk the owner through the new fair value and scenarios, and record the decision they reach with `set_standing_decision.py` before proposing a trade.
@@ -41,6 +46,7 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 python3 plugins/portfolio-advisor/scripts/verify_daily_run.py --latest
 python3 investment_screener/backend/py_services/verify_portfolio_invariants.py
 ```
+- After the price refresh, `CASH_INVARIANT` should report no discrepancy. A gap equal to the difference between TradingView's live total and the stored total means prices are still stale.
 
 ## References
 - [Keeping Recommendations Coherent](references/recommendation-coherence.md) - Trade refresh, standing-decision reconciliation, daily priority order and chart-level conditions.
