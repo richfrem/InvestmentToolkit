@@ -37,3 +37,35 @@ export async function settleAccountReads(readOnce, { attempts = 4, wait = async 
   }
   return best;
 }
+
+/**
+ * Switch to an account row, opening the dropdown only when it is closed.
+ *
+ * The dropdown is opened by a toggle click. After getAccounts() has opened and
+ * closed it several times its state is unknown, and a blind toggle can close an
+ * open dropdown so the row is never found. The state is checked before each
+ * toggle, and a miss closes the dropdown and tries again.
+ *
+ * @param {object} steps Page operations supplied by the caller
+ * @param {() => Promise<boolean>} steps.isOpen Whether the account rows are visible
+ * @param {() => Promise<void>} steps.toggle Click the dropdown button
+ * @param {() => Promise<void>} steps.close Close the dropdown
+ * @param {() => Promise<object>} steps.selectRow Click the target row; {switched} or {error}
+ * @param {number} [steps.attempts] Maximum attempts
+ * @param {() => Promise<void>} [steps.wait] Pause between steps
+ * @returns {Promise<object>} The successful {switched} result, or the last {error}
+ */
+export async function switchWithRetry({ isOpen, toggle, close, selectRow, attempts = 4, wait = async () => {} }) {
+  let last = { error: 'Account switch not attempted' };
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (!(await isOpen())) {
+      await toggle();
+      await wait();
+    }
+    last = await selectRow();
+    if (!last.error) return last;
+    await close();
+    await wait();
+  }
+  return last;
+}
