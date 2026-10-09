@@ -304,66 +304,55 @@ from thesis_breakers import (  # noqa: E402
 )
 
 
+def _seed_nbis(tmp_path, breakers, state=None, weight=5.5):
+    """A database holding NBIS (target weight 5.5) with the given breaker definitions and prior state."""
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment, update_investment_fields
+    from domain_model.thesis_breaker_repository import replace_breaker_state, upsert_breaker
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    update_investment_fields(conn, resolve_investment(conn, "NBIS"), target_weight=weight)
+    for breaker in breakers:
+        upsert_breaker(conn, "NBIS", breaker)
+    if state:
+        replace_breaker_state(conn, state)
+    conn.close()
+    return db_path
+
+
+TREND_BREAKER = {
+    "id": "nbis-trend-breakdown", "type": "auto", "metric": "trendState", "operator": "in",
+    "threshold": ["DOWNTREND"], "horizon": 5, "note": "Sustained downtrend",
+}
+DOWNTREND_REGIME = {"tickerRegimes": [
+    {"ticker": "NBIS", "trend": {"position": "BELOW", "slope": "FALLING", "state": "DOWNTREND"},
+     "momentumPercentile": 5.0, "volatilityPercentile": 90.0},
+]}
+
+
 class TestComputeBreakerState:
-    @pytest.mark.skip(reason=(
-        "Wave 8: compute_breaker_state() now sources holdings from "
-        "domain_model.sqlite via portfolio_io.load_thesis_holdings(), which has "
-        "no thesisBreakers column (0/75 real holdings ever populated this field "
-        "-- same documented gap as generate_portfolio_blueprint.py's "
-        "build_thesis_map(), which also always returns thesisBreakers=[]). "
-        "The core triggering logic itself is unaffected and still covered "
-        "directly by TestEvaluateBreakersAutoStreak/ManualStaleness/NoBreakers "
-        "below, which call evaluate_breakers() with hand-built target_data and "
-        "never touch file I/O."
-    ))
-    def test_writes_state_file_and_returns_triggered_list(self, tmp_path):
-        target_path = tmp_path / "target-portfolio.json"
-        state_path = tmp_path / "thesis_breaker_state.json"
-        target_data = {
-            "holdings": [
-                {
-                    "ticker": "NBIS",
-                    "subStrategyId": "asi_race",
-                    "targetWeight": 5.5,
-                    "thesisBreakers": [
-                        {
-                            "id": "nbis-trend-breakdown",
-                            "type": "auto",
-                            "metric": "trendState",
-                            "operator": "in",
-                            "threshold": ["DOWNTREND"],
-                            "horizon": 5,
-                            "note": "Sustained downtrend",
-                        }
-                    ],
-                },
-                {"ticker": "MSFT", "subStrategyId": "quality_saas", "targetWeight": 2.4},
-            ]
-        }
-        target_path.write_text(_json.dumps(target_data))
-        prev_state = {
-            "generatedAt": "2026-07-08T13:00:00Z",
-            "holdings": {"NBIS": {"nbis-trend-breakdown": {
-                "type": "auto", "currentValue": "DOWNTREND", "conditionMet": True,
-                "currentStreak": 4, "streakStartDate": "2026-07-04",
-                "lastEvaluatedAt": "2026-07-08T13:00:00Z", "status": "WATCHING",
-            }}},
-        }
-        state_path.write_text(_json.dumps(prev_state))
-        market_regime = {"tickerRegimes": [
-            {"ticker": "NBIS", "trend": {"position": "BELOW", "slope": "FALLING",
-             "state": "DOWNTREND"}, "momentumPercentile": 5.0, "volatilityPercentile": 90.0},
-        ]}
+    def test_persists_state_to_sqlite_and_returns_triggered_list(self, tmp_path):
+        """A fourth day of downtrend becomes the fifth, TRIGGERED; the state is stored in SQLite."""
+        prev = {"NBIS": {"nbis-trend-breakdown": {
+            "type": "auto", "currentValue": "DOWNTREND", "conditionMet": True,
+            "currentStreak": 4, "streakStartDate": "2026-07-04",
+            "lastEvaluatedAt": "2026-07-08T13:00:00Z", "status": "WATCHING"}}}
+        db_path = _seed_nbis(tmp_path, [TREND_BREAKER], state=prev)
 
         state, triggered = compute_breaker_state(
-            conviction_scores=[], market_regime=market_regime, pillar_health=[],
-            target_portfolio_path=target_path, state_path=state_path,
+            conviction_scores=[], market_regime=DOWNTREND_REGIME, pillar_health=[], db_path=db_path,
         )
 
-        assert state_path.exists()
-        on_disk = _json.loads(state_path.read_text())
-        assert on_disk["holdings"]["NBIS"]["nbis-trend-breakdown"]["status"] == "TRIGGERED"
-        assert "generatedAt" in on_disk
+        from domain_model.db_client import initialize_db
+        from domain_model.thesis_breaker_repository import list_breaker_state
+        conn = initialize_db(str(db_path))
+        stored = list_breaker_state(conn)
+        derived = conn.execute("SELECT thesis_breaker_status FROM investment WHERE symbol='NBIS'").fetchone()[0]
+        conn.close()
+        assert stored["NBIS"]["nbis-trend-breakdown"]["status"] == "TRIGGERED"
+        assert stored["NBIS"]["nbis-trend-breakdown"]["currentStreak"] == 5
+        assert derived == "TRIGGERED"
+        assert "generatedAt" in state and state["holdings"] == stored
 
         assert len(triggered) == 1
         assert triggered[0]["ticker"] == "NBIS"
@@ -372,18 +361,42 @@ class TestComputeBreakerState:
         assert triggered[0]["targetWeight"] == 5.5
         assert triggered[0]["currentStreak"] == 5
 
-    def test_no_prior_state_file_treated_as_empty(self, tmp_path):
-        target_path = tmp_path / "target-portfolio.json"
-        state_path = tmp_path / "thesis_breaker_state.json"
-        target_path.write_text(_json.dumps({"holdings": []}))
+    def test_no_prior_state_is_treated_as_empty(self, tmp_path):
+        """Holdings with no breakers and no stored state evaluate to nothing."""
+        db_path = _seed_nbis(tmp_path, [])
 
         state, triggered = compute_breaker_state(
-            conviction_scores=[], market_regime=None, pillar_health=[],
-            target_portfolio_path=target_path, state_path=state_path,
+            conviction_scores=[], market_regime=None, pillar_health=[], db_path=db_path,
         )
 
         assert state["holdings"] == {}
         assert triggered == []
+
+    def test_state_is_replaced_not_accumulated(self, tmp_path):
+        """A breaker deleted since the last run leaves no state behind."""
+        from domain_model.db_client import initialize_db
+        from domain_model.thesis_breaker_repository import delete_breaker, list_breaker_state
+        db_path = _seed_nbis(tmp_path, [TREND_BREAKER])
+        compute_breaker_state(conviction_scores=[], market_regime=DOWNTREND_REGIME, pillar_health=[], db_path=db_path)
+        conn = initialize_db(str(db_path))
+        delete_breaker(conn, "NBIS", "nbis-trend-breakdown")
+        conn.close()
+        state, _ = compute_breaker_state(conviction_scores=[], market_regime=DOWNTREND_REGIME, pillar_health=[], db_path=db_path)
+        conn = initialize_db(str(db_path))
+        assert list_breaker_state(conn) == {} and state["holdings"] == {}
+        conn.close()
+
+    def test_no_json_state_file_is_written(self, tmp_path):
+        """Nothing named thesis_breaker_state.json appears beside the database."""
+        db_path = _seed_nbis(tmp_path, [TREND_BREAKER])
+        compute_breaker_state(conviction_scores=[], market_regime=DOWNTREND_REGIME, pillar_health=[], db_path=db_path)
+        assert not list(tmp_path.glob("**/thesis_breaker_state.json"))
+
+    def test_module_has_no_state_file_path(self):
+        """The module exposes no JSON state path and its source never names the retired file as a path."""
+        import thesis_breakers
+        assert not hasattr(thesis_breakers, "STATE_PATH")
+        assert "target_portfolio_path" not in Path(thesis_breakers.__file__).read_text()
 
 
 class TestLogBreakerOverride:
@@ -418,38 +431,22 @@ class TestLogBreakerOverride:
 
 
 class TestCliLogOverride:
-    @pytest.mark.skip(reason=(
-        "Wave 8: _cli_log_override() now sources holdings from "
-        "domain_model.sqlite via portfolio_io.load_thesis_holdings(), which has "
-        "no thesisBreakers column (0/75 real holdings ever populated this "
-        "field), so a breaker definition can no longer be resolved this way."
-    ))
     def test_resolves_definition_and_state_then_logs(self, tmp_path):
-        target_path = tmp_path / "target-portfolio.json"
-        state_path = tmp_path / "thesis_breaker_state.json"
-        overrides_path = tmp_path / "breaker-overrides.jsonl"
-        target_path.write_text(_json.dumps({"holdings": [{
-            "ticker": "NBIS", "thesisBreakers": [{
-                "id": "nbis-trend-breakdown", "type": "auto", "metric": "trendState",
-                "operator": "in", "threshold": ["DOWNTREND"], "horizon": 5,
-                "note": "Sustained downtrend",
-            }],
-        }]}))
-        state_path.write_text(_json.dumps({"holdings": {"NBIS": {"nbis-trend-breakdown": {
+        """The override record carries the breaker's metric, horizon, current value and streak from SQLite."""
+        state = {"NBIS": {"nbis-trend-breakdown": {
             "type": "auto", "currentValue": "DOWNTREND", "conditionMet": True,
-            "currentStreak": 5, "status": "TRIGGERED",
-        }}}}))
+            "currentStreak": 5, "streakStartDate": "2026-07-04",
+            "lastEvaluatedAt": "2026-07-09T00:00:00Z", "status": "TRIGGERED"}}}
+        db_path = _seed_nbis(tmp_path, [TREND_BREAKER], state=state)
+        overrides_path = tmp_path / "breaker-overrides.jsonl"
 
         _cli_log_override(
             ticker="NBIS", breaker_id="nbis-trend-breakdown",
             rationale="Vera Rubin ramp de-risks the downtrend",
-            target_portfolio_path=target_path, state_path=state_path,
-            overrides_path=overrides_path,
+            overrides_path=overrides_path, db_path=db_path,
         )
 
-        lines = overrides_path.read_text().strip().splitlines()
-        assert len(lines) == 1
-        entry = _json.loads(lines[0])
+        entry = _json.loads(overrides_path.read_text().strip().splitlines()[0])
         assert entry["metric"] == "trendState"
         assert entry["currentValue"] == "DOWNTREND"
         assert entry["streak"] == 5
@@ -457,57 +454,38 @@ class TestCliLogOverride:
         assert entry["rationale"] == "Vera Rubin ramp de-risks the downtrend"
 
     def test_unknown_ticker_raises(self, tmp_path):
+        """A ticker the database does not know is an error."""
         db_path = tmp_path / "test.sqlite"
         from domain_model.db_client import initialize_db
         initialize_db(str(db_path)).close()
         with pytest.raises(ValueError, match="not found in domain_model.sqlite"):
             _cli_log_override(
                 ticker="NOPE", breaker_id="x", rationale="r",
-                state_path=tmp_path / "s.json",
                 overrides_path=tmp_path / "o.jsonl", db_path=db_path,
             )
 
     def test_unknown_breaker_id_raises(self, tmp_path):
-        # NBIS must exist as an investment row for holding lookup to succeed;
-        # thesisBreakers always defaults to [] post-Wave-8 (no SQLite column),
-        # so any breaker_id is "not found" -- this is the real, isolated
-        # (tmp db_path, never the real production DB) equivalent of the old
-        # thesisBreakers=[] fixture.
-        db_path = tmp_path / "test.sqlite"
-        from domain_model.db_client import initialize_db
-        from domain_model.investment_repository import resolve_investment, update_investment_fields
-        conn = initialize_db(str(db_path))
-        update_investment_fields(conn, resolve_investment(conn, "NBIS"), target_weight=0.0)
-        conn.close()
+        """A breaker id the holding does not have is an error."""
+        db_path = _seed_nbis(tmp_path, [], weight=0.0)
         with pytest.raises(ValueError, match="not found on NBIS"):
             _cli_log_override(
                 ticker="NBIS", breaker_id="nope", rationale="r",
-                state_path=tmp_path / "s.json",
                 overrides_path=tmp_path / "o.jsonl", db_path=db_path,
             )
 
-    @pytest.mark.skip(reason=(
-        "Wave 8: _cli_log_override() now sources holdings from "
-        "domain_model.sqlite via portfolio_io.load_thesis_holdings(), which has "
-        "no thesisBreakers column (0/75 real holdings ever populated this "
-        "field), so a breaker definition can no longer be resolved this way."
-    ))
-    def test_missing_state_file_still_logs_with_null_streak(self, tmp_path):
-        target_path = tmp_path / "target-portfolio.json"
-        target_path.write_text(_json.dumps({"holdings": [{
-            "ticker": "NBIS", "thesisBreakers": [{
-                "id": "nbis-ndr-floor", "type": "manual", "metric": "ndr", "operator": "<",
-                "threshold": 115, "horizon": "2 quarters", "note": "NDR floor",
-                "status": "TRIGGERED", "statusSetAt": "2026-07-09",
-                "statusSetBy": "agent", "reviewCadenceDays": 90,
-            }],
-        }]}))
+    def test_no_stored_state_still_logs_with_null_streak(self, tmp_path):
+        """A manual breaker with no evaluated state yet logs a null streak and its text horizon."""
+        manual = {
+            "id": "nbis-ndr-floor", "type": "manual", "metric": "ndr", "operator": "<",
+            "threshold": 115, "horizon": "2 quarters", "note": "NDR floor",
+            "status": "TRIGGERED", "statusSetAt": "2026-07-09", "reviewCadenceDays": 90,
+        }
+        db_path = _seed_nbis(tmp_path, [manual])
         overrides_path = tmp_path / "breaker-overrides.jsonl"
 
         _cli_log_override(
             ticker="NBIS", breaker_id="nbis-ndr-floor", rationale="Board confirmed NDR recovery plan",
-            target_portfolio_path=target_path, state_path=tmp_path / "does-not-exist.json",
-            overrides_path=overrides_path,
+            overrides_path=overrides_path, db_path=db_path,
         )
 
         entry = _json.loads(overrides_path.read_text().strip())

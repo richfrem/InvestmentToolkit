@@ -535,44 +535,9 @@ def _fresh_timestamp() -> str:
 
 
 def _write_full_fixture(tmp_path):
-    target_path = tmp_path / "target-portfolio.json"
-    portfolio_path = tmp_path / "portfolio.json"
+    """A database (thesis holdings, projections, positions, account policy) and a risk snapshot file."""
     risk_path = tmp_path / "risk_snapshot.json"
-    breaker_path = tmp_path / "thesis_breaker_state.json"
-    policy_path = tmp_path / "account_policy.json"
-
-    target_path.write_text(json.dumps({
-        "holdings": [
-            {"ticker": "CRWD", "targetWeight": 4.0, "pillarId": "cyber"},
-            {"ticker": "NBIS", "targetWeight": 5.5, "pillarId": "ai_infra"},
-            {"ticker": "PSU-U.TO", "targetWeight": 90.5, "pillarId": "cash"},
-        ],
-    }))
-    portfolio_path.write_text(json.dumps({
-        "holdings": [
-            {"ticker": "CRWD", "shares": 15.0, "price": 100.0},
-            {"ticker": "NBIS", "shares": 1.0, "price": 20.0},
-            {"ticker": "PSU-U.TO", "shares": 90.0, "price": 100.0},
-        ],
-        "totals": {"totalUSD": 10500.0, "timestamp": _fresh_timestamp()},
-        "tvSnapshot": {"snapshots": [{
-            "accountType": "TFSA",
-            "positions": [
-                {"symbol": "CRWD", "quantity": 15.0, "avgFillPrice": 90.0},
-                {"symbol": "NBIS", "quantity": 1.0, "avgFillPrice": 18.0},
-                {"symbol": "PSU-U.TO", "quantity": 90.0, "avgFillPrice": 100.0},
-            ],
-            "balances": {"cashUSDCombined": 500.0},
-        }]},
-    }))
     risk_path.write_text(json.dumps({"marginalRiskContribution": {}, "clusterExposure": []}))
-    breaker_path.write_text(json.dumps({"holdings": {}}))
-    policy_path.write_text(json.dumps({
-        "accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}],
-        "psuFundingRule": {"ticker": "PSU-U.TO", "sameAccountOnly": True, "sharesFormula": "ceil(N * price / 100)"},
-        "riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60},
-        "bandConfig": {"relativePct": 20.0, "absolutePct": 1.5, "criticalMultiplier": 2.0},
-    }))
     # All three thesis holdings need a projection row in the DB, or the
     # >30%-missing no-trade check (_check_no_trade_conditions) blocks the plan
     # before any of the "happy path" assertions below get a chance to run — a
@@ -581,10 +546,7 @@ def _write_full_fixture(tmp_path):
     _write_projection(tmp_path, "NBIS", "ACCUMULATE")
     db_path = _write_projection(tmp_path, "PSU-U.TO", "MAINTAIN")
 
-    # CURRENT weights (post-Wave-3) come from domain_model.sqlite via
-    # portfolio_io.load_portfolio_state(), not portfolio.json's "holdings"/
-    # "totals" -- seed the same db_path with matching positions so bands/
-    # orders compute the same actual weights the old JSON fixture encoded
+    # Current weights come from the positions below
     # (CRWD 14.3%, NBIS 0.19%, PSU-U.TO ~85.6% of a ~$10520 rollup total).
     _seed_positions(db_path, [
         ("TFSA", "CRWD", 15.0, 100.0),
@@ -592,12 +554,7 @@ def _write_full_fixture(tmp_path):
         ("TFSA", "PSU-U.TO", 90.0, 100.0),
     ])
 
-    # Wave 8 cutover: compute_rebalance_plan() now reads thesis holdings
-    # (target_weight/pillar_id) from domain_model.sqlite's investment table via
-    # portfolio_io.load_thesis_holdings(), not target-portfolio.json -- seed the
-    # same db_path with matching target weights/pillars so bands/orders compute
-    # against the same targets the old JSON fixture (target_path, still written
-    # above for tests exercising the raw file directly) encoded.
+    # Thesis holdings (target_weight / pillar_id) come from the investment table.
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import update_investment_fields, resolve_investment
     from domain_model.pillar_repository import resolve_pillar
@@ -610,11 +567,7 @@ def _write_full_fixture(tmp_path):
     update_investment_fields(conn, resolve_investment(conn, "PSU-U.TO"), target_weight=90.5, pillar_id="cash")
     conn.close()
 
-    # Wave 5E cutover: compute_rebalance_plan() now reads the account policy
-    # from portfolio_policy (SQLite), not account_policy.json -- seed the same
-    # db_path so this fixture's account_policy.json write above (still needed
-    # by other tests exercising the pre-cutover fallback / the raw JSON file
-    # directly) has a matching SQLite counterpart.
+    # The account policy comes from portfolio_policy.
     from domain_model.portfolio_policy_repository import upsert_portfolio_policy
     import json as _json
     conn = initialize_db(str(db_path))
@@ -633,14 +586,14 @@ def _write_full_fixture(tmp_path):
     conn.close()
 
     _write_projection(tmp_path, "CRWD", "SELL")
-    return target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path
+    return risk_path, db_path
 
 
 def test_compute_rebalance_plan_full_shape(tmp_path, monkeypatch):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
+    risk_path, db_path = _write_full_fixture(tmp_path)
     monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     expected_keys = {"generatedAt", "blockedReason", "bands", "orders", "skippedRestores", "accountDataSource", "warnings"}
@@ -655,10 +608,10 @@ def test_compute_rebalance_plan_full_shape(tmp_path, monkeypatch):
 def test_compute_rebalance_plan_honors_the_db_path_it_is_given(tmp_path):
     """The plan is computed from the db_path argument alone: the module default database
     (portfolio_io._DB_PATH) is not consulted, and the account policy comes from SQLite."""
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
+    risk_path, db_path = _write_full_fixture(tmp_path)
     assert str(db_path) != portfolio_io._DB_PATH
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert plan["blockedReason"] is None
@@ -668,11 +621,8 @@ def test_compute_rebalance_plan_honors_the_db_path_it_is_given(tmp_path):
 
 
 def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
-    target_path.write_text(json.dumps({"holdings": [{"ticker": "CRWD", "targetWeight": 4.0, "pillarId": "cyber"}]}))
-    # Wave 8: targets now come from domain_model.sqlite -- zero out the other
-    # two thesis holdings' target_weight there too so the sum-to-100 check
-    # actually sees an invalid total (matches the truncated target_path above).
+    risk_path, db_path = _write_full_fixture(tmp_path)
+    # Zero out two of the three thesis holdings so the sum-to-100 check sees an invalid total.
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import update_investment_fields, resolve_investment
     conn = initialize_db(str(db_path))
@@ -680,7 +630,7 @@ def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
     update_investment_fields(conn, resolve_investment(conn, "PSU-U.TO"), target_weight=0.0)
     conn.close()
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert plan["blockedReason"] is not None
@@ -689,9 +639,8 @@ def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
 
 
 def test_compute_rebalance_plan_blocked_when_portfolio_stale(tmp_path):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
-    # Wave 3: staleness is now derived from account_investment.last_synced_at,
-    # not portfolio.json's totals.timestamp — re-seed positions with an old
+    risk_path, db_path = _write_full_fixture(tmp_path)
+    # Staleness derives from account_investment.last_synced_at: re-seed positions with an old
     # last_synced_at to exercise the DATA_STALE path.
     _seed_positions(
         db_path,
@@ -699,17 +648,17 @@ def test_compute_rebalance_plan_blocked_when_portfolio_stale(tmp_path):
         last_synced_at="2020-01-01T00:00:00Z",
     )
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert "DATA_STALE" in plan["blockedReason"]
 
 
 def test_compute_rebalance_plan_degrades_when_risk_snapshot_missing(tmp_path):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
+    risk_path, db_path = _write_full_fixture(tmp_path)
     risk_path.unlink()
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert plan["blockedReason"] is None
@@ -717,15 +666,21 @@ def test_compute_rebalance_plan_degrades_when_risk_snapshot_missing(tmp_path):
 
 
 def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path, monkeypatch):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
+    risk_path, db_path = _write_full_fixture(tmp_path)
     monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
     risk_path.write_text(json.dumps({
         "marginalRiskContribution": {"NBIS": 0.20},
         "clusterExposure": [{"pillarId": "ai_infra", "weight": 0.3, "varianceContributionPct": 30.0}],
     }))
-    breaker_path.write_text(json.dumps({"holdings": {"NBIS": {"b1": {"status": "TRIGGERED", "currentValue": 80, "currentStreak": 4}}}}))
+    from domain_model.db_client import initialize_db as _init
+    from domain_model.thesis_breaker_repository import replace_breaker_state, upsert_breaker
+    conn = _init(str(db_path))
+    upsert_breaker(conn, "NBIS", {"id": "b1", "type": "auto", "metric": "rsi", "operator": ">", "threshold": 70, "horizon": 3})
+    replace_breaker_state(conn, {"NBIS": {"b1": {"type": "auto", "currentValue": 80, "conditionMet": True,
+                                                  "currentStreak": 4, "lastEvaluatedAt": "2026-10-09T00:00:00Z", "status": "TRIGGERED"}}})
+    conn.close()
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert not any(o["ticker"] == "NBIS" for o in plan["orders"])

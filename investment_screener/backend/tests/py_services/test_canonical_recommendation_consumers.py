@@ -140,12 +140,17 @@ def test_unheld_uses_current_price_even_without_account_row(tmp_path):
     assert rec["action"] == "WATCHLIST"
 
 
-def test_breaker_and_standing_decision_use_the_supplied_database_directory(tmp_path):
+def test_breaker_and_standing_decision_use_the_supplied_database(tmp_path):
+    """A TRIGGERED breaker stored in the supplied database is an exit signal; the standing decision rides along."""
+    from domain_model.thesis_breaker_repository import replace_breaker_state, upsert_breaker
     db = seed_domain(tmp_path)
-    (tmp_path / "thesis_breaker_state.json").write_text(json.dumps({"holdings": {"SHAZ": {"risk": {"status": "TRIGGERED"}}}}))
     conn = initialize_db(str(db))
     inv = resolve_investment(conn, "SHAZ")
     update_investment_fields(conn, inv, standing_decision_type="HOLD", standing_decision_reason="Review catalyst first")
+    upsert_breaker(conn, "SHAZ", {"id": "risk", "type": "auto", "metric": "rsi", "operator": "<", "threshold": 30, "horizon": 3})
+    replace_breaker_state(conn, {"SHAZ": {"risk": {
+        "type": "auto", "currentValue": 20.0, "conditionMet": True, "currentStreak": 3,
+        "lastEvaluatedAt": "2026-10-09T00:00:00Z", "status": "TRIGGERED"}}})
     conn.close()
     rec = recommend_all(str(db))["SHAZ"]
     assert rec["action"] == "EXIT"
@@ -233,3 +238,18 @@ def test_records_show_a_trim_that_was_already_acted_on(tmp_path):
     assert be["context"]["status"] == "ACTED"
     assert "Sold 3 shares" in be["context"]["note"]
     assert records["SHAZ"]["recent_trades"]["context"] == {"status": "NONE", "note": ""}
+
+
+def test_an_ok_breaker_is_not_an_exit_signal(tmp_path):
+    """A breaker stored as OK does not turn a holding into an EXIT, and no JSON state file is consulted."""
+    from domain_model.thesis_breaker_repository import replace_breaker_state, upsert_breaker
+    db = seed_domain(tmp_path)
+    (tmp_path / "thesis_breaker_state.json").write_text(json.dumps({"holdings": {"SHAZ": {"risk": {"status": "TRIGGERED"}}}}))
+    conn = initialize_db(str(db))
+    inv = resolve_investment(conn, "SHAZ")
+    upsert_breaker(conn, "SHAZ", {"id": "risk", "type": "auto", "metric": "rsi", "operator": "<", "threshold": 30, "horizon": 3})
+    replace_breaker_state(conn, {"SHAZ": {"risk": {
+        "type": "auto", "currentValue": 60.0, "conditionMet": False, "currentStreak": 0,
+        "lastEvaluatedAt": "2026-10-09T00:00:00Z", "status": "OK"}}})
+    conn.close()
+    assert recommend_all(str(db))["SHAZ"]["action"] != "EXIT"

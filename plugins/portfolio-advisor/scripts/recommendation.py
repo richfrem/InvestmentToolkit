@@ -17,8 +17,8 @@ Key Functions:
     _recent_trades_by_symbol()             filled trades inside the recent window
     _triggered_tickers()                   evaluated thesis breaker signals
 Key Input Dependencies:
-    domain_model.sqlite (holdings, prices, latest projection fair value),
-    thesis_breaker_state.json (TRIGGERED breakers = exit signal).
+    domain_model.sqlite (holdings, prices, latest projection fair value,
+    thesis_breaker_state: TRIGGERED breakers = exit signal).
 
 Policy: a recommendation is decided BEFORE targets. It uses valuation against
 the latest fair value plus an explicit exit signal. Target weights play no part;
@@ -102,13 +102,11 @@ def recommend(held: bool, upside_pct: float | None, exit_signal: bool = False) -
     return {"action": action, "reason": reason, "valuation": val, "upside_pct": upside_pct}
 
 
-def _triggered_tickers(state_path: Path) -> set[str]:
-    """Tickers with at least one TRIGGERED thesis breaker (read-only)."""
+def _triggered_tickers(db_path: str | Path | None) -> set[str]:
+    """Tickers with at least one TRIGGERED thesis breaker in domain_model.sqlite (read-only)."""
     sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services"))
-    try:
-        state = json.loads(state_path.read_text()).get("holdings", {})
-    except FileNotFoundError:
-        return set()
+    from portfolio_io import load_breaker_state
+    state = load_breaker_state(db_path)["holdings"]
     return {t for t, bs in state.items() if any(b.get("status") == "TRIGGERED" for b in bs.values())}
 
 
@@ -170,8 +168,7 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
     state = load_portfolio_state(db_path=db_path)
     weights = compute_weights(state["shares"], state["prices"], state["total_usd"])
     targets = load_target_weights(db_path)
-    resolved_db = Path(db_path or DB_PATH)
-    triggered = _triggered_tickers(resolved_db.parent / "thesis_breaker_state.json")
+    triggered = _triggered_tickers(db_path)
     out: dict[str, dict[str, Any]] = {}
     conn = initialize_db(db_path or str(DB_PATH))
     try:

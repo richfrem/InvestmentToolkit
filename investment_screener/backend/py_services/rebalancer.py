@@ -50,7 +50,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from portfolio_io import load_portfolio_state, compute_weights, load_thesis_holdings  # noqa: E402
+from portfolio_io import load_breaker_state, load_portfolio_state, compute_weights, load_thesis_holdings  # noqa: E402
 from ticker_aliases import normalize_ticker  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.account_repository import list_accounts  # noqa: E402
@@ -66,7 +66,6 @@ from domain_model.projection_repository import (  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
 RISK_SNAPSHOT_PATH = DATA_DIR / "risk_snapshot.json"
-THESIS_BREAKER_STATE_PATH = DATA_DIR / "thesis_breaker_state.json"
 DB_PATH = DATA_DIR / "domain_model.sqlite"
 REBALANCE_PLAN_PATH = DATA_DIR / "rebalance_plan.json"
 
@@ -547,7 +546,7 @@ def compute_breaker_warnings(
 
     Args:
         routed_orders: Output of compute_account_routing().
-        thesis_breaker_state: Parsed thesis_breaker_state.json, or None.
+        thesis_breaker_state: The evaluated state ({"holdings": {...}}) from portfolio_io.load_breaker_state, or None.
 
     Returns:
         {ticker: [warning strings]} for buy orders on tickers with at least
@@ -731,7 +730,6 @@ def _load_account_policy_from_db(db_path: Path) -> dict[str, Any]:
 
 def compute_rebalance_plan(
     risk_snapshot_path: Path = RISK_SNAPSHOT_PATH,
-    thesis_breaker_state_path: Path = THESIS_BREAKER_STATE_PATH,
     db_path: Path = DB_PATH,
 ) -> dict[str, Any]:
     """Primary orchestrator — builds the full rebalance order plan.
@@ -742,7 +740,6 @@ def compute_rebalance_plan(
 
     Args:
         risk_snapshot_path: Path to risk_snapshot.json (E1 output).
-        thesis_breaker_state_path: Path to thesis_breaker_state.json (B5 output).
         db_path: Path to domain_model.sqlite.
 
     Returns:
@@ -782,11 +779,9 @@ def compute_rebalance_plan(
         warnings.append("risk_snapshot.json not found — risk-budget check skipped")
     risk_warnings = compute_risk_budget_check(routed, bands, risk_snapshot, account_policy, target_data)
 
-    breaker_state = None
-    if Path(thesis_breaker_state_path).exists():
-        breaker_state = json.loads(Path(thesis_breaker_state_path).read_text())
-    else:
-        warnings.append("thesis_breaker_state.json not found — breaker check skipped")
+    breaker_state = load_breaker_state(db_path)
+    if not breaker_state["holdings"]:
+        warnings.append("no evaluated thesis breaker state in domain_model.sqlite — breaker check skipped")
     breaker_warnings = compute_breaker_warnings(routed, breaker_state)
 
     orders = _build_order_entries(
