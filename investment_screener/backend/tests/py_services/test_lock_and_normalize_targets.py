@@ -1,99 +1,109 @@
-import json
+"""Tests for lock_and_normalize_targets.py, which reads and writes target weights in domain_model.sqlite.
+
+Purpose:
+    Zero, lock and adjust named tickers, rescale the remaining unlocked weights so the book sums
+    to 100%, persist only with --write (plus one portfolio_change_log entry), and fail loudly on
+    unknown tickers, an over-100 lock total, a missing database or no instructions.
+
+Key Input Dependencies: none (each test builds a real temporary SQLite database).
+"""
 import subprocess
 import sys
 from pathlib import Path
 
-# Paths
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT_PATH = REPO_ROOT / "investment_screener" / "backend" / "py_services" / "lock_and_normalize_targets.py"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
-from domain_model.investment_repository import get_investment, resolve_investment  # noqa: E402
+from domain_model.investment_repository import get_investment, resolve_investment, update_investment_fields  # noqa: E402
+from domain_model.portfolio_change_log_repository import list_change_log  # noqa: E402
 
 
-def test_lock_and_normalize_missing_required_args():
-    """Test that running the script without args fails and prints help/error."""
-    r = subprocess.run(
-        ["python3", str(SCRIPT_PATH)],
-        capture_output=True,
-        text=True,
-        cwd=str(REPO_ROOT)
-    )
-    assert r.returncode != 0
-
-
-def test_lock_and_normalize_happy_path(tmp_path):
-    """Test locking and normalizing targets using a temporary target-portfolio.json file.
-
-    Wave 2 Task 10 producer cutover: ``--write`` now persists rescaled
-    targetWeight values via the domain-model repository (investment.target_weight)
-    instead of rewriting target-portfolio.json in place.
-    """
-    dummy_portfolio = {
-        "holdings": [
-            {"ticker": "AAPL", "targetWeight": 40.0, "role": "core"},
-            {"ticker": "MSFT", "targetWeight": 30.0, "role": "core"},
-            {"ticker": "GOOG", "targetWeight": 20.0, "role": "core"},
-            {"ticker": "INTC", "targetWeight": 10.0, "role": "core"}
-        ]
-    }
-    target_file = tmp_path / "target-portfolio.json"
-    target_file.write_text(json.dumps(dummy_portfolio))
+def _make_db(tmp_path: Path, weights: dict) -> Path:
+    """A database whose investments carry the given target weights."""
     db_path = tmp_path / "domain_model.sqlite"
-    original_mtime = target_file.stat().st_mtime_ns
-
-    # Run script to set INTC=0, lock GOOG=25.0, adjust MSFT=15.0, and normalize AAPL
-    # Sum of locked + adjusts = GOOG(25.0) + MSFT(15.0) = 40.0
-    # Remaining for AAPL = 60.0%
-    r = subprocess.run(
-        [
-            "python3", str(SCRIPT_PATH),
-            "--target-file", str(target_file),
-            "--zeros", "INTC",
-            "--locks", "GOOG=25.0",
-            "--adjusts", "MSFT=15.0",
-            "--write",
-            "--db", str(db_path),
-        ],
-        capture_output=True,
-        text=True,
-        cwd=str(REPO_ROOT)
-    )
-
-    assert r.returncode == 0, f"Script failed: {r.stdout}\n{r.stderr}"
-
-    # target-portfolio.json must NOT be touched by the new write path.
-    assert target_file.stat().st_mtime_ns == original_mtime
-
     conn = initialize_db(str(db_path))
-    holdings_dict = {}
-    for ticker in ("AAPL", "MSFT", "GOOG", "INTC"):
-        investment_id = resolve_investment(conn, ticker)
-        holdings_dict[ticker] = get_investment(conn, investment_id)["target_weight"]
+    for symbol, weight in weights.items():
+        update_investment_fields(conn, resolve_investment(conn, symbol), target_weight=weight)
+    conn.close()
+    return db_path
+
+
+def _run(*args):
+    return subprocess.run(["python3", str(SCRIPT_PATH), *args], capture_output=True, text=True, cwd=str(REPO_ROOT))
+
+
+def _weights(db_path: Path, symbols) -> dict:
+    conn = initialize_db(str(db_path))
+    out = {s: get_investment(conn, resolve_investment(conn, s))["target_weight"] for s in symbols}
+    conn.close()
+    return out
+
+
+BOOK = {"AAPL": 40.0, "MSFT": 30.0, "GOOG": 20.0, "INTC": 10.0}
+
+
+def test_no_instructions_fails_and_says_what_to_pass(tmp_path):
+    """Running with nothing to change exits 1 and names the options."""
+    r = _run("--db", str(_make_db(tmp_path, BOOK)))
+    assert r.returncode == 1 and "--zeros" in r.stderr
+
+
+def test_zero_lock_adjust_and_normalize_writes_to_sqlite_and_logs(tmp_path):
+    """INTC to 0, GOOG locked at 25, MSFT adjusted to 15: AAPL absorbs the rest (60) and one change is logged."""
+    db_path = _make_db(tmp_path, BOOK)
+    r = _run("--zeros", "INTC", "--locks", "GOOG=25.0", "--adjusts", "MSFT=15.0", "--write", "--db", str(db_path))
+    assert r.returncode == 0, f"{r.stdout}\n{r.stderr}"
+    assert _weights(db_path, BOOK) == {"AAPL": 60.0, "MSFT": 15.0, "GOOG": 25.0, "INTC": 0.0}
+    conn = initialize_db(str(db_path))
+    log = list_change_log(conn)
+    conn.close()
+    assert len(log) == 1 and "lock_and_normalize_targets" in log[0]["note"]
+
+
+def test_dry_run_changes_nothing(tmp_path):
+    """Without --write the weights and the change log stay as they were."""
+    db_path = _make_db(tmp_path, BOOK)
+    r = _run("--zeros", "INTC", "--db", str(db_path))
+    assert r.returncode == 0 and "DRY RUN" in r.stdout
+    assert _weights(db_path, BOOK) == BOOK
+    conn = initialize_db(str(db_path))
+    assert list_change_log(conn) == []
     conn.close()
 
-    assert holdings_dict["INTC"] == 0.0
-    assert holdings_dict["GOOG"] == 25.0
-    assert holdings_dict["MSFT"] == 15.0
-    assert holdings_dict["AAPL"] == 60.0
-    assert round(sum(holdings_dict.values()), 4) == 100.0
+
+def test_unknown_ticker_fails_loudly_and_writes_nothing(tmp_path):
+    """A lock on a ticker the database does not know is an error, not a silent skip."""
+    db_path = _make_db(tmp_path, BOOK)
+    r = _run("--locks", "ZZZZ=5", "--write", "--db", str(db_path))
+    assert r.returncode == 1 and "ZZZZ" in r.stderr
+    assert _weights(db_path, BOOK) == BOOK
 
 
-def test_lock_and_normalize_dry_run_does_not_touch_db(tmp_path):
-    dummy_portfolio = {
-        "holdings": [
-            {"ticker": "AAPL", "targetWeight": 50.0, "role": "core"},
-            {"ticker": "MSFT", "targetWeight": 50.0, "role": "core"},
-        ]
-    }
-    target_file = tmp_path / "target-portfolio.json"
-    target_file.write_text(json.dumps(dummy_portfolio))
-    db_path = tmp_path / "domain_model.sqlite"
+def test_locks_over_100_fail(tmp_path):
+    """Locked weights above 100 are rejected before anything is written."""
+    db_path = _make_db(tmp_path, BOOK)
+    r = _run("--locks", "AAPL=70", "MSFT=40", "--write", "--db", str(db_path))
+    assert r.returncode == 1 and "exceeds 100" in r.stderr
+    assert _weights(db_path, BOOK) == BOOK
 
-    r = subprocess.run(
-        ["python3", str(SCRIPT_PATH), "--target-file", str(target_file), "--db", str(db_path)],
-        capture_output=True, text=True, cwd=str(REPO_ROOT),
-    )
-    assert r.returncode == 0, f"Script failed: {r.stdout}\n{r.stderr}"
-    assert not db_path.exists()
+
+def test_missing_database_fails_and_is_not_created(tmp_path):
+    """A missing database is reported, never created as a side effect."""
+    missing = tmp_path / "absent.sqlite"
+    r = _run("--zeros", "AAPL", "--db", str(missing))
+    assert r.returncode == 1 and "not found" in r.stderr
+    assert not missing.exists()
+
+
+def test_retired_target_file_option_is_gone():
+    """--target-file no longer exists, so a stale caller fails loudly."""
+    r = _run("--target-file", "x.json", "--zeros", "AAPL")
+    assert r.returncode == 2 and "unrecognized arguments" in r.stderr
+
+
+def test_script_never_names_a_retired_file():
+    """The source mentions neither portfolio.json nor target-portfolio.json."""
+    source = SCRIPT_PATH.read_text()
+    assert "portfolio.json" not in source and "target-portfolio.json" not in source

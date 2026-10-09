@@ -46,13 +46,12 @@ Once all individual adjustments are confirmed or modified:
 2. **Execute Precision Sizing**: Run the precision target sizing service to automatically lock actual broker weights (for Gate 7 positions like GOOG, HUMN, etc.) and scale remaining holdings to exactly 100%:
    ```bash
    python3 investment_screener/backend/py_services/lock_and_normalize_targets.py \
-     --target-file investment_screener/backend/data/theses/target-portfolio.json \
      --zeros [exited-tickers] \
      --locks GOOG=4.4451,HUMN=2.8284,KOID=2.6500,COIN=2.8060,CRCL=3.3855,ETHA=0.0,IBIT=0.0 \
      --adjusts [approved-ticker-adjusts, e.g. BE=5.0] \
      --write
    ```
-3. **Rebuild Thesis Narrative & Tables**: Always run `--blueprint` on the targets script to keep `investment_thesis.md` and `target-portfolio.json` perfectly synchronized:
+3. **Rebuild Thesis Narrative & Tables**: Always run `--blueprint` on the targets script to keep `investment_thesis.md` in step with the target weights in `domain_model.sqlite`:
    ```bash
    python3 plugins/portfolio-advisor/scripts/update_targets.py --show --blueprint
    ```
