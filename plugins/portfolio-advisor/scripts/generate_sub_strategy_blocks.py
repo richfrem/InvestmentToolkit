@@ -60,6 +60,7 @@ def build_current_positions_block(
     holdings_in_pillar: list[dict],
     weights: dict[str, float],
     total_usd: float,
+    db_path: Path = DB_PATH,
 ) -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
@@ -91,7 +92,7 @@ def build_current_positions_block(
             act    = weights.get(t, 0)
             tgt    = float(h.get("targetWeight") or 0)
             role   = h.get("role", "")
-            action = derive_action(t, act, tgt, db_path=str(DB_PATH))
+            action = derive_action(t, act, tgt, db_path=str(db_path))
             emoji  = ACTION_EMOJI.get(action, "")
             entry  = _entry_str(h)
             lines.append(
@@ -174,7 +175,7 @@ def run(db_path: Path = DB_PATH) -> None:
         for pid in pids:
             holdings.extend(by_pillar.get(pid, []))
 
-        body = build_current_positions_block(sub_id, holdings, weights, total_usd)
+        body = build_current_positions_block(sub_id, holdings, weights, total_usd, db_path)
         content = md_file.read_text()
         new_content = replace_block(content, "current_positions", body)
         if new_content != content:

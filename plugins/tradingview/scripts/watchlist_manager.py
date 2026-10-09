@@ -4,7 +4,7 @@ watchlist_manager.py — Synchronizes TradingView watchlists.
 ============================================================
 
 Purpose:
-    Reads researched watchlists (projections / watchlist.json) and active portfolio holdings,
+    Reads researched watchlists (watchlisted investments, else tickers with projections) and active portfolio holdings,
     then calls the Node.js CDP CLI to sync them to TradingView.
 
 Layer:
@@ -27,7 +27,6 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-TARGET_WATCHLIST_PATH = REPO_ROOT / "investment_screener/backend/data/watchlist.json"
 DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/scripts"))
@@ -66,9 +65,7 @@ def _load_holdings_symbols(db_path: Path | None = None) -> List[str]:
 def _load_watchlisted_symbols(db_path: Path | None = None) -> List[str]:
     """Return upper-cased symbols with ``investment.is_watchlisted`` set.
 
-    Storage backend (Wave 2 Task 10 rewire): replaces the watchlist.json
-    read (list, {"watchlist": [...]}, or {"tickers": [...]} shapes) with
-    ``investment.is_watchlisted`` via ``list_investments`` (ADR-029).
+    Reads ``investment.is_watchlisted`` via ``list_investments``.
     """
     conn = initialize_db(str(db_path or DB_PATH))
     try:
@@ -84,16 +81,13 @@ def normalize_symbol(s: str) -> str:
     return "PSU-U" if s in ("PSU-U.TO", "PSU.U.TO") else s
 
 
-# External comment: Retrieve researched symbols from file or projections directory
+# External comment: Retrieve researched symbols from watchlisted investments or projections
 def load_researched_watchlist(db_path: Path | None = None) -> List[str]:
     """Retrieve full list of researched symbols.
 
-    Storage backend (Wave 2 Task 10 rewire): the primary path reads
-    ``investment.is_watchlisted`` via ``_load_watchlisted_symbols`` instead
-    of watchlist.json (ADR-029). The fallback path (no watchlisted rows)
-    reads `investment`/`projection_version` via
-    `domain_model.projection_repository.list_symbols_with_projections`, not
-    `projections/*.json` filenames directly (Wave 1 Task 7B, unchanged).
+    The primary path reads ``investment.is_watchlisted`` via ``_load_watchlisted_symbols``.
+    The fallback path (no watchlisted rows) reads `investment` / `projection_version` via
+    `domain_model.projection_repository.list_symbols_with_projections`.
     """
     watchlisted = _load_watchlisted_symbols(db_path)
     if watchlisted:

@@ -31,7 +31,6 @@ from typing import Any
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 REPO_ROOT       = Path(__file__).resolve().parents[3]
-PORTFOLIO_PATH  = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 DB_PATH         = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 TV_CLI          = REPO_ROOT / "tradingview-cdp/cli.js"
 
@@ -64,14 +63,12 @@ from domain_model.price_level_repository import get_price_levels  # noqa: E402
 def load_portfolio() -> list[dict[str, Any]]:
     """Return current holdings as ``[{"symbol": ...}, ...]`` from domain_model.sqlite.
 
-    Wave 3 cutover: the holdings universe is read from SQLite via
-    ``portfolio_io.load_portfolio_state()`` (whose ``shares`` dict is keyed by
-    the aggregated-across-accounts symbol), not the plain ``holdings`` array in
-    portfolio.json. The only field this consumer needs is ``symbol`` (see
-    main()'s ticker-filtering loop), so each holding is projected down to that
-    single key rather than reconstructing the full JSON holding shape.
+    The holdings universe is read from SQLite via ``portfolio_io.load_portfolio_state()``
+    (whose ``shares`` dict is keyed by the aggregated-across-accounts symbol). The only
+    field this consumer needs is ``symbol`` (see main()'s ticker-filtering loop), so each
+    holding is projected down to that single key.
     """
-    state = load_portfolio_state(PORTFOLIO_PATH)
+    state = load_portfolio_state()
     return [{"symbol": symbol} for symbol in state["shares"]]
 
 

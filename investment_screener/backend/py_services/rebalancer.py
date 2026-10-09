@@ -65,16 +65,8 @@ from domain_model.projection_repository import (  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-TARGET_PATH = DATA_DIR / "theses/target-portfolio.json"
-# Unused default for portfolio_path; load_portfolio_state() reads domain_model.sqlite.
-PORTFOLIO_PATH = DATA_DIR / "portfolio.json"
 RISK_SNAPSHOT_PATH = DATA_DIR / "risk_snapshot.json"
 THESIS_BREAKER_STATE_PATH = DATA_DIR / "thesis_breaker_state.json"
-# DEPRECATED, unused: account_policy.json was archived (git mv) in Wave 5E. This
-# default now points at a file that no longer exists -- kept only for
-# compute_rebalance_plan()'s account_policy_path parameter's signature
-# compatibility (see that function's docstring). Do not read this path.
-ACCOUNT_POLICY_PATH = DATA_DIR / "account_policy.json"
 DB_PATH = DATA_DIR / "domain_model.sqlite"
 REBALANCE_PLAN_PATH = DATA_DIR / "rebalance_plan.json"
 
@@ -604,9 +596,7 @@ def _has_any_projection(db_path: Path, ticker: str) -> bool:
         return False
 
 
-def _check_no_trade_conditions(
-    target_data: dict[str, Any], portfolio_path: Path, db_path: Path,
-) -> str | None:
+def _check_no_trade_conditions(target_data: dict[str, Any], db_path: Path) -> str | None:
     """Returns a blockedReason string, or None if clear to trade.
 
     Checks (in order): portfolio-data staleness (>60min), target weights not
@@ -614,9 +604,7 @@ def _check_no_trade_conditions(
 
     Args:
         target_data: {"holdings": load_thesis_holdings(...)}.
-        portfolio_path: Retained for signature compatibility; no longer read
-            (Wave 3 cutover — staleness now derives from SQLite).
-        db_path: Path to domain_model.sqlite.
+        db_path: Path to domain_model.sqlite (staleness is its newest position sync).
 
     Returns:
         A human-readable blockedReason, or None.
@@ -742,11 +730,8 @@ def _load_account_policy_from_db(db_path: Path) -> dict[str, Any]:
 
 
 def compute_rebalance_plan(
-    target_portfolio_path: Path = TARGET_PATH,
-    portfolio_path: Path = PORTFOLIO_PATH,
     risk_snapshot_path: Path = RISK_SNAPSHOT_PATH,
     thesis_breaker_state_path: Path = THESIS_BREAKER_STATE_PATH,
-    account_policy_path: Path = ACCOUNT_POLICY_PATH,
     db_path: Path = DB_PATH,
 ) -> dict[str, Any]:
     """Primary orchestrator — builds the full rebalance order plan.
@@ -756,19 +741,8 @@ def compute_rebalance_plan(
     any fire, returns early with blockedReason set and orders: [].
 
     Args:
-        target_portfolio_path: Unused; thesis holdings come from
-            load_thesis_holdings(db_path) below. Kept so call sites (tests, CLI)
-            keep their signature; it has no effect.
-        portfolio_path: Retained for signature compatibility; no longer read
-            (holdings, prices and the total come from domain_model.sqlite).
         risk_snapshot_path: Path to risk_snapshot.json (E1 output).
         thesis_breaker_state_path: Path to thesis_breaker_state.json (B5 output).
-        account_policy_path: DEPRECATED, unused since Wave 5E's cutover to
-            _load_account_policy_from_db(db_path) below -- account_policy.json is
-            archived (git mv) and this default now points at a file that no longer
-            exists. Kept only so every already-migrated call site (tests, CLI)
-            keeps working without another signature change; do not rely on this
-            parameter having any effect.
         db_path: Path to domain_model.sqlite.
 
     Returns:
@@ -778,7 +752,7 @@ def compute_rebalance_plan(
     target_data = {"holdings": load_thesis_holdings(str(db_path))}
     account_policy = _load_account_policy_from_db(db_path)
 
-    blocked = _check_no_trade_conditions(target_data, Path(portfolio_path), Path(db_path))
+    blocked = _check_no_trade_conditions(target_data, Path(db_path))
     if blocked:
         return {
             "generatedAt": _now_iso(), "blockedReason": blocked, "bands": {},
@@ -786,7 +760,7 @@ def compute_rebalance_plan(
         }
 
     warnings: list[str] = []
-    state = load_portfolio_state(Path(portfolio_path))
+    state = load_portfolio_state(db_path=db_path)
     current_weights = compute_weights(state["shares"], state["prices"], state["total_usd"])
     target_weights = {h["ticker"]: h.get("targetWeight", 0.0) for h in target_data.get("holdings", [])}
     band_config = account_policy.get("bandConfig", DEFAULT_BAND_CONFIG)

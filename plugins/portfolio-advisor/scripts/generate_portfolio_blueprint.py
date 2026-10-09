@@ -41,7 +41,6 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
-PORTFOLIO_JSON = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_MD     = REPO_ROOT / "investment_screener/backend/data/theses/investment_thesis.md"
 DOMAIN_DB     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
@@ -51,15 +50,12 @@ from portfolio_io import load_portfolio_state, compute_weights, replace_block  #
 
 
 def _compute_current_weights(db_path: Path | None = None) -> dict:
-    """Wave 3 replacement for validate_weights.compute_current(PORTFOLIO_JSON).
+    """Current weights from domain_model.sqlite: {"total", "holdings", "total_value"}.
 
-    Sources shares/prices/total exclusively from
-    portfolio_io.load_portfolio_state() (SQLite-backed) and derives per-ticker
-    weight % via portfolio_io.compute_weights() — the same total_usd
-    denominator used everywhere else in this file, so this can never drift
-    from build_actual_map()'s totals. Returns the same shape the retired
-    validate_weights.compute_current() returned: {"total", "holdings",
-    "total_value"}.
+    Sources shares/prices/total exclusively from portfolio_io.load_portfolio_state()
+    and derives per-ticker weight % via portfolio_io.compute_weights(), the same
+    total_usd denominator used everywhere else in this file, so this can never drift
+    from build_actual_map()'s totals.
     """
     state = load_portfolio_state(db_path or DOMAIN_DB)
     holdings = compute_weights(state["shares"], state["prices"], state["total_usd"])
@@ -149,12 +145,9 @@ def _get_latest_ai_agent_projection(ticker: str, db_path: Path | None = None) ->
 def build_actual_map(db_path: Path | None = None) -> tuple[dict, float]:
     """Build actual-position map entirely from domain_model.sqlite.
 
-    Shares, prices, and the authoritative total all come
-    from portfolio_io.load_portfolio_state() (which delegates to
-    domain_model.portfolio_repository.load_portfolio_state_from_db()). The
-    ``db_path`` argument is passed
-    through for signature compatibility/testability only; load_portfolio_state()
-    itself always reads the module-level ``portfolio_io._DB_PATH``.
+    Shares, prices, and the authoritative total all come from
+    portfolio_io.load_portfolio_state(db_path), which delegates to
+    domain_model.portfolio_repository.load_portfolio_state_from_db().
     """
     state = load_portfolio_state(db_path or DOMAIN_DB)
 
@@ -227,12 +220,12 @@ def build_thesis_map(db_path: Path | None = None) -> dict:
     return holdings
 
 
-def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> str:
+def generate_section(thesis_map: dict, actual_map: dict, total_value: float, db_path: Path | None = None) -> str:
     today = date.today().isoformat()
 
     # ── Current % and target % both sourced from domain_model.sqlite
-    current_data = _compute_current_weights(DOMAIN_DB)
-    target_data  = {"holdings": _load_target_weights(DOMAIN_DB)}
+    current_data = _compute_current_weights(db_path or DOMAIN_DB)
+    target_data  = {"holdings": _load_target_weights(db_path or DOMAIN_DB)}
 
     # Group by sub-strategy
     groups: dict[str, list] = {}
@@ -449,20 +442,15 @@ def update_section_tables(content: str, current_data: dict, target_data: dict) -
 def main():
     parser = argparse.ArgumentParser(description="Generate Portfolio Blueprint section for investment_thesis.md")
     parser.add_argument("--write", action="store_true", help="Write updated section into investment_thesis.md")
-    parser.add_argument("--portfolio", default=str(PORTFOLIO_JSON))
     parser.add_argument("--thesis-md", default=str(THESIS_MD))
     parser.add_argument("--db", default=str(DOMAIN_DB), help="Path to domain_model.sqlite")
     args = parser.parse_args()
 
-    # Wave 3 full cutover: portfolio data (per-position shares/price AND the
-    # total) is sourced entirely from domain_model.sqlite via
-    # portfolio_io.load_portfolio_state(). --portfolio is retained only for
-    # CLI/back-compat and passthrough to generate_sub_strategy_blocks.run()
-    # below; it is no longer read for shares/price/total here.
+    # Portfolio data (per-position shares/price and the total) comes from domain_model.sqlite (--db).
     actual_map, total_value = build_actual_map(Path(args.db))
     thesis_map = build_thesis_map(Path(args.db))
 
-    section = generate_section(thesis_map, actual_map, total_value)
+    section = generate_section(thesis_map, actual_map, total_value, Path(args.db))
 
     if args.write:
         md_path = Path(args.thesis_md)

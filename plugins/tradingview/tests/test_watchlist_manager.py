@@ -46,7 +46,7 @@ class TestWatchlistManager(unittest.TestCase):
         self.assertEqual(set(data["actions"].keys()), {"TV-Full Watchlist", "TV-Portfolio"})
 
 class TestLoadResearchedWatchlistDbFallback(unittest.TestCase):
-    """Wave 1 Task 7B — fallback (no watchlist.json) enumerates tickers with a
+    """Fallback (no watchlisted rows) enumerates tickers with a
     projection row in domain_model.sqlite, not projections/*.json filenames."""
 
     def test_fallback_lists_symbols_with_projections(self):
@@ -64,12 +64,7 @@ class TestLoadResearchedWatchlistDbFallback(unittest.TestCase):
             finally:
                 conn.close()
 
-            original_target_path = watchlist_manager.TARGET_WATCHLIST_PATH
-            watchlist_manager.TARGET_WATCHLIST_PATH = Path(tmp) / "does_not_exist.json"
-            try:
-                tickers = watchlist_manager.load_researched_watchlist(db_path=db_path)
-            finally:
-                watchlist_manager.TARGET_WATCHLIST_PATH = original_target_path
+            tickers = watchlist_manager.load_researched_watchlist(db_path=db_path)
 
             self.assertEqual(tickers, ["AMD", "NVDA"])
 
@@ -79,12 +74,7 @@ class TestLoadResearchedWatchlistDbFallback(unittest.TestCase):
             db_path = Path(tmp) / "test.sqlite"
             initialize_db(str(db_path)).close()
 
-            original_target_path = watchlist_manager.TARGET_WATCHLIST_PATH
-            watchlist_manager.TARGET_WATCHLIST_PATH = Path(tmp) / "does_not_exist.json"
-            try:
-                tickers = watchlist_manager.load_researched_watchlist(db_path=db_path)
-            finally:
-                watchlist_manager.TARGET_WATCHLIST_PATH = original_target_path
+            tickers = watchlist_manager.load_researched_watchlist(db_path=db_path)
 
             self.assertEqual(tickers, [])
 
@@ -169,3 +159,11 @@ class TestLoadHoldingsFromSqlite(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestNoRetiredWatchlistFile(unittest.TestCase):
+    """The module has no watchlist.json path."""
+
+    def test_no_watchlist_json_constant(self):
+        self.assertFalse(hasattr(watchlist_manager, "TARGET_WATCHLIST_PATH"))
+        self.assertNotIn("watchlist.json", Path(watchlist_manager.__file__).read_text())

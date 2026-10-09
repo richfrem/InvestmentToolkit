@@ -59,7 +59,7 @@ def _build_test_db(tmp_path, rows):
 
 def _reload_generate_portfolio_blueprint():
     """Import (or reimport) generate_portfolio_blueprint fresh so module-level
-    DOMAIN_DB/PORTFOLIO_JSON constants don't leak stale state between tests."""
+    DOMAIN_DB constant doesn't leak stale state between tests."""
     import importlib
     if "generate_portfolio_blueprint" in sys.modules:
         importlib.reload(sys.modules["generate_portfolio_blueprint"])
@@ -78,8 +78,6 @@ def test_build_actual_map_works_with_no_portfolio_json_on_disk(tmp_path, monkeyp
     monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
 
     gpb = _reload_generate_portfolio_blueprint()
-    # Sanity: no portfolio.json exists at the module's default path in this sandbox.
-    assert not gpb.PORTFOLIO_JSON.exists() or True  # real file is gitignored; just don't touch it
 
     actual_map, total = gpb.build_actual_map(Path(db_path))
 
@@ -89,31 +87,22 @@ def test_build_actual_map_works_with_no_portfolio_json_on_disk(tmp_path, monkeyp
     assert actual_map["MSFT"]["shares"] == 5.0
 
 
-def test_build_actual_map_ignores_stale_wrong_portfolio_json(tmp_path, monkeypatch):
-    """If a stale portfolio.json with WRONG data existed and were still being
-    read, it would produce different (wrong) shares/total than the SQLite
-    fixture. Point PORTFOLIO_JSON at a deliberately wrong stale file and
-    confirm the output still matches the SQLite fixture, not the stale JSON.
-    """
-    import portfolio_io
+def test_build_actual_map_reads_the_db_it_is_given_not_the_module_default(tmp_path):
+    """The db_path argument is the database read; portfolio_io's default database is not consulted."""
     db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0)])
-    monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
-
-    stale_json = tmp_path / "stale_portfolio.json"
-    stale_json.write_text(json.dumps({
-        "holdings": [{"symbol": "AAPL", "shares": 999, "price": 1.0}],
-        "totals": {"totalUSD": 999.0},
-    }))
-
     gpb = _reload_generate_portfolio_blueprint()
-    monkeypatch.setattr(gpb, "PORTFOLIO_JSON", stale_json)
 
     actual_map, total = gpb.build_actual_map(Path(db_path))
 
-    # Must reflect the SQLite fixture (1500.0), not the stale JSON (999 shares / $999 total).
-    assert total == 1500.0
-    assert actual_map["AAPL"]["shares"] == 10.0
-    assert actual_map["AAPL"]["shares"] != 999
+    assert total == 1500.0 and actual_map["AAPL"]["shares"] == 10.0
+
+
+def test_module_has_no_json_portfolio_constant_or_cli_option():
+    """The blueprint generator has no portfolio JSON path and no --portfolio option."""
+    gpb = _reload_generate_portfolio_blueprint()
+    assert not hasattr(gpb, "PORTFOLIO_JSON")
+    source = Path(gpb.__file__).read_text()
+    assert "--portfolio" not in source and "portfolio.json" not in source
 
 
 def test_compute_current_weights_matches_sqlite_not_json(tmp_path, monkeypatch):

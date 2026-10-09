@@ -31,7 +31,7 @@ def test_sync_roles_fixes_wrong_role_for_held_position(tmp_path, monkeypatch):
     db_path = tmp_path / "test.sqlite"
     _seed(db_path, "NVDA", target_weight=10.0, lifecycle_status="watchlist")  # wrong: held but "watchlist"
 
-    monkeypatch.setattr(sync_portfolio_roles, "load_actual_shares", lambda path: {"NVDA": 5.0})
+    monkeypatch.setattr(sync_portfolio_roles, "load_actual_shares", lambda db_path: {"NVDA": 5.0})
 
     sync_portfolio_roles.sync_roles(dry_run=False, db_path=db_path)
 
@@ -45,7 +45,7 @@ def test_sync_roles_dry_run_does_not_write(tmp_path, monkeypatch):
     db_path = tmp_path / "test.sqlite"
     _seed(db_path, "NVDA", target_weight=10.0, lifecycle_status="watchlist")
 
-    monkeypatch.setattr(sync_portfolio_roles, "load_actual_shares", lambda path: {"NVDA": 5.0})
+    monkeypatch.setattr(sync_portfolio_roles, "load_actual_shares", lambda db_path: {"NVDA": 5.0})
 
     sync_portfolio_roles.sync_roles(dry_run=True, db_path=db_path)
 
@@ -59,7 +59,7 @@ def test_sync_roles_leaves_correct_role_unchanged(tmp_path, monkeypatch):
     db_path = tmp_path / "test.sqlite"
     _seed(db_path, "NVDA", target_weight=10.0, lifecycle_status="accumulate")
 
-    monkeypatch.setattr(sync_portfolio_roles, "load_actual_shares", lambda path: {"NVDA": 5.0})
+    monkeypatch.setattr(sync_portfolio_roles, "load_actual_shares", lambda db_path: {"NVDA": 5.0})
 
     sync_portfolio_roles.sync_roles(dry_run=False, db_path=db_path)
 
@@ -73,3 +73,25 @@ def test_no_longer_references_target_portfolio_json():
     src = (SCRIPT_DIR / "sync_portfolio_roles.py").read_text()
     assert "target-portfolio.json" not in src
     assert "TARGET_JSON" not in src
+
+
+def test_load_actual_shares_reads_the_database_it_is_given(tmp_path):
+    """load_actual_shares(db_path) returns the shares stored in that database, summed across accounts."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from domain_model.account_investment_repository import upsert_account_investment
+    from domain_model.account_repository import upsert_account
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_price_repository import upsert_investment_price
+    from domain_model.investment_repository import resolve_investment
+
+    db = tmp_path / "t.sqlite"
+    conn = initialize_db(str(db))
+    for account in ("TFSA", "RRSP"):
+        upsert_account(conn, account, account, account)
+    investment_id = resolve_investment(conn, "AAPL", asset_class="EQUITY", currency="USD")
+    upsert_investment_price(conn, investment_id, price=100.0, currency="USD", fetched_at="2026-10-09T00:00:00Z")
+    for account, qty in (("TFSA", 30), ("RRSP", 10)):
+        upsert_account_investment(conn, account, investment_id, qty, 100.0, qty * 100.0, "USD", "2026-10-09T00:00:00Z")
+    conn.close()
+
+    assert sync_portfolio_roles.load_actual_shares(db) == {"AAPL": 40.0}

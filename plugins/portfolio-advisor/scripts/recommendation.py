@@ -167,7 +167,7 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
     from portfolio_io import compute_weights, load_portfolio_state, load_target_weights
     from thesis_breakers import DB_PATH
 
-    state = load_portfolio_state(None, db_path=db_path)
+    state = load_portfolio_state(db_path=db_path)
     weights = compute_weights(state["shares"], state["prices"], state["total_usd"])
     targets = load_target_weights(db_path)
     resolved_db = Path(db_path or DB_PATH)

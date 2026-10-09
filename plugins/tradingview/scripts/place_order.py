@@ -529,7 +529,7 @@ def main():
             order_price = args.limit_price
         else:
             try:
-                _state = load_portfolio_state(None, db_path=DB_PATH)
+                _state = load_portfolio_state(db_path=DB_PATH)
                 order_price = _state["prices"].get(normalize_ticker(args.ticker.upper()), 0.0)
             except Exception:
                 order_price = 0.0

@@ -12,7 +12,6 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PORTFOLIO_JSON = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
@@ -25,12 +24,12 @@ VALID_NOT_HELD = {"watchlist", "monitor", "initiate", "avoid"}
 VALID_HELD = {"trim", "accumulate", "exit"}
 
 
-def load_actual_shares(portfolio_path: Path) -> dict[str, float]:
-    """Read portfolio.json and return {ticker: shares} for all held positions.
+def load_actual_shares(db_path: Path) -> dict[str, float]:
+    """Return {ticker: shares} for all held positions in domain_model.sqlite.
 
-    Delegates to portfolio_io.load_portfolio_state — single source of truth.
+    Delegates to portfolio_io.load_portfolio_state, the single source of truth.
     """
-    return load_portfolio_state(portfolio_path)["shares"]
+    return load_portfolio_state(db_path)["shares"]
 
 
 def _first_action_word(text: str) -> str:
@@ -86,7 +85,7 @@ def determine_role(holding: dict, actual_shares: float) -> str:
 
 
 def sync_roles(dry_run: bool = False, db_path: Path = DB_PATH) -> None:
-    actual = load_actual_shares(PORTFOLIO_JSON)
+    actual = load_actual_shares(db_path)
 
     conn = initialize_db(str(db_path))
     try:

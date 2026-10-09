@@ -54,7 +54,7 @@ def _load_total_equity() -> float:
     try:
         from portfolio_io import load_portfolio_state
         # portfolio_path arg is retained for signature compatibility but unused.
-        return float(load_portfolio_state(None).get("total_usd", 0.0) or 0.0)
+        return float(load_portfolio_state().get("total_usd", 0.0) or 0.0)
     except Exception as exc:  # pragma: no cover - defensive
         print(f"  Portfolio total unavailable: {exc}", file=sys.stderr)
         return 0.0

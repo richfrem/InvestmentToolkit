@@ -182,8 +182,6 @@ from domain_model.order_execution_repository import insert_order_execution  # no
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
-# Unused default for portfolio_path; portfolio_io.load_portfolio_state() reads domain_model.sqlite.
-PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
 # TRADE_LOG_PATH / ORDERS_EXECUTED_PATH removed Wave 4 Task 12: get_trade_log_entries()
 # and log_order_execution() were cut over to DB_PATH (trade_log_entry / order_execution
 # SQLite tables) in Task 8. trade-log.json / orders_executed.jsonl archived to ARCHIVE/.
@@ -231,39 +229,23 @@ def _project_new_weight(
     return max(new_value, 0.0) / total_value
 
 
-def build_portfolio_state_for_order(
-    db_path: Optional[Path] = None,
-    portfolio_path: Optional[Path] = None,
-) -> Dict[str, Any]:
+def build_portfolio_state_for_order(db_path: Optional[Path] = None) -> Dict[str, Any]:
     """Build the real portfolio_state dict check_mrc_limit()/
     check_cluster_variance() require, from the REAL data sources — this is the
     missing "real caller convenience" these gates never had until now (every
     existing test constructs portfolio_state by hand).
 
-    Reads the ticker -> pillar_id map from domain_model.sqlite's
-    `investment` table (Wave 2 consumer cutover — previously read the retired
-    thesis JSON file's "pillarId" field directly, mirroring
-    risk_engine.py's compute_risk_snapshot() pattern; now reads the same
-    data via investment_repository.list_investments()). Loads actual holdings
-    and prices from domain_model.sqlite via portfolio_io's
-    load_portfolio_state()/compute_weights() for actual weights, unchanged —
-    no weight math is reimplemented here.
-
-    Degrades rather than raises when the loader fails with OSError or
-    json.JSONDecodeError (other errors, e.g. sqlite3.Error, are not caught here):
-    the result is {"holdings": {}, "total_value": 0.0} —
-    matches how every gate that consumes portfolio_state already treats a
-    zero/missing weight or total_value (check_mrc_limit/check_cluster_variance
-    both degrade to passed=True in that case), so this degradation is a safe,
-    intentional "can't evaluate, don't block" fallback, not a new failure mode.
-    A missing/fresh domain_model.sqlite degrades to an empty pillar map
-    (initialize_db() creates the schema fresh if the file doesn't exist yet).
+    Reads the ticker -> pillar_id map from domain_model.sqlite's `investment` table via
+    investment_repository.list_investments(), and actual holdings and prices from the same
+    database via portfolio_io's load_portfolio_state()/compute_weights() for actual weights;
+    no weight math is reimplemented here. A missing or fresh domain_model.sqlite yields
+    {"holdings": {}, "total_value": 0.0} (initialize_db() creates the schema), which every
+    gate that consumes portfolio_state treats as "nothing to evaluate" (check_mrc_limit and
+    check_cluster_variance degrade to passed=True). Database errors are not caught here.
 
     Args:
         db_path: Override path (tests use tmp_path); None reads the real
             DB_PATH (domain_model.sqlite).
-        portfolio_path: Retained for signature compatibility; the loader no
-            longer reads it (holdings come from ``db_path``).
 
     Returns:
         {"holdings": {ticker: {"weight_pct": float, "pillar_id": str}},
@@ -285,11 +267,8 @@ def build_portfolio_state_for_order(
         if inv.get("symbol")
     }
 
-    try:
-        # Holdings come from the same database as the pillar map above.
-        state = load_portfolio_state(Path(portfolio_path or PORTFOLIO_PATH), db_path=db_path)
-    except (OSError, json.JSONDecodeError):
-        return {"holdings": {}, "total_value": 0.0}
+    # Holdings come from the same database as the pillar map above.
+    state = load_portfolio_state(db_path=db_path)
 
     weights_pct = compute_weights(state["shares"], state["prices"], state["total_usd"])
 
