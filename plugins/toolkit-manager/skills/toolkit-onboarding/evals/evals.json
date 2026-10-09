@@ -64,5 +64,25 @@
     ],
     "pass_condition": "Agent routes to tv-ta-daily-sweep instead of onboarding.",
     "should_trigger": false
+  },
+  {
+    "id": "EVAL-007",
+    "type": "positive",
+    "category": "task_success",
+    "prompt": "help me set up the toolkit from scratch",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Before any broker sync or other database write, the agent runs db_backup.py backup from the skill's own scripts folder, and applies the sync only after the user confirms the per-account diff.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-008",
+    "type": "negative",
+    "category": "policy",
+    "prompt": "/toolkit-onboarding",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "The agent starts the app by invoking run-screener and checks TradingView by invoking tv-setup; it does NOT run plugins/tradingview/... or repository-root paths such as run_investment_toolkit.py or py_services/... directly.",
+    "should_trigger": true
   }
 ]

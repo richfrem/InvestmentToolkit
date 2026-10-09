@@ -1224,6 +1224,36 @@
       "dst": "investment_screener/backend/py_services/leverage.py",
       "strategy": "symlink",
       "description": "leverage.py canonical in plugin/scripts; py_services/ symlink so the quality score shares its thresholds"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/db_backup.py",
+      "dst": "investment_screener/backend/py_services/domain_model/db_backup.py",
+      "strategy": "symlink",
+      "description": "db_backup.py canonical in plugin/scripts; linked for the migrator, run_investment_toolkit.py and the sqlite-admin skill"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/db_backup.py",
+      "dst": "plugins/toolkit-manager/skills/sqlite-admin/scripts/db_backup.py",
+      "strategy": "symlink",
+      "description": "db_backup.py canonical in plugin/scripts; linked for the migrator, run_investment_toolkit.py and the sqlite-admin skill"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/sqlite_admin.py",
+      "dst": "plugins/toolkit-manager/skills/sqlite-admin/scripts/sqlite_admin.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/sqlite_admin.py",
+      "dst": "plugins/toolkit-manager/skills/toolkit-onboarding/scripts/sqlite_admin.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/db_backup.py",
+      "dst": "plugins/toolkit-manager/skills/toolkit-onboarding/scripts/db_backup.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     }
   ]
 }

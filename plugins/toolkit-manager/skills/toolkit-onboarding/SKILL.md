@@ -25,45 +25,34 @@ Master coordinator for fresh clones to achieve full operational parity across se
 
 ## Quick start
 
-Initiate the onboarding wizard from repository root:
+Everything this skill runs itself is in its own `scripts/` folder; every other step is another skill, invoked by name. Run from this skill's folder:
 
 ```bash
-python3 run_investment_toolkit.py
+python3 scripts/sqlite_admin.py status --db domain_model
 ```
 
-Pre-flight connectivity check for TradingView Desktop CDP:
-
-```bash
-python3 plugins/tradingview/scripts/tv_health_check.py
-```
+On a fresh clone the database does not exist yet; the launcher (`run-screener`) creates it and applies pending migrations.
 
 ## Workflow
 
-1. **Verify Runtimes & Dependencies**:
+1. **Verify runtimes and dependencies:**
    - Ensure Python 3.11+ and Node.js 18+ are present.
-   - Sync plugins: `python3 .agents/skills/plugin-syncer/scripts/sync_with_inventory.py`.
-   - Copy private data templates (`cash_flows.json.example` → `cash_flows.json`, `portfolio-config.json.example` → `portfolio-config.json`).
-   - Run database migrations: `python3 investment_screener/backend/py_services/domain_model/schema_migrator.py`.
-2. **Configure Accounts & Pillars**:
-   - Establish account architecture (TFSA primary + RRSP mirror).
-   - Seed accounts into `domain_model.sqlite` via `seed_real_accounts.py`.
-3. **Ingest Active Holdings & Cash**:
-   - Ask once: "Do you also use Questrade?" If no, leave `QUESTRADE_ENABLED=false` in `.env` (TradingView only, the default). If yes, run `/questrade-setup`, which records `QUESTRADE_ENABLED=true`.
-   - Sync broker positions and executed trades via `/tv-portfolio-sync` (TradingView CDP) or onboard watchlist tickers via `/stock-intake`.
-4. **Build DCF Baselines (Silent Batch Mode)**:
-   - For all imported tickers, fetch financials, compute Rule of 40 and Piotroski F-Scores, and compile Bear/Base/Bull DCF scenarios.
-5. **Launch Application Suite**:
-   - Start full stack (`python3 run_investment_toolkit.py`): Frontend (5173), Backend API (3001), TV CDP (9222).
+   - Sync plugins with the `plugin-syncer` skill.
+   - Copy `portfolio-config.json.example` to `portfolio-config.json` in the backend data folder if it is missing.
+   - Invoke `run-screener` once so the virtual environment, dependencies and database migrations are in place, then stop it if the next steps need the ports free.
+   - Invoke `tv-setup` to confirm TradingView Desktop's debugging port is reachable.
+2. **Protect the database before the first write:** `python3 scripts/db_backup.py backup --db domain_model` (see `sqlite-admin` for restore and rebuild). Repeat before every later bulk write.
+3. **Accounts and pillars:** establish the account structure (TFSA primary, RRSP mirror, CASH). There is no standalone seeding command; the account rows come from the portfolio migration and the broker sync, and pillar rows are created as theses are written.
+4. **Ingest holdings and cash:**
+   - Ask once: "Do you also use Questrade?" If no, leave `QUESTRADE_ENABLED=false` in `.env` (TradingView only, the default). If yes, invoke `questrade-setup`, which records `QUESTRADE_ENABLED=true`.
+   - Invoke `tv-portfolio-sync` to sync broker positions and executed trades, or `stock-intake` to onboard watchlist tickers. Show the per-account diff and wait for the user's go-ahead before any sync is applied.
+5. **Build DCF baselines (silent batch mode):** for all imported tickers, invoke the `stock-valuation` skills to fetch financials, compute Rule of 40 and Piotroski F-Scores, and compile Bear/Base/Bull DCF scenarios.
+6. **Take a rebuild-from-anything export:** `python3 scripts/sqlite_admin.py export --db domain_model --out <empty folder>` then `python3 scripts/sqlite_admin.py verify-export <folder>`.
+7. **Launch the suite:** invoke `run-screener` (Frontend 5173, Backend API 3001, TradingView CDP 9222).
 
 ## Verification
 
-- Confirm schema migration status:
-  ```bash
-  python3 investment_screener/backend/py_services/domain_model/schema_migrator.py --status
-  ```
-- Validate portfolio invariants:
-  ```bash
-  python3 investment_screener/backend/py_services/verify_portfolio_invariants.py
-  ```
-- Verify health check on `http://localhost:3001/api/health`.
+- `python3 scripts/sqlite_admin.py status --db domain_model` lists the tables with row counts and the schema `user_version`.
+- `python3 scripts/sqlite_admin.py verify-export <folder>` prints `export ok` with matching counts.
+- Invoke `portfolio-health` for the allocation and drift check; confirm `http://localhost:3001/api/health` once the suite is running.
 - Test routing cases against `evals/evals.json`.

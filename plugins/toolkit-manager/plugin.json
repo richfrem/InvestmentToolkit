@@ -18,12 +18,18 @@
             "name": "toolkit_onboarding",
             "path": "skills/toolkit-onboarding/SKILL.md",
             "trigger": "/toolkit-onboarding"
+        },
+        {
+            "name": "sqlite_admin",
+            "path": "skills/sqlite-admin/SKILL.md",
+            "trigger": "/sqlite-admin"
         }
     ],
     "agents": [],
     "tags": [
         "finance",
         "infrastructure",
-        "startup"
+        "startup",
+        "database"
     ]
 }
