@@ -1,4 +1,16 @@
-"""All ``thesis_breaker`` and ``thesis_breaker_state`` table reads and writes live here.
+"""thesis_breaker_repository.py - all ``thesis_breaker`` / ``thesis_breaker_state`` reads and writes.
+
+Purpose:
+    The only code that touches the two thesis breaker tables, and the one definition of the
+    breaker vocabulary (metrics, operators, statuses). TypeScript counterpart:
+    ``src/services/ThesisBreakerRepository.ts``.
+
+Layer:
+    Backend / Python Services / Data Persistence
+
+Key Input Dependencies:
+    - domain_model.sqlite at schema version 2 or later (``investment``, ``thesis_breaker``,
+      ``thesis_breaker_state`` tables)
 
 Breaker definitions and evaluated state cross this boundary in the dict shapes the
 evaluator (``thesis_breakers.py``) and its consumers already use:
@@ -46,16 +58,24 @@ def validate_breaker(breaker: dict) -> list[str]:
     if breaker.get("operator") == "in" and not isinstance(breaker.get("threshold"), list):
         errors.append("operator 'in' requires 'threshold' to be a list")
     if breaker.get("type") == "manual":
-        if breaker.get("status") not in VALID_STATUSES:
-            errors.append(f"manual breaker 'status' must be one of {sorted(VALID_STATUSES)}, got {breaker.get('status')!r}")
-        if not breaker.get("statusSetAt"):
-            errors.append("manual breaker missing 'statusSetAt'")
-        if not breaker.get("reviewCadenceDays"):
-            errors.append("manual breaker missing 'reviewCadenceDays'")
+        errors.extend(_manual_breaker_errors(breaker))
+    return errors
+
+
+def _manual_breaker_errors(breaker: dict) -> list[str]:
+    """Errors specific to manual breakers: hand-set status, its date and the review cadence."""
+    errors: list[str] = []
+    if breaker.get("status") not in VALID_STATUSES:
+        errors.append(f"manual breaker 'status' must be one of {sorted(VALID_STATUSES)}, got {breaker.get('status')!r}")
+    if not breaker.get("statusSetAt"):
+        errors.append("manual breaker missing 'statusSetAt'")
+    if not breaker.get("reviewCadenceDays"):
+        errors.append("manual breaker missing 'reviewCadenceDays'")
     return errors
 
 
 def _investment_id(conn: sqlite3.Connection, symbol: str) -> str:
+    """Investment id."""
     row = conn.execute("SELECT investment_id FROM investment WHERE symbol = ?;", (symbol,)).fetchone()
     if row is None:
         raise ValueError(f"ticker '{symbol}' not found in domain_model.sqlite")
@@ -63,14 +83,17 @@ def _investment_id(conn: sqlite3.Connection, symbol: str) -> str:
 
 
 def _dumps(value) -> str | None:
+    """Dumps."""
     return None if value is None else json.dumps(value)
 
 
 def _loads(text: str | None):
+    """Loads."""
     return None if text is None else json.loads(text)
 
 
 def _definition(row: sqlite3.Row) -> dict:
+    """Definition."""
     out = {"id": row["breaker_id"], "type": row["breaker_type"]}
     if row["metric"] is not None:
         out["metric"] = row["metric"]
@@ -191,6 +214,7 @@ def replace_breaker_state(conn: sqlite3.Connection, state: dict[str, dict[str, d
 
 
 def _refresh_investment_status(conn: sqlite3.Connection) -> None:
+    """Refresh investment status."""
     conn.execute("UPDATE investment SET thesis_breaker_status = NULL "
                  "WHERE thesis_breaker_status IS NOT NULL;")
     worst: dict[str, str] = {}

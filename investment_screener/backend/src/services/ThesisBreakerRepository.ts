@@ -10,7 +10,7 @@
  * Layer:
  *   Backend / Services / Data Persistence (SQLite-backed repository)
  *
- * Key Functions (Index):
+ * Key Functions:
  *   - validateBreaker(breaker) - error strings for a definition
  *   - listBreakers(symbol) / listAllBreakers() - definitions for one ticker / every ticker
  *   - upsertBreaker(), deleteBreaker(), setManualStatus()

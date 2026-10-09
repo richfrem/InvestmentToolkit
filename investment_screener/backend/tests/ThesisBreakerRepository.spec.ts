@@ -1,3 +1,9 @@
+/**
+ * ThesisBreakerRepository.spec.ts - ThesisBreakerRepository against a real temporary SQLite database: definitions, manual status, evaluated state.
+ *
+ * Key Input Dependencies:
+ *   - A temporary SQLite file built by the Python schema migrator
+ */
 import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';

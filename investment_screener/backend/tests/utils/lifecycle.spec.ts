@@ -1,3 +1,9 @@
+/**
+ * lifecycle.spec.ts - The TypeScript lifecycle vocabulary matches py_services/portfolio_io.py.
+ *
+ * Key Input Dependencies:
+ *   - py_services/portfolio_io.py (vocabulary lists)
+ */
 import { expect } from 'chai';
 import fs from 'fs';
 import path from 'path';

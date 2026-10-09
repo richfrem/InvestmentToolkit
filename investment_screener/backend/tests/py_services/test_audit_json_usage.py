@@ -358,6 +358,7 @@ def test_write_reports_allowed_register_only_contains_allowed_classifications(tm
 
 
 def test_classify_file_flags_retired_portfolio_files_as_retired():
+    """Classify file flags retired portfolio files as retired."""
     for name in (
         "portfolio.json", "trade-log.json", "cash_flows.json", "watchlist.json", "watchlists.json",
         "account_policy.json", "tradingview_alerts_actual.json", "thesis_breaker_state.json",
@@ -367,6 +368,7 @@ def test_classify_file_flags_retired_portfolio_files_as_retired():
 
 
 def test_retired_portfolio_files_are_not_in_the_allowed_register(tmp_path):
+    """Retired portfolio files are not in the allowed register."""
     repo = _make_repo(tmp_path)
     (repo / "portfolio.json").write_text("{}")
     result = run_audit(str(repo))
