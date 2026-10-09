@@ -44,6 +44,7 @@
  *   - domain_model.sqlite (writes via the repositories above)
  */
 import fs from 'fs';
+import { DEFAULT_LIFECYCLE_STATUS } from '../utils/lifecycle';
 import path from 'path';
 import {
     Thesis, ThesisSchema,
@@ -268,11 +269,8 @@ export class ThesisService {
                     allocationStatus: driftPct < 0 ? 'UNDERWEIGHT' : 'OVERWEIGHT'
                 });
             } else if (status === 'DRIFT' && holding.role !== 'watchlist') {
-                // Wave 8: role's real enum ('accumulate'/'avoid'/'watchlist'/'trim'/
-                // 'initiate'/'exit') has no 'core' value -- this check previously
-                // never fired in production (confirmed zero real holdings ever had
-                // role='core'). Closest defensible equivalent: alert on any holding
-                // that's an actual thesis target, not merely watchlisted.
+                // Alert on any holding that is an actual thesis target, not merely watchlisted
+                // (role vocabulary: utils/lifecycle.ts).
                 alerts.push({
                     severity: 'WARNING',
                     message: `${holding.ticker} is drifting ${driftPct.toFixed(1)}% (Band: ${bandPct.toFixed(1)}pp)`,
@@ -387,7 +385,7 @@ export class ThesisService {
                     targetWeight: h.targetWeight ?? 0,
                     targetEntryPrice: pl?.targetEntryPrice ?? undefined,
                     thesisForInclusion: h.thesisForInclusion ?? '',
-                    role: (h.role as any) ?? 'core',
+                    role: (h.role as any) ?? DEFAULT_LIFECYCLE_STATUS,
                     priceLevels,
                     subStrategyId: h.subStrategyId ?? undefined,
                     agentRationale: h.agentRationale ?? undefined,

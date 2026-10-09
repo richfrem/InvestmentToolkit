@@ -111,7 +111,7 @@ def generate(date_str: str, db_path: Path = DB_PATH) -> dict:
         entry = {
             "ticker":            ticker,
             "pillarId":          h.get("pillar_id") or "unknown",
-            "role":              h.get("lifecycle_status") or "core",
+            "role":              h.get("lifecycle_status") or "watchlist",
             "currentTarget":     round(target, 4),
             "recommendedTarget": round(target, 4),
             "delta":             delta,

@@ -344,3 +344,54 @@ def test_load_thesis_holdings_returns_empty_for_no_holdings(tmp_path):
     db_path = tmp_path / "empty.sqlite"
     initialize_db(str(db_path)).close()
     assert load_thesis_holdings(str(db_path)) == []
+
+
+# ── lifecycle vocabulary and thesisBreakers ──────────────────────────────────
+
+def test_lifecycle_vocabulary_is_one_definition():
+    import portfolio_io
+    import market_regime
+    assert portfolio_io.LIFECYCLE_STATUSES == {"accumulate", "trim", "exit", "initiate", "watchlist"}
+    assert portfolio_io.INACTIVE_STATUSES == {"exit", "exited", "avoid"}
+    assert market_regime.INACTIVE_ROLES is portfolio_io.INACTIVE_STATUSES
+
+
+def test_validate_lifecycle_status_accepts_vocabulary_and_rejects_the_rest():
+    import portfolio_io
+    for ok in ("accumulate", "trim", "exit", "initiate", "watchlist", "exited", "avoid"):
+        assert portfolio_io.validate_lifecycle_status(ok) == ok
+    for bad in ("core", "hedge", "reserve", "speculative", "", None):
+        with pytest.raises(ValueError, match="lifecycle"):
+            portfolio_io.validate_lifecycle_status(bad)
+
+
+def test_load_thesis_holdings_exposes_thesis_breakers(tmp_path):
+    import portfolio_io
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment, update_investment_fields
+    from domain_model.thesis_breaker_repository import upsert_breaker
+    db = str(tmp_path / "t.sqlite")
+    conn = initialize_db(db)
+    resolve_investment(conn, "NVDA")
+    resolve_investment(conn, "AMD")
+    update_investment_fields(conn, "NVDA", target_weight=5.0)
+    update_investment_fields(conn, "AMD", target_weight=3.0)
+    breaker = {"id": "rsi-low", "type": "auto", "metric": "rsi", "operator": "<", "threshold": 30, "horizon": 3}
+    upsert_breaker(conn, "NVDA", breaker)
+    conn.close()
+    by_ticker = {h["ticker"]: h for h in portfolio_io.load_thesis_holdings(db)}
+    assert by_ticker["NVDA"]["thesisBreakers"] == [{**breaker}]
+    assert by_ticker["AMD"]["thesisBreakers"] == []
+
+
+def test_lifecycle_cli_reports_the_stored_status_not_a_guess(tmp_path):
+    import portfolio_io
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment, update_investment_fields
+    db = str(tmp_path / "t.sqlite")
+    conn = initialize_db(db)
+    resolve_investment(conn, "NVDA")
+    update_investment_fields(conn, "NVDA", target_weight=5.0, lifecycle_status="trim")
+    conn.close()
+    assert portfolio_io.lookup_lifecycle_status("NVDA", db) == "trim"
+    assert portfolio_io.lookup_lifecycle_status("UNKNOWN", db) is None

@@ -20,6 +20,20 @@ def _write(dir_: Path, name: str, sql: str, *, header: bool = True) -> None:
     (dir_ / name).write_text(prefix + sql)
 
 
+def _baseline_only_dir(tmp_path: Path) -> Path:
+    """A migrations directory holding just 0001_baseline.sql, whatever migrations come after it."""
+    d = tmp_path / "baseline_only"
+    d.mkdir()
+    (d / "0001_baseline.sql").write_text((Path(schema_migrator.MIGRATIONS_DIR) / "0001_baseline.sql").read_text())
+    return d
+
+
+def _migrate_to_baseline(path: Path, tmp_path: Path) -> None:
+    conn = sqlite3.connect(str(path))
+    migrate(conn, db_path=str(path), directory=_baseline_only_dir(tmp_path))
+    conn.close()
+
+
 @pytest.fixture
 def mig_dir(tmp_path):
     d = tmp_path / "migs"
@@ -144,7 +158,7 @@ def test_drifted_legacy_file_is_refused_and_left_untouched(tmp_path):
 def test_populated_database_is_backed_up_before_a_pending_migration(tmp_path):
     path = tmp_path / "pop.sqlite"
     make_legacy_db(str(path))  # populated, un-stamped
-    initialize_db(str(path)).close()
+    _migrate_to_baseline(path, tmp_path)
     backups = list((tmp_path / "backups").glob("pop.*.pre-migration-*.sqlite"))
     # Adoption (stamping) is not a schema change, so no backup is needed for it...
     assert backups == []
@@ -227,7 +241,7 @@ def test_legacy_adoption_is_recorded_as_adopted(tmp_path):
 
 def test_pending_migration_on_populated_db_records_its_backup(tmp_path):
     path = tmp_path / "pop2.sqlite"
-    initialize_db(str(path)).close()  # now at the real baseline, populated
+    _migrate_to_baseline(path, tmp_path)  # now at the baseline, populated
     d = tmp_path / "migs2"
     d.mkdir()
     (d / "0001_baseline.sql").write_text((Path(schema_migrator.MIGRATIONS_DIR) / "0001_baseline.sql").read_text())
