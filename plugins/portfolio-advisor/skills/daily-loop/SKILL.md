@@ -27,7 +27,11 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 ```
 
 ## Workflow
-1. **Readiness (Step 0)**: Verify backend API health, `domain_model.sqlite` sync timestamps, and TradingView CDP connectivity. Refresh positions and executed trades with `/tv-portfolio-sync` so recommendations reflect recent fills. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade for this refresh.
+1. **Readiness (Step 0)**: Verify backend API health, `domain_model.sqlite` sync timestamps, and TradingView CDP connectivity. Refresh positions and executed trades with `/tv-portfolio-sync` so recommendations reflect recent fills. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade for this refresh. Then refresh prices, because the brief, weights and totals read `investment_price`, not the sync:
+   ```bash
+   curl -s -X POST -H "Authorization: Bearer $(cat .runtime/api-token)" http://localhost:3001/api/portfolio/refresh-prices
+   ```
+   The route is the only price writer (it also refreshes the USD->CAD rate). Confirm the newest `investment_price.fetched_at` is today before building the brief. If the backend is down or the call fails, say so and mark every card as priced on stale data; never write prices with ad-hoc SQL.
 2. **Morning Brief (Step 1)**: Ingest macro regime, canonical recommendations with conviction ranking, and binary event flags from `daily_brief.py`; apply the AI forward-evidence gate before treating valuation signals as trade-ready.
 3. **Triage (Step 2)**: Present urgent holding alerts, thesis breaker breaches, and price catalysts one ticker at a time.
 4. **Action Cards (Step 3)**: Formulate actionable trade proposals with tranche sizing and PSU-U.TO capital sourcing. For any of the five highest-priority cards marked `refreshFirst` (stale valuation), run `/update-stock-analysis TICKER` first, walk the owner through the new fair value and scenarios, and record the decision they reach with `set_standing_decision.py` before proposing a trade.
@@ -41,6 +45,7 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 python3 plugins/portfolio-advisor/scripts/verify_daily_run.py --latest
 python3 investment_screener/backend/py_services/verify_portfolio_invariants.py
 ```
+- After the price refresh, `CASH_INVARIANT` should report no discrepancy. A gap equal to the difference between TradingView's live total and the stored total means prices are still stale.
 
 ## References
 - [Keeping Recommendations Coherent](references/recommendation-coherence.md) - Trade refresh, standing-decision reconciliation, daily priority order and chart-level conditions.
