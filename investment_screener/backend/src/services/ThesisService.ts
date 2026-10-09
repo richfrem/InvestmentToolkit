@@ -58,10 +58,9 @@ import { PortfolioRepository } from './PortfolioRepository';
 import { InvestmentRepository } from './InvestmentRepository';
 import { PriceLevelRepository, PriceTierRow, StopLossRow } from './PriceLevelRepository';
 import { PortfolioChangeLogRepository } from './PortfolioChangeLogRepository';
+import { ThesisBreakerRepository } from './ThesisBreakerRepository';
 import { getRecommendations } from '../utils/helpers';
 import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
-
-const PORTFOLIO_FILE = path.resolve(__dirname, '../../data/portfolio.json');
 
 // The single, real thesis document this app has ever had one of. Wave 8 fully
 // cut this over to domain_model.sqlite (investment/strategy_pillar/
@@ -111,43 +110,24 @@ export class ThesisService {
         }
     }
 
-    /** Wave 3 Task 6: sourced from domain_model.sqlite (account_investment JOIN
-     * investment_price, aggregated per-symbol via PortfolioRepository.listPositionsBySymbol())
-     * rather than portfolio.json's `holdings` array. Falls back to the JSON file when
-     * SQLite has no priced position data yet (e.g. before the first migration run),
-     * matching routes/portfolio.ts's established fallback pattern for this same table. */
+    /** Held positions from domain_model.sqlite (account_investment JOIN investment_price,
+     * aggregated per-symbol via PortfolioRepository.listPositionsBySymbol()). An empty
+     * database gives []; a database error propagates. */
     async getPortfolioItems(): Promise<any[]> {
+        const repo = new PortfolioRepository(this.dbPath);
         try {
-            const repo = new PortfolioRepository(this.dbPath);
-            let positions: ReturnType<PortfolioRepository['listPositionsBySymbol']>;
-            try {
-                positions = repo.listPositionsBySymbol();
-            } finally {
-                repo.close();
-            }
-            if (positions.length > 0) {
-                return positions.map(p => ({
-                    symbol: p.symbol,
-                    quantity: p.quantity,
-                    price: p.price ?? p.averageCost ?? 0,
-                }));
-            }
-        } catch (e) {
-            console.error(`[ThesisService] Error reading portfolio positions from SQLite:`, e);
-        }
-
-        if (!fs.existsSync(PORTFOLIO_FILE)) return [];
-        try {
-            const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-            return Array.isArray(raw) ? raw : (raw.holdings ?? []);
-        } catch (e) {
-            console.error(`[ThesisService] Error reading portfolio file:`, e);
-            return [];
+            return repo.listPositionsBySymbol().map(p => ({
+                symbol: p.symbol,
+                quantity: p.quantity,
+                price: p.price ?? p.averageCost ?? 0,
+            }));
+        } finally {
+            repo.close();
         }
     }
 
-    /** Wave 5E cutover: sourced from domain_model.sqlite's portfolio_policy singleton
-     * row (via PortfolioRepository.getPortfolioPolicy()) rather than account_policy.json.
+    /** Sourced from domain_model.sqlite's portfolio_policy singleton
+     * row (via PortfolioRepository.getPortfolioPolicy()).
      * Reshapes the flat SQLite row back into AccountPolicySchema's nested shape so
      * every caller (computeBandPct, computeHealthCheck) needs no changes. */
     private getAccountPolicy(): AccountPolicy | null {
@@ -368,6 +348,14 @@ export class ThesisService {
                 id: p.id, name: p.name, targetWeight: p.targetWeight ?? 0,
             }));
 
+            const breakerRepo = new ThesisBreakerRepository(this.dbPath);
+            let breakersByTicker: ReturnType<ThesisBreakerRepository['listAllBreakers']>;
+            try {
+                breakersByTicker = breakerRepo.listAllBreakers();
+            } finally {
+                breakerRepo.close();
+            }
+
             const holdings = holdingRows.map(h => {
                 const pl = priceLevelRepo.getPriceLevels(h.ticker);
                 const priceLevels = pl ? {
@@ -385,6 +373,7 @@ export class ThesisService {
                     targetWeight: h.targetWeight ?? 0,
                     targetEntryPrice: pl?.targetEntryPrice ?? undefined,
                     thesisForInclusion: h.thesisForInclusion ?? '',
+                    thesisBreakers: breakersByTicker[h.ticker] ?? [],
                     role: (h.role as any) ?? DEFAULT_LIFECYCLE_STATUS,
                     priceLevels,
                     subStrategyId: h.subStrategyId ?? undefined,

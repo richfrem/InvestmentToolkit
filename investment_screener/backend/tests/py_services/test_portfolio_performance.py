@@ -9,6 +9,7 @@ impossible +29.79% 1-day return. Missing prices must be forward-filled (last
 known price) before computing equity value, not treated as worthless.
 """
 
+import json
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -28,9 +29,7 @@ from domain_model.account_investment_repository import upsert_account_investment
 
 
 class TestLoadPortfolioDataReadsSqlite:
-    """Wave 3 Task 6: load_portfolio_data() must read domain_model.sqlite,
-    never portfolio.json (the portfolio_path arg is retained for call-site
-    signature compatibility only, mirroring portfolio_io.py's own pattern)."""
+    """load_portfolio_data() reads domain_model.sqlite and takes no portfolio file path."""
 
     def test_splits_cash_and_equity_from_sqlite(self, tmp_path):
         db_path = tmp_path / "domain_model.sqlite"
@@ -50,7 +49,7 @@ class TestLoadPortfolioDataReadsSqlite:
         )
         conn.close()
 
-        cash_value, tickers, shares_map = load_portfolio_data("unused-path.json", db_path=db_path)
+        cash_value, tickers, shares_map = load_portfolio_data(db_path=db_path)
 
         assert cash_value == 500.0
         assert tickers == ["AAPL"]
@@ -58,7 +57,7 @@ class TestLoadPortfolioDataReadsSqlite:
 
     def test_missing_db_returns_empty(self, tmp_path):
         cash_value, tickers, shares_map = load_portfolio_data(
-            "unused-path.json", db_path=tmp_path / "missing.sqlite"
+            db_path=tmp_path / "missing.sqlite"
         )
         assert cash_value == 0.0
         assert tickers == []
@@ -200,7 +199,7 @@ class TestHoldingsWithoutPriceHistory:
         upsert_account_investment(conn, "TFSA", cash_id, quantity=3590.59, average_cost=1.0,
                                   book_value=3590.59, currency="USD", last_synced_at="2026-10-08T00:00:00Z")
         conn.close()
-        cash_value, tickers, shares_map = load_portfolio_data("unused", db_path=db_path)
+        cash_value, tickers, shares_map = load_portfolio_data(db_path=db_path)
         assert (round(cash_value, 2), tickers, shares_map) == (3590.59, [], {})
 
     def test_a_holding_with_no_history_is_held_flat_at_its_stored_price(self):
@@ -218,3 +217,19 @@ class TestHoldingsWithoutPriceHistory:
         result = compute_performance(close, {"AAPL": 10, "NEWCO": 10}, 0.0, ["AAPL", "NEWCO"], datetime(2026, 10, 8, 12))
         assert result["1m"]["historicalValue"] == 10 * 190.0 + 10 * 50.0   # first traded price, not $0
         assert unpriced_holdings(close, ["AAPL", "NEWCO"]) == []
+
+
+def test_the_script_runs_with_no_path_argument():
+    """The command line needs no portfolio path: with no database it prints the zero-value result and exits 0."""
+    import subprocess
+    script = REPO_ROOT / "investment_screener/backend/py_services/portfolio_performance.py"
+    env = {"PATH": "/usr/bin:/bin:/usr/local/bin"}
+    r = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, env=env)
+    assert r.returncode == 0, r.stderr
+    assert "1d" in json.loads(r.stdout)
+
+
+def test_load_portfolio_data_has_no_path_parameter():
+    """The retired portfolio_path parameter is gone."""
+    import inspect
+    assert list(inspect.signature(load_portfolio_data).parameters) == ["db_path"]

@@ -6,13 +6,12 @@
  *   TradingView TCP connectivity checks, ticker format validation, and Python bridge execution.
  * 
  * Key Input Dependencies:
- *   - ./paths (for portfolio JSON paths references)
+ *   - ./paths (data folder and database path constants)
  *   - ../services/bridge (for spawning Python analytical scripts)
  *   - data/domain_model.sqlite via PortfolioRepository.getExchangeRate()
- *     (getLiveUsdCadRate reads the single broker_exchange_rate scalar — Wave 3
- *     Task 8 closed the former portfolio.json dependency; the rate is inferred at
- *     sync time from TV's native CAD/USD totals and stored once, per ADR-030's
- *     Wave 3 addendum and CLAUDE.md pitfall #27)
+ *     (getLiveUsdCadRate reads the single broker_exchange_rate scalar; the rate
+ *     is inferred at sync time from TV's native CAD/USD totals and stored once, per
+ *     ADR-030's addendum and AGENTS.md pitfall #27)
  * 
  * Key Output Dependencies:
  *   None
@@ -56,9 +55,8 @@ export async function getLiveUsdCadRate(fallback: number, dbPath: string = DOMAI
      * ratio (CLAUDE.md pitfall #27, never an external FX API) by the sync writer
      * (BrokerSyncService.persistSnapshotToDb / fetch_broker_data._persist_snapshot_to_db).
      *
-     * Wave 3 Task 8 closed the former portfolio.json dependency here (the CAD gap's
-     * TS face; its Python twin is portfolio_repository.py::load_portfolio_state_from_db).
-     * Per ADR-030's Wave 3 addendum only the FX rate (a genuine broker fact) is
+     * Its Python twin is portfolio_repository.py::load_portfolio_state_from_db.
+     * Per ADR-030's addendum only the FX rate (a genuine broker fact) is
      * stored; CAD totals are computed as usd*rate at read time. Falls back to the
      * static `fallback` for a fresh/never-synced DB, matching every other reader's
      * fallback convention.

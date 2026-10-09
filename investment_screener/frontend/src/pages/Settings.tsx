@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, AlertTriangle, Wifi, WifiOff, ExternalLink } from 'lucide-react';
-import { PortfolioModal } from '../components/PortfolioModal';
+import { Briefcase, Wifi, WifiOff, ExternalLink } from 'lucide-react';
 
 export default function Settings() {
-    const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
     const [tvStatus, setTvStatus] = useState<'checking' | 'live' | 'offline'>('checking');
 
     useEffect(() => {
@@ -82,33 +80,21 @@ export default function Settings() {
             </section>
 
             {/* ── Advanced ────────────────────────────────────────────────── */}
+            {/* ── Positions ───────────────────────────────────────────────── */}
             <section className="bg-surface rounded-xl border border-slate-800 overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-800">
-                    <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Advanced</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">Bypass options — use only when necessary</p>
+                    <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Positions</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Where your holdings come from</p>
                 </div>
-                <div className="px-6 py-4 space-y-3">
-                    <div className="flex items-start gap-2.5 bg-amber-500/5 border border-amber-500/15 rounded-lg p-3">
-                        <AlertTriangle size={14} className="text-amber-500/70 mt-0.5 shrink-0" />
-                        <p className="text-amber-300/70 text-xs leading-relaxed">
-                            Manual portfolio editing bypasses TradingView sync and writes to a fallback <code className="text-amber-200/80">portfolio.json</code> file, which may drift from the live <code className="text-amber-200/80">domain_model.sqlite</code> source of truth.
-                            Prefer <strong className="text-amber-200/80">/tv-portfolio-sync</strong> for routine updates.
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => setIsPortfolioOpen(true)}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-700 hover:border-slate-600 hover:bg-slate-800/50 transition-colors text-slate-300 hover:text-white w-full"
-                    >
-                        <Briefcase size={17} className="text-slate-500" />
-                        <div className="text-left">
-                            <div className="text-sm font-medium">Manual Portfolio Editor</div>
-                            <div className="text-xs text-slate-500">Edit portfolio.json directly</div>
-                        </div>
-                    </button>
+                <div className="px-6 py-4 flex items-start gap-3">
+                    <Briefcase size={17} className="text-slate-500 mt-0.5 shrink-0" />
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                        Holdings, cash and executed trades are loaded from your broker and stored in <code className="text-slate-300">domain_model.sqlite</code>.
+                        There is no manual editor: run <strong className="text-slate-200">/tv-portfolio-sync</strong> (TradingView), or{' '}
+                        <strong className="text-slate-200">/questrade-sync-portfolio</strong> if you use Questrade, to update them.
+                    </p>
                 </div>
             </section>
-
-            <PortfolioModal isOpen={isPortfolioOpen} onClose={() => setIsPortfolioOpen(false)} />
         </div>
     );
 }

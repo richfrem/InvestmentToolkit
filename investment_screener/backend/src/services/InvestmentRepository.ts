@@ -14,19 +14,14 @@
  * Layer:
  *   Backend / Services / Data Persistence (SQLite-backed repository)
  *
- * Scope (Wave 2 Task 9.4 write side + Task 10/11 read-path cutover):
- *   `setWatchlisted()` (write) plus `getInvestment()`, `listThesisHoldings()`,
- *   `listWatchlisted()`, and `listPillars()` (reads) are exposed today. Fields
- *   verified byte-identical against `data/theses/target-portfolio.json` for all
- *   75 thesis holdings before this cutover: `role`->`lifecycle_status`,
- *   `targetWeight`->`target_weight`, `pillarId`->`pillar_id`,
- *   `subStrategyId`->`sub_strategy_id`, `thesisForInclusion`->`thesis_for_inclusion`,
- *   `agentRationale`->`agent_rationale`. Fields NOT ported because the source
- *   JSON document carries no SQLite equivalent (globalSettings, changeLog,
- *   schemaVersion, per-holding `shares`, structured `thesisBreakers`/
- *   `standingDecision` sub-objects beyond the 4 flat `standing_decision_*`
- *   scalar columns) are intentionally left on the full-document JSON read path
- *   in `ThesisService.getThesis()` — see that file's module docstring.
+ * Scope:
+ *   `setWatchlisted()` and `updateThesisFields()` (writes) plus `getInvestment()`,
+ *   `listThesisHoldings()`, `listWatchlisted()`, and `listPillars()` (reads).
+ *   Thesis holding fields map `role`->`lifecycle_status`, `targetWeight`->`target_weight`,
+ *   `pillarId`->`pillar_id`, `subStrategyId`->`sub_strategy_id`,
+ *   `thesisForInclusion`->`thesis_for_inclusion`, `agentRationale`->`agent_rationale`.
+ *   Thesis breakers live in `thesis_breaker` (ThesisBreakerRepository) and are attached
+ *   by `ThesisService.getThesis()`.
  *
  * Key Functions (Index):
  *   - resolveInvestmentId(symbol) - Idempotent lookup-or-insert, mirrors
@@ -197,7 +192,7 @@ export class InvestmentRepository {
      * TS-side counterpart to investment_repository.py::update_investment_fields,
      * used by ThesisService.ts's saveThesis()/updateHolding()/addHolding()/
      * removeHolding()/replaceHoldings() to persist per-holding thesis edits
-     * directly into SQLite instead of the retired target-portfolio.json. */
+     * directly into SQLite. */
     updateThesisFields(symbol: string, fields: {
         name?: string | null;
         pillarId?: string | null;
@@ -227,11 +222,9 @@ export class InvestmentRepository {
         this.db.prepare(`UPDATE investment SET ${setClauses.join(', ')} WHERE investment_id = ?`).run(...params);
     }
 
-    /** Mirrors the `holdings` array shape of `data/theses/target-portfolio.json`
-     * (read side, Wave 2 Task 10/11). Only rows with a non-null `target_weight`
-     * are thesis holdings — verified 1:1 against the 75 holdings in the JSON
-     * source (see module docstring). `role` maps from `lifecycle_status`
-     * (verified identical for every holding), NOT `target_action` (a distinct,
+    /** The thesis holdings array. Only rows with a non-null `target_weight`
+     * are thesis holdings. `role` maps from `lifecycle_status`,
+     * NOT `target_action` (a distinct,
      * largely-null DCF-signal column). */
     listThesisHoldings(): ThesisHoldingView[] {
         const rows = this.db
@@ -261,10 +254,8 @@ export class InvestmentRepository {
         }));
     }
 
-    /** Mirrors the shape of `data/watchlist.json`'s `watchlist` array (read
-     * side, Wave 2 Task 10/11). Verified byte-identical ticker set and
-     * `addedAt`/`watchlist_added_at` timestamps against the JSON file before
-     * this cutover. */
+    /** The watchlist: every investment with `is_watchlisted = 1`, as
+     * {ticker, addedAt} from `watchlist_added_at`. */
     listWatchlisted(): WatchlistItemView[] {
         const rows = this.db
             .prepare(
@@ -277,11 +268,8 @@ export class InvestmentRepository {
         return rows.map(r => ({ ticker: r.symbol, addedAt: r.watchlist_added_at ?? '' }));
     }
 
-    /** Mirrors `data/theses/target-portfolio.json`'s `pillars` array (read
-     * side, Wave 2 Task 10/11). `strategy_pillar` carries only
-     * (pillar_id, name, target_weight) — verified an exact 1:1 field match
-     * against all 13 pillars in the JSON source, no bandConfig/other pillar
-     * metadata exists in either place. */
+    /** The strategy pillars. `strategy_pillar` carries only
+     * (pillar_id, name, target_weight). */
     listPillars(): PillarView[] {
         const rows = this.db
             .prepare(`SELECT pillar_id, name, target_weight FROM strategy_pillar ORDER BY pillar_id`)

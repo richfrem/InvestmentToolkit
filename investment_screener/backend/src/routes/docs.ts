@@ -26,12 +26,8 @@
  * Key Output Dependencies:
  *   None
  *
- * Wave 2 Task 10/11 investigation: this file does NOT read
- * target-portfolio.json or watchlist.json directly (confirmed by full read +
- * `grep -n "TARGET_PORTFOLIO_FILE\|THESIS_FILE\|WATCHLIST_FILE" docs.ts` —
- * zero hits). GET /docs/investment-thesis reads THESIS_DOC_PATH, a markdown
- * file, and calls thesisService.getThesis() only for a display name/
- * description fallback. No rewire needed here.
+ * GET /docs/investment-thesis reads THESIS_DOC_PATH, a markdown file, and calls
+ * thesisService.getThesis() only for a display name/description fallback.
  */
 
 import express from 'express';

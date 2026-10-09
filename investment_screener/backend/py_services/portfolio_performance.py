@@ -11,8 +11,8 @@ Layer:
     Backend / Python Services
 
 Usage Examples:
-    python3 portfolio_performance.py <path>
-    # <path> is required for call-site compatibility but never read; holdings come from domain_model.sqlite.
+    python3 portfolio_performance.py
+    # Holdings, cash and prices come from domain_model.sqlite; no path argument is taken.
 
 Key Functions (Index):
     - safe_float()
@@ -70,7 +70,6 @@ def safe_float(val: Any) -> float:
 
 # External comment: Load portfolio data from domain_model.sqlite and extract equity positions and cash values
 def load_portfolio_data(
-    portfolio_path: str,
     db_path: Path = DB_PATH,
 ) -> Tuple[float, List[str], Dict[str, float]]:
     """
@@ -78,7 +77,6 @@ def load_portfolio_data(
     (cash_value, tickers, shares_map).
 
     Args:
-        portfolio_path: Retained for CLI/call-site signature compatibility; never read.
         db_path: domain_model.sqlite path, overridable for tests.
     """
     if not db_path.exists():
@@ -212,11 +210,7 @@ def main() -> None:
     """
     CLI orchestrator that filters positions, fetches history, and runs performance calculations.
     """
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "portfolio path required"}))
-        sys.exit(1)
-
-    cash_value, tickers, shares_map = load_portfolio_data(sys.argv[1])
+    cash_value, tickers, shares_map = load_portfolio_data()
 
     if not tickers:
         fallback = cash_value

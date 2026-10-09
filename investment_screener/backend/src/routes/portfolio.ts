@@ -9,39 +9,33 @@
  *   Backend / Routes / Portfolio
  * 
  * Key Functions (Index):
- *   - backupPortfolio() - Creates a backup copy of portfolio.json
  *   - loadYtdPerformanceReport() - Executes time-weighted returns script and reads generated report
- *   - readPortfolio() - Parses portfolio JSON structure resolving array/object schemas
  *   - verifyPortfolioTotals(holdings, tvSnapshot) - Reconciliation gate comparing computed vs broker total
  *   - getHoldingsForDisplayFromDb() - SQLite-sourced enriched holdings for GET /
  *   - persistRefreshedPricesToDb(items) - Persist fresh prices + sector/industry into SQLite
  *
  * Routes Index:
- *   - GET / - Reads and returns aggregate portfolio holdings and active sync source
- *   - POST / - Core saving/restructuring of the user portfolio
+ *   - GET / - Reads and returns aggregate portfolio holdings and the data source (domain_model_sqlite or empty)
  *   - GET /summary - Aggregates YTD/TWR returns and portfolio USD/CAD totals
  *   - GET /performance - Triggers and returns period performance details
  *   - GET /weights - Computes weight allocation ratios for each holding
- *   - GET /status - Returns latest sync timestamp from portfolio cache
+ *   - GET /status - Returns the latest position sync timestamp
  *   - GET /position/:ticker - Returns price, shares, and per-account breakdown for a ticker
- *   - GET /holdings/:ticker - Retrieves per-account position counts from TV snapshot
+ *   - GET /holdings/:ticker - Retrieves per-account position counts
  *   - POST /refresh-prices - Forces yfinance quote refresh
  *   - POST /sync-tv - Gated TradingView CDP sync returning HITL preview diff
- *   - POST /sync-tv/promote - Finalizes and writes HITL TradingView snapshot promote
+ *   - POST /sync-tv/promote - Finalizes the HITL TradingView snapshot into domain_model.sqlite
  *   - POST /sync-tv/apply - One-shot automated sync applying TV data immediately
  *   - POST /sync - Auto-priority sync selecting reachable sources
  *   - GET /strategy-allocation - Aggregates cash and holdings by sub-strategy and pillar
  * 
  * Key Input Dependencies:
- *   - investment_screener/backend/data/portfolio.json (Live portfolio state)
- *   - investment_screener/backend/data/domain_model.sqlite's cash_flow / cash_flow_baseline
- *     tables (Wave 4 cutover; formerly cash_flows.json, now archived)
+ *   - investment_screener/backend/data/domain_model.sqlite (positions, prices, cash flows, totals)
  *   - investment_screener/backend/data/portfolio-config.json (YTD starting configuration overrides)
  *   - investment_screener/backend/data/ytd_performance_report.json (Output TWR data)
  * 
  * Key Output Dependencies:
- *   - investment_screener/backend/data/portfolio.json
- *   - investment_screener/backend/data/portfolio.json.bak
+ *   - domain_model.sqlite (sync routes write through BrokerSyncService.persistSnapshotToDb)
  */
 
 import express from 'express';
@@ -50,7 +44,7 @@ import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
 import { brokerSyncService, mergeIntoPortfolio, persistSnapshotToDb } from '../services/BrokerSyncService';
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
-import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
+import { PORTFOLIO_CONFIG_FILE, DOMAIN_MODEL_DB_FILE, YTD_PERFORMANCE_REPORT_FILE } from '../utils/paths';
 import { computeWeightsMap, PortfolioTotals } from '../utils/portfolioSnapshot';
 import { computeStrategyAllocation } from '../utils/strategyAllocation';
 import { PortfolioRepository } from '../services/PortfolioRepository';
@@ -70,25 +64,18 @@ try {
     }
 } catch { /* use compile-time defaults */ }
 
-function backupPortfolio(): void {
-    if (fs.existsSync(PORTFOLIO_FILE)) fs.copyFileSync(PORTFOLIO_FILE, PORTFOLIO_FILE + '.bak');
-}
-
 /**
  * Executes the Python TWR calculation script and reads the generated report.
  */
 async function loadYtdPerformanceReport(): Promise<any> {
     /*
-      Wave 4 cutover: cash-flow data now lives in domain_model.sqlite's cash_flow /
-      cash_flow_baseline tables, not cash_flows.json (retired/archived) — there is no
-      cheap file-existence check left to gate on. ytd_return.py itself now performs
-      this gate: load_cash_flows() returns {} when the DB has no baseline row yet
-      (fresh install / no cash flows recorded), calculate_twr() detects that and exits
-      non-zero with a JSON {"error": ...} on stdout, which spawnPythonScript's
-      _spawnRaw() turns into a rejected promise on any non-zero exit code — caught
-      below and returned as null, same external behavior as the old existsSync() gate.
+      Cash-flow data lives in domain_model.sqlite's cash_flow / cash_flow_baseline tables.
+      ytd_return.py performs the gate itself: load_cash_flows() returns {} when the DB has no
+      baseline row yet (fresh install / no cash flows recorded), calculate_twr() detects that and
+      exits non-zero with a JSON {"error": ...} on stdout, which spawnPythonScript() turns into a
+      rejected promise, caught below and returned as null.
      */
-    const reportFile = path.join(path.dirname(PORTFOLIO_FILE), 'ytd_performance_report.json');
+    const reportFile = YTD_PERFORMANCE_REPORT_FILE;
 
     try {
         await spawnPythonScript('ytd_return.py', ['--json']);
@@ -101,27 +88,14 @@ async function loadYtdPerformanceReport(): Promise<any> {
     return null;
 }
 
-/** Read portfolio.json — handles both legacy array format and new { holdings, totals, tvSnapshot } format. */
-function readPortfolio(): { holdings: any[]; totals: PortfolioTotals | null; tvSnapshot: any | null } {
-    if (!fs.existsSync(PORTFOLIO_FILE)) return { holdings: [], totals: null, tvSnapshot: null };
-    const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-    if (Array.isArray(raw)) return { holdings: raw, totals: null, tvSnapshot: null };
-    return { holdings: raw.holdings ?? [], totals: raw.totals ?? null, tvSnapshot: raw.tvSnapshot ?? null };
-}
-
-// ── Wave 3 Task 6: SQLite-backed reads (account_investment / investment_price) ──
-// Each helper returns null/[] (never throws, never fabricates) when the SQLite
-// side has no usable data yet, so every route below falls back to the existing
-// portfolio.json-based computation. This is the read-side cutover that lets
-// Task 5's dual-write producers eventually drop their JSON writes (see that
-// task's report "Scope deviation" section) -- once these are load-bearing,
-// portfolio.json is no longer the only source these 5 endpoints can serve from.
+// ── SQLite-backed reads (account_investment / investment_price) ──
+// Each helper returns null/[] (never throws, never fabricates) when the database has no usable
+// data yet; every route below reports that as an explicit empty state, never as file data.
 
 /** Per ADR-030 / portfolio_repository.py::get_portfolio_total_value: the
  * portfolio-wide USD total, computed live as the sum of per-account totals
  * (never a stored value, never an independent flat query). Returns null
- * (not 0) when there's no priced position data yet, so /summary can fall
- * back to its existing portfolio.json-based computation. */
+ * (not 0) when there's no priced position data yet, so /summary reports an empty state. */
 export function getPortfolioTotalUsdFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): number | null {
     const repo = new PortfolioRepository(dbPath);
     try {
@@ -133,10 +107,7 @@ export function getPortfolioTotalUsdFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE
 }
 
 /** The real, current "last synced" timestamp — `MAX(account_investment.last_synced_at)`,
- * which updates on every real sync. Replaces `/summary`'s prior reliance on
- * portfolio.json's `totals.timestamp`/`positions[].last_updated`, which Wave 3
- * stopped writing entirely once sync cut over to SQLite-only writes (so that
- * field was permanently frozen at whatever it held before the cutover). */
+ * which updates on every real sync. */
 export function getLastSyncedAtFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): string | null {
     const repo = new PortfolioRepository(dbPath);
     try {
@@ -146,9 +117,8 @@ export function getLastSyncedAtFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): st
     }
 }
 
-/** Builds the {holdings, totals}-shaped input `computeWeightsMap` expects,
- * sourced from account_investment/investment_price instead of portfolio.json's
- * `holdings`/`totals`. Returns null when there's no priced position data. */
+/** Builds the {holdings, totals}-shaped input `computeWeightsMap` expects from
+ * account_investment/investment_price. Returns null when there's no priced position data. */
 export function getWeightsFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): Record<string, number> | null {
     const repo = new PortfolioRepository(dbPath);
     try {
@@ -170,9 +140,8 @@ export function getWeightsFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): Record<
     }
 }
 
-/** Builds `positions`/`totals` input for `computeStrategyAllocation`, sourced
- * from SQLite. Returns null when there's no priced position data so the
- * caller falls back to portfolio.json's `holdings`/`totals`. */
+/** Builds `positions`/`totals` input for `computeStrategyAllocation` from SQLite.
+ * Returns null when there's no priced position data. */
 export function getStrategyAllocationInputFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): { positions: any[]; totals: { totalUSD: number } } | null {
     const repo = new PortfolioRepository(dbPath);
     try {
@@ -195,12 +164,9 @@ export function getStrategyAllocationInputFromDb(dbPath: string = DOMAIN_MODEL_D
     }
 }
 
-/** Per-account quantity/average_cost for one ticker, replacing
- * `tvSnapshot.positions[]` reads in /position/:ticker and /holdings/:ticker.
- * Returns [] when the symbol has no `account_investment` rows -- an empty
- * per-account breakdown is a legitimate "not currently held per-account"
- * answer, not a fallback trigger (each route still has its own portfolio.json
- * `shares`/`price` fallback for the aggregate-level fields). */
+/** Per-account quantity/average_cost for one ticker, for /position/:ticker and
+ * /holdings/:ticker. Returns [] when the symbol has no `account_investment` rows:
+ * an empty per-account breakdown is a legitimate "not currently held" answer. */
 export function getAccountPositionsFromDb(
     ticker: string,
     dbPath: string = DOMAIN_MODEL_DB_FILE
@@ -213,15 +179,14 @@ export function getAccountPositionsFromDb(
     }
 }
 
-/** Wave 3 (completion): the enriched holdings array GET /api/portfolio serves,
- * sourced from SQLite instead of portfolio.json's flat `holdings`. Per held
+/** The enriched holdings array GET /api/portfolio serves, sourced from SQLite. Per held
  * symbol: shares (quantity summed across accounts), price, book_price
  * (average_cost) from account_investment/investment_price, plus
  * name/sector/industry/pillar_id from the `investment` row. sector/industry fall
  * back to "Unknown" (matching fetch_portfolio_heatmap.py) when not yet resolved —
  * e.g. right after a fresh TV sync, before the first /refresh-prices run.
  * Returns null when there are no priced/held positions in SQLite yet, so GET /
- * falls back to the existing portfolio.json read. */
+ * reports an empty state. */
 export function getHoldingsForDisplayFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): any[] | null {
     // InvestmentRepository first: it owns and fully creates the `investment` table
     // (all columns + indexes). Opening PortfolioRepository first on a brand-new
@@ -253,11 +218,8 @@ export function getHoldingsForDisplayFromDb(dbPath: string = DOMAIN_MODEL_DB_FIL
 }
 
 /** Book value (sum of quantity * average_cost across held positions) and
- * position count, sourced from account_investment instead of portfolio.json's
- * `positions[].book_price`/`.length` — Wave 7, replacing /summary's prior
- * unconditional reliance on the (frozen since Wave 3) file for these two
- * fields even though totalMarketValueUSD already read SQLite. Returns null
- * when there are no priced/held positions in SQLite yet. */
+ * position count, from account_investment. Returns null when there are no
+ * priced/held positions in SQLite yet. */
 export function getBookValueAndCountFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): { totalBookValueUSD: number; positionCount: number } | null {
     const portfolioRepo = new PortfolioRepository(dbPath);
     try {
@@ -272,17 +234,16 @@ export function getBookValueAndCountFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE
 }
 
 /** Single-ticker price + book_price (weighted average cost across accounts),
- * sourced from investment_price/account_investment — Wave 7, replacing
- * /position/:ticker's prior unconditional reliance on portfolio.json for
- * these two fields (only per-account share counts had already been cut over
- * to SQLite in Wave 3). Returns null when the ticker has no investment_price
- * row (never synced/priced yet). */
+ * from investment_price/account_investment. Returns null when the ticker has
+ * no investment_price row (never synced/priced yet). */
 export function getPositionPriceFromDb(ticker: string, dbPath: string = DOMAIN_MODEL_DB_FILE): { price: number | null; book_price: number | null } | null {
     const investmentRepo = new InvestmentRepository(dbPath);
     const portfolioRepo = new PortfolioRepository(dbPath);
     try {
-        const investmentId = investmentRepo.resolveInvestmentId(ticker, 'EQUITY', 'USD');
-        const priceRow = portfolioRepo.getInvestmentPrice(investmentId);
+        // Read-only lookup: viewing a ticker this database does not know must not create a row.
+        const investment = investmentRepo.getInvestment(ticker);
+        if (investment == null) return null;
+        const priceRow = portfolioRepo.getInvestmentPrice(investment.investment_id);
         if (priceRow == null) return null;
         const accountRows = portfolioRepo.getPerAccountPositions(ticker);
         const totalQty = accountRows.reduce((s, r) => s + r.quantity, 0);
@@ -394,7 +355,7 @@ export function persistRefreshedPricesToDb(items: any[], dbPath: string = DOMAIN
 
 /**
  * Reconciliation gate: compare our computed portfolio value vs TV broker total.
- * holdings = portfolio.json positions (with stored prices)
+ * holdings = the merged positions (with stored prices)
  * tvSnapshot = raw TV snapshot object (has snapshots[].balances)
  */
 function verifyPortfolioTotals(holdings: any[], tvSnapshot: any): {
@@ -422,42 +383,14 @@ function verifyPortfolioTotals(holdings: any[], tvSnapshot: any): {
 
 router.get('/', async (_req, res) => {
     try {
-        // Wave 3 (completion): prefer SQLite-sourced enriched holdings
-        // (account_investment/investment_price + investment.name/sector/industry/
-        // pillar_id). Falls back to portfolio.json when SQLite has no held
-        // positions yet (e.g. before the first sync/migration).
+        // Enriched holdings come from SQLite only (account_investment / investment_price plus
+        // investment.name / sector / industry / pillar_id). An empty database is reported as an
+        // explicit empty state; positions arrive through the broker sync (POST /sync-tv/apply).
         const dbHoldings = getHoldingsForDisplayFromDb();
-        const { holdings, tvSnapshot } = readPortfolio();
-        const dataSource = dbHoldings != null ? 'domain_model_sqlite' : (tvSnapshot?.dataSource ?? 'cache');
-        res.json({ items: dbHoldings ?? holdings, dataSource });
+        res.json({ items: dbHoldings ?? [], dataSource: dbHoldings != null ? 'domain_model_sqlite' : 'empty' });
     } catch (error) {
         console.error(`[API] Error reading portfolio: `, error);
         res.status(500).json({ error: 'Failed to read portfolio' });
-    }
-});
-
-router.post('/', async (req, res) => {
-    const { items } = req.body;
-    console.log(`[API] Saving portfolio with ${items?.length || 0} positions...`);
-    try {
-        if (!items || !Array.isArray(items)) { res.status(400).json({ error: 'items array required' }); return; }
-        backupPortfolio();
-        const { totals, tvSnapshot } = readPortfolio();
-        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: items, totals, tvSnapshot }, null, 2));
-        // Wave 3 gap (documented, not silently dropped): this route is the
-        // manual/UI-triggered position editor (PortfolioModal). It accepts `items`,
-        // a flat cross-account-aggregated array with no per-account attribution, so
-        // there is no real tvSnapshot.snapshots[].positions[] data for THIS specific
-        // edit to attribute to TFSA vs RRSP vs CASH. Writing a fabricated
-        // single-account split would corrupt real account_investment data, which is
-        // worse than not writing to SQLite here. This portfolio.json write is
-        // therefore intentionally retained for the manual-edit path ONLY — it is NOT
-        // a sync/promote/apply write (those are now SQLite-only). GET / still prefers
-        // SQLite and only falls back to this file when SQLite has no positions.
-        res.json({ success: true, count: items.length });
-    } catch (error) {
-        console.error(`[API] Error saving portfolio: `, error);
-        res.status(500).json({ error: 'Failed to save portfolio' });
     }
 });
 
@@ -466,83 +399,41 @@ router.post('/', async (req, res) => {
 router.get('/summary', async (_req, res) => {
     console.log(`[API] Computing portfolio summary...`);
     try {
-        const { holdings: positions, totals } = readPortfolio();
-
-        // ── Market value: Wave 3 Task 6 — computed live from domain_model.sqlite
-        // (account_investment JOIN investment_price, GROUP BY account_id then summed,
-        // per ADR-030 / portfolio_repository.py::get_portfolio_total_value), never read
-        // from a stored `totals` block. Falls back to portfolio.json's `totals` (and
-        // then to the raw shares*price computation) when SQLite has no priced position
-        // data yet — e.g. before the first migrate_portfolio_to_sqlite.py run.
+        // ── Market value: computed live from domain_model.sqlite (account_investment JOIN
+        // investment_price, GROUP BY account_id then summed, per ADR-030 /
+        // portfolio_repository.py::get_portfolio_total_value), never from a stored `totals`
+        // block. With no priced positions the summary is an explicit empty state (zeros,
+        // price_source 'empty').
         let totalMarketValueUSD = 0;
         let totalMarketValueCAD = 0;
         let liveUsdCadRate = JAN1_USD_CAD_RATE;
-        let priceSource = 'yfinance';
+        let priceSource = 'empty';
 
         const dbTotalUSD = getPortfolioTotalUsdFromDb();
         if (dbTotalUSD != null) {
-            // Always the live, SQLite-sourced broker_exchange_rate (never the stale
-            // portfolio.json totals.exchangeRate — that field is frozen since Wave 3
-            // stopped writing portfolio.json; using it here caused Portfolio Summary
-            // and Portfolio Table to show two different CAD totals for the same
-            // portfolio at the same instant, since stock.ts already always uses
-            // getLiveUsdCadRate() unconditionally).
+            // Always the live, SQLite-sourced broker_exchange_rate, so the Portfolio Summary and
+            // the Portfolio Table show the same CAD total (stock.ts also always uses
+            // getLiveUsdCadRate()).
             liveUsdCadRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
             totalMarketValueUSD = dbTotalUSD;
             totalMarketValueCAD = dbTotalUSD * liveUsdCadRate;
             priceSource = 'domain_model_sqlite';
             console.log(`[Summary] totalUSD=$${totalMarketValueUSD.toFixed(2)} (from domain_model.sqlite)`);
-        } else if (totals != null && (totals.totalUSD ?? 0) > 0) {
-            totalMarketValueUSD = totals.totalUSD!;
-            totalMarketValueCAD = totals.totalCAD!;
-            liveUsdCadRate = totals.exchangeRate ?? JAN1_USD_CAD_RATE;
-            priceSource = 'tradingview';
-            console.log(`[Summary] totalUSD=$${totalMarketValueUSD.toFixed(2)} totalCAD=$${totalMarketValueCAD.toFixed(2)}`);
         } else {
-            // Fallback: compute from stored prices (before first sync)
             liveUsdCadRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
-            for (const pos of positions) {
-                totalMarketValueUSD += (pos.shares || 0) * (pos.price ?? pos.book_price ?? 0);
-            }
-            totalMarketValueCAD = totalMarketValueUSD * liveUsdCadRate;
-            console.log(`[Summary] No totals in portfolio.json — computed $${totalMarketValueUSD.toFixed(2)} (fallback)`);
+            console.log(`[Summary] No priced positions in domain_model.sqlite — reporting an empty portfolio`);
         }
 
-        // Book value + position count: Wave 7 — computed live from
-        // account_investment (SUM(quantity * average_cost), COUNT(*)), replacing
-        // the prior unconditional read of portfolio.json's `positions[].book_price`/
-        // `.length` (frozen since Wave 3 stopped writing that file) even though
-        // totalMarketValueUSD above already read SQLite. Falls back to the
-        // portfolio.json-derived `positions` only when SQLite has no priced
-        // position data yet.
+        // Book value + position count: SUM(quantity * average_cost) and the equity position
+        // count from account_investment; zeros when the database has no priced positions.
         const dbBookValue = getBookValueAndCountFromDb();
-        let totalBookValueUSD: number;
-        let positionCount: number;
-        if (dbBookValue != null) {
-            totalBookValueUSD = dbBookValue.totalBookValueUSD;
-            positionCount = dbBookValue.positionCount;
-        } else {
-            totalBookValueUSD = 0;
-            for (const pos of positions) {
-                totalBookValueUSD += (pos.shares || 0) * (pos.book_price || 0);
-            }
-            positionCount = positions.length;
-        }
+        const totalBookValueUSD = dbBookValue?.totalBookValueUSD ?? 0;
+        const positionCount = dbBookValue?.positionCount ?? 0;
         const totalBookValueCAD = totalBookValueUSD * liveUsdCadRate;
 
-        // Derive the actual "last synced" timestamp. Prefer the real, current
-        // SQLite value (MAX(account_investment.last_synced_at), updated on every
-        // real sync) over portfolio.json's totals.timestamp/positions[].last_updated
-        // — those fields are frozen since Wave 3 stopped writing portfolio.json on
-        // every sync path, which is why the UI's "SQLite · <time>" badge never
-        // advanced on refresh even though the totals above were already live.
-        const dbLastSyncedAt = getLastSyncedAtFromDb();
-        const fromTotals = totals?.timestamp ?? null;
-        const fromHoldings = positions.reduce((latest: string, item: any) => {
-            if (!item.last_updated) return latest;
-            return !latest || new Date(item.last_updated) > new Date(latest) ? item.last_updated : latest;
-        }, '');
-        const lastUpdated = dbLastSyncedAt ?? fromTotals ?? fromHoldings ?? new Date().toISOString();
+        // The real "last synced" time is MAX(account_investment.last_synced_at), updated on every
+        // sync; with nothing synced yet it is the current time.
+        const lastUpdated = getLastSyncedAtFromDb() ?? new Date().toISOString();
 
         // Fetch time-weighted performance metrics from report
         const twrReport = await loadYtdPerformanceReport();
@@ -585,7 +476,7 @@ router.get('/performance', async (_req, res) => {
     console.log(`[API] Computing portfolio period performance...`);
     try {
         if (!fs.existsSync(DOMAIN_MODEL_DB_FILE)) { res.status(404).json({ error: 'No portfolio data found' }); return; }
-        const data = await spawnPythonScript('portfolio_performance.py', [PORTFOLIO_FILE]);
+        const data = await spawnPythonScript('portfolio_performance.py', []);
         res.json(data);
     } catch (error) {
         console.error(`[API] Error computing performance: `, error);
@@ -595,23 +486,14 @@ router.get('/performance', async (_req, res) => {
 
 router.get('/weights', (_req, res) => {
     try {
-        // Wave 3 Task 6: prefer domain_model.sqlite; fall back to portfolio.json
-        // when SQLite has no priced position data yet.
-        const dbWeights = getWeightsFromDb();
-        if (dbWeights != null) { res.json(dbWeights); return; }
-        const { holdings, totals } = readPortfolio();
-        res.json(computeWeightsMap(holdings, totals));
+        // Weights come from domain_model.sqlite; no priced positions gives an empty map.
+        res.json(getWeightsFromDb() ?? {});
     } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
 router.get('/status', (_req, res) => {
     try {
-        // Wave 7: MAX(account_investment.last_synced_at), the real, current sync
-        // timestamp — replaces the prior unconditional read of portfolio.json's
-        // totals.timestamp/positions[].last_updated, which was frozen at whatever
-        // it held before Wave 3 stopped writing that file. This is why the UI's
-        // "SQLite · <time>" badge never advanced on refresh even though the data
-        // underneath it was live.
+        // MAX(account_investment.last_synced_at): the real, current sync timestamp.
         const lastSync = getLastSyncedAtFromDb();
         res.json({ lastSync });
     } catch { res.status(500).json({ error: 'Failed to get status' }); }
@@ -622,27 +504,14 @@ router.get('/status', (_req, res) => {
 router.get('/position/:ticker', (req, res) => {
     const ticker = req.params.ticker.toUpperCase();
     try {
-        // Wave 7: price/book_price sourced live from investment_price/
-        // account_investment (getPositionPriceFromDb), replacing the prior
-        // unconditional read of portfolio.json for these two fields (only
-        // per-account share counts had already been cut over to SQLite in
-        // Wave 3). Falls back to portfolio.json only when this ticker has no
-        // investment_price row yet (never synced/priced).
+        // price/book_price come from investment_price / account_investment; a ticker with no
+        // investment_price row yet (never synced or priced) has null price and book price.
         let price: number | null = null;
         let book_price: number | null = null;
-        let portfolioShares: number = 0;
         const dbPrice = getPositionPriceFromDb(ticker);
         if (dbPrice != null) {
             price = dbPrice.price;
             book_price = dbPrice.book_price;
-        } else {
-            const { holdings: portfolio } = readPortfolio();
-            const entry = portfolio.find((p: any) => (p.symbol ?? '').toUpperCase() === ticker);
-            if (entry) {
-                price = typeof entry.price === 'number' ? entry.price : null;
-                book_price = typeof entry.book_price === 'number' ? entry.book_price : null;
-                portfolioShares = typeof entry.shares === 'number' ? entry.shares : 0;
-            }
         }
         // Per-account quantities from domain_model.sqlite (account_investment).
         const byAccount: Record<string, number> = {};
@@ -650,7 +519,7 @@ router.get('/position/:ticker', (req, res) => {
         for (const r of dbRows) byAccount[r.accountId] = (byAccount[r.accountId] ?? 0) + r.quantity;
         const accounts = Object.entries(byAccount).map(([account, shares]) => ({ account, shares }));
         const accountTotal = accounts.reduce((s, a) => s + a.shares, 0);
-        const totalShares = accountTotal || portfolioShares;
+        const totalShares = accountTotal;
         const unrealizedGain = (price !== null && book_price !== null && totalShares > 0)
             ? (price - book_price) * totalShares : null;
         const unrealizedGainPct = (price !== null && book_price !== null && book_price > 0)
@@ -664,48 +533,19 @@ router.get('/position/:ticker', (req, res) => {
 router.get('/holdings/:ticker', (req, res) => {
     const ticker = req.params.ticker.toUpperCase();
     try {
-        // Wave 3 Task 6: per-account quantity/average_cost from domain_model.sqlite
-        // (account_investment), replacing tvSnapshot.positions[]. average_cost maps
-        // 1:1 to this route's existing `avgFillPrice` field name.
+        // Per-account quantity/average_cost from domain_model.sqlite (account_investment);
+        // average_cost maps 1:1 to this route's `avgFillPrice` field.
         const dbRows = getAccountPositionsFromDb(ticker);
-        if (dbRows.length > 0) {
-            const accounts = dbRows.map(r => ({
-                account: r.accountId,
-                shares: r.quantity,
-                avgFillPrice: r.averageCost != null ? Math.round(r.averageCost * 100) / 100 : null,
-            }));
-            const total = accounts.reduce((s, a) => s + a.shares, 0);
-            const totalCost = accounts.reduce((s, a) => s + (a.avgFillPrice ?? 0) * a.shares, 0);
-            const avgFillPrice = total > 0 ? Math.round((totalCost / total) * 100) / 100 : null;
-            res.json({ ticker, accounts, total, avgFillPrice, dataSource: 'domain_model_sqlite', timestamp: null });
-            return;
-        }
-
-        // Fallback: tvSnapshot.positions[] (pre-SQLite-sync data)
-        const { tvSnapshot } = readPortfolio();
-        if (!tvSnapshot) { res.json({ ticker, accounts: [], total: 0, avgFillPrice: null, dataSource: 'none' }); return; }
-        const positions: any[] = tvSnapshot.positions ?? [];
-        const matches = positions.filter((p: any) => (p.symbol ?? '').toUpperCase() === ticker);
-
-        // Aggregate per-account: weighted average fill price
-        const byAccount: Record<string, { shares: number; costBasis: number }> = {};
-        for (const p of matches) {
-            const acct = (p.accountType ?? 'UNKNOWN').toUpperCase();
-            const qty = p.quantity ?? 0;
-            const fill = p.avgFillPrice ?? 0;
-            if (!byAccount[acct]) byAccount[acct] = { shares: 0, costBasis: 0 };
-            byAccount[acct].shares += qty;
-            byAccount[acct].costBasis += qty * fill;
-        }
-        const accounts = Object.entries(byAccount).map(([account, { shares, costBasis }]) => ({
-            account,
-            shares,
-            avgFillPrice: shares > 0 ? Math.round((costBasis / shares) * 100) / 100 : null,
+        if (dbRows.length === 0) { res.json({ ticker, accounts: [], total: 0, avgFillPrice: null, dataSource: 'empty' }); return; }
+        const accounts = dbRows.map(r => ({
+            account: r.accountId,
+            shares: r.quantity,
+            avgFillPrice: r.averageCost != null ? Math.round(r.averageCost * 100) / 100 : null,
         }));
         const total = accounts.reduce((s, a) => s + a.shares, 0);
         const totalCost = accounts.reduce((s, a) => s + (a.avgFillPrice ?? 0) * a.shares, 0);
         const avgFillPrice = total > 0 ? Math.round((totalCost / total) * 100) / 100 : null;
-        res.json({ ticker, accounts, total, avgFillPrice, dataSource: tvSnapshot.dataSource ?? 'tradingview-cdp', timestamp: tvSnapshot.timestamp ?? null });
+        res.json({ ticker, accounts, total, avgFillPrice, dataSource: 'domain_model_sqlite', timestamp: null });
     } catch { res.json({ ticker, accounts: [], total: 0, avgFillPrice: null, dataSource: 'error' }); }
 });
 
@@ -714,13 +554,8 @@ router.get('/holdings/:ticker', (req, res) => {
 router.post('/refresh-prices', async (_req, res) => {
     console.log(`[API] Refreshing portfolio prices from Yahoo...`);
     try {
-        // Wave 7: the ticker list to refresh comes live from account_investment,
-        // replacing the prior unconditional read of portfolio.json — that file
-        // (frozen since Wave 3) meant newly-synced positions never got their
-        // prices refreshed here, and closed positions kept getting "refreshed"
-        // needlessly. Falls back to portfolio.json only when SQLite has no
-        // held positions yet.
-        const portfolioData = getHoldingsForDisplayFromDb() ?? readPortfolio().holdings;
+        // The ticker list to refresh comes live from account_investment.
+        const portfolioData = getHoldingsForDisplayFromDb() ?? [];
         // Refresh scope = held positions PLUS watchlist-only tickers (is_watchlisted=1,
         // no shares). Previously this only covered held positions, so watchlist tickers
         // (fed to the watchlist heatmap, thesis review, etc.) went stale indefinitely —
@@ -761,16 +596,13 @@ router.post('/refresh-prices', async (_req, res) => {
                 ? { ...item, price: stockData.price, sector: stockData.sector, industry: stockData.industry, last_updated: new Date().toISOString() }
                 : item;
         });
-        // Wave 3 (completion): SQLite-only persistence — this path no longer writes
-        // portfolio.json. The freshly-fetched live prices are persisted into
-        // `investment_price` (the gap that previously left SQLite prices permanently
-        // stale after the one-time migration), which is what /summary, /weights, and
-        // /strategy-allocation now read their market values from (Task 6). The flat
+        // The freshly-fetched live prices are persisted into `investment_price`, which is what
+        // /summary, /weights, and /strategy-allocation read their market values from. The flat
         // `updatedItems` array carries no per-account attribution, so account_investment
         // quantities are intentionally left untouched (owned by the sync-tv path). The
         // fresh heatmap prices are still returned inline in this response for the caller.
         const pricesWritten = persistRefreshedPricesToDb(updatedItems);
-        console.log(`[Portfolio] refresh-prices: wrote ${pricesWritten} fresh prices to investment_price (SQLite-only, no portfolio.json write).`);
+        console.log(`[Portfolio] refresh-prices: wrote ${pricesWritten} fresh prices to investment_price (SQLite-only).`);
         res.json({ success: true, updated: updatedItems.length, heatmap: { ...data, exchange_rate: exchangeRate } });
     } catch (error) {
         console.error(`[API] Error refreshing prices: `, error);
@@ -787,11 +619,8 @@ router.post('/sync-tv', async (_req, res) => {
             res.status(503).json({ error: 'TradingView returned 0 positions. Is TradingView Desktop running with a broker connected?' });
             return;
         }
-        // Wave 7: diff baseline sourced live from account_investment, replacing
-        // the prior unconditional read of portfolio.json — a diff against a
-        // frozen 3-day-old file was comparing against the wrong "existing"
-        // state, producing wrong added/removed/changed counts.
-        const existing = getHoldingsForDisplayFromDb() ?? readPortfolio().holdings;
+        // The diff baseline is the stored positions in account_investment.
+        const existing = getHoldingsForDisplayFromDb() ?? [];
         const { merged, added, removed, changed } = mergeIntoPortfolio(snapshot, existing);
         res.json({
             success: true, dataSource: 'tradingview-cdp', positionCount: posCount,
@@ -810,8 +639,7 @@ router.post('/sync-tv/promote', async (req, res) => {
         res.status(400).json({ error: 'merged array is required in request body. Call /api/portfolio/sync-tv first.' });
         return;
     }
-    // Wave 3 (completion): SQLite-only — no portfolio.json write. When the caller
-    // passes back the raw `snapshot` from the preceding /sync-tv response, its real
+    // When the caller passes back the raw `snapshot` from the preceding /sync-tv response, its real
     // per-account positions/cash + FX rate are persisted to domain_model.sqlite via
     // persistSnapshotToDb (the single shared writer, no duplicated logic). Without a
     // snapshot there is no per-account attribution to write (the flat `merged` array
@@ -828,7 +656,7 @@ router.post('/sync-tv/promote', async (req, res) => {
     res.json({ success: true, positionCount: merged.length, message: 'Portfolio updated from TradingView data (SQLite).' });
 });
 
-// One-shot: fetch TV snapshot → merge → write portfolio.json immediately (no HITL gate)
+// One-shot: fetch TV snapshot → merge → persist to domain_model.sqlite immediately (no HITL gate)
 router.post('/sync-tv/apply', async (_req, res) => {
     console.log('[API] TV sync + auto-apply to domain_model.sqlite...');
     try {
@@ -839,14 +667,10 @@ router.post('/sync-tv/apply', async (_req, res) => {
             res.json({ success: true, positionCount: 0, tvAvailable: false, message: 'TradingView not available or returned 0 positions — portfolio unchanged.' });
             return;
         }
-        // Wave 7: diff baseline sourced live from account_investment, replacing
-        // the prior unconditional read of portfolio.json — a diff against a
-        // frozen 3-day-old file was comparing against the wrong "existing"
-        // state, producing wrong added/removed/changed counts.
-        const existing = getHoldingsForDisplayFromDb() ?? readPortfolio().holdings;
+        // The diff baseline is the stored positions in account_investment.
+        const existing = getHoldingsForDisplayFromDb() ?? [];
         const { merged, added, removed, changed } = mergeIntoPortfolio(snapshot, existing);
-        // Wave 3 (completion): SQLite-only — no portfolio.json write. The fresh
-        // snapshot's real per-account positions/cash + FX rate + broker-reported
+        // The fresh snapshot's real per-account positions/cash + FX rate + broker-reported
         // total are persisted to domain_model.sqlite via persistSnapshotToDb (the
         // single shared writer). /summary, /weights, /strategy-allocation, GET /,
         // /position, /holdings all now read from there.
@@ -888,10 +712,8 @@ router.post('/sync', async (_req, res) => {
 router.get('/strategy-allocation', async (_req, res) => {
     console.log(`[API] Computing strategy allocation...`);
     try {
-        // Wave 8: pillar/sub-strategy mapping sourced live from
-        // strategy_pillar/investment (InvestmentRepository.listPillars()/
-        // listThesisHoldings()), replacing the prior unconditional read of
-        // target-portfolio.json for this mapping.
+        // The pillar / sub-strategy mapping comes from strategy_pillar / investment
+        // (InvestmentRepository.listPillars() / listThesisHoldings()).
         const investmentRepo = new InvestmentRepository(DOMAIN_MODEL_DB_FILE);
         let thesis: any;
         try {
@@ -904,15 +726,12 @@ router.get('/strategy-allocation', async (_req, res) => {
             investmentRepo.close();
         }
 
-        // Wave 3 Task 6: prefer domain_model.sqlite for positions/totals; fall back
-        // to portfolio.json when SQLite has no priced position data yet.
+        // Positions and totals come from domain_model.sqlite; with no priced positions the
+        // allocation is computed over an empty portfolio.
         const dbInput = getStrategyAllocationInputFromDb();
-        if (dbInput != null) {
-            res.json(computeStrategyAllocation(dbInput.positions, dbInput.totals, thesis));
-            return;
-        }
-        const { holdings: positions, totals } = readPortfolio();
-        const result = computeStrategyAllocation(positions, totals, thesis);
+        const result = dbInput != null
+            ? computeStrategyAllocation(dbInput.positions, dbInput.totals, thesis)
+            : computeStrategyAllocation([], { totalUSD: 0 }, thesis);
         res.json(result);
     } catch (error) {
         console.error(`[API] Error computing strategy allocation: `, error);

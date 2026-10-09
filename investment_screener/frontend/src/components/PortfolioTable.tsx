@@ -383,7 +383,7 @@ export default function PortfolioTable() {
                 const rev = reviewMap[s.symbol];
                 const fairValue = p?.aiThesis?.fairValue ?? null;
                 const base = p?.scenarios?.base;
-                // Use heatmap-derived weight (live prices) — avoids stale portfolio.json prices
+                // Use heatmap-derived weight (live prices) — avoids stale stored prices
                 const hmPct = (s.total_market != null && totalValue > 0)
                     ? (s.total_market / totalValue) * 100
                     : null;
