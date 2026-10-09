@@ -1,14 +1,39 @@
-"""Portfolio/account value calculations expressed against the relational model
-(account_investment JOIN investment_price, GROUP BY account_id), not as Python
-loops reconstructing the old JSON tree shape.
+"""portfolio_repository.py - Portfolio and account value queries over the relational model.
 
-Per ADR-030: these are read-time-only queries. No table stores an account or
-portfolio total -- every number here is computed fresh from account_investment/
-investment_price on each call. Account boundaries are preserved first
-(get_account_market_values' GROUP BY), and the portfolio total is always the
-sum of those per-account results (get_portfolio_total_value), never an
-independent flat query -- this is the direct fix for the bug class Task 0
-found (RRSP holdings silently collapsing into TFSA).
+Purpose:
+    Portfolio/account value calculations expressed against the relational model
+    (account_investment JOIN investment_price, GROUP BY account_id), not as Python
+    loops reconstructing the old JSON tree shape.
+
+    Per ADR-030: these are read-time-only queries. No table stores an account or
+    portfolio total -- every number here is computed fresh from account_investment/
+    investment_price on each call. Account boundaries are preserved first
+    (get_account_market_values' GROUP BY), and the portfolio total is always the
+    sum of those per-account results (get_portfolio_total_value), never an
+    independent flat query -- this is the direct fix for the bug class Task 0
+    found (RRSP holdings silently collapsing into TFSA).
+
+Layer:
+    Backend / Python Services / Domain Model
+
+Usage Examples:
+    state = load_portfolio_state_from_db(conn)  # {"shares", "prices", "total_usd", ...}
+    total = get_portfolio_total_value(conn)     # sum of per-account market values
+
+Key Functions (Index):
+    - get_account_market_values(): SUM(quantity * price) per account
+    - get_portfolio_total_value(): sum of the per-account values
+    - get_account_cash_usd(): cash per account
+    - get_total_cash_usd(): cash across accounts, or None
+    - get_last_synced_at(): newest account_investment.last_synced_at
+    - load_portfolio_state_from_db(): the state dict behind portfolio_io.load_portfolio_state
+
+Key Input Dependencies:
+    - domain_model.sqlite tables account_investment, investment_price, investment (via an open connection)
+    - domain_model/exchange_rate_repository.py (get_exchange_rate)
+
+Key Output Dependencies:
+    - Read by py_services/portfolio_io.py and the verification scripts; writes nothing
 """
 
 import sqlite3
@@ -94,7 +119,7 @@ def get_last_synced_at(conn: sqlite3.Connection) -> str | None:
     """Most recent ``last_synced_at`` across all account_investment rows (ISO
     string), or None if the table is empty.
 
-    Re-expresses the JSON-era ``portfolio.json`` ``totals.timestamp`` freshness
+    Re-expresses the JSON-era (retired) ``portfolio.json`` ``totals.timestamp`` freshness
     signal against the relational model, so staleness checks read the same
     source of truth as every other portfolio number.
     """
