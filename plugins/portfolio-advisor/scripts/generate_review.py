@@ -13,7 +13,6 @@ The generated file is a starting point for the /strategic-review agent skill.
 All {{PLACEHOLDER}} tokens that require AI analysis are left as-is for the agent to fill.
 """
 
-import json
 import os
 import sys
 import argparse
@@ -23,19 +22,20 @@ from pathlib import Path
 # ── Paths (relative to repo root) ──────────────────────────────────────────────
 REPO_ROOT = Path(__file__).resolve().parents[3]  # plugins/portfolio-advisor/scripts/ → repo root
 TEMPLATE_PATH = REPO_ROOT / "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md"
-THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 OUTPUT_DIR     = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
-from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.portfolio_change_log_repository import list_change_log  # noqa: E402
 from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+from portfolio_io import load_thesis_holdings  # noqa: E402
+
+THESIS_NAME = "Investment Thesis"
 
 
 def load_portfolio_holdings_from_db(db_path: Path = DB_PATH) -> list:
-    """Load holdings-shaped rows ([{"symbol", "shares", "price"}, ...]) from
-    domain_model.sqlite (Wave 3 Task 6 cutover — previously portfolio.json).
+    """Load holdings-shaped rows ([{"symbol", "shares", "price"}, ...]) from domain_model.sqlite.
 
     Sourced from ``load_portfolio_state_from_db()`` so per-symbol shares/prices
     stay identical to every other consumer of that function.
@@ -53,21 +53,9 @@ def load_portfolio_holdings_from_db(db_path: Path = DB_PATH) -> list:
         {"symbol": sym, "shares": shares[sym], "price": prices.get(sym, 0.0)}
         for sym in shares
     ]
-# Note (Wave 1 Task 7B): PROJECTIONS_DIR was declared here but never read by this
-# file — DCF/projection data reaches this script only indirectly, via
-# scan_opportunities.py's subprocess call in get_action_subsections(), which is
-# rewired onto domain_model.sqlite separately. Removed as dead code (ADR-029
-# archive-readiness gate: no real `data/projections` file I/O should remain).
-
-
-def load_json(path: Path) -> dict | list:
-    with open(path) as f:
-        return json.load(f)
-
 
 def compute_portfolio_summary(portfolio: list) -> dict:
-    """Derive key metrics from domain_model.sqlite holdings (Wave 3 Task 6
-    cutover — previously portfolio.json) for header population."""
+    """Derive key metrics (total, holding count, cash) from the holdings rows for header population."""
     holdings = [h for h in portfolio if h.get("symbol") != "USD_CASH"]
     cash = next((h for h in portfolio if h.get("symbol") == "USD_CASH"), None)
 
@@ -83,47 +71,40 @@ def compute_portfolio_summary(portfolio: list) -> dict:
     }
 
 
-def compute_thesis_summary(thesis: dict, portfolio: list, db_path: Path = DB_PATH) -> dict:
-    """Derive EXIT/INITIATE counts and thesis metadata.
+def compute_thesis_summary(portfolio: list, db_path: Path = DB_PATH) -> dict:
+    """Derive EXIT/INITIATE counts and thesis metadata from domain_model.sqlite.
 
-    Storage backend (Wave 2 Task 10 rewire): per-ticker thesis fields
-    (targetWeight) are read from ``investment.target_weight`` via
-    ``domain_model.investment_repository.list_investments`` instead of
-    target-portfolio.json's holdings. ``thesis`` (the parsed JSON) is only
-    used for document-level metadata (name/version) that has no equivalent
-    investment-table column, matching generate_portfolio_blueprint.py's
-    established Task 10 pattern.
+    Per-ticker targets come from ``portfolio_io.load_thesis_holdings`` (rows with a target
+    weight; a NULL weight means no thesis and is never an EXIT). The thesis version is the
+    newest ``portfolio_change_log`` version, or "unversioned" when none is recorded.
 
-    Bug fix: the pre-rewire version iterated
-    ``thesis["pillars"][i]["holdings"]``, but target-portfolio.json's
-    pillar entries never have a "holdings" key (only top-level
-    ``thesis["holdings"]`` does) — so ``all_thesis_holdings`` was always
-    empty and EXIT/INITIATE counts were always 0. Fixed by reading
-    per-investment rows directly.
+    Args:
+        portfolio: Holdings rows ({"symbol", "shares", ...}) used to tell held from unheld.
+        db_path: Database to read.
+
+    Returns:
+        thesis_name, thesis_version, exit_count, initiate_count, exit_tickers, initiate_tickers.
+
+    Raises:
+        ValueError: The database is missing or holds no thesis holdings.
     """
+    if not Path(db_path).exists():
+        raise ValueError(f"domain_model.sqlite not found: {db_path}")
+    thesis_holdings = load_thesis_holdings(str(db_path))
+    if not thesis_holdings:
+        raise ValueError(f"no thesis holdings in {db_path}; set target weights before generating a review")
+    conn = initialize_db(str(db_path))
+    try:
+        log = list_change_log(conn)
+    finally:
+        conn.close()
+
     held_tickers = {h["symbol"] for h in portfolio if h.get("shares", 0) > 0}
-
-    all_thesis_holdings = []
-    if Path(db_path).exists():
-        conn = initialize_db(str(db_path))
-        try:
-            for row in list_investments(conn):
-                all_thesis_holdings.append({
-                    "ticker": row["symbol"],
-                    "targetWeight": row.get("target_weight") or 0,
-                })
-        finally:
-            conn.close()
-
-    thesis_tickers = {h["ticker"] for h in all_thesis_holdings}
-    target_zero = [h["ticker"] for h in all_thesis_holdings if h.get("targetWeight", 1) == 0]
-    exit_flagged = [t for t in target_zero if t in held_tickers]
-    initiate_targets = [t for t in thesis_tickers if t not in held_tickers and
-                        any(h["ticker"] == t and h.get("targetWeight", 0) > 0 for h in all_thesis_holdings)]
-
+    exit_flagged = [h["ticker"] for h in thesis_holdings if h["targetWeight"] == 0 and h["ticker"] in held_tickers]
+    initiate_targets = [h["ticker"] for h in thesis_holdings if h["targetWeight"] > 0 and h["ticker"] not in held_tickers]
     return {
-        "thesis_name": thesis.get("name", "Investment Thesis"),
-        "thesis_version": thesis.get("version", "?"),
+        "thesis_name": THESIS_NAME,
+        "thesis_version": max(log, key=lambda e: int(float(e["version"])))["version"] if log else "unversioned",
         "exit_count": len(exit_flagged),
         "initiate_count": len(initiate_targets),
         "exit_tickers": exit_flagged,
@@ -225,10 +206,13 @@ def main():
 
     template = TEMPLATE_PATH.read_text()
     portfolio = load_portfolio_holdings_from_db()
-    thesis = load_json(THESIS_PATH) if THESIS_PATH.exists() else {}
 
     portfolio_summary = compute_portfolio_summary(portfolio)
-    thesis_summary = compute_thesis_summary(thesis, portfolio)
+    try:
+        thesis_summary = compute_thesis_summary(portfolio)
+    except ValueError as exc:
+        print(f"❌ {exc}", file=sys.stderr)
+        sys.exit(1)
     action_subsections = get_action_subsections()
 
     populated = populate_template(template, portfolio_summary, thesis_summary, action_subsections, args.date)
