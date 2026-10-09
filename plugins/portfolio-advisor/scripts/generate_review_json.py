@@ -49,7 +49,7 @@ def _compute_current_from_db() -> dict:
     portfolio_io.compute_weights(). Returns the same {"holdings": {...}} shape
     the old compute_current() returned so downstream code is unchanged.
     """
-    state = load_portfolio_state(None)
+    state = load_portfolio_state()
     holdings = compute_weights(state["shares"], state["prices"], state["total_usd"])
     return {"total": round(sum(holdings.values()), 4), "holdings": holdings,
             "total_value": state["total_usd"]}

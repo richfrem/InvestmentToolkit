@@ -237,7 +237,7 @@ def fetch_stored_positions(db_path: Optional[str] = None) -> Optional[dict]:
     if not os.path.exists(path):
         return None
     from portfolio_io import load_portfolio_state
-    state = load_portfolio_state(None, db_path=path)
+    state = load_portfolio_state(db_path=path)
     return {"holdings": [{"symbol": sym, "shares": qty} for sym, qty in state["shares"].items()]}
 
 

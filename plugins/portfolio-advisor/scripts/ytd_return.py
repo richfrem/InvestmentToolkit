@@ -50,7 +50,7 @@ def load_current_balance_cad() -> float:
     sys.path.insert(0, str(PY_SERVICES))
     from portfolio_io import load_portfolio_state
 
-    state = load_portfolio_state(None)  # path arg retained for compat, unused
+    state = load_portfolio_state()
     total_usd = float(state.get("total_usd", 0.0) or 0.0)
     exchange_rate = float(state.get("exchange_rate", 1.38) or 1.38)
     return total_usd * exchange_rate

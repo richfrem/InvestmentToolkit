@@ -395,7 +395,7 @@ def align_current_brief(brief: dict[str, Any], db_path: str | None = None) -> di
                      weight_gap=target - actual if target is not None else None)
         scores.append(score)
     standing = {t: r["standing_decision"] for t, r in records.items() if r.get("standing_decision")}
-    state = load_portfolio_state(None, db_path=db_path)
+    state = load_portfolio_state(db_path=db_path)
     return {**brief, "conviction_scores": scores,
             "recommendations": build_recommendations(scores, standing, brief.get("earnings_flags", []),
                                                        brief.get("macro_regime", {}), state["total_usd"])}

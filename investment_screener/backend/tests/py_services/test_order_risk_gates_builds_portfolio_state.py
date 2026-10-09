@@ -74,26 +74,12 @@ def _seed_positions(db_path: Path, rows: list[tuple[str, str, float, float]]) ->
 
 
 def test_missing_files_degrade_to_empty_state(tmp_path):
-    """Neither domain_model.sqlite nor portfolio.json exist -> {"holdings": {},
+    """No domain_model.sqlite exists -> {"holdings": {},
     "total_value": 0.0}, never raises. A missing DB path is initialized fresh
     (empty) by initialize_db(), so the pillar map degrades to {}."""
     missing_db = tmp_path / "no-domain-model.sqlite"
-    missing_portfolio = tmp_path / "no-portfolio.json"
 
-    result = build_portfolio_state_for_order(
-        db_path=missing_db, portfolio_path=missing_portfolio
-    )
-
-    assert result == {"holdings": {}, "total_value": 0.0}
-
-
-def test_malformed_portfolio_json_degrades_to_empty_state(tmp_path):
-    """Malformed JSON in portfolio.json degrades gracefully."""
-    db_path = _make_db(tmp_path, [])
-    portfolio = tmp_path / "portfolio.json"
-    portfolio.write_text("{not valid json")
-
-    result = build_portfolio_state_for_order(db_path=db_path, portfolio_path=portfolio)
+    result = build_portfolio_state_for_order(db_path=missing_db)
 
     assert result == {"holdings": {}, "total_value": 0.0}
 
@@ -116,7 +102,7 @@ def test_realistic_two_holding_fixture_produces_correct_weight_and_pillar(tmp_pa
     ])
     monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
 
-    result = build_portfolio_state_for_order(db_path=db_path, portfolio_path=tmp_path / "unused.json")
+    result = build_portfolio_state_for_order(db_path=db_path)
 
     # total_value is the real account rollup: 10*150 + 5*400 = 3500.0
     assert result["total_value"] == 3500.0
@@ -135,7 +121,7 @@ def test_ticker_with_no_pillar_assignment_falls_back_to_unassigned(tmp_path, mon
     _seed_positions(db_path, [("TFSA", "NBIS", 20, 50.0)])
     monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
 
-    result = build_portfolio_state_for_order(db_path=db_path, portfolio_path=tmp_path / "unused.json")
+    result = build_portfolio_state_for_order(db_path=db_path)
 
     assert result["holdings"]["NBIS"]["pillar_id"] == "unassigned"
     assert abs(result["holdings"]["NBIS"]["weight_pct"] - 100.0) < 0.01
@@ -150,7 +136,7 @@ def test_ticker_with_pillar_but_no_portfolio_weight_gets_zero_weight(tmp_path):
         "totals": {"totalUSD": 1000.0},
     })
 
-    result = build_portfolio_state_for_order(db_path=db_path, portfolio_path=portfolio)
+    result = build_portfolio_state_for_order(db_path=db_path)
 
     assert result["holdings"]["PLTR"]["weight_pct"] == 0.0
     assert result["holdings"]["PLTR"]["pillar_id"] == "ai-thesis"

@@ -60,8 +60,6 @@ from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-# Unused default for portfolio_path; load_portfolio_state() reads domain_model.sqlite.
-PORTFOLIO_PATH = DATA_DIR / "portfolio.json"
 RISK_SNAPSHOT_PATH = DATA_DIR / "risk_snapshot.json"
 
 MIN_HISTORY_DAYS = 60
@@ -442,7 +440,6 @@ def compute_var_cvar(
 
 def compute_risk_snapshot(
     db_path: Path = _DB_PATH,
-    portfolio_path: Path = PORTFOLIO_PATH,
     benchmark: str = "SPY",
 ) -> dict[str, Any]:
     """Primary orchestrator — builds the full portfolio risk snapshot.
@@ -455,9 +452,7 @@ def compute_risk_snapshot(
     Does not write to disk — see main() for the CLI's --no-save-gated write.
 
     Args:
-        db_path: Path to domain_model.sqlite (pillar_id per investment).
-        portfolio_path: Retained for signature compatibility; no longer read
-            (actual broker state comes from domain_model.sqlite).
+        db_path: Path to domain_model.sqlite (pillar_id per investment, and the actual broker state).
         benchmark: Benchmark ticker for beta/relative calcs.
 
     Returns:
@@ -474,7 +469,7 @@ def compute_risk_snapshot(
         for inv in investments
     }
 
-    state = load_portfolio_state(Path(portfolio_path))
+    state = load_portfolio_state(db_path=db_path)
     weights_pct = compute_weights(state["shares"], state["prices"], state["total_usd"])
     tickers = list(weights_pct.keys())
     weights_frac = {t: w / 100.0 for t, w in weights_pct.items()}

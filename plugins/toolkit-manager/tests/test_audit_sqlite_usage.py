@@ -26,8 +26,9 @@ def _run_fixture(tmp_path, src):
 
 
 @pytest.mark.parametrize("name", sorted(audit.FIXTURES))
-def test_fixture_classification(tmp_path, name):
+def test_fixture_classification(tmp_path, name, monkeypatch):
     """Fixture classification."""
+    monkeypatch.setattr(audit, "IGNORES_PATH", {"load_portfolio_state"})
     src, want = audit.FIXTURES[name]
     verdicts = {f["verdict"] for f in _run_fixture(tmp_path, src)}
     assert want in verdicts, f"{name}: want {want}, got {sorted(verdicts)}"
@@ -56,8 +57,9 @@ def test_other_reader_is_a_violation(tmp_path):
     "P = 'portfolio.json'\ndef load_portfolio_state(p): pass\ndef f(path=None):\n    return load_portfolio_state(path or P)\n",
     "import os\nP = 'portfolio.json'\ndef age():\n    return os.path.getmtime(P)\n",
 ])
-def test_unused_vestigial_and_stat_are_violations(tmp_path, verdict_src):
+def test_unused_vestigial_and_stat_are_violations(tmp_path, verdict_src, monkeypatch):
     """Unused vestigial and stat are violations."""
+    monkeypatch.setattr(audit, "IGNORES_PATH", {"load_portfolio_state"})
     assert audit.python_violations(_run_fixture(tmp_path, verdict_src))
 
 
@@ -79,3 +81,8 @@ def test_ts_violations_flags_retired_names_and_skips_tests(tmp_path):
         ("investment_screener/backend/src/a.ts", 1),
         ("investment_screener/backend/src/b.ts", 1),
     ]
+
+
+def test_no_function_is_assumed_to_ignore_its_path_by_default():
+    """The path-ignoring list is empty: load_portfolio_state now opens the database path it is given."""
+    assert audit.IGNORES_PATH == set()

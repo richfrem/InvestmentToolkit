@@ -100,7 +100,7 @@ def test_load_portfolio_state_total_is_account_rollup_not_ad_hoc(tmp_path, monke
     db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0), ("RRSP", "MSFT", 5, 400.0)])
     monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
 
-    state = portfolio_io.load_portfolio_state(Path("unused.json"))
+    state = portfolio_io.load_portfolio_state()
 
     conn = initialize_db(db_path)
     try:
@@ -122,7 +122,7 @@ def test_load_portfolio_state_total_reflects_multi_account_positions(tmp_path, m
     db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0), ("RRSP", "AAPL", 5, 150.0)])
     monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
 
-    state = portfolio_io.load_portfolio_state(Path("unused.json"))
+    state = portfolio_io.load_portfolio_state()
     assert state["total_usd"] == 15 * 150.0
 
 
@@ -134,7 +134,7 @@ def test_load_portfolio_state_shares_map(tmp_path, monkeypatch):
     db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0), ("RRSP", "MSFT", 5, 400.0)])
     monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
 
-    state = portfolio_io.load_portfolio_state(Path("unused.json"))
+    state = portfolio_io.load_portfolio_state()
     assert state["shares"]["AAPL"] == 10.0
     assert state["shares"]["MSFT"] == 5.0
 
@@ -149,7 +149,7 @@ def test_load_portfolio_state_empty_db_returns_empty_not_crash(tmp_path, monkeyp
     db_path = _build_test_db(tmp_path, [])
     monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
 
-    state = portfolio_io.load_portfolio_state(Path("unused.json"))
+    state = portfolio_io.load_portfolio_state()
     assert state["shares"] == {}
     assert state["prices"] == {}
     assert state["total_usd"] == 0
@@ -184,9 +184,36 @@ def test_load_portfolio_state_reads_from_sqlite_not_json(tmp_path, monkeypatch):
     stale_json = tmp_path / "portfolio.json"
     stale_json.write_text('{"holdings": [{"symbol": "MSFT", "shares": 999, "price": 1.0}]}')
 
-    state = portfolio_io.load_portfolio_state(stale_json)
+    state = portfolio_io.load_portfolio_state()
     assert state["shares"] == {"AAPL": 5}
     assert "MSFT" not in state["shares"]
+
+
+def test_load_portfolio_state_honors_an_explicit_db_path(tmp_path, monkeypatch):
+    """An explicit db_path is read; the module default database is not."""
+    sys.path.insert(0, str(PY_SERVICES))
+    import portfolio_io
+
+    (tmp_path / "default").mkdir()
+    (tmp_path / "other").mkdir()
+    default_db = _build_test_db(tmp_path / "default", [("TFSA", "AAPL", 1, 100.0)])
+    other_db = _build_test_db(tmp_path / "other", [("TFSA", "MSFT", 7, 400.0)])
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", default_db)
+
+    assert portfolio_io.load_portfolio_state(other_db)["shares"] == {"MSFT": 7.0}
+    assert portfolio_io.load_portfolio_state(db_path=other_db)["shares"] == {"MSFT": 7.0}
+    assert portfolio_io.load_portfolio_state()["shares"] == {"AAPL": 1.0}
+
+
+def test_load_portfolio_state_rejects_a_json_path_instead_of_creating_a_database(tmp_path):
+    """A stale caller passing portfolio.json must fail loudly, never turn that file into a SQLite database."""
+    sys.path.insert(0, str(PY_SERVICES))
+    import portfolio_io
+
+    stale = tmp_path / "portfolio.json"
+    with pytest.raises(ValueError, match="SQLite"):
+        portfolio_io.load_portfolio_state(stale)
+    assert not stale.exists()
 
 
 # ── compute_weights ────────────────────────────────────────────────────────────

@@ -82,7 +82,7 @@ ARTIFACTS = {
 }
 # Imported or defined constants that name a legacy file even when the literal lives elsewhere.
 CONST_NAME_RX = re.compile(r"^(PORTFOLIO|TARGET_PORTFOLIO|THESIS|TARGET|TRADE_LOG|CASH_FLOWS?|ORDERS_EXECUTED|ACCOUNT_POLICY)_(PATH|FILE|JSON)$")
-IGNORES_PATH = {"load_portfolio_state"}          # accepts a path for compatibility, never opens it
+IGNORES_PATH: set[str] = set()                   # names of functions known to accept a path and never open it
 STAT_ATTRS = {"exists", "is_file", "stat", "getmtime", "getsize", "isfile"}
 READ_ATTRS = {"read_text", "read_bytes", "open"}
 WRITE_ATTRS = {"write_text", "write_bytes", "unlink", "rename", "replace", "touch"}
@@ -608,7 +608,17 @@ FIXTURES = {
 
 
 def self_test():
-    """Self test."""
+    """Run every fixture case and print one line per case; True when all pass."""
+    global IGNORES_PATH
+    saved, IGNORES_PATH = IGNORES_PATH, {"load_portfolio_state"}   # fixtures use this as the path-ignoring example
+    try:
+        return _run_fixture_cases()
+    finally:
+        IGNORES_PATH = saved
+
+
+def _run_fixture_cases():
+    """Classify each fixture and compare with the expected verdict."""
     ok = True
     for name, (src, want) in FIXTURES.items():
         with tempfile.TemporaryDirectory() as d:

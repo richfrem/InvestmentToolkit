@@ -92,17 +92,16 @@ def lookup_lifecycle_status(symbol: str, db_path: str | None = None) -> str | No
 
 # ── portfolio state loading ──────────────────────────────────────────────────
 
-def load_portfolio_state(portfolio_path: Path, db_path: str | None = None) -> dict[str, Any]:
+def load_portfolio_state(db_path: str | Path | None = None) -> dict[str, Any]:
     """Read the portfolio state from domain_model.sqlite.
 
-    ``portfolio_path`` is accepted for call-site compatibility and is not read; SQLite (via
-    ``domain_model.portfolio_repository.load_portfolio_state_from_db``) is the sole source. This
-    is a thin delegation: all aggregation and query logic lives in portfolio_repository.py.
+    SQLite (via ``domain_model.portfolio_repository.load_portfolio_state_from_db``) is the sole
+    source. This is a thin delegation: all aggregation and query logic lives in
+    portfolio_repository.py.
 
     Args:
-        portfolio_path: Retained for signature compatibility; unused.
-        db_path: Override for domain_model.sqlite (tests and callers with
-            their own --db); None reads the real database.
+        db_path: Database to read (tests and callers with their own --db); None reads the
+            real database.
 
     Returns:
         Dict with keys:
@@ -111,7 +110,13 @@ def load_portfolio_state(portfolio_path: Path, db_path: str | None = None) -> di
           - total_usd:    float           — authoritative portfolio total
           - exchange_rate: float          — CAD→USD rate (default 1.38)
           - _totals_from_broker: bool     — True when total came from broker data
+
+    Raises:
+        ValueError: ``db_path`` names a ``.json`` file. Portfolio data is not stored in JSON, and
+            opening such a path would turn that file into a SQLite database.
     """
+    if db_path is not None and str(db_path).lower().endswith(".json"):
+        raise ValueError(f"load_portfolio_state reads a SQLite database, not a JSON file: {db_path}")
     from domain_model.db_client import initialize_db
     from domain_model.portfolio_repository import load_portfolio_state_from_db
 
@@ -307,7 +312,7 @@ def main() -> None:
 
     if args.ticker:
         sym = normalize_ticker(args.ticker)
-        state = load_portfolio_state(Path(_DB_PATH))
+        state = load_portfolio_state()
         shares = state.get("shares", {}).get(sym, 0.0)
         price = state.get("prices", {}).get(sym, 0.0)
         target_weights = load_target_weights()
@@ -336,7 +341,7 @@ def main() -> None:
         return
 
     # Default: summary
-    state = load_portfolio_state(Path(_DB_PATH))
+    state = load_portfolio_state()
     print(f"Portfolio Total USD: ${state.get('total_usd', 0.0):,.2f}")
     print(f"Total Holdings: {len(state.get('shares', {}))}")
     print(f"Cash USD: ${state.get('cash_usd', 0.0):,.2f}")

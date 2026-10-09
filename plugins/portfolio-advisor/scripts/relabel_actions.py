@@ -43,7 +43,7 @@ def build_actual_pct_map() -> dict[str, float]:
     sys.path.insert(0, str(PY_SERVICES))
     from portfolio_io import load_portfolio_state, compute_weights
 
-    state = load_portfolio_state(None)  # path arg retained for compat, unused
+    state = load_portfolio_state()
     return compute_weights(state["shares"], state["prices"], state["total_usd"])
 
 

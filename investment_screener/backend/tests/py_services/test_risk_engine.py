@@ -364,23 +364,8 @@ def _seed_pillar_map(db_path: Path, holdings: list[dict]) -> None:
     conn.close()
 
 
-def _write_portfolio(path: Path, shares: dict, prices: dict, total_usd: float) -> None:
-    payload = {
-        "holdings": [{"ticker": t, "shares": q, "price": prices[t]} for t, q in shares.items()],
-        "totals": {"totalUSD": total_usd},
-    }
-    path.write_text(json.dumps(payload))
-
-
 def _seed_positions(db_path: Path, shares: dict, prices: dict) -> None:
-    """Seed SQLite-backed portfolio positions matching a shares/prices map into
-    domain_model.sqlite -- the real source load_portfolio_state() reads
-    post-Wave-3 (see test_portfolio_io.py's _build_test_db for the same
-    pattern). Replaces the old portfolio.json "holdings"/"totals" fixture for
-    computing actual weights; _write_portfolio()'s JSON file is now unused by
-    compute_risk_snapshot() but kept as the portfolio_path argument for call-
-    site compatibility.
-    """
+    """Seed SQLite-backed portfolio positions matching a shares/prices map into domain_model.sqlite."""
     from domain_model.account_repository import upsert_account
     from domain_model.investment_price_repository import upsert_investment_price
     from domain_model.account_investment_repository import upsert_account_investment
@@ -410,17 +395,10 @@ def _bdate_rows(n: int, start_price: float, drift: float) -> list[dict]:
 
 def test_compute_risk_snapshot_full_shape(tmp_path, monkeypatch):
     db_path = tmp_path / "test.sqlite"
-    portfolio_path = tmp_path / "portfolio.json"
     _seed_pillar_map(db_path, [
         {"ticker": "NVDA", "pillarId": "ai_infra"},
         {"ticker": "PANW", "pillarId": "cyber"},
     ])
-    _write_portfolio(
-        portfolio_path,
-        shares={"NVDA": 10.0, "PANW": 20.0},
-        prices={"NVDA": 100.0, "PANW": 50.0},
-        total_usd=2000.0,
-    )
     _seed_positions(db_path, shares={"NVDA": 10.0, "PANW": 20.0}, prices={"NVDA": 100.0, "PANW": 50.0})
     monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
 
@@ -434,7 +412,7 @@ def test_compute_risk_snapshot_full_shape(tmp_path, monkeypatch):
 
     with patch("risk_engine.get_prices", side_effect=fake_get_prices):
         snapshot = compute_risk_snapshot(
-            db_path=db_path, portfolio_path=portfolio_path, benchmark="SPY",
+            db_path=db_path, benchmark="SPY",
         )
 
     expected_keys = {
@@ -455,17 +433,10 @@ def test_compute_risk_snapshot_full_shape(tmp_path, monkeypatch):
 
 def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_path, monkeypatch):
     db_path = tmp_path / "test.sqlite"
-    portfolio_path = tmp_path / "portfolio.json"
     _seed_pillar_map(db_path, [
         {"ticker": "NVDA", "pillarId": "ai_infra"},
         {"ticker": "CBRS", "pillarId": "power"},
     ])
-    _write_portfolio(
-        portfolio_path,
-        shares={"NVDA": 10.0, "CBRS": 3.0},
-        prices={"NVDA": 100.0, "CBRS": 200.0},
-        total_usd=1600.0,
-    )
     _seed_positions(db_path, shares={"NVDA": 10.0, "CBRS": 3.0}, prices={"NVDA": 100.0, "CBRS": 200.0})
     monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
 
@@ -479,7 +450,7 @@ def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_pa
 
     with patch("risk_engine.get_prices", side_effect=fake_get_prices):
         snapshot = compute_risk_snapshot(
-            db_path=db_path, portfolio_path=portfolio_path, benchmark="SPY",
+            db_path=db_path, benchmark="SPY",
         )
 
     assert any("CBRS" in w for w in snapshot["warnings"])

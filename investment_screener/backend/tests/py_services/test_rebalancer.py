@@ -640,9 +640,8 @@ def test_compute_rebalance_plan_full_shape(tmp_path, monkeypatch):
     target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
     monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
     plan = compute_rebalance_plan(
-        target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, db_path=db_path,
+        db_path=db_path,
     )
     expected_keys = {"generatedAt", "blockedReason", "bands", "orders", "skippedRestores", "accountDataSource", "warnings"}
     assert expected_keys <= set(plan.keys())
@@ -653,19 +652,14 @@ def test_compute_rebalance_plan_full_shape(tmp_path, monkeypatch):
     assert plan["accountDataSource"] == {"TFSA": "sqlite", "RRSP": "heuristic_1_3_mirror"}
 
 
-def test_compute_rebalance_plan_uses_sqlite_policy_not_json_file(tmp_path, monkeypatch):
-    """Wave 5E cutover: compute_rebalance_plan() must read the account policy's
-    bandConfig from portfolio_policy (SQLite), not account_policy.json -- prove
-    it by pointing account_policy_path at a nonexistent file and confirming the
-    plan still computes correctly using only the SQLite-seeded policy."""
+def test_compute_rebalance_plan_honors_the_db_path_it_is_given(tmp_path):
+    """The plan is computed from the db_path argument alone: the module default database
+    (portfolio_io._DB_PATH) is not consulted, and the account policy comes from SQLite."""
     target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
-    monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
-
-    missing_policy_path = tmp_path / "does-not-exist-account_policy.json"
+    assert str(db_path) != portfolio_io._DB_PATH
     plan = compute_rebalance_plan(
-        target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=missing_policy_path, db_path=db_path,
+        db_path=db_path,
     )
     assert plan["blockedReason"] is None
     tickers_in_orders = {o["ticker"] for o in plan["orders"]}
@@ -686,9 +680,8 @@ def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
     update_investment_fields(conn, resolve_investment(conn, "PSU-U.TO"), target_weight=0.0)
     conn.close()
     plan = compute_rebalance_plan(
-        target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, db_path=db_path,
+        db_path=db_path,
     )
     assert plan["blockedReason"] is not None
     assert "TARGETS_INVALID" in plan["blockedReason"]
@@ -706,9 +699,8 @@ def test_compute_rebalance_plan_blocked_when_portfolio_stale(tmp_path):
         last_synced_at="2020-01-01T00:00:00Z",
     )
     plan = compute_rebalance_plan(
-        target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, db_path=db_path,
+        db_path=db_path,
     )
     assert "DATA_STALE" in plan["blockedReason"]
 
@@ -717,9 +709,8 @@ def test_compute_rebalance_plan_degrades_when_risk_snapshot_missing(tmp_path):
     target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
     risk_path.unlink()
     plan = compute_rebalance_plan(
-        target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, db_path=db_path,
+        db_path=db_path,
     )
     assert plan["blockedReason"] is None
     assert any("risk_snapshot" in w for w in plan["warnings"])
@@ -734,9 +725,8 @@ def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path
     }))
     breaker_path.write_text(json.dumps({"holdings": {"NBIS": {"b1": {"status": "TRIGGERED", "currentValue": 80, "currentStreak": 4}}}}))
     plan = compute_rebalance_plan(
-        target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, db_path=db_path,
+        db_path=db_path,
     )
     assert not any(o["ticker"] == "NBIS" for o in plan["orders"])
     assert any(item["ticker"] == "NBIS" and "EXIT" in item["reason"] for item in plan["skippedRestores"])
