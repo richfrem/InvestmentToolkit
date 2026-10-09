@@ -41,7 +41,7 @@ Key Functions:
     - save_thesis() - Atomic write operation that bumps version numbers and persists changes to data storage
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - investment_screener/backend/data/theses/target-portfolio.json (THESIS_PATH; read and rewritten in place)
 """
 
 import argparse

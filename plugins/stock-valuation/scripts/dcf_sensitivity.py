@@ -23,7 +23,7 @@ Key Functions:
     - monte_carlo() - Triangular-distribution sampling -> P10/P50/P90 + P(overvalued)
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - The scenarios JSON passed with --scenarios (bear/base/bull keys), plus the --revenue and --shares arguments
 """
 
 import argparse

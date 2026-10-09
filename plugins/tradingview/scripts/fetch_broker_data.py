@@ -8,11 +8,9 @@ Purpose:
     and orders from TradingView's broker panel via CDP DOM (primary), with optional
     broker snapshot for cross-validation.
 
-    Note: The portfolio transition period is complete. TradingView CDP is now the
-    canonical runtime source of truth. In --snapshot mode the consolidated per-account
-    positions/cash are persisted to the domain model (domain_model.sqlite) ONLY — the
-    former portfolio.json write (tvSnapshot/holdings/totals) was removed in the Wave 3
-    Domain Data Model v3.2 completion cutover. The raw snapshot is returned to the Node
+    Note: TradingView CDP is the canonical runtime source of truth. In --snapshot mode the
+    consolidated per-account positions/cash are persisted to the domain model
+    (domain_model.sqlite) ONLY. The raw snapshot is returned to the Node
     caller (BrokerSyncService.spawnFetchBroker) over stdout as a single JSON line
     (emit_snapshot_json); all progress output goes to stderr so stdout stays clean.
 
@@ -28,24 +26,29 @@ Usage Examples:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --accounts --source tv
     python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot --source tv
 
-    # Consolidated snapshot written to portfolio.json tvSnapshot key:
+    # Consolidated snapshot of all accounts, persisted to domain_model.sqlite:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot
 
     # Cross-validate TV vs Broker (diff side-by-side):
     python3 investment_screener/backend/py_services/fetch_broker_data.py --compare
 
-    # Once validated, promote consolidated TV snapshot directly into portfolio.json holdings:
+    # Once validated, promote the consolidated TV snapshot:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot --promote
 
 Key Functions:
     - fetch_tv()        - Reads all data from TradingView broker panel via CDP
     - fetch_broker() - Reads from broker API (requires .broker_cache)
     - compare()         - Diffs TV vs broker positions and balances
-    - write_snapshot()  - Persists the snapshot to domain_model.sqlite (SQLite-only; no portfolio.json)
+    - write_snapshot()  - Persists the snapshot to domain_model.sqlite (SQLite only)
     - emit_snapshot_json() - Emits the snapshot as one JSON line on stdout (Node IPC return channel)
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - TradingView Desktop on CDP port 9222 (broker panel: accounts, positions, balances)
+    - investment_screener/backend/data/domain_model.sqlite (stored exchange rate; destination of the snapshot)
+
+Key Output Dependencies:
+    - domain_model.sqlite rows (account_investment, broker_reported_total, broker_exchange_rate)
+    - In --snapshot mode, one JSON line on stdout (all progress output goes to stderr)
 """
 
 import sys
@@ -335,7 +338,7 @@ def print_compare_report(report: dict):
 # ── snapshot writer ───────────────────────────────────────────────────────────
 
 def build_totals_from_balances(balances: dict, stored_exchange_rate: float) -> dict:
-    """Pure transform: live TV account balances -> portfolio.json totals block.
+    """Pure transform: live TV account balances -> totals dict.
 
     Marks totalSource='tv_authoritative' so the TS-side preserveAuthoritativeTotal()
     (portfolioSnapshot.ts) recognizes this as broker-authoritative and won't let a
@@ -451,9 +454,8 @@ def _persist_snapshot_to_db(
     per-holding write shape. Only the three real, seeded broker sub-accounts
     (TFSA/RRSP/CASH) are in scope; cash is written as a CASH_USD investment row
     via the same upsert_account_investment path as any equity position (Wave 0
-    resolved decision 5), not a special-cased column. This is now the SOLE
-    persistence path in write_snapshot() (the former portfolio.json write was
-    removed in the Wave 3 completion cutover).
+    resolved decision 5), not a special-cased column. This is the SOLE
+        persistence path in write_snapshot().
 
     ``totals`` (the broker-authoritative ``totals`` block built by build_totals_from_balances)
     is optional. When present with a positive ``totalUSD``, the broker's own
@@ -530,27 +532,13 @@ def _persist_snapshot_to_db(
 
 
 def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dict] = None) -> dict:
-    """Persist a TV snapshot to the domain model (SQLite) — SQLite-only, no JSON.
+    """Persist a TV snapshot to the domain model (SQLite) — SQLite only.
 
-    Wave 3 Domain Data Model v3.2 completion (final producer cutover): this
-    function used to be a dual-writer that ALSO wrote portfolio.json's
-    ``tvSnapshot``/``holdings``/``totals`` keys. That JSON write was the last
-    remaining portfolio.json producer in the live TradingView sync pipeline and,
-    critically, doubled as the IPC return channel BrokerSyncService.ts read back
-    off disk. Both roles are now retired:
-
-      * IPC return channel -> the snapshot is emitted to stdout as a single JSON
-        line by ``emit_snapshot_json`` (see ``main``); the Node caller parses
-        that, never re-reading portfolio.json.
-      * holdings/totals cache -> the read routes were migrated to
-        domain_model.sqlite (account_investment / broker_reported_total) in
-        Wave 3 Task 6, and the HITL promote/apply routes still write
-        portfolio.json themselves via routes/portfolio.ts.
-
-    So this persists per-account positions/cash (and the broker-reported total
-    inferred from ``balances``) into SQLite only, then runs the thesis refresh.
-    Returns the ``totals`` block built from live balances (or ``{}``), for callers
-    that want the broker-reported totals without a portfolio.json round-trip.
+    Persists per-account positions/cash (and the broker-reported total inferred from
+    ``balances``) into SQLite, then runs the thesis refresh. The snapshot itself is
+    returned to the Node caller as a single JSON line on stdout by
+    ``emit_snapshot_json`` (see ``main``). Returns the ``totals`` block built from
+    live balances (or ``{}``).
     """
     tv_pos = snapshot.get("positions", [])
     if not tv_pos:
@@ -591,7 +579,7 @@ def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dic
 
 def emit_snapshot_json(snapshot: dict) -> None:
     """Emit the snapshot as a single compact JSON line on stdout — the stdout IPC
-    return channel that replaced the former portfolio.json ``tvSnapshot`` readback.
+    return channel read by BrokerSyncService.ts.
 
     ALL human/progress output in the --snapshot path goes to stderr, so stdout
     carries only this one line; the Node caller (BrokerSyncService.spawnFetchBroker)
@@ -720,7 +708,7 @@ def main():
         # NOTE: every human/progress line in this branch goes to stderr. stdout is
         # reserved exclusively for the final single-line JSON snapshot emitted by
         # emit_snapshot_json — it is the IPC return channel BrokerSyncService.ts
-        # parses (replacing the former portfolio.json tvSnapshot readback). Any
+        # parses. Any
         # stray stdout print here would corrupt the caller's JSON.parse.
         print("Fetching live balances from TradingView Account Summary...", file=sys.stderr)
         balances: Optional[dict] = fetch_tv_balances()

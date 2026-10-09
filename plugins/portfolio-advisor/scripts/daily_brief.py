@@ -18,7 +18,7 @@ Usage:
     python3 plugins/portfolio-advisor/scripts/daily_brief.py --json
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - investment_screener/backend/data/domain_model.sqlite (holdings, prices, projections, targets)
 """
 from __future__ import annotations
 
@@ -45,10 +45,9 @@ INTELLIGENCE_DB_PATH = REPO_ROOT / "investment_screener/backend/data/intelligenc
 def _load_total_equity() -> float:
     """Return the authoritative portfolio total (USD) from domain_model.sqlite.
 
-    Wave 3 cutover (ADR-030): sources ``total_usd`` from
-    ``portfolio_io.load_portfolio_state()`` — the same computed authoritative
-    value that ``portfolio.json``'s ``totals.totalUSD`` carried, now computed
-    exactly once in ``portfolio_repository.get_portfolio_total_value()``. Never
+    Sources ``total_usd`` from ``portfolio_io.load_portfolio_state()`` (ADR-030),
+    the computed authoritative value, computed exactly once in
+    ``portfolio_repository.get_portfolio_total_value()``. Never
     re-computes shares×price here. Degrades to 0.0 if the DB is unavailable.
     """
     sys.path.insert(0, str(PY_SERVICES))

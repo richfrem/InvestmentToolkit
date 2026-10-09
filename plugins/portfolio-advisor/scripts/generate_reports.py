@@ -62,8 +62,7 @@ def load_target_holdings_from_db(db_path=DOMAIN_DB_PATH):
 
 
 def load_portfolio_from_db(db_path=DOMAIN_DB_PATH):
-    """Load actual-holdings-shaped portfolio data from domain_model.sqlite
-    (Wave 3 Task 6 cutover — previously portfolio.json).
+    """Load actual-holdings-shaped portfolio data from domain_model.sqlite.
 
     Returns the same ``{"totals": {"totalUSD": ...}, "holdings": [{"symbol",
     "market_value"}, ...]}`` shape ``generate_report()`` expects, sourced from

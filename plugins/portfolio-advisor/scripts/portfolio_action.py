@@ -40,13 +40,10 @@ def derive_action(ticker: str, current_pct: float, target_pct: float | None = No
 
 
 def _load_target_weights(db_path) -> dict:
-    """Load per-symbol target weights from ``investment.target_weight`` (Wave 2 rewire).
+    """Load per-symbol target weights from ``investment.target_weight`` 
 
-    Replaces the old ``validate_weights.compute_target(target_json)`` JSON read —
-    target weights are now sourced from the domain-model repository
-    (``investment_repository.list_investments``) instead of
-    ``target-portfolio.json`` directly, mirroring the ``validate_weights.py``
-    Task 9 write-path cutover on the read side.
+    Target weights are sourced from the domain-model repository
+    (``investment_repository.list_investments``), mirroring ``validate_weights.py``.
     """
     import sys
     from pathlib import Path

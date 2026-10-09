@@ -22,7 +22,7 @@ Key Functions:
       round-trip inverse of dcf_scenarios.compute_scenario())
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    None (all inputs are command-line arguments: --price, --revenue, --shares, --margin, --exit-pe)
 """
 
 import argparse

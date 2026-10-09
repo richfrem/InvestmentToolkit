@@ -9,9 +9,8 @@ Purpose:
     (domain_model.sqlite, via portfolio_io.load_portfolio_state()) to produce an enriched,
     data-driven Markdown table grouped by sub-strategy.
 
-    Wave 3 full cutover: ALL portfolio data — per-position shares/price AND the
-    authoritative total — is sourced from domain_model.sqlite. No portfolio.json
-    read remains anywhere in this file.
+    ALL portfolio data — per-position shares/price AND the authoritative total —
+    is sourced from domain_model.sqlite.
 
 Layer: Backend / Python Services / Report Generation
 
@@ -31,7 +30,7 @@ Key Functions:
     - build_actual_map() / build_thesis_map() - Normalize disparate data sources into unified maps for aggregation
 
 Key Input Dependencies:
-    - investment_screener/backend/data/domain_model.sqlite (Wave 3+; portfolio.json is no longer read)
+    - investment_screener/backend/data/domain_model.sqlite (holdings, prices, thesis fields)
 """
 
 import argparse
@@ -150,10 +149,10 @@ def _get_latest_ai_agent_projection(ticker: str, db_path: Path | None = None) ->
 def build_actual_map(db_path: Path | None = None) -> tuple[dict, float]:
     """Build actual-position map entirely from domain_model.sqlite.
 
-    Wave 3 full cutover: shares, prices, and the authoritative total all come
+    Shares, prices, and the authoritative total all come
     from portfolio_io.load_portfolio_state() (which delegates to
-    domain_model.portfolio_repository.load_portfolio_state_from_db()). No
-    portfolio.json read remains here — the ``db_path`` argument is passed
+    domain_model.portfolio_repository.load_portfolio_state_from_db()). The
+    ``db_path`` argument is passed
     through for signature compatibility/testability only; load_portfolio_state()
     itself always reads the module-level ``portfolio_io._DB_PATH``.
     """
@@ -183,14 +182,12 @@ def build_actual_map(db_path: Path | None = None) -> tuple[dict, float]:
 def build_thesis_map(db_path: Path | None = None) -> dict:
     """Returns {ticker: {subStrategyId, targetPct, role, thesisNote, thesisBreakers}}
 
-    Storage backend (Wave 2 rewire): reads per-investment thesis fields from
-    ``investment`` via ``domain_model.investment_repository.list_investments``
-    instead of ``target-portfolio.json`` holdings (ADR-029). Field mapping
-    confirmed against ``migrate_target_portfolio_to_sqlite.py``'s write path:
+    Reads per-investment thesis fields from ``investment`` via
+    ``domain_model.investment_repository.list_investments`` (ADR-029). Field mapping
+    follows ``migrate_target_portfolio_to_sqlite.py``'s write path:
     ``role`` -> ``lifecycle_status``, ``targetWeight`` -> ``target_weight``,
     ``thesisForInclusion`` -> ``thesis_for_inclusion``, ``subStrategyId`` ->
-    ``sub_strategy_id``. ``thesisBreakers`` has no real-data usage (0/75 real
-    holdings carry it as of this migration) and no list-shaped column exists
+    ``sub_strategy_id``. ``thesisBreakers`` has no list-shaped column
     on ``investment`` (only the scalar ``thesis_breaker_status``), so it is
     always returned as ``[]`` here — this mirrors the thesis_breakers.py /
     update_thesis.py exception rather than forcing a lossy scalar mapping.
@@ -207,11 +204,9 @@ def build_thesis_map(db_path: Path | None = None) -> dict:
 
     holdings = {}
     for row in rows:
-        # Only rows that actually came from target-portfolio.json's holdings[]
-        # array carry a pillar_id (migration write path only sets pillar_id
-        # for real thesis holdings — watchlist-only rows get none). This
-        # mirrors the original JSON read's implicit scope (thesis.holdings
-        # only, not every watchlist/investment row).
+        # Only thesis holdings carry a pillar_id (the write path only sets pillar_id
+        # for real thesis holdings — watchlist-only rows get none), so this scopes
+        # to thesis holdings, not every watchlist/investment row.
         if row.get("pillar_id") is None:
             continue
         ticker = row["symbol"]
@@ -236,7 +231,6 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
     today = date.today().isoformat()
 
     # ── Current % and target % both sourced from domain_model.sqlite
-    #    (Wave 3 full cutover — no portfolio.json read remains).
     current_data = _compute_current_weights(DOMAIN_DB)
     target_data  = {"holdings": _load_target_weights(DOMAIN_DB)}
 

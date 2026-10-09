@@ -9,7 +9,7 @@ Purpose:
     broker connection, buying power, and account before showing a confirmation
     card. On --execute, drives the TradingView order dialog end-to-end,
     screenshots the filled form, and submits after HITL approval. Triggers
-    a portfolio sync after execution to refresh portfolio.json.
+        a portfolio sync after execution to refresh the stored positions.
 
 Layer: Backend / py_services / Brokerage
 
@@ -32,10 +32,11 @@ Usage Examples:
 Key Functions:
     - preflight() - Checks TV broker status, buying power, returns confirmation card
     - execute_order() - Runs Node.js trading.js to fill + submit the TV order dialog
-    - sync_portfolio() - Refreshes portfolio.json after fill (Express API, else direct CDP snapshot)
+    - sync_portfolio() - Refreshes stored positions after fill (Express API, else direct CDP snapshot)
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - investment_screener/backend/data/portfolio.json (PLACE_ORDER_PORTFOLIO_PATH overrides it; its modification time drives the data-freshness gate)
+    - investment_screener/backend/data/domain_model.sqlite (last-synced holdings and prices, via portfolio_io)
 """
 
 import sys
@@ -331,7 +332,7 @@ try {{
 # ── portfolio sync ────────────────────────────────────────────────────────────
 
 def sync_portfolio() -> bool:
-    """Reconcile and refresh portfolio.json after order fill.
+    """Reconcile and refresh stored positions after order fill.
     Priority:
       1. Express API  /api/portfolio/sync-tv/apply  (backend running)
       2. fetch_broker_data.py --snapshot             (direct CDP — always available)
@@ -504,7 +505,7 @@ def main():
         # breaker_veto, size, balance, data_readiness) ─────────────────────
         # Market orders have no card-level price (costEstimate is only
         # populated for limit orders per trading.js's real preflight()
-        # contract) — fall back to the last-synced portfolio.json price for
+        # contract) — fall back to the last-synced price for
         # this ticker; if that's also unavailable, use 0.0. Every gate
         # already degrades gracefully ("can't evaluate, don't block") on
         # missing price/value data, so this fallback is a safe, intentional
