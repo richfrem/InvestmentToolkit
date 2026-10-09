@@ -334,8 +334,8 @@ def harvest_earnings_expectations(
     record exists.
 
     Args:
-        tickers: List of ticker symbols to harvest. If None, uses all holdings
-            from target-portfolio.json.
+        tickers: List of ticker symbols to harvest. If None, uses all thesis holdings
+            from domain_model.sqlite's investment table.
         predictions_path: Path new prediction records are appended to (JSONL
             remains the write path's target during the Hybrid dual-write
             window; unaffected by this read-path cutover). Defaults to the
@@ -367,9 +367,7 @@ def harvest_earnings_expectations(
     except Exception:
         recent_preds = []
 
-    # If tickers not provided, load from domain_model.sqlite's investment table
-    # (Wave 2 consumer cutover — previously read target-portfolio.json's
-    # holdings[].ticker directly).
+    # If tickers not provided, load from domain_model.sqlite's investment table.
     if tickers is None:
         try:
             conn = initialize_db(str(_DB_PATH))
@@ -673,14 +671,10 @@ def get_earnings_context(ticker: str, days_ahead: int = 7) -> dict | None:
             # Outside window
             return None
 
-        # Load the investment row from domain_model.sqlite (Wave 2 consumer
-        # cutover — previously read target-portfolio.json's holdings[] directly).
-        # "role" (target-portfolio.json) maps to the investment table's
-        # lifecycle_status column per migrate_target_portfolio_to_sqlite.py's
-        # own field mapping (holding.get("role") -> lifecycle_status); this
-        # function's local variable name "target_action" is inherited verbatim
-        # from the pre-migration code and is a naming quirk, not a semantic
-        # target_action-column read (preserved exactly, not fixed here).
+        # Load the investment row from domain_model.sqlite. The holding's "role"
+        # is the investment table's lifecycle_status column; the local variable
+        # name "target_action" is a naming quirk, not a read of the
+        # target_action column.
         try:
             conn = initialize_db(str(_DB_PATH))
             try:

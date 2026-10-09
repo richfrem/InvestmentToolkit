@@ -11,7 +11,8 @@ Layer:
     Backend / Python Services
 
 Usage Examples:
-    python3 portfolio_performance.py investment_screener/backend/data/portfolio.json
+    python3 portfolio_performance.py <path>
+    # <path> is required for call-site compatibility but never read; holdings come from domain_model.sqlite.
 
 Key Functions (Index):
     - safe_float()
@@ -22,8 +23,7 @@ Key Functions (Index):
     - main()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/domain_model.sqlite (Wave 3 Task 6
-      cutover — previously portfolio.json)
+    - investment_screener/backend/data/domain_model.sqlite (holdings, cash, prices)
 
 Key Output Dependencies:
     None
@@ -74,13 +74,11 @@ def load_portfolio_data(
     db_path: Path = DB_PATH,
 ) -> Tuple[float, List[str], Dict[str, float]]:
     """
-    Reads holdings from domain_model.sqlite (Wave 3 Task 6 cutover — previously
-    portfolio.json), calculates total cash, and returns (cash_value, tickers,
-    shares_map).
+    Reads holdings from domain_model.sqlite, calculates total cash, and returns
+    (cash_value, tickers, shares_map).
 
     Args:
-        portfolio_path: Retained for CLI/call-site signature compatibility
-            (main() historically passed the portfolio.json path); no longer read.
+        portfolio_path: Retained for CLI/call-site signature compatibility; never read.
         db_path: domain_model.sqlite path, overridable for tests.
     """
     if not db_path.exists():

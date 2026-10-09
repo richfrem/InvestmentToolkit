@@ -1,11 +1,10 @@
 """backfill_investment_universe.py - Create minimal investment identity rows for a ticker list.
 
 Purpose:
-    One-time-per-wave backfill: minimal INVESTMENT identity rows for the real ticker universe.
-    Full field population (lifecycle_status, target_weight, standing_decision, etc.) was Wave 2's
-    job, done by migrate_target_portfolio_to_sqlite.py when the retired target-portfolio.json
-    migrated. This module only guarantees every known ticker has a resolvable investment_id
-    before Wave 1 (projection_version) needs one.
+    Minimal INVESTMENT identity rows for the real ticker universe. Full field population
+    (lifecycle_status, target_weight, standing_decision, etc.) is done by
+    migrate_target_portfolio_to_sqlite.py. This module only guarantees every known ticker
+    has a resolvable investment_id before projection_version needs one.
 
 Layer:
     Backend / Python Services / Domain Model

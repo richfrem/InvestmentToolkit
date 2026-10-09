@@ -27,9 +27,8 @@ Usage:
     )
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json
-    - investment_screener/backend/data/ta-sweep-results.json
-    - yfinance for historical price data
+    - investment_screener/backend/data/evolution_events.jsonl (existing events, for dedup and outcome backfill)
+    - yfinance for historical price data (7/30-day outcome windows)
 
 Layer:
     Backend / Python Services
@@ -63,11 +62,8 @@ Key Functions (Index):
     - load_events()
     - main()
 
-Key Input Dependencies:
-    None
-
 Key Output Dependencies:
-    None
+    - investment_screener/backend/data/evolution_events.jsonl (append-only; rewritten when outcomes are populated)
 """
 from __future__ import annotations
 

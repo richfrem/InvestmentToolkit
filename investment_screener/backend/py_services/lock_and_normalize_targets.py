@@ -14,7 +14,8 @@ Designed to:
 This is compliant with Gate 7 actual broker-weight locks and the Aschenbrenner 13F exit adjustments.
 
 Key Input Dependencies:
-    - investment_screener/backend/data/theses/target-portfolio.json (Locks weights)
+    - The JSON file passed with --target-file (holdings[].ticker / targetWeight; read, never modified)
+    - investment_screener/backend/data/domain_model.sqlite (--db; receives the rescaled weights)
 
 Layer:
     Backend / Python Services
@@ -57,8 +58,7 @@ def load_portfolio(path: Path) -> dict:
 
 def save_portfolio(data: dict, db_path: Path = DB_PATH) -> None:
     """Persist each holding's rescaled ``targetWeight`` via the domain-model
-    repository (``investment.target_weight``) instead of rewriting
-    target-portfolio.json in place (Wave 2 Task 10 producer cutover).
+    repository (``investment.target_weight``); the --target-file input is not modified.
     """
     conn = initialize_db(str(db_path))
     try:

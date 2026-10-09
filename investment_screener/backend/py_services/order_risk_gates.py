@@ -7,7 +7,8 @@ integration) + real place_order.py wiring (5E-fix)
 
 build_portfolio_state_for_order() constructs the real portfolio_state dict
 check_mrc_limit()/check_cluster_variance() require, from the REAL
-domain_model.sqlite + portfolio.json data sources — reusing risk_engine.py's
+domain_model.sqlite data (pillar map from the investment table; holdings, prices and
+total via portfolio_io, which also reads SQLite) — reusing risk_engine.py's
 compute_risk_snapshot() pillar_map pattern and portfolio_io.py's
 load_portfolio_state()/compute_weights() unchanged. This is the real
 integration point place_order.py (the CLI's actual order-placement
@@ -69,16 +70,13 @@ proxy). This gate reuses market_data.py's real, cached get_prices()
 of calling yfinance directly a second time.
 
 check_available_balance() (Task 5E-5) checks whether enough cash is
-available to cover a single, ad-hoc BUY order's cost. Reuses the real,
-already-synced data/portfolio.json broker snapshot (this project's
-existing, established multi-fallback TradingView/broker sync
-pipeline, CLAUDE.md pitfall #20) via get_available_cash() instead of
-implementing a new live Broker API integration from scratch — the
-plan's own checklist explicitly allows "(or cached snapshot)" as an
-alternative. Reads either the portfolio-wide totals.cashUSD or a
-specific account's tvSnapshot.snapshots[].balances.cashUSD (matched by
-accountType). Read-only — never writes to portfolio.json, which is
-gitignored, sacred user data per this project's own CLAUDE.md rule.
+available to cover a single, ad-hoc BUY order's cost. Reuses the already-synced
+broker data in domain_model.sqlite (written by the TradingView/Questrade sync,
+AGENTS.md pitfall #20) via get_available_cash() instead of implementing a new
+live Broker API integration from scratch — the plan's own checklist explicitly
+allows "(or cached snapshot)" as an alternative. Reads either the portfolio-wide
+CASH_USD total or one account's (matched by account id, e.g. TFSA/RRSP) CASH_USD
+account_investment quantity. Read-only — never writes to the database.
 
 get_trade_log_entries() / find_matching_trade_log_entry() /
 wait_for_trade_log_entry() / validate_trade_execution() (Task 5E-7)
@@ -139,11 +137,12 @@ Key Input Dependencies:
     - market_data.py's get_prices() (Phase 1's real, cached yfinance OHLCV
       data layer, same directory — reused by get_average_daily_volume(),
       never re-fetched via yfinance directly)
-    - investment_screener/backend/data/portfolio.json (gitignored, the
-      real, already-synced broker snapshot — "totals.cashUSD" and
-      "tvSnapshot.snapshots[].balances.cashUSD", never written to; also
-      read via portfolio_io.load_portfolio_state()/compute_weights() by
-      build_portfolio_state_for_order() for real actual weights)
+    - investment_screener/backend/data/domain_model.sqlite's account_investment and
+      investment_price tables (the already-synced broker snapshot, never written to):
+      CASH_USD rows for available cash via portfolio_repository.get_total_cash_usd/
+      get_account_cash_usd, and holdings/prices/weights via
+      portfolio_io.load_portfolio_state()/compute_weights() in
+      build_portfolio_state_for_order().
     - data_window_validator.py's check_order_data_readiness() (Task 5D-8,
       same directory — a LIVE TradingView CDP Data Window read, lazily
       imported inside check_data_readiness_gate() to avoid triggering it
@@ -183,6 +182,7 @@ from domain_model.order_execution_repository import insert_order_execution  # no
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
+# Unused default for portfolio_path; portfolio_io.load_portfolio_state() reads domain_model.sqlite.
 PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
 # TRADE_LOG_PATH / ORDERS_EXECUTED_PATH removed Wave 4 Task 12: get_trade_log_entries()
 # and log_order_execution() were cut over to DB_PATH (trade_log_entry / order_execution
@@ -241,15 +241,17 @@ def build_portfolio_state_for_order(
     existing test constructs portfolio_state by hand).
 
     Reads the ticker -> pillar_id map from domain_model.sqlite's
-    `investment` table (Wave 2 consumer cutover — previously read
-    previously reading the retired thesis JSON file's "pillarId" field directly, mirroring
+    `investment` table (Wave 2 consumer cutover — previously read the retired
+    thesis JSON file's "pillarId" field directly, mirroring
     risk_engine.py's compute_risk_snapshot() pattern; now reads the same
-    data via investment_repository.list_investments()). Loads portfolio.json
-    via portfolio_io's load_portfolio_state()/compute_weights() for actual
-    weights, unchanged — no weight math is reimplemented here.
+    data via investment_repository.list_investments()). Loads actual holdings
+    and prices from domain_model.sqlite via portfolio_io's
+    load_portfolio_state()/compute_weights() for actual weights, unchanged —
+    no weight math is reimplemented here.
 
-    Never raises: a missing/unreadable portfolio.json (or a portfolio_io
-    failure of any kind) degrades to {"holdings": {}, "total_value": 0.0} —
+    Degrades rather than raises when the loader fails with OSError or
+    json.JSONDecodeError (other errors, e.g. sqlite3.Error, are not caught here):
+    the result is {"holdings": {}, "total_value": 0.0} —
     matches how every gate that consumes portfolio_state already treats a
     zero/missing weight or total_value (check_mrc_limit/check_cluster_variance
     both degrade to passed=True in that case), so this degradation is a safe,
@@ -260,8 +262,8 @@ def build_portfolio_state_for_order(
     Args:
         db_path: Override path (tests use tmp_path); None reads the real
             DB_PATH (domain_model.sqlite).
-        portfolio_path: Override path (tests use tmp_path); None reads the
-            real PORTFOLIO_PATH.
+        portfolio_path: Retained for signature compatibility; the loader no
+            longer reads it (holdings come from ``db_path``).
 
     Returns:
         {"holdings": {ticker: {"weight_pct": float, "pillar_id": str}},
@@ -649,10 +651,8 @@ def get_available_cash(account: Optional[str] = None) -> Optional[float]:
     Cash is a real ``CASH_USD`` ``account_investment`` row (Wave 0 resolved
     decision 5) whose ``quantity`` IS the USD dollar amount, so both the
     portfolio-wide total and per-account cash are derived from SQLite via
-    ``portfolio_repository.get_total_cash_usd``/``get_account_cash_usd`` —
-    never from portfolio.json's ``totals.cashUSD`` / ``tvSnapshot`` balances.
-    The account id in SQLite (e.g. "TFSA"/"RRSP") is the same value the JSON
-    ``accountType`` carried, so the ``account`` argument maps through unchanged.
+    ``portfolio_repository.get_total_cash_usd``/``get_account_cash_usd``.
+    The account id in SQLite (e.g. "TFSA"/"RRSP") is the ``account`` argument unchanged.
 
     Args:
         account: Specific account (e.g. "TFSA", "RRSP") for that account's own

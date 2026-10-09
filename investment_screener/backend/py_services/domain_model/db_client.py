@@ -130,14 +130,12 @@
 #     as the reconciliation comparison SOURCE (the audited-against figure), not as
 #     "the" total. Singleton (CHECK(id = 1), one row ever, overwritten each sync),
 #     mirroring broker_exchange_rate's "store this one broker fact" shape. `source`
-#     holds the totals.totalSource value the now-retired portfolio.json used to carry
-#     (e.g. "tv_authoritative"); broker syncs now write it here directly.
+#     holds the broker's source label for the reported total (e.g. "tv_authoritative").
 #   - investment.sector / investment.industry: not present in either named source
-#     design document. Added post-hoc (Wave 3 completion, last-portfolio.json-write
-#     closure) per an explicit user design decision. sector/industry are the only
-#     enriched holding-display facts GET /api/portfolio needed from the then-current
-#     portfolio.json (retired since) that the schema did not already carry (name and pillar_id were added in
-#     Wave 0/2). They are resolved by the SAME real code path that resolves them
+#     design document. Added post-hoc (Wave 3 completion) per an explicit user design
+#     decision. sector/industry are the only enriched holding-display facts
+#     GET /api/portfolio needs that the schema did not already carry (name and
+#     pillar_id were added in Wave 0/2). They are resolved by the SAME real code path that resolves them
 #     today — fetch_portfolio_heatmap.py's yfinance info.get("sector")/("industry")
 #     lookup (with SECTOR_OVERRIDES) during a /refresh-prices call — and persisted
 #     alongside the fresh price into investment via update_investment_sector(). Both

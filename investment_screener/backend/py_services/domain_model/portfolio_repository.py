@@ -119,9 +119,8 @@ def get_last_synced_at(conn: sqlite3.Connection) -> str | None:
     """Most recent ``last_synced_at`` across all account_investment rows (ISO
     string), or None if the table is empty.
 
-    Re-expresses the JSON-era (retired) ``portfolio.json`` ``totals.timestamp`` freshness
-    signal against the relational model, so staleness checks read the same
-    source of truth as every other portfolio number.
+    The freshness signal for staleness checks, read from the same source of
+    truth as every other portfolio number.
     """
     row = conn.execute(
         "SELECT MAX(last_synced_at) FROM account_investment;"

@@ -12,20 +12,19 @@ Single source of truth for:
 Import this module instead of scattering inline `if ticker == "USD_CASH"` checks.
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Maps ticker synonyms)
+    None (pure in-code mapping; add newly discovered broker aliases to TICKER_ALIASES)
 
 Layer:
     Backend / Python Services
 
 Usage Examples:
-    TBD
+    from ticker_aliases import normalize_ticker, is_cash
+    normalize_ticker("PSU.U")  # "PSU-U.TO"
+    is_cash("CASH_USD")        # True
 
 Key Functions (Index):
     - normalize_ticker()
     - is_cash()
-
-Key Input Dependencies:
-    None
 
 Key Output Dependencies:
     None

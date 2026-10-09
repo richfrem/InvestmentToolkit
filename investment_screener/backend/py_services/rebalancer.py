@@ -66,6 +66,7 @@ from domain_model.projection_repository import (  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
 TARGET_PATH = DATA_DIR / "theses/target-portfolio.json"
+# Unused default for portfolio_path; load_portfolio_state() reads domain_model.sqlite.
 PORTFOLIO_PATH = DATA_DIR / "portfolio.json"
 RISK_SNAPSHOT_PATH = DATA_DIR / "risk_snapshot.json"
 THESIS_BREAKER_STATE_PATH = DATA_DIR / "thesis_breaker_state.json"
@@ -93,7 +94,7 @@ def compute_bands(
 
     Args:
         current_weights: {ticker: weight_pct} (0-100 scale), actual broker weights.
-        target_weights: {ticker: weight_pct} (0-100 scale), from target-portfolio.json.
+        target_weights: {ticker: weight_pct} (0-100 scale), from investment.target_weight.
         band_config: {"relativePct": float, "absolutePct": float} — band =
             max(targetWeight * relativePct/100, absolutePct).
 
@@ -178,7 +179,7 @@ def compute_candidate_orders(
 
     Args:
         bands: Output of compute_bands().
-        target_data: Parsed target-portfolio.json (targetEntryPrice,
+        target_data: {"holdings": load_thesis_holdings(...)} (targetEntryPrice,
             standingDecision per holding).
         prices: {ticker: current_price}.
         total_usd: Broker-authoritative portfolio total (never shares×price).
@@ -261,12 +262,11 @@ def load_account_positions(
 ) -> tuple[dict[str, dict[str, dict[str, float | None]]], dict[str, float], dict[str, str]]:
     """Per-account share/cost-basis positions from domain_model.sqlite.
 
-    Wave 3 cutover: per-account splits are read from ``account_investment``
-    (joined to ``investment`` for the symbol) via
-    ``account_investment_repository.list_account_investments`` — the exact shape
-    the old portfolio.json ``tvSnapshot.snapshots[].positions`` block carried
+    Per-account splits are read from ``account_investment`` (joined to
+    ``investment`` for the symbol) via
+    ``account_investment_repository.list_account_investments``
     (quantity → shares, average_cost → costBasis). Cash is the ``CASH_USD``
-    row's quantity (Wave 0 decision 5), kept as a separate per-account dict.
+    row's quantity, kept as a separate per-account dict.
     Falls back to mirroring TFSA at ~1/3 share count for RRSP (this repo's
     documented account structure) only when RRSP has no rows of its own.
 
@@ -356,7 +356,7 @@ def compute_account_routing(
         account_cash_usd: Output of load_account_positions() (the cash dict —
             second element of its 3-tuple return).
         account_policy: Parsed account_policy.json.
-        target_data: Parsed target-portfolio.json (role/pillarId per holding).
+        target_data: {"holdings": load_thesis_holdings(...)} (role/pillarId per holding).
         prices: {ticker: current_price}.
 
     Returns:
@@ -506,7 +506,7 @@ def compute_risk_budget_check(
         bands: Output of compute_bands() (for currentWeight/targetWeight).
         risk_snapshot: Parsed risk_snapshot.json, or None if unavailable.
         account_policy: Parsed account_policy.json (riskBudgetCaps).
-        target_data: Parsed target-portfolio.json (pillarId per holding).
+        target_data: {"holdings": load_thesis_holdings(...)} (pillarId per holding).
 
     Returns:
         {ticker: [warning strings]} — only tickers with at least one warning.
@@ -613,7 +613,7 @@ def _check_no_trade_conditions(
     summing to 100%±0.5%, >30% of thesis holdings missing a DCF projection.
 
     Args:
-        target_data: Parsed target-portfolio.json.
+        target_data: {"holdings": load_thesis_holdings(...)}.
         portfolio_path: Retained for signature compatibility; no longer read
             (Wave 3 cutover — staleness now derives from SQLite).
         db_path: Path to domain_model.sqlite.
@@ -621,8 +621,7 @@ def _check_no_trade_conditions(
     Returns:
         A human-readable blockedReason, or None.
     """
-    # Wave 3 cutover: freshness is the most-recent account_investment sync time
-    # (MAX(last_synced_at)), not portfolio.json's totals.timestamp.
+    # Freshness is the most-recent account_investment sync time (MAX(last_synced_at)).
     conn = initialize_db(str(db_path))
     try:
         ts = get_last_synced_at(conn)
@@ -757,12 +756,11 @@ def compute_rebalance_plan(
     any fire, returns early with blockedReason set and orders: [].
 
     Args:
-        target_portfolio_path: DEPRECATED, unused since Wave 8's cutover to
-            load_thesis_holdings(db_path) below -- target-portfolio.json is
-            archived. Kept only so every already-migrated call site (tests,
-            CLI) keeps working without another signature change; do not rely
-            on this parameter having any effect.
-        portfolio_path: Path to portfolio.json.
+        target_portfolio_path: Unused; thesis holdings come from
+            load_thesis_holdings(db_path) below. Kept so call sites (tests, CLI)
+            keep their signature; it has no effect.
+        portfolio_path: Retained for signature compatibility; no longer read
+            (holdings, prices and the total come from domain_model.sqlite).
         risk_snapshot_path: Path to risk_snapshot.json (E1 output).
         thesis_breaker_state_path: Path to thesis_breaker_state.json (B5 output).
         account_policy_path: DEPRECATED, unused since Wave 5E's cutover to

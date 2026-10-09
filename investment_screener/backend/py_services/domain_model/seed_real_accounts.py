@@ -6,8 +6,7 @@ Purpose:
     real broker sub-account (per explicit user decision, Wave 3 scope extension —
     previously excluded, now seeded like TFSA/RRSP). All three are real, named
     accounts — not free-text strings — so producers/consumers resolve against a
-    stable account_id instead of parsing account names out of the retired
-    portfolio.json structure ad hoc.
+    stable account_id instead of parsing account names ad hoc.
 
 Layer:
     Backend / Python Services / Domain Model

@@ -18,7 +18,9 @@ stale cached values from Yahoo Finance that can be wildly incorrect during
 market hours. Instead, bid/ask are derived from the last trade price.
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Queries current yfinance prices)
+    - Tickers passed on the command line (comma-separated)
+    - TradingView Desktop CDP on port 9222 via tv_batch_quotes.py ("TV-Full Watchlist"); optional
+    - yfinance (fallback price, 1-min bar, previous close)
 
 Layer:
     Backend / Python Services
@@ -31,11 +33,8 @@ Key Functions (Index):
     - fetch_one()
     - main()
 
-Key Input Dependencies:
-    None
-
 Key Output Dependencies:
-    None
+    - JSON dict keyed by ticker on stdout (bid/ask/price/change); no files written
 """
 import sys
 import json

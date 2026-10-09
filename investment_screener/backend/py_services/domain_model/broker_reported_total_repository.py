@@ -4,9 +4,8 @@ Purpose:
     All ``broker_reported_total`` table reads and writes live here (ADR-029 anti-duplication rule).
 
     Singleton table (one row, id=1): the broker's OWN last-reported portfolio total
-    (totalUSD, totalCAD and the source label, as carried by ``totals.totalUSD``/``totalCAD``/
-    ``totalSource`` in the retired portfolio.json sync payload; each broker sync now writes them
-    straight to this table).
+    (totalUSD, totalCAD and the source label), written straight to this table by each
+    broker sync.
         Per ADR-030's Wave 3 addendum pattern, this is a broker-reported FACT the schema
     cannot recompute - captured for exactly one consumer: verify_portfolio_total.py's
     reconciliation audit, which compares this figure against get_portfolio_total_value()'s

@@ -6,21 +6,26 @@ Purpose:
     verify_thesis_sync.py — Automated Portfolio & Thesis Synchronization Checker.
 
 Performs three core sanity checks:
-  1. Holding Mismatches: Every ticker in target-portfolio.json must be mentioned in investment_thesis.md.
+  1. Holding Mismatches: Every thesis holding must be mentioned in investment_thesis.md. Holdings come
+     from domain_model.sqlite's investment table (or a thesis JSON file given with --thesis-json).
   2. Valuation Projections: Every active ticker with a target weight > 0 or in an active role
-     (core, hedge, speculative, reserve) must have a corresponding projection JSON.
+     (core, hedge, speculative, reserve) must have a saved projection (projection_version in
+     domain_model.sqlite, or JSON files in a directory given with --projections-dir).
   3. Total Weights Guard: Asserts that target weights sum to exactly 100% (within 0.1% tolerance).
 
 Exits with 0 on success, 1 on failure.
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Audits thesis and holdings alignment)
+    - investment_screener/backend/data/domain_model.sqlite (investment and projection_version tables)
+    - investment_screener/backend/data/theses/investment_thesis.md (generated thesis blueprint)
+    - Optional overrides: --thesis-json, --thesis-md, --projections-dir, --db
 
 Layer:
     Backend / Python Services
 
 Usage Examples:
-    TBD
+    python3 verify_thesis_sync.py
+    python3 verify_thesis_sync.py --db /path/to/domain_model.sqlite
 
 Key Functions (Index):
     - main()
@@ -28,11 +33,8 @@ Key Functions (Index):
     - log_fail()
     - log_warn()
 
-Key Input Dependencies:
-    None
-
 Key Output Dependencies:
-    None
+    - Pass/fail report on stdout; exit code 0 on success, 1 on failure (writes no files)
 """
 import json
 import re
@@ -58,13 +60,12 @@ ACTIVE_ROLES = {"accumulate", "trim", "exit", "initiate"}
 
 def _load_holdings_from_db(db_path: Path) -> list[dict]:
     """Load holdings from domain_model.sqlite's investment table, normalized
-    into the same shape the pre-migration JSON-holdings loop expects
+    into the shape the JSON-holdings loop expects
     (ticker/targetWeight/role/subStrategyId) -- so the rest of main()'s
-    checks (weight sum, markdown mention, projection lookup) need no changes.
+    checks (weight sum, markdown mention, projection lookup) share one path.
 
-    Wave 2 consumer cutover: this replaces the PROD default read of
-    target-portfolio.json's holdings[] (the --thesis-json CLI override still
-    reads the raw JSON file directly, for test/manual-file compatibility).
+    The --thesis-json CLI override reads a raw JSON file directly instead, for
+    test/manual-file use.
 
     Field mapping mirrors migrate_target_portfolio_to_sqlite.py's own mapping:
     "role" -> lifecycle_status, "targetWeight" -> target_weight,

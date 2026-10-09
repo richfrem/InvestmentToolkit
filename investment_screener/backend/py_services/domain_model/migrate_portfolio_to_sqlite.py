@@ -1,13 +1,9 @@
-"""migrate_portfolio_to_sqlite.py - One-time migration of the retired portfolio.json into SQLite.
-
-Status:
-    Historical (Wave 3). portfolio.json is retired (AGENTS.md rule 30) and archived, so this applies
-    only to an archived copy passed with --portfolio-path; routine syncs write SQLite directly.
+"""migrate_portfolio_to_sqlite.py - One-time migration of a portfolio.json export into SQLite.
 
 Purpose:
     Migrate portfolio.json (gitignored, real broker/account holdings) into
     account_investment/investment_price. Dry-run by default; --write is gated,
-    same discipline as migrate_target_portfolio_to_sqlite.py (Wave 2).
+    same discipline as migrate_target_portfolio_to_sqlite.py.
     
     Per ADR-030 and Task 0's real-shape finding: per-account attribution comes
     from tvSnapshot.snapshots[].positions[] (real accountType/accountId, real
@@ -23,8 +19,8 @@ Layer:
     Backend / Python Services / Domain Model
 
 Usage Examples:
-    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path ARCHIVED.json
-    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path ARCHIVED.json --write
+    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path PORTFOLIO.json
+    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path PORTFOLIO.json --write
 
 Key Functions (Index):
     - _load_portfolio_json(): read the JSON file
@@ -35,7 +31,7 @@ Key Functions (Index):
     - main(): CLI entry point
 
 Key Input Dependencies:
-    - An archived portfolio.json (--portfolio-path) with tvSnapshot.snapshots[] and holdings[]
+    - A portfolio.json export (--portfolio-path) with tvSnapshot.snapshots[] and holdings[]
     - investment_screener/backend/data/domain_model.sqlite (--db-path)
     - ticker_aliases.py (normalize_ticker), domain_model repositories
 

@@ -5,7 +5,7 @@ migrations/remove_drift_threshold_fields.py
 
 Purpose:
     One-time migration: removes globalSettings.driftThresholdPct and
-    globalSettings.criticalDriftPct from target-portfolio.json now that
+    globalSettings.criticalDriftPct from a target-portfolio.json document.
     account_policy.json's bandConfig is the single source of truth for
     drift-band thresholds, read by both rebalancer.py and ThesisService.ts
     (E2 spec §3.2, §5). Idempotent — safe to run more than once.
@@ -26,10 +26,10 @@ RETIRED_FIELDS = ("driftThresholdPct", "criticalDriftPct")
 
 
 def strip_drift_threshold_fields(data: dict[str, Any]) -> list[str]:
-    """Removes the two retired fields from globalSettings, in place.
+    """Removes the two drift-threshold fields from globalSettings, in place.
 
     Args:
-        data: Parsed target-portfolio.json.
+        data: Parsed target-portfolio.json document (globalSettings).
 
     Returns:
         List of field names actually removed (empty if already absent —

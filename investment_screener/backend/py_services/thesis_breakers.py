@@ -5,10 +5,10 @@ thesis_breakers.py - Python utility script.
 Purpose:
     thesis_breakers.py — B5: structured, evaluated thesis breakers.
 
-Evaluates each holding's `thesisBreakers` (target-portfolio.json) against data
+Evaluates each holding's `thesisBreakers` list against data
 `daily_brief.py` already computes this run (conviction scores, market_regime,
-pillar_health) — never refetches. Breaker *definitions* stay human-owned in
-target-portfolio.json (edited only via update_thesis.py's --set-breaker path);
+pillar_health) — never refetches. Breaker *definitions* stay human-owned
+(edited only via update_thesis.py's --set-breaker path);
 this module owns the *evaluated state* file, data/thesis_breaker_state.json,
 exclusively. See docs/superpowers/specs/2026-07-09-thesis-breakers-design.md.
 
@@ -116,7 +116,7 @@ def resolve_auto_metric_value(
             that step failed this run.
         pillar_health: Output of daily_brief._pillar_summary() — each entry's
             "pillar" key is the holding's subStrategyId, not pillarId.
-        target_data: Parsed target-portfolio.json.
+        target_data: {"holdings": load_thesis_holdings(...)}.
 
     Returns:
         The resolved value, or None if it can't be resolved this run (missing
@@ -178,7 +178,7 @@ def _evaluate_auto_breaker(
         market_regime: This run's market_regime.compute_market_regime() output,
             or None if that step failed.
         pillar_health: This run's daily_brief._pillar_summary() output.
-        target_data: Parsed target-portfolio.json.
+        target_data: {"holdings": load_thesis_holdings(...)}.
         prev_entry: This breaker's previous state entry, or {} if none exists yet.
         today: ISO date string for today (wall-clock-free, injected).
         now_iso: ISO timestamp string for "now" (wall-clock-free, injected).
@@ -260,7 +260,7 @@ def evaluate_breakers(
     reviewCadenceDays. See spec §3.2/§3.3.
 
     Args:
-        target_data: Parsed target-portfolio.json.
+        target_data: {"holdings": load_thesis_holdings(...)}.
         conviction_scores: This run's conviction score rows (dicts).
         market_regime: This run's market_regime.compute_market_regime() output,
             or None if that step failed.
@@ -315,11 +315,9 @@ def compute_breaker_state(
             list daily_brief.py already computed, never recompute here.
         market_regime: This run's market_regime output, or None.
         pillar_health: This run's pillar health list.
-        target_portfolio_path: DEPRECATED, unused since Wave 8's cutover to
-            load_thesis_holdings(db_path) below -- target-portfolio.json is
-            archived. Kept only so every already-migrated call site (tests,
-            CLI) keeps working without another signature change; do not rely
-            on this parameter having any effect.
+        target_portfolio_path: Unused; thesis holdings come from
+            load_thesis_holdings(db_path) below. Kept so call sites keep their
+            signature; it has no effect.
         state_path: Path to thesis_breaker_state.json.
         db_path: Path to domain_model.sqlite.
 
@@ -394,7 +392,7 @@ def log_breaker_override(
 
     Args:
         ticker: Holding ticker.
-        breaker_id: The breaker's id, as defined in target-portfolio.json.
+        breaker_id: The breaker's id, as defined on the holding's thesisBreakers list.
         metric: The breaker's metric name.
         current_value: The value that caused (or accompanies) the trigger.
         threshold: The breaker's threshold.
@@ -442,11 +440,9 @@ def _cli_log_override(
         breaker_id: The breaker's id, as defined in domain_model.sqlite.
         rationale: The user's stated reason for holding through.
         overridden_by: Who made the call — defaults to "user".
-        target_portfolio_path: DEPRECATED, unused since Wave 8's cutover to
-            load_thesis_holdings(db_path) below -- target-portfolio.json is
-            archived. Kept only so every already-migrated call site (tests,
-            CLI) keeps working without another signature change; do not rely
-            on this parameter having any effect.
+        target_portfolio_path: Unused; thesis holdings come from
+            load_thesis_holdings(db_path) below. Kept so call sites keep their
+            signature; it has no effect.
         state_path: Path to thesis_breaker_state.json (missing file is fine —
             streak/currentValue are logged as None if state hasn't run yet).
         overrides_path: Target JSONL file.
