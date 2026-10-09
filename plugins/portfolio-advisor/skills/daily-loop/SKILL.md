@@ -30,9 +30,9 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 ## Workflow
 1. **Readiness (Step 0)**: Verify backend API health, `domain_model.sqlite` sync timestamps, and TradingView CDP connectivity. Refresh positions and executed trades with `/tv-portfolio-sync` so recommendations reflect recent fills. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade for this refresh. Then refresh prices, because the brief, weights and totals read `investment_price`, not the sync:
    ```bash
-   curl -s -X POST -H "Authorization: Bearer $(cat .runtime/api-token)" http://localhost:3001/api/portfolio/refresh-prices
+   python3 plugins/tradingview/scripts/tv_price_refresh.py
    ```
-   The route is the only price writer (it also refreshes the USD->CAD rate). Confirm the newest `investment_price.fetched_at` is today before building the brief.
+   The script is the only price writer: it reads the symbols from `domain_model.sqlite`, saves through the repositories and also refreshes the USD->CAD rate. Exit 0 means every symbol was written; on exit 1 report the `stale` symbols before building the brief.
 2. **Morning Brief (Step 1)**: Ingest macro regime, canonical recommendations with conviction ranking, and binary event flags from `daily_brief.py`; apply the AI forward-evidence gate before treating valuation signals as trade-ready.
 3. **Triage (Step 2)**: Present urgent holding alerts, thesis breaker breaches, and price catalysts one ticker at a time.
 4. **Action Cards (Step 3)**: Formulate actionable trade proposals with tranche sizing and PSU-U.TO capital sourcing. For any of the five highest-priority cards marked `refreshFirst` (stale valuation), run `/update-stock-analysis TICKER` first, walk the owner through the new fair value and scenarios, and record the decision they reach with `set_standing_decision.py` before proposing a trade.
