@@ -41,7 +41,7 @@ def test_extract_historical_targets_returns_dict_not_none():
 
 
 def test_extract_historical_targets_handles_corrupt_json(tmp_path, monkeypatch):
-    """Gracefully handle corrupt JSON in target-portfolio.json."""
+    """Gracefully handle corrupt JSON in a historical target file."""
     # This is difficult to test without mocking subprocess directly.
     # We'll trust that the try-except in the function handles this.
     targets = extract_historical_targets("HEAD")

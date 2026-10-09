@@ -32,8 +32,7 @@ def _make_db_with_watchlisted(tmp_path, tickers):
 
 def _make_db_with_holdings(tmp_path, tickers, watchlisted=None):
     """Seed domain_model.sqlite with held positions (account_investment rows)
-    plus optional watchlisted-only investments — Wave 3 Task 6 cutover of
-    _load_tickers() off portfolio.json onto SQLite.
+    plus optional watchlisted-only investments, for _load_tickers().
     """
     db_path = tmp_path / "domain_model.sqlite"
     conn = initialize_db(str(db_path))
@@ -76,8 +75,7 @@ class TestIsScannable:
 
 class TestLoadTickers:
     def test_loads_from_holdings_and_watchlist_sqlite(self, tmp_path):
-        """Wave 3 Task 6: holdings now come from account_investment in
-        domain_model.sqlite, not portfolio.json."""
+        """Holdings come from account_investment in domain_model.sqlite."""
         db_path = _make_db_with_holdings(tmp_path, ["NVDA", "AAPL"], watchlisted=["MSFT", "TSLA"])
         result = overnight_gaps._load_tickers(db_path)
         assert set(result) == {"NVDA", "AAPL", "MSFT", "TSLA"}

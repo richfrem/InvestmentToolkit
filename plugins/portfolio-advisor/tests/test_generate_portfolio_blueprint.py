@@ -1,11 +1,9 @@
-"""Tests for generate_portfolio_blueprint.py's Wave 1 Task 7C rewire of the two
-projections/{TICKER}.json read sites onto domain_model.sqlite (ADR-029):
-`_get_latest_ai_projection` (used in generate_section's AI Signal / Upside
+"""Tests for generate_portfolio_blueprint.py's projection reads from
+domain_model.sqlite: `_get_latest_ai_projection` (used in generate_section's AI Signal / Upside
 column) and `_get_latest_ai_agent_projection` (used by update_section_tables's
 `get_ai_signal`, which must stay strictly AI_AGENT-only, no fallback).
 
-Also covers the Wave 2 rewire of `build_thesis_map`, which used to read
-`target-portfolio.json` holdings directly and now reads per-investment thesis
+Also covers `build_thesis_map`, which reads per-investment thesis
 fields (target_weight, lifecycle_status, thesis_for_inclusion, sub_strategy_id/
 pillar_id) via `domain_model.investment_repository.list_investments`.
 
@@ -33,7 +31,7 @@ import generate_portfolio_blueprint as gpb  # noqa: E402
 
 def test_build_thesis_map_reads_from_sqlite_not_json(tmp_path):
     """build_thesis_map must source targetPct/role/thesisNote/subStrategyId
-    from investment columns, not target-portfolio.json."""
+    from investment columns."""
     db_path = tmp_path / "test.sqlite"
     conn = initialize_db(str(db_path))
     try:

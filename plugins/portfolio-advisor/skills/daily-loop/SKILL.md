@@ -17,7 +17,7 @@ description: The single master daily command. Provides fast non-interactive morn
 - **AI forward-evidence gate**: Before valuation or action proposals for AI-exposed names, apply [AI-sector forward valuation evidence](references/ai-forward-valuation.md). Reconcile dated forward estimates, memory/storage or power demand, executable capacity and cash conversion; flag `NEEDS_REVALUATION` when material drivers are missing. This review flag does not replace the canonical action or standing decision.
 - **Recommendation coherence**: Follow [Keeping recommendations coherent](references/recommendation-coherence.md) every session: refresh positions and executed trades first (TradingView by default), present `decision_check.effective` as the stance and reconcile any CONFLICT or OUTDATED standing decision with the owner through `set_standing_decision.py`, rank by today's priority with already-acted-on items last, and state every condition against current chart levels rather than as general guidance.
 - Fast scan (`--scan`) runs non-interactively; full loop guides step-by-step triage.
-- Check database freshness against `domain_model.sqlite` (never retired `portfolio.json`).
+- Check database freshness against `domain_model.sqlite` (never a file mtime).
 - **Fresh prices before the brief**: refresh `investment_price` in Step 0. If the refresh fails, mark every card as priced on stale data; never write prices with ad-hoc SQL.
 - Adhere to the single-decision pacing rule; never prompt multiple conflicting choices at once.
 - Enforce the macro gate and binary-event protocol from the methodology reference.

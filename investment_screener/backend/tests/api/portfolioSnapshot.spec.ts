@@ -130,9 +130,8 @@ describe('preserveAuthoritativeTotal', () => {
     const fallback = { totalUSD: 3300, totalCAD: 4554 };
 
     it('carries forward a previously-known authoritative total when no fresh one exists', () => {
-        // This is the price-refresh bug: portfolio.json already holds a TV-authoritative
-        // total from a prior sync, but a subsequent write (e.g. refreshing prices) has no
-        // fresh broker fetch to work with. It must NOT silently replace the authoritative
+        // Price-refresh case: a previous sync holds a TV-authoritative total, but a
+        // subsequent write (e.g. refreshing prices) has no fresh broker fetch to work with. It must NOT silently replace the authoritative
         // total with the shares*price approximation.
         const existing: PortfolioTotals = {
             holdingsUSD: 9000, cashUSD: 41000, totalUSD: 50000, totalCAD: 69000,

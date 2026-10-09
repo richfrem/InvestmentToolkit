@@ -170,8 +170,8 @@ def test_list_prints_pillars_and_holdings_from_sqlite(tmp_path):
     assert r.returncode == 0 and "AAPL" in r.stdout and "Software" in r.stdout or "sw" in r.stdout
 
 
-def test_script_names_no_retired_file_or_old_role():
-    """The source has no target-portfolio.json path and no THESIS_PATH."""
+def test_script_has_no_file_path_or_old_role():
+    """The source has no THESIS_PATH and none of the old role names."""
     source = SCRIPT.read_text()
-    assert "target-portfolio.json" not in source and "THESIS_PATH" not in source
+    assert "THESIS_PATH" not in source
     assert '"core"' not in source and '"speculative"' not in source

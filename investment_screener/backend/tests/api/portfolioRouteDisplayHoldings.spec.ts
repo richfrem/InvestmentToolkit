@@ -1,11 +1,10 @@
 /**
  * portfolioRouteDisplayHoldings.spec.ts
  *
- * Wave 3 completion — GET /api/portfolio now serves enriched holdings from
- * domain_model.sqlite (account_investment/investment_price + investment.name/
- * sector/industry/pillar_id) instead of portfolio.json, and the last
- * portfolio.json sync-write (persistPortfolioWithSnapshot) is removed from
- * /sync-tv/promote and /sync-tv/apply.
+ * GET /api/portfolio serves enriched holdings from domain_model.sqlite
+ * (account_investment/investment_price + investment.name/sector/industry/
+ * pillar_id), and /sync-tv/promote and /sync-tv/apply persist only through
+ * persistSnapshotToDb.
  *
  * All state is tmp_path-scoped SQLite via the real repositories — never the real
  * domain_model.sqlite, never a live TradingView/yfinance call.
@@ -49,7 +48,7 @@ describe('routes/portfolio.ts GET / display holdings (Wave 3 completion)', () =>
         portfolioRepo.close();
     }
 
-    it('returns null on an empty db so GET / falls back to portfolio.json', () => {
+    it('returns null on an empty db so GET / reports an empty state', () => {
         // Fresh, never-written DB (the helper creates the schema itself).
         expect(getHoldingsForDisplayFromDb(dbPath)).to.equal(null);
     });
@@ -103,20 +102,18 @@ describe('routes/portfolio.ts GET / display holdings (Wave 3 completion)', () =>
         expect(row.sector).to.equal('Technology');
     });
 
-    it('static guard: /sync-tv/promote and /sync-tv/apply write no portfolio.json', () => {
+    it('static guard: /sync-tv/promote and /sync-tv/apply persist only via persistSnapshotToDb', () => {
         const routeSrc = fs.readFileSync(
             path.resolve(__dirname, '../../src/routes/portfolio.ts'),
             'utf-8'
         );
-        // persistPortfolioWithSnapshot (the JSON writer) is fully removed.
-        expect(routeSrc).to.not.contain('persistPortfolioWithSnapshot');
         for (const marker of ["router.post('/sync-tv/promote'", "router.post('/sync-tv/apply'"]) {
             const start = routeSrc.indexOf(marker);
             expect(start, marker).to.be.greaterThan(-1);
             const rest = routeSrc.slice(start + marker.length);
             const end = rest.indexOf('router.post(');
             const handler = end === -1 ? rest : rest.slice(0, end);
-            expect(handler, `${marker} must not write PORTFOLIO_FILE`).to.not.contain('writeFileSync(PORTFOLIO_FILE');
+            expect(handler, `${marker} must not write files directly`).to.not.contain('writeFileSync(');
             expect(handler, `${marker} must persist via persistSnapshotToDb`).to.contain('persistSnapshotToDb');
         }
     });

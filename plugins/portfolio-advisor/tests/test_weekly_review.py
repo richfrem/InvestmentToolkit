@@ -23,8 +23,7 @@ from domain_model.pillar_repository import resolve_pillar  # noqa: E402
 
 
 def test_load_portfolio_holdings_reads_from_sqlite_not_json(tmp_path):
-    """Wave 3 Task 6: holdings for weekly review must come from
-    domain_model.sqlite, not portfolio.json."""
+    """Holdings for weekly review come from domain_model.sqlite."""
     db_path = tmp_path / "test.sqlite"
     conn = initialize_db(str(db_path))
     try:
@@ -51,8 +50,7 @@ def test_load_portfolio_holdings_missing_db_returns_empty(tmp_path):
 
 
 def test_load_target_holdings_reads_from_sqlite_not_json(tmp_path):
-    """Wave 2 rewire: target holdings must come from investment.target_weight,
-    not target-portfolio.json."""
+    """Target holdings come from investment.target_weight."""
     db_path = tmp_path / "test.sqlite"
     conn = initialize_db(str(db_path))
     try:

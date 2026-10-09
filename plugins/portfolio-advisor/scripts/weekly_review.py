@@ -32,13 +32,12 @@ DOMAIN_DB = REPO_ROOT / 'investment_screener/backend/data/domain_model.sqlite'
 
 
 def load_portfolio_holdings(db_path=None) -> dict:
-    """Load holdings data (shares, price, market_value) from domain_model.sqlite
-    (Wave 3 Task 6 cutover — previously portfolio.json).
+    """Load holdings data (shares, price, market_value) from domain_model.sqlite.
 
     Returns:
         {"holdings": [{"symbol", "shares", "price", "market_value"}, ...],
          "totals": {"totalUSD": ...}} — the same shape run_weekly_review()
-        expects from the old portfolio.json read.
+        consumes.
     """
     from domain_model.db_client import initialize_db
     from domain_model.portfolio_repository import load_portfolio_state_from_db
@@ -68,11 +67,8 @@ def load_portfolio_holdings(db_path=None) -> dict:
 
 
 def load_target_holdings(db_path=None) -> list:
-    """Load target-portfolio-shaped holdings (ticker, targetWeight) from the
-    domain-model DB (Wave 2 rewire), replacing the direct
-    ``target-portfolio.json`` holdings read. Only rows with a ``pillar_id``
-    are included, matching the migration write path's real-thesis-holding
-    scope (watchlist-only rows get no ``pillar_id``)."""
+    """Load thesis holdings (ticker, targetWeight) from the domain-model DB.
+    Only rows with a ``pillar_id`` are included (watchlist-only rows have none)."""
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import list_investments
 
@@ -93,8 +89,7 @@ def load_target_holdings(db_path=None) -> list:
 
 
 def load_watchlist_items(db_path=None) -> list:
-    """Load watchlisted tickers from the domain-model DB (Wave 2 rewire),
-    replacing the direct ``watchlist.json`` read."""
+    """Load watchlisted tickers from the domain-model DB."""
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import list_investments
 

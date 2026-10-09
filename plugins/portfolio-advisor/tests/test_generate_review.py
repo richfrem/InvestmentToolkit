@@ -1,11 +1,6 @@
-"""Tests for generate_review.py's Wave 2 Task 10 rewire of compute_thesis_summary()
-off target-portfolio.json's (buggy, always-empty) pillar.holdings read onto
-domain_model.sqlite (investment.target_weight via list_investments).
-
-Also documents the bug found & fixed during the rewire: the pre-rewire code
-iterated ``thesis["pillars"][i]["holdings"]``, but target-portfolio.json's
-pillar entries never have a "holdings" key — only the top-level
-``thesis["holdings"]`` does — so EXIT/INITIATE counts were always 0.
+"""Tests for generate_review.py's compute_thesis_summary(), which reads
+domain_model.sqlite (investment.target_weight via list_investments) and counts
+EXIT/INITIATE holdings across all investments, not per pillar.
 """
 
 import sys
@@ -28,8 +23,7 @@ import generate_review as gr  # noqa: E402
 
 
 class TestLoadPortfolioHoldingsFromDb:
-    """Wave 3 Task 6: portfolio holdings for header population now come from
-    domain_model.sqlite, not portfolio.json."""
+    """Portfolio holdings for header population come from domain_model.sqlite."""
 
     def test_returns_symbol_shares_price_rows(self, tmp_path):
         db_path = tmp_path / "test.sqlite"
@@ -121,6 +115,5 @@ def test_missing_db_fails_loudly(tmp_path):
 
 
 def test_module_has_no_json_thesis_path():
-    """generate_review.py no longer knows about a thesis JSON file."""
-    source = Path(gr.__file__).read_text()
-    assert "target-portfolio.json" not in source and not hasattr(gr, "THESIS_PATH") and not hasattr(gr, "load_json")
+    """generate_review.py has no thesis file path or JSON loader."""
+    assert not hasattr(gr, "THESIS_PATH") and not hasattr(gr, "load_json")

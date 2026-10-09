@@ -7,7 +7,7 @@
 | **Status** | ACTIVE |
 | **Last Updated** | 2026-10-09 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
-| **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
+| **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into the database) |
 | **Portfolio Data** | Live — synced from Broker via app or `python3 investment_screener/backend/src/BrokerDataEngine.py` |
 | **Latest Review** | SA LP Q1 2026 13F filed 2026-05-18 — **BARBELL STRATEGY**: ~62% semiconductor puts (SHORT chip sector) + ~25% AI infrastructure equity longs (BE, CRWV, IREN, CORZ, APLD). Portfolio nearly tripled $5.5B→$13.7B. Full filing: `investment_screener/backend/data/13f/000204572426000008.json` |
 
@@ -80,7 +80,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 ## III. Portfolio Weights
 
-*Holdings and actual weights are maintained in `target-portfolio.json`.*
+*Holdings and actual weights are maintained in `domain_model.sqlite`.*
 
 ---
 

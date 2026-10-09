@@ -210,8 +210,6 @@ class TestDeriveAndWrite:
         import update_price_levels
         params = inspect.signature(derive_and_write).parameters
         assert "target_json_path" not in params and "portfolio_json_path" not in params
-        source = Path(update_price_levels.__file__).read_text()
-        assert "target-portfolio.json" not in source and "portfolio.json" not in source
         assert not hasattr(update_price_levels, "TARGET_JSON") and not hasattr(update_price_levels, "PORTFOLIO_JSON")
 
 

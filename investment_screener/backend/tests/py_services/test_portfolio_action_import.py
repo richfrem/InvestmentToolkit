@@ -1,12 +1,9 @@
 """
 Tests that portfolio_action.py works when invoked via its py_services/ symlink path.
-This is the exact path bridge.ts uses via spawnPythonScript().
 A broken sys.path.insert (missing .resolve()) silently returns {} in production.
 
-Wave 2 rewire: target weights are read from the domain-model sqlite DB
-(investment.target_weight) instead of --target JSON — --target is still
-accepted on the CLI for back-compat with the production caller (helpers.ts)
-but is no longer read directly. Tests seed a temp DB via the repository layer
+Target weights are read from the domain-model sqlite DB
+(investment.target_weight). Tests seed a temp DB via the repository layer
 and point --db at it.
 """
 
@@ -16,7 +13,6 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-FIXTURES_DIR = REPO_ROOT / "investment_screener/backend/tests/fixtures"
 SYMLINK_PATH = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
 CANONICAL_PATH = REPO_ROOT / "plugins/portfolio-advisor/scripts/portfolio_action.py"
 
@@ -44,8 +40,6 @@ def _run(script_path: Path, db_path: Path) -> subprocess.CompletedProcess:
         [
             "python3", str(script_path),
             "--all",
-            "--portfolio", str(FIXTURES_DIR / "portfolio.test.json"),
-            "--target",   str(FIXTURES_DIR / "target_portfolio.test.json"),
             "--db",       str(db_path),
         ],
         capture_output=True, text=True, cwd=str(REPO_ROOT),
@@ -53,7 +47,7 @@ def _run(script_path: Path, db_path: Path) -> subprocess.CompletedProcess:
 
 
 def test_portfolio_action_via_symlink_path(tmp_path):
-    """py_services/ symlink path must work — this is how bridge.ts calls it."""
+    """The py_services/ symlink path must work."""
     db_path = tmp_path / "domain_model.sqlite"
     _seed_db(db_path)
     r = _run(SYMLINK_PATH, db_path)

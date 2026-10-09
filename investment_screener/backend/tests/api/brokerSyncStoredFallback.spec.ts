@@ -3,7 +3,7 @@
  *
  * Purpose: when TradingView is unreachable or returns no positions, BrokerSyncService serves
  * the positions stored in domain_model.sqlite (dataSource 'domain_model_sqlite') with a message
- * saying when they were last synced, and reads no portfolio.json. An empty database is reported
+ * saying when they were last synced. An empty database is reported
  * as an explicit empty state.
  *
  * Key Input Dependencies:
@@ -63,12 +63,5 @@ describe('BrokerSyncService stored-positions fallback', () => {
         expect(result.dataSource).to.equal('empty');
         expect(result.positionCount).to.equal(0);
         expect(result.message).to.contain('No positions');
-    });
-
-    it('the service source has no portfolio.json path or read', () => {
-        const src = fs.readFileSync(path.resolve(__dirname, '../../src/services/BrokerSyncService.ts'), 'utf-8');
-        expect(src).to.not.match(/portfolio\.json/);
-        expect(src).to.not.match(/\bPORTFOLIO_FILE\b/);
-        expect(src).to.not.match(/target-portfolio/);
     });
 });

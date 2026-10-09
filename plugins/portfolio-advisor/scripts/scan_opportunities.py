@@ -32,7 +32,6 @@ from pathlib import Path
 
 # ── Repo paths ──────────────────────────────────────────────────────────────────
 REPO_ROOT      = Path(__file__).resolve().parents[3]
-THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from risk_reward import STALE_DAYS  # noqa: E402  (one staleness threshold for every surface)
@@ -105,11 +104,11 @@ def _load_book_values_and_currency(conn) -> dict:
 
 def load_portfolio(db_path: Path = DB_PATH) -> dict:
     """Returns {TICKER: {shares, price, value, actualPct, bookPL}}, sourced
-    from domain_model.sqlite (Wave 3 Task 6 cutover — previously portfolio.json).
+    from domain_model.sqlite.
 
     ``value``/``actualPct``/``_meta.totalValue`` are derived from
     ``load_portfolio_state_from_db()`` (via ``portfolio_io.compute_weights``
-    for the %), never an independent shares*price re-sum — per ADR-030.
+    for the %), never an independent shares*price re-sum (ADR-030).
     ``bookPL``/``currency`` have no equivalent in that shared shape, so they
     are sourced from a local account_investment/investment aggregate query.
     """
@@ -163,15 +162,11 @@ def load_portfolio(db_path: Path = DB_PATH) -> dict:
 def load_thesis(db_path: Path | None = None) -> dict:
     """Returns {TICKER: {targetPct, pillarName, pillarId, thesisFor}}
 
-    Storage backend (Wave 2 rewire): reads per-investment thesis fields from
-    ``investment`` via ``domain_model.investment_repository.list_investments``,
-    joined against ``strategy_pillar`` for the display name, instead of
-    ``target-portfolio.json`` (ADR-029). Field mapping confirmed against
-    ``migrate_target_portfolio_to_sqlite.py``'s write path: ``targetWeight`` ->
-    ``target_weight``, ``pillarId`` -> ``pillar_id``, ``thesisForInclusion`` ->
-    ``thesis_for_inclusion``, ``role`` -> ``lifecycle_status``. Only rows with a
-    ``pillar_id`` are included, matching the original JSON read's implicit scope
-    (``target_portfolio_data.get("holdings", [])`` only).
+    Reads per-investment thesis fields from ``investment`` via
+    ``domain_model.investment_repository.list_investments``, joined against
+    ``strategy_pillar`` for the display name. Columns map as ``target_weight``
+    -> targetPct, ``pillar_id`` -> pillarId, ``thesis_for_inclusion`` ->
+    thesisFor. Only rows with a ``pillar_id`` are included.
     """
     db_path = db_path or DB_PATH
     if not Path(db_path).exists():
@@ -203,13 +198,10 @@ def load_thesis(db_path: Path | None = None) -> dict:
 def load_projection(ticker: str, db_path: Path | None = None) -> dict | None:
     """Load the most recent AI_AGENT projection for a ticker. Returns None if absent.
 
-    Storage backend (Wave 1 Task 7B): reads `projection_version` via
-    `domain_model.projection_repository`, not `projections/{TICKER}.json`
-    directly (ADR-029). The original code filtered strictly by
-    `source == "AI_AGENT"` with no fallback to other sources (returns `None`
-    if no AI_AGENT row exists), so this uses `get_latest_projection_by_source`
-    only — no fallback to `get_latest_projection`, unlike consumers whose
-    original code did fall back.
+    Reads `projection_version` via `domain_model.projection_repository`.
+    Filters strictly by `source == "AI_AGENT"` with no fallback to other
+    sources (returns `None` if no AI_AGENT row exists), so this uses
+    `get_latest_projection_by_source` only, never `get_latest_projection`.
     """
     conn = initialize_db(str(db_path or DB_PATH))
     try:
@@ -672,16 +664,6 @@ def main():
     parser.add_argument("--top", type=int, default=15, help="Max rows for INITIATE table")
     parser.add_argument("--category", choices=["exit", "trim", "accumulate", "initiate", "conflicts", "stale", "all"],
                         default="all")
-    parser.add_argument(
-        "--portfolio", default=None,
-        help="Legacy portfolio.json path, kept for CLI back-compat; no longer "
-             "read. Holdings now come from --db (domain_model.sqlite).",
-    )
-    parser.add_argument(
-        "--thesis", default=str(THESIS_PATH),
-        help="Legacy target-portfolio.json path, kept for CLI back-compat; "
-             "no longer read directly. Thesis fields now come from --db.",
-    )
     parser.add_argument("--db", default=str(DB_PATH), help="Path to domain_model.sqlite")
     args = parser.parse_args()
 

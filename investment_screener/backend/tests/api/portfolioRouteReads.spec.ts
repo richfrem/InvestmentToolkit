@@ -7,8 +7,7 @@
  * investment_price via a tmp-scoped SQLite file, never the real domain_model.sqlite.
  *
  * These are the functions /summary, /weights, /strategy-allocation,
- * /position/:ticker, and /holdings/:ticker are wired to call in place of
- * portfolio.json's `totals`/`tvSnapshot.positions[]` reads.
+ * /position/:ticker, and /holdings/:ticker are wired to call.
  */
 import { expect } from 'chai';
 import fs from 'fs';
@@ -141,10 +140,8 @@ describe('routes/portfolio.ts SQLite-backed read helpers (Wave 3 Task 6)', () =>
         expect(getBookValueAndCountFromDb(dbPath)).to.equal(null);
     });
 
-    it('getBookValueAndCountFromDb sums quantity*average_cost and counts positions (Wave 7)', () => {
-        // Real bug this replaces: /summary read book value/position count from
-        // portfolio.json (frozen since Wave 3), even though totalMarketValueUSD
-        // already read SQLite live.
+    it('getBookValueAndCountFromDb sums quantity*average_cost and counts positions ', () => {
+        // /summary reads book value and position count from SQLite, like totalMarketValueUSD.
         seed();
         // NVDA: (3*800) + (1*800) = 3200; AMD: 10*120 = 1200; total = 4400
         const result = getBookValueAndCountFromDb(dbPath)!;
@@ -157,10 +154,8 @@ describe('routes/portfolio.ts SQLite-backed read helpers (Wave 3 Task 6)', () =>
         expect(getPositionPriceFromDb('MSFT', dbPath)).to.equal(null);
     });
 
-    it('getPositionPriceFromDb returns live price and weighted-average book_price (Wave 7)', () => {
-        // Real bug this replaces: /position/:ticker read price/book_price from
-        // portfolio.json, even though only per-account share counts had been
-        // cut over to SQLite in Wave 3.
+    it('getPositionPriceFromDb returns live price and weighted-average book_price', () => {
+        // /position/:ticker reads price and book_price from SQLite.
         seed();
         const result = getPositionPriceFromDb('NVDA', dbPath)!;
         expect(result.price).to.equal(900);

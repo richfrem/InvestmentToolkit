@@ -128,10 +128,9 @@ def test_verify_thesis_sync_spot_and_cash_exemption(tmp_path):
 
 
 def test_retired_thesis_json_option_is_gone(tmp_path):
-    """--thesis-json no longer exists, so a stale caller fails loudly, and the source names no retired file."""
+    """--thesis-json no longer exists, so a stale caller fails loudly, ."""
     r = subprocess.run(["python3", str(SCRIPT_PATH), "--thesis-json", "x.json"], capture_output=True, text=True, cwd=str(REPO_ROOT))
     assert r.returncode == 2 and "unrecognized arguments" in r.stderr
-    assert "target-portfolio.json" not in SCRIPT_PATH.read_text()
 
 
 def test_verify_thesis_sync_reads_holdings_from_sqlite_by_default(tmp_path):

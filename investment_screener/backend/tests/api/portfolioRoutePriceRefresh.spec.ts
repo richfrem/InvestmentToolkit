@@ -74,12 +74,10 @@ describe('routes/portfolio.ts /refresh-prices -> SQLite-only price persistence',
         expect(getPortfolioTotalUsdFromDb(dbPath)).to.equal(3800);
     });
 
-    it('the /refresh-prices handler is SQLite-only: no portfolio.json write remains', () => {
-        // Static guard: proves the JSON write was genuinely removed from this path
-        // (the full route can't be exercised here — it spawns live python/yfinance,
-        // forbidden in this worktree). The handler must persist via
-        // persistRefreshedPricesToDb and must NOT call persistPortfolioWithSnapshot
-        // (the JSON writer) or write PORTFOLIO_FILE.
+    it('the /refresh-prices handler is SQLite-only: it writes no file', () => {
+        // Static guard (the full route can't be exercised here — it spawns live
+        // python/yfinance, forbidden in this worktree). The handler must persist
+        // via persistRefreshedPricesToDb and must not write files directly.
         const routeSrc = fs.readFileSync(
             path.resolve(__dirname, '../../src/routes/portfolio.ts'),
             'utf-8'

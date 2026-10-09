@@ -140,10 +140,8 @@ def test_load_latest_ta_sweep_count_returns_none_when_no_events(tmp_path):
 
 
 def test_pillar_summary_reads_sub_strategy_from_thesis_holdings_not_json(tmp_path):
-    """_pillar_summary() must take thesis_holdings rows (from
-    portfolio_io.load_thesis_holdings()) — not a parsed target-portfolio.json
-    dict — as its second argument (regression: this raised FileNotFoundError
-    in production on 2026-08-13 since that file no longer exists on disk)."""
+    """_pillar_summary() takes thesis_holdings rows (from
+    portfolio_io.load_thesis_holdings()) as its second argument."""
     import sys
     from pathlib import Path
     repo_root = Path(__file__).resolve().parents[4]

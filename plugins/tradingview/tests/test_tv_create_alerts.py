@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
-"""Tests for tv_create_alerts.py's Wave 2 Task 10 rewire off the (now archived)
-projections/{TICKER}.json and target-portfolio.json reads onto domain_model.sqlite.
-
-Bug found & fixed during the rewire: projections/ was archived at the end of
-Wave 1 (commit 730daddb), so load_latest_ai_entry()/get_all_tickers() had been
-silently returning None/[] for every ticker ever since — this rewire restores
-real functionality.
+"""Tests for tv_create_alerts.py: load_latest_ai_entry() and get_all_tickers()
+read projections and holdings from domain_model.sqlite.
 """
 
 import sys

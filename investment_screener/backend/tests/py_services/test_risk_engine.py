@@ -353,9 +353,8 @@ import portfolio_io  # noqa: E402
 
 
 def _seed_pillar_map(db_path: Path, holdings: list[dict]) -> None:
-    """holdings: list of {"ticker": ..., "pillarId": ...} dicts, matching the
-    real target-portfolio.json holding shape. compute_risk_snapshot() now
-    reads pillar_id from domain_model.sqlite (Wave 2 consumer cutover)."""
+    """holdings: list of {"ticker": ..., "pillarId": ...} dicts.
+    compute_risk_snapshot() reads pillar_id from domain_model.sqlite."""
     conn = initialize_db(str(db_path))
     for h in holdings:
         resolve_pillar(conn, h["pillarId"], h["pillarId"])

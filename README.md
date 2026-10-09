@@ -209,14 +209,10 @@ sqlite3 investment_screener/backend/data/intelligence.sqlite ".tables"
 
 ```
 
-`portfolio.json` and `theses/target-portfolio.json` are retired, with `domain_model.sqlite` as the sole
-source of truth for portfolio holdings, thesis targets, pillars, price levels, standing decisions and
-thesis breakers (ADR-038).
-
-`thesis_breaker_state.json`, `trade-log.json` and `cash_flows.json` are retired too: breaker definitions
-and state, trades and cash flows are in SQLite tables. Only the `projections/*.json` copies of valuations
-remain on disk, until the research consolidation moves them. A test (`test_no_retired_file_access`) fails
-if any code or document reintroduces a retired file. History: `docs/superpowers/status/`.
+`domain_model.sqlite` is the sole source of truth for portfolio holdings, thesis targets, pillars, price levels,
+standing decisions, trades, cash flows and thesis breakers (ADR-038). Research and analysis live in the ledger
+`intelligence.sqlite`. A test (`test_no_retired_file_access`) fails if any code or document reads or writes a
+file in place of these databases.
 
 ---
 

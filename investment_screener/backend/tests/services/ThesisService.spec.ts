@@ -112,9 +112,8 @@ describe('ThesisService.getLatestAIProjection', () => {
 });
 
 /**
- * Wave 3 Task 6: proves ThesisService.getPortfolioItems() reads through
- * PortfolioRepository (account_investment JOIN investment_price on a tmp-scoped
- * SQLite file) rather than opening data/portfolio.json directly. The service's
+ * Proves ThesisService.getPortfolioItems() reads through PortfolioRepository
+ * (account_investment JOIN investment_price on a tmp-scoped SQLite file). The service's
  * `dbPath` constructor param points it at the tmp file so this never touches the
  * real production domain_model.sqlite.
  */
@@ -134,16 +133,15 @@ describe('ThesisService.getPortfolioItems (Wave 3 Task 6)', () => {
         }
     });
 
-    it('returns [] when the tmp SQLite db has no priced positions and no portfolio.json fallback data', async () => {
-        // Touch the file so ensureSchema runs, but write nothing -- and since dbPath is
-        // a tmp file, there is no sibling portfolio.json for the JSON fallback to find.
+    it('returns [] when the tmp SQLite db has no priced positions', async () => {
+        // Touch the file so ensureSchema runs, but write nothing.
         const repo = new PortfolioRepository(dbPath);
         repo.close();
         const items = await thesisService.getPortfolioItems();
         expect(items).to.deep.equal([]);
     });
 
-    it('reads per-symbol quantity/price aggregated from account_investment/investment_price, not portfolio.json', async () => {
+    it('reads per-symbol quantity/price aggregated from account_investment/investment_price', async () => {
         const investmentRepo = new InvestmentRepository(dbPath);
         const portfolioRepo = new PortfolioRepository(dbPath);
         const nvdaId = investmentRepo.resolveInvestmentId('NVDA', 'EQUITY', 'USD');

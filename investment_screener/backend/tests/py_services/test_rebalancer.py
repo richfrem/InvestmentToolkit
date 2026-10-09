@@ -69,9 +69,8 @@ def _seed_positions(
 ) -> None:
     """Seed SQLite-backed portfolio positions (account, symbol, qty, price) into
     domain_model.sqlite -- the real source load_portfolio_state() AND
-    load_account_positions() now read post-Wave-3 (see test_portfolio_io.py's
-    _build_test_db for the same pattern). Replaces the old portfolio.json
-    "holdings"/"totals" + tvSnapshot fixtures.
+    load_account_positions() read (see test_portfolio_io.py's _build_test_db
+    for the same pattern).
 
     ``last_synced_at`` defaults to a fresh (now) timestamp so the SQLite-backed
     staleness check in _check_no_trade_conditions() does not trip DATA_STALE;
@@ -198,8 +197,7 @@ def _seed_account_positions_db(
     last_synced_at: str = "2026-07-20T00:00:00Z",
 ) -> None:
     """Seed per-account positions + cash into domain_model.sqlite for
-    load_account_positions() (Wave 3 cutover — reads account_investment, not
-    portfolio.json's tvSnapshot). rows: (account, symbol, qty, avg_cost).
+    load_account_positions() (reads account_investment). rows: (account, symbol, qty, avg_cost).
     cash: {account: usd_amount} seeded as CASH_USD account_investment rows."""
     from domain_model.db_client import initialize_db  # noqa: PLC0415
     from domain_model.account_repository import upsert_account  # noqa: PLC0415

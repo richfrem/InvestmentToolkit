@@ -75,13 +75,8 @@ def test_load_dcf_returns_action_fairvalue_and_upside(tmp_path):
 
 
 def test_build_prompt_reads_target_weight_from_sqlite_not_json_file(tmp_path, monkeypatch):
-    """Wave 8 cutover: build_prompt() previously read the whole thesis
-    document (pillarId, role, agentRationale, targetWeight per holding)
-    directly from the now-retired target-portfolio.json via
-    json.loads(THESIS_JSON.read_text()) and
-    validate_weights.compute_target(THESIS_JSON) -- same stale-Target%-column
-    bug class as generate_review_json.py before its own Wave 8 fix.
-    """
+    """build_prompt() takes pillarId, role, agentRationale and targetWeight per
+    holding from domain_model.sqlite."""
     db_path = tmp_path / "test.sqlite"
     _seed_thesis_holding(db_path)
     monkeypatch.setattr(generate_news_prompt, "DB_PATH", db_path)
@@ -91,9 +86,8 @@ def test_build_prompt_reads_target_weight_from_sqlite_not_json_file(tmp_path, mo
     assert "NVDA" in prompt
 
 
-def test_no_longer_references_target_portfolio_json():
+def test_has_no_file_thesis_source():
     src = (REPO_ROOT / "plugins/portfolio-advisor/scripts/generate_news_prompt.py").read_text()
-    assert "target-portfolio.json" not in src
     assert "THESIS_JSON" not in src
     assert "compute_target" not in src
 

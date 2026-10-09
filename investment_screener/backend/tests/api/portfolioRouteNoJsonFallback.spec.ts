@@ -2,7 +2,7 @@
  * portfolioRouteNoJsonFallback.spec.ts
  *
  * Purpose: routes/portfolio.ts and utils/paths.ts read portfolio data from domain_model.sqlite
- * only. There is no portfolio.json reader, writer or fallback, no manual position-save route
+ * only. There is no file reader, writer or fallback, no manual position-save route
  * (positions come from the broker sync), and an empty database is reported as an explicit
  * empty state rather than served from a file.
  *

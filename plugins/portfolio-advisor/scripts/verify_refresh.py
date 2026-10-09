@@ -3,7 +3,7 @@
 verify_refresh.py — Post-target-change consistency checker.
 
 Checks that ALL data sources are in sync after a target edit:
-  1. target-portfolio.json  (ground truth)
+  1. domain_model.sqlite    (ground truth: targets and rationale)
   2. investment_thesis.md   (version, date, tables)
   3. latest review JSON     (date, thesisName, no stale holdings)
   4. portfolio actions      (no false ACCUMULATE on DCF-SELL, no false signals)
@@ -43,7 +43,7 @@ from portfolio_io import compute_weights  # noqa: E402
 
 def compute_current_from_db(db_path: Path = DB_PATH) -> dict:
     """Actual-weight equivalent of validate_weights.compute_current(), sourced
-    from domain_model.sqlite (Wave 3 Task 6 cutover — previously portfolio.json).
+    from domain_model.sqlite.
 
     Reuses ``portfolio_io.compute_weights`` for the weight-% formula so this
     never re-derives its own shares*price/total computation.
@@ -66,12 +66,8 @@ def compute_current_from_db(db_path: Path = DB_PATH) -> dict:
 def _load_holdings_map(db_path: Path = DB_PATH) -> dict:
     """Return {ticker: {targetWeight, agentRationale}} from investment.
 
-    Storage backend (Wave 2 Task 10 rewire): replaces the direct
-    target-portfolio.json ``holdings`` read (targetWeight, agentRationale
-    fields) with ``investment.target_weight`` / ``investment.agent_rationale``
-    via ``list_investments`` (ADR-029). Document-level fields (name, version,
-    updatedAt) have no investment-table equivalent and are still read
-    straight from target-portfolio.json below.
+    Reads ``investment.target_weight`` / ``investment.agent_rationale`` via
+    ``list_investments``.
     """
     if not Path(db_path).exists():
         return {}
@@ -92,11 +88,9 @@ def _load_ai_agent_upside(ticker: str) -> float | None:
     """Return `(fairValue - price) / price * 100` for the latest AI_AGENT
     projection, or None if no AI_AGENT row (or no fairValue/price) exists.
 
-    Storage backend (Wave 1 Task 7B): reads `projection_version` via
-    `domain_model.projection_repository`, not `projections/{TICKER}.json`
-    directly (ADR-029). Factors out the two duplicated file-read blocks the
-    original script had (false-ACCUMULATE and false-INITIATE checks), both of
-    which filtered strictly by `source == "AI_AGENT"` with no fallback.
+    Reads `projection_version` via `domain_model.projection_repository`.
+    Shared by the false-ACCUMULATE and false-INITIATE checks, both of which
+    filter strictly by `source == "AI_AGENT"` with no fallback.
     """
     conn = initialize_db(str(DB_PATH))
     try:

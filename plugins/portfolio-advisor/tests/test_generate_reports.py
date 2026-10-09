@@ -19,8 +19,7 @@ from domain_model.pillar_repository import resolve_pillar, resolve_sub_strategy 
 
 
 def test_load_portfolio_from_db(tmp_path):
-    """Wave 3 Task 6: load_portfolio_from_db() must read domain_model.sqlite,
-    never portfolio.json."""
+    """load_portfolio_from_db() reads domain_model.sqlite."""
     db_path = tmp_path / "domain_model.sqlite"
     conn = initialize_db(str(db_path))
     upsert_account(conn, "TFSA", "TFSA", "TFSA")
@@ -43,8 +42,8 @@ def test_load_portfolio_from_db_missing_file_returns_empty(tmp_path):
 
 
 def test_load_target_holdings_from_db(tmp_path):
-    """Wave 2 rewire: target holdings must come from investment.target_weight
-    et al. via the domain-model repository, not target-portfolio.json."""
+    """Target holdings come from investment.target_weight et al. via the
+    domain-model repository."""
     db_path = tmp_path / "domain_model.sqlite"
     conn = initialize_db(str(db_path))
     try:

@@ -5,9 +5,9 @@
  *     Regression tests for broker ticker alias normalization in the TV sync
  *     merge path. TradingView's broker panel returns PSU.U.TO (dot form);
  *     the canonical thesis symbol is PSU-U.TO (hyphen form — Yahoo/TSX).
- *     The Python CDP path normalizes this, but the Express sync path
- *     (mergeIntoPortfolio) wrote the raw dot form into portfolio.json,
- *     re-creating the duplicate PSU row the user has hit repeatedly.
+ *     The Python CDP path normalizes this, and so must the Express sync path
+ *     (mergeIntoPortfolio); otherwise the raw dot form re-creates the
+ *     duplicate PSU row.
  *
  * Layer: Backend / Tests
  */

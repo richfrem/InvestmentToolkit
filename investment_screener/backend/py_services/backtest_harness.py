@@ -21,7 +21,6 @@ Usage:
 
 Key Input Dependencies:
     - git history (commit-by-commit target-portfolio.json snapshots)
-    - investment_screener/backend/data/target-portfolio.json
     - yfinance for historical OHLCV data
     - investment_screener/backend/data/predictions.jsonl (E3 correlation)
 

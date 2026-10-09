@@ -91,8 +91,8 @@ CREATE TABLE investment_price (
 );
 
 -- Per-account actual holdings. TradingView CDP sync already receives per-account data
--- (accountType/accountId) — fetch_broker_data.py's write_snapshot() currently aggregates
--- it away before the (retired) portfolio.json write; this table is fed by NOT discarding that split.
+-- (accountType/accountId) — fetch_broker_data.py's write_snapshot() keeps that split;
+-- this table holds it.
 -- Cash is modeled as a row with asset_class='CASH' pointing at a CASH_USD/CASH_CAD
 -- investment row, not a NULL instrument_id.
 CREATE TABLE account_investment (

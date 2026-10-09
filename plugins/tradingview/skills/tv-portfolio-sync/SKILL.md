@@ -18,7 +18,7 @@ Syncs broker holdings and cash from TradingView broker panel into SQLite domain 
 
 ## Constraints
 
-- Single source of truth: Holdings and balances must be written to `domain_model.sqlite`; never write to retired target-portfolio.json.
+- Single source of truth: Holdings and balances must be written to `domain_model.sqlite`; never write holdings anywhere else.
 - Zero positions guard: If TV returns 0 positions (broker disconnected), halt and alert user; never overwrite valid data with empty arrays.
 - HITL confirmation: Present full holdings diff (new, closed, qty changes) before committing changes.
 - Cash invariant: Portfolio totals must strictly include uninvested cash.

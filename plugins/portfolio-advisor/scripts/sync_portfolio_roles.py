@@ -1,5 +1,5 @@
 """Sync lifecycle_status (role) in domain_model.sqlite's investment table from
-actual portfolio.json positions.
+the actual broker positions held in the same database.
 
 Rule:
   shares == 0  → role must be: watchlist | monitor | initiate | avoid

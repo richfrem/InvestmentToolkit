@@ -3,16 +3,15 @@
 Constructs the portfolio_state dict check_mrc_limit()/check_cluster_variance()
 require ({"holdings": {ticker: {"weight_pct", "pillar_id"}}, "total_value"})
 from the REAL data sources: domain_model.sqlite's `investment` table
-(ticker -> pillar_id, Wave 2 consumer cutover — previously target-portfolio.json's
-"pillarId" field) + portfolio.json (actual weights via portfolio_io), reusing
+(ticker -> pillar_id) and the synced account positions (actual weights via
+portfolio_io), reusing
 portfolio_io.load_portfolio_state()/compute_weights() unchanged — no weight
 math is reimplemented here.
 
-Tests pass real constructed temp fixture files/DBs (via tmp_path), matching
-this project's established pattern (see test_portfolio_io.py) — no mocking of
-the pure file-read logic under test.
+Tests pass real constructed temp DBs (via tmp_path), matching this project's
+established pattern (see test_portfolio_io.py) — no mocking of the logic under
+test.
 """
-import json
 import sys
 from pathlib import Path
 
@@ -34,11 +33,6 @@ from domain_model.account_investment_repository import upsert_account_investment
 import portfolio_io  # noqa: E402
 
 
-def _write_json(path: Path, data) -> Path:
-    path.write_text(json.dumps(data))
-    return path
-
-
 def _make_db(tmp_path: Path, holdings: list[tuple[str, str]]) -> Path:
     """holdings: list of (ticker, pillar_id)."""
     db_path = tmp_path / "domain_model.sqlite"
@@ -53,10 +47,9 @@ def _make_db(tmp_path: Path, holdings: list[tuple[str, str]]) -> Path:
 
 def _seed_positions(db_path: Path, rows: list[tuple[str, str, float, float]]) -> None:
     """Seed SQLite-backed portfolio positions (account, symbol, qty, price)
-    into the same domain_model.sqlite used for the pillar map, matching what
-    the old portfolio.json "holdings" fixture used to encode. This is the
-    real data source load_portfolio_state() now reads post-Wave-3 (see
-    test_portfolio_io.py's _build_test_db for the same pattern).
+    into the same domain_model.sqlite used for the pillar map. This is the
+    real data source load_portfolio_state() reads (see test_portfolio_io.py's
+    _build_test_db for the same pattern).
     """
     conn = initialize_db(str(db_path))
     seen_accounts: set[str] = set()
@@ -88,9 +81,8 @@ def test_realistic_two_holding_fixture_produces_correct_weight_and_pillar(tmp_pa
     """A realistic 2-holding fixture -> correct weight_pct/pillar_id per ticker.
 
     Positions are seeded into the same domain_model.sqlite used for the
-    pillar map (post-Wave-3, load_portfolio_state() reads SQLite via
-    portfolio_io._DB_PATH, not portfolio.json -- monkeypatched here exactly
-    as test_portfolio_io.py does).
+    pillar map (load_portfolio_state() reads SQLite via portfolio_io._DB_PATH,
+    monkeypatched here exactly as test_portfolio_io.py does).
     """
     db_path = _make_db(tmp_path, [
         ("AAPL", "core-compounders"),
@@ -131,11 +123,6 @@ def test_ticker_with_pillar_but_no_portfolio_weight_gets_zero_weight(tmp_path):
     """A ticker in the investment table but not actually held (no weight)
     still appears with weight_pct=0.0, not omitted."""
     db_path = _make_db(tmp_path, [("PLTR", "ai-thesis")])
-    portfolio = _write_json(tmp_path / "portfolio.json", {
-        "holdings": [],
-        "totals": {"totalUSD": 1000.0},
-    })
-
     result = build_portfolio_state_for_order(db_path=db_path)
 
     assert result["holdings"]["PLTR"]["weight_pct"] == 0.0
