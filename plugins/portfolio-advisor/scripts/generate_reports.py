@@ -19,12 +19,10 @@ WEEKLY_REVIEWS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/dat
 
 
 def load_target_holdings_from_db(db_path=DOMAIN_DB_PATH):
-    """Load target-portfolio-shaped holdings from the domain-model DB (Wave 2 rewire).
+    """Load thesis holdings from the domain-model DB.
 
-    Replaces the direct ``target-portfolio.json`` read. Returns the same
-    ``{"holdings": [...]}`` shape the JSON file used to provide (ticker, name,
-    subStrategyId, targetWeight, role, thesisForInclusion) so ``generate_report``'s
-    body needs no further changes. Field mapping confirmed against
+    Returns ``{"holdings": [...]}`` (ticker, name, subStrategyId, targetWeight,
+    role, thesisForInclusion) as ``generate_report`` expects. Field mapping follows
     ``migrate_target_portfolio_to_sqlite.py``'s write path: ``role`` ->
     ``lifecycle_status``, ``targetWeight`` -> ``target_weight``,
     ``thesisForInclusion`` -> ``thesis_for_inclusion``, ``subStrategyId`` ->
