@@ -238,6 +238,16 @@ def t0_5_bridge_smoke() -> bool:
     return True
 
 
+# External comment: Portfolio data lives only in SQLite; no code may touch the retired files
+def t0_retired_file_guard() -> bool:
+    """Fails when any code reads, writes or stats a retired portfolio data file (ADR-038)."""
+    print(f"\n{HEADER}T0 — Retired portfolio file guard{RESET}")
+    return run(
+        ["python3", "-m", "pytest", "plugins/toolkit-manager/tests/test_no_retired_file_access.py", "-q"],
+        label="no code access to retired portfolio files",
+    )
+
+
 # External comment: Optional T1 Python unit test runner
 def t1_unit_tests() -> bool:
     """Runs pytest across plugin and backend unit test suites."""
@@ -273,6 +283,7 @@ def main() -> None:
         ("T0 Path regression", t0_path_regression),
         ("T0 Invariance",      t0_symlink_cwd_invariance),
         ("T0 Map Debt",        t0_map_debt),
+        ("T0 Retired files",   t0_retired_file_guard),
     ]:
         if not fn():
             print(f"\n{CRITICAL} Gate FAILED — aborting remaining tiers.")

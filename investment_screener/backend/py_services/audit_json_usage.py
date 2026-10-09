@@ -80,7 +80,7 @@ def _classify_open_line_operation(op: str, line: str) -> str:
     return op
 
 CLASSIFICATIONS = [
-    "ALLOWED_AUTHORITATIVE_JSON",
+    "RETIRED_PORTFOLIO_DATA",
     "ALLOWED_CONFIGURATION_JSON",
     "ALLOWED_MODEL_ARTIFACT_JSON",
     "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL",
@@ -96,15 +96,18 @@ CLASSIFICATIONS = [
 
 ALLOWED_PREFIX = "ALLOWED_"
 
+# Portfolio data lives only in domain_model.sqlite (ADR-038). A file with one of these names is
+# never allowed: it is a leftover to archive, and no code may read or write it.
+RETIRED_PORTFOLIO_DATA_NAMES = {
+    "portfolio.json", "target-portfolio.json", "trade-log.json", "orders_executed.jsonl",
+    "cash_flows.json", "account_policy.json", "watchlist.json", "watchlists.json",
+    "tradingview_alerts_actual.json", "thesis_breaker_state.json",
+}
+
 # One-line purpose text per ALLOWED_* classification, shown in the register's
 # Purpose column. Mirrors the rationale coded into classify_file()'s matching
 # rules rather than restating the classification name.
 CLASSIFICATION_PURPOSE = {
-    "ALLOWED_AUTHORITATIVE_JSON": (
-        "Live application/execution state (portfolio holdings, targets, watchlist, "
-        "trade log, cash flows, alerts) — outside the qualitative intelligence "
-        "ledger's scope; mutated in place, not event-sourced."
-    ),
     "ALLOWED_CONFIGURATION_JSON": (
         "Static configuration: plugin manifests, lockfiles, tsconfig, schemas, or "
         "template assets — not runtime data."
@@ -413,13 +416,8 @@ def classify_file(path: str, references: list) -> str:
     if "/daily-briefs/" in p or "/reviews/daily/" in p or "/reviews/weekly/" in p:
         return "MIGRATE_TO_INTELLIGENCE_LEDGER"
 
-    portfolio_domain_names = {
-        "portfolio.json", "watchlist.json", "watchlists.json",
-        "target-portfolio.json", "trade-log.json", "cash_flows.json",
-        "thesis_breaker_state.json", "tradingview_alerts_actual.json",
-    }
-    if name in portfolio_domain_names:
-        return "ALLOWED_AUTHORITATIVE_JSON"
+    if name in RETIRED_PORTFOLIO_DATA_NAMES:
+        return "RETIRED_PORTFOLIO_DATA"
 
     if name == "plugin.json" or p.endswith(".claude-plugin/plugin.json") or p.endswith(".claude-plugin/marketplace.json"):
         return "ALLOWED_CONFIGURATION_JSON"
@@ -547,7 +545,6 @@ def render_discovery_md(result: dict) -> str:
         "|---|---|---|",
     ]
     _WHY = {
-        "ALLOWED_AUTHORITATIVE_JSON": "Live portfolio/execution-domain state, outside the qualitative intelligence ledger's scope.",
         "ALLOWED_CONFIGURATION_JSON": "Static configuration/manifest/schema/template — not durable observation data.",
         "ALLOWED_MODEL_ARTIFACT_JSON": "Versioned DCF/model output artifact, consumed directly by valuation workflows.",
         "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL": "Its own append-only ledger for a different domain (predictions, agent telemetry) — not merged into observations.jsonl without a separate ADR.",
