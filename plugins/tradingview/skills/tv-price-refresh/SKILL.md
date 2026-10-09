@@ -19,6 +19,9 @@ Pulls real-time prices for portfolio positions using TradingView Desktop with yf
 ## Constraints
 
 - Price hierarchy: Uses TradingView Desktop CDP live quotes when port 9222 is open, falls back to yfinance per ticker.
+- Never fail entirely when TradingView is down: continue on yfinance and put `[yfinance mode — TradingView not connected]` at the top of the output.
+- Show each quote's source (TradingView or yfinance) with a summary count of real-time, fallback and error quotes. Mark a ticker that cannot be quoted `ERROR`; never fabricate a price.
+- Positions, share counts and book cost are never changed here; route those requests to `/tv-portfolio-sync`.
 - Active chart isolation: TV CDP quotes require active chart symbol matching; batch prices must use yfinance or sequential TV switches.
 - Database update: only `POST /api/portfolio/refresh-prices` writes `investment_price` (it fetches its own Yahoo quotes and refreshes the USD->CAD rate). `tv_batch_quotes.py` prints quotes and writes nothing. Never write prices with ad-hoc SQL.
 

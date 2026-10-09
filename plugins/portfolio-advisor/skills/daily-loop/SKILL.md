@@ -18,6 +18,7 @@ description: The single master daily command. Provides fast non-interactive morn
 - **Recommendation coherence**: Follow [Keeping recommendations coherent](references/recommendation-coherence.md) every session: refresh positions and executed trades first (TradingView by default), present `decision_check.effective` as the stance and reconcile any CONFLICT or OUTDATED standing decision with the owner through `set_standing_decision.py`, rank by today's priority with already-acted-on items last, and state every condition against current chart levels rather than as general guidance.
 - Fast scan (`--scan`) runs non-interactively; full loop guides step-by-step triage.
 - Check database freshness against `domain_model.sqlite` (never retired `portfolio.json`).
+- **Fresh prices before the brief**: refresh `investment_price` in Step 0. If the refresh fails, mark every card as priced on stale data; never write prices with ad-hoc SQL.
 - Adhere to the single-decision pacing rule; never prompt multiple conflicting choices at once.
 - Enforce the macro gate and binary-event protocol from the methodology reference.
 
@@ -31,7 +32,7 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
    ```bash
    curl -s -X POST -H "Authorization: Bearer $(cat .runtime/api-token)" http://localhost:3001/api/portfolio/refresh-prices
    ```
-   The route is the only price writer (it also refreshes the USD->CAD rate). Confirm the newest `investment_price.fetched_at` is today before building the brief. If the backend is down or the call fails, say so and mark every card as priced on stale data; never write prices with ad-hoc SQL.
+   The route is the only price writer (it also refreshes the USD->CAD rate). Confirm the newest `investment_price.fetched_at` is today before building the brief.
 2. **Morning Brief (Step 1)**: Ingest macro regime, canonical recommendations with conviction ranking, and binary event flags from `daily_brief.py`; apply the AI forward-evidence gate before treating valuation signals as trade-ready.
 3. **Triage (Step 2)**: Present urgent holding alerts, thesis breaker breaches, and price catalysts one ticker at a time.
 4. **Action Cards (Step 3)**: Formulate actionable trade proposals with tranche sizing and PSU-U.TO capital sourcing. For any of the five highest-priority cards marked `refreshFirst` (stale valuation), run `/update-stock-analysis TICKER` first, walk the owner through the new fair value and scenarios, and record the decision they reach with `set_standing_decision.py` before proposing a trade.
