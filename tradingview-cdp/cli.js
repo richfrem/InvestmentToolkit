@@ -9,15 +9,10 @@
  *   Exit codes: 0 success, 1 error, 2 connection failure.
  * 
  * Key Input Dependencies:
- *   - ../investment_screener/backend/data/portfolio.json (for alert filtering)
- *   - GET http://localhost:3001/api/screener/watchlist (for alert filtering --
- *     Wave 2 Task 10/11 cutover: watchlist.json is no longer read directly by
- *     this file. Node cannot import the Python domain_model package, and a
- *     direct Node sqlite3 read against domain_model.sqlite would bypass the
- *     repository-only rule this migration enforces, so the Express backend's
- *     already-SQLite-backed /api/screener/watchlist endpoint is called
- *     instead. Requires the backend running on :3001; degrades to an empty
- *     watchlist symbol set (not an error) if the backend is unreachable.)
+ *   - GET http://localhost:3001/api/portfolio and /api/screener/watchlist (for `alert list --filter`,
+ *     via core/alert_filter.js: the Express backend's SQLite-backed endpoints, sent with the
+ *     local API token from .runtime/api-token. Requires the backend running on :3001; an
+ *     unreachable backend is an explicit error.)
  * 
  * Key Output Dependencies:
  *   - None (writes to stdout)
@@ -38,6 +33,7 @@ import * as capture from './core/capture.js';
 import * as pine from './core/pine.js';
 import * as chart from './core/chart.js';
 import * as watchlist from './core/watchlist.js';
+import { loadFilterSymbols } from './core/alert_filter.js';
 
 // --- status ---
 register('status', {
@@ -62,48 +58,10 @@ register('alert', {
       },
       handler: async (opts) => {
         /**
-         * Resolves portfolio/watchlist files relative to the script directory,
-         * extracts unique ticker symbols, and calls alerts.list with them.
+         * With --filter, restricts the list to the symbols you hold or watch, read from the
+         * backend (see core/alert_filter.js). Throws an explicit error if the backend is down.
          */
-        process.stderr.write(`DEBUG: opts=${JSON.stringify(opts)}\n`);
-        let symbols = [];
-        if (opts.filter) {
-          try {
-            const { readFileSync } = await import('fs');
-            const { fileURLToPath } = await import('url');
-            const { dirname, join } = await import('path');
-            const __dirname = dirname(fileURLToPath(import.meta.url));
-            const portPath = join(__dirname, '../investment_screener/backend/data/portfolio.json');
-            const port = JSON.parse(readFileSync(portPath, 'utf8'));
-            const portSyms = (port.holdings || []).map(h => {
-              const sym = h.symbol || h.ticker;
-              return sym ? sym.split('.')[0].split('-')[0].toUpperCase() : null;
-            }).filter(Boolean);
-
-            // watchlist.json is archived after Wave 2 -- read the same data via
-            // the backend's already-SQLite-backed endpoint instead (see file
-            // docstring). Degrades to [] (not an error) if unreachable.
-            let watchSyms = [];
-            try {
-              const resp = await fetch('http://localhost:3001/api/screener/watchlist');
-              if (resp.ok) {
-                const watch = await resp.json();
-                watchSyms = (watch || []).map(w => {
-                  const sym = w.ticker || w.symbol;
-                  return sym ? sym.split('.')[0].split('-')[0].toUpperCase() : null;
-                }).filter(Boolean);
-              } else {
-                process.stderr.write(`Watchlist fetch returned ${resp.status}\n`);
-              }
-            } catch (fetchErr) {
-              process.stderr.write(`Watchlist fetch error (is the backend running on :3001?): ${fetchErr.message}\n`);
-            }
-
-            symbols = [...new Set([...portSyms, ...watchSyms])];
-          } catch (e) {
-            process.stderr.write(`Filter loading error: ${e.message}\n`);
-          }
-        }
+        const symbols = opts.filter ? await loadFilterSymbols() : [];
         return alerts.list(symbols);
       },
     }],
