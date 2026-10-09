@@ -7,7 +7,7 @@ Purpose:
 Key Input Dependencies:
     None (reads live state from TradingView Desktop on port 9222 via CDP)
 Key Output Dependencies:
-    investment_screener/backend/data/tradingview_alerts_actual.json
+    domain_model.sqlite `alert` table (one row per alert)
 Usage:
     python3 tv_list_alerts.py
 """

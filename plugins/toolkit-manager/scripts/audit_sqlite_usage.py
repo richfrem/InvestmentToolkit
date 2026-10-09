@@ -40,6 +40,7 @@ Key Functions (Index):
     - run(): findings for every Python file under plugins/ and investment_screener/
     - python_violations(): findings that break the SQLite-only rule (outside ALLOWED_MIGRATION_TOOLS)
     - ts_violations(): TypeScript/JavaScript lines that name a retired file or path constant
+    - doc_violations(): documents, evals and templates that name a retired file as if it were current
     - report(): human-readable report
     - self_test(): fixture cases covering each known blind spot
     - main(): CLI; --check exits 1 when any violation exists
@@ -537,6 +538,57 @@ def ts_violations(root: Path):
     return out
 
 
+# Documents (markdown, evals, templates, schemas) may name a retired file only as history.
+DOC_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".sql", ".example", ".template", ".txt"}
+DOC_HISTORY_PREFIXES = (
+    "docs/plans/", "docs/superpowers/", "docs/handovers/", "docs/architecture/ADRs/",
+    "ARCHIVE/", "investment_screener/backend/data/", "investment_screener/backend/schema/",
+    "temp/", "node_modules/", ".git/",
+    ".agents/", ".claude/", "venv/",
+)
+DOC_HISTORY_FILES = {
+    # logs of what changed and when
+    "plugins/portfolio-advisor/references/evolution-log.md", "references/map-debt.md", ".agent/map-debt.md",
+    "docs/architecture/skill-renames-2026-08-28.md",
+    # generated audit snapshots
+    "docs/architecture/json-discovery-audit.json", "docs/architecture/json-discovery-audit.md",
+    "docs/architecture/allowed-json-register.json", "docs/architecture/allowed-json-register.md",
+    # the migration reference: it documents the mapping from the retired files to the tables
+    "docs/architecture/domain-data-model.md", "docs/architecture/supplementary-domain-schemas.md",
+    "docs/architecture/migration-inventory-and-strategy.md",
+}
+DOC_HISTORY_RX = re.compile(
+    r"retired|archiv|formerly|former\b|no longer|removed|legacy|deprecated|replac|instead of|"
+    r"never (?:read|write|recreat|reintroduc|use)|not (?:read|written|stored|used|a source)|"
+    r"must not|do not|don't|ADR-0|historical|previously|used to|"
+    r"there is no|does not exist|doesn't exist|nonexistent", re.I)
+DOC_FILE_RX = re.compile("|".join(LEGACY.values()) + r"|thesis_breaker_state\.json")
+
+
+def doc_violations(root: Path):
+    """(file, line, text) for document lines that name a retired file without saying it is retired.
+
+    History logs, generated audit snapshots, plan and ADR folders, data folders and the migration
+    reference are skipped; any other line must contain a retirement word (retired, formerly, archived,
+    no longer, ...) on that line or an adjacent one, or it is reported.
+    """
+    out = []
+    for p in sorted(root.rglob("*")):
+        if not p.is_file() or p.is_symlink() or p.suffix not in DOC_SUFFIXES:
+            continue
+        rel = p.relative_to(root).as_posix()
+        if rel in DOC_HISTORY_FILES or rel.startswith(DOC_HISTORY_PREFIXES) or "node_modules" in p.parts:
+            continue
+        if rel.endswith("/tests/test_no_retired_file_access.py") or rel.endswith("audit_sqlite_usage.py"):
+            continue
+        lines = p.read_text(errors="ignore").splitlines()
+        for i, line in enumerate(lines, 1):
+            window = " ".join(lines[max(0, i - 2):i + 1])      # a wrapped sentence may say "retired" on the next line
+            if DOC_FILE_RX.search(line) and not DOC_HISTORY_RX.search(window):
+                out.append((rel, i, line.strip()[:160]))
+    return out
+
+
 def exists_on_disk(root, legacy):
     """Exists on disk."""
     d = root / "investment_screener/backend/data"
@@ -651,9 +703,9 @@ def main():
     if a.json:
         Path(a.json).write_text(json.dumps(found, indent=1, default=list))
     if a.check:
-        py, ts = python_violations(found), ts_violations(root)
-        print(f"\nGUARD: {len(py)} Python and {len(ts)} TypeScript/JavaScript violation(s)")
-        sys.exit(1 if py or ts else 0)
+        py, ts, docs = python_violations(found), ts_violations(root), doc_violations(root)
+        print(f"\nGUARD: {len(py)} Python, {len(ts)} TypeScript/JavaScript and {len(docs)} document violation(s)")
+        sys.exit(1 if py or ts or docs else 0)
 
 
 if __name__ == "__main__":

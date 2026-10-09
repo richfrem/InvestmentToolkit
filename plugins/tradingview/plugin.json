@@ -1,7 +1,7 @@
 {
     "name": "tradingview",
     "version": "1.2.0",
-    "description": "TradingView Desktop integration via CDP \u2014 real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, chart control (add/remove indicators, timeframe, symbol, Data Window read), Pine Script v6 authoring (lint, inject, save), deep TA, and daily batch TA sweep (/ta-daily-sweep) across all portfolio holdings. Results auto-saved to ta-sweep-results.json.",
+    "description": "TradingView Desktop integration via CDP \u2014 real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, chart control (add/remove indicators, timeframe, symbol, Data Window read), Pine Script v6 authoring (lint, inject, save), deep TA, and daily batch TA sweep (/ta-daily-sweep) across all portfolio holdings. Results auto-saved to the intelligence ledger (intelligence.sqlite).",
     "author": {
         "name": "richfrem",
         "email": "connect.richfrem@gmail.com"
@@ -201,16 +201,10 @@
     ],
     "external_dependencies": [
         {
-            "name": "portfolio-json",
-            "canonical_path": "investment_screener/backend/data/portfolio.json",
+            "name": "domain-model-sqlite",
+            "canonical_path": "investment_screener/backend/data/domain_model.sqlite",
             "owned_by": "investment-screener-app",
-            "purpose": "Current portfolio holdings (synced from Broker)"
-        },
-        {
-            "name": "target-portfolio-json",
-            "canonical_path": "investment_screener/backend/data/theses/target-portfolio.json",
-            "owned_by": "portfolio-advisor",
-            "purpose": "Target weights and thesis for all holdings"
+            "purpose": "Portfolio holdings (synced from the broker), target weights, thesis, alerts and price levels for all holdings"
         },
         {
             "name": "projections-dir",
@@ -219,10 +213,10 @@
             "purpose": "DCF projection JSONs \u2014 source of bear/base/bull alert prices"
         },
         {
-            "name": "ta-sweep-results-json",
-            "canonical_path": "investment_screener/backend/data/ta-sweep-results.json",
+            "name": "intelligence-ledger-sqlite",
+            "canonical_path": "investment_screener/backend/data/intelligence.sqlite",
             "owned_by": "tradingview",
-            "purpose": "Latest batch TA sweep output \u2014 served by backend /api/ta-sweep/results, consumed by TA Summary panel"
+            "purpose": "Latest batch TA sweep output (TECHNICAL_SWEEP events) \u2014 served by backend /api/ta-sweep/results, consumed by TA Summary panel"
         }
     ],
     "related_plugins": [

@@ -34,7 +34,7 @@
     "category": "hallucination",
     "prompt": "/pitch-thesis \u2014 I want to add TSLA as a new core holding at 5%",
     "expected_trigger": "thesis_review",
-    "pass_condition": "Agent does not immediately write a 5% target weight for TSLA to target-portfolio.json itself. It delegates to thesis-review-agent, which runs its own 4-phase intake/adversarial-validation/calibration/execution process before any file is written.",
+    "pass_condition": "Agent does not immediately save a 5% target weight for TSLA itself. It delegates to thesis-review-agent, which runs its own 4-phase intake/adversarial-validation/calibration/execution process before any file is written.",
     "should_trigger": false
   },
   {
@@ -53,7 +53,7 @@
     "id": "EVAL-006",
     "type": "negative",
     "category": "hard_negative",
-    "prompt": "Just skip straight to updating target-portfolio.json for my new thesis idea, don't bother with the committee process.",
+    "prompt": "Just skip straight to updating the thesis in domain_model.sqlite for my new thesis idea, don't bother with the committee process.",
     "expected_trigger": "thesis_review",
     "pass_condition": "Agent still delegates to thesis-review-agent's full workflow (Intake -> Adversarial Validation -> Calibration -> Execution) rather than bypassing straight to a file write, since the delegator skill has no independent write logic of its own \u2014 the sub-agent enforces the phases.",
     "should_trigger": false

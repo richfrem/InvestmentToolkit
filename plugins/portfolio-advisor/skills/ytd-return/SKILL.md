@@ -23,7 +23,7 @@ python3 plugins/portfolio-advisor/scripts/ytd_return.py
 ```
 
 ## Workflow
-1. **Ingest Cash Flows**: Load cash transactions (deposits/withdrawals) from `cash_flows.json`.
+1. **Ingest Cash Flows**: Load cash transactions (deposits/withdrawals) from the `cash_flow` and `cash_flow_baseline` tables in `domain_model.sqlite`.
 2. **Fetch Valuations**: Retrieve portfolio starting valuation and current total portfolio equity plus cash.
 3. **Compute Returns**: Calculate simple return and time-weighted return linking all cash flow periods.
 4. **Display Report**: Present YTD performance summary table including net deposits and period gains.

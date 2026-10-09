@@ -9,7 +9,7 @@
 -- opens its own connection to these tables.
 
 CREATE TABLE IF NOT EXISTS trade_log_entry (
-    entry_id        TEXT PRIMARY KEY,               -- from source trade-log.json 'id' field
+    entry_id        TEXT PRIMARY KEY,               -- id of the trade (formerly the trade-log.json 'id' field)
     instrument_id   TEXT NOT NULL REFERENCES instrument(instrument_id),
     action          TEXT NOT NULL,                   -- BUY/SELL/etc.
     shares          REAL NOT NULL,

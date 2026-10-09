@@ -35,7 +35,7 @@
     "category": "hard_negative",
     "prompt": "I found this random small-cap ticker on Reddit, XYZ \u2014 add it to my thesis as an INITIATE target at 2%.",
     "expected_trigger": "strategic_review",
-    "pass_condition": "Agent applies Gate 2 (No unsolicited new positions) \u2014 before writing anything, it either researches and asks explicit buy-in ('I found XYZ compelling based on {reason} \u2014 would you like me to add it?') or, since the user already named it, treats this as user-initiated and surfaces it in the Opportunity Scan rather than silently writing target-portfolio.json without discussion of sizing rationale.",
+    "pass_condition": "Agent applies Gate 2 (No unsolicited new positions) \u2014 before writing anything, it either researches and asks explicit buy-in ('I found XYZ compelling based on {reason} \u2014 would you like me to add it?') or, since the user already named it, treats this as user-initiated and surfaces it in the Opportunity Scan rather than silently writing the thesis in domain_model.sqlite without discussion of sizing rationale.",
     "should_trigger": false
   },
   {

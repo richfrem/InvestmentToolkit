@@ -6,7 +6,7 @@
     "prompt": "/tv-price-refresh",
     "expected_trigger": "tv_price_refresh",
     "expected_not_trigger": [],
-    "pass_condition": "Agent runs the non-blocking health check, loads tickers from portfolio.json and target-portfolio.json, fetches quotes via tv_batch_quotes.py, and prints a price table with Source column.",
+    "pass_condition": "Agent runs the non-blocking health check, loads the held and thesis tickers from domain_model.sqlite, fetches quotes via tv_batch_quotes.py, and prints a price table with Source column.",
     "should_trigger": true
   },
   {
@@ -57,7 +57,7 @@
     "expected_not_trigger": [
       "tv_price_refresh"
     ],
-    "pass_condition": "Agent routes to tv_portfolio_sync (which reconciles shares/book_price and writes portfolio.json) rather than tv_price_refresh, which per Hard Rule 3 'Never modifies any portfolio files \u2014 this is a read-only operation.'",
+    "pass_condition": "Agent routes to tv_portfolio_sync (which reconciles shares/book_price and writes domain_model.sqlite) rather than tv_price_refresh, which per Hard Rule 3 'Never modifies any portfolio files \u2014 this is a read-only operation.'",
     "should_trigger": true
   }
 ]

@@ -25,7 +25,7 @@
     "category": "schema_compliance",
     "prompt": "Bundle the thesis integrity, daily actions, standing decisions, and sizing inconsistencies for external review",
     "expected_trigger": "adversarial_review",
-    "pass_condition": "file-manifest.json lists temp/bundles/prompt.md FIRST in the files array (instructions before data), followed by investment_thesis.md, target-portfolio.json, projections/, and strategic-reviews/. The generated prompt explicitly instructs the reviewer to cover Thesis Integrity, Daily Actions (naming the actual tickers CLSK/IONQ/VRT/DRAM/CRWV/PSIX), Standing Decisions (CORZ/OKLO/PANW/BE), and Sizing Inconsistencies.",
+    "pass_condition": "file-manifest.json lists temp/bundles/prompt.md FIRST in the files array (instructions before data), followed by investment_thesis.md, the thesis in domain_model.sqlite, projections/, and strategic-reviews/. The generated prompt explicitly instructs the reviewer to cover Thesis Integrity, Daily Actions (naming the actual tickers CLSK/IONQ/VRT/DRAM/CRWV/PSIX), Standing Decisions (CORZ/OKLO/PANW/BE), and Sizing Inconsistencies.",
     "should_trigger": true
   },
   {

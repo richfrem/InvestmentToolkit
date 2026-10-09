@@ -25,7 +25,7 @@ python3 plugins/portfolio-advisor/skills/external-review/scripts/bundle.py --man
 ## Workflow
 1. **Scope Review**: Ask the user to select review focus (full thesis, DCF assumptions, concentration risk, or specific tickers) and output format (Markdown or ZIP).
 2. **Compile Prompt**: Load `assets/templates/thesis-challenge-prompt.md` and customize focus areas into `temp/bundles/prompt.md`.
-3. **Build Manifest**: Assemble file list including prompt, `investment_thesis.md`, `target-portfolio.json`, and relevant projections into `temp/bundles/file-manifest.json`.
+3. **Build Manifest**: Assemble file list including prompt, `investment_thesis.md`, an export of the current thesis from `domain_model.sqlite`, and relevant projections into `temp/bundles/file-manifest.json`.
 4. **Generate Payload**: Execute `bundle.py` to create the standalone bundle file.
 5. **Deliver**: Present the generated file path and clipboard instructions for external pasting.
 

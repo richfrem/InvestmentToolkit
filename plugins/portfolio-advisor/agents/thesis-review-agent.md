@@ -7,6 +7,7 @@ description: >
   with the user, and finally updates the portfolio targets.
 dependencies: ["skill:thesis-review", "skill:update-stock-analysis", "skill:news-sweep"]
 model: inherit
+color: purple
 tools: ["Read", "Write", "AskUserQuestion"]
 ---
 
@@ -77,7 +78,7 @@ Once the math is settled, state the final plan:
 
 Execute the following steps:
 1. **Document the Proposal**: Create a formal record of this pitch by filling out `assets/templates/thesis_proposal_template.md` and saving it to `data/thesis_proposals/{TICKER_or_THEME}_{YYYY-MM-DD}.md`.
-2. **Update Target Weights**: Use `scripts/update_targets.py --set TICKER=WEIGHT ... --write --blueprint` to apply the changes to `target-portfolio.json`.
+2. **Update Target Weights**: Use `scripts/update_targets.py --set TICKER=WEIGHT ... --write --blueprint` to save the changes to `domain_model.sqlite`.
 3. **Normalize**: Run `scripts/validate_weights.py --normalize --write` to ensure it equals 100%.
 4. **Refactor Markdown**: If a new pillar was created, edit `references/investment_thesis.md` to add the new sub-strategy text. (Do not overwrite the blueprint tables; they are handled by the scripts).
 5. **Update Sweep Templates**: Whenever the core thesis, sub-strategies, or pillars change, you MUST update the "Core Portfolio Thesis Background" section in both `plugins/portfolio-advisor/assets/templates/daily_sweep.md.template` and `plugins/portfolio-advisor/assets/templates/weekly_sweep.md.template` to keep Grok's sweep prompt aligned with the latest pillars.

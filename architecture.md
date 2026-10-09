@@ -36,12 +36,8 @@ InvestmentToolkit/                         ← repo root
 │       │   │                                policy tables (gitignored, self-creating; see §4)
 │       │   ├── intelligence.sqlite       ← research/TA-sweep/prediction event ledger (gitignored,
 │       │   │                                self-creating)
-│       │   ├── portfolio.json            ← live positions (gitignored, retained exception)
-│       │   ├── trade-log.json            ← order history (gitignored, retained exception)
-│       │   ├── theses/target-portfolio.json ← thesis + target weights + standingDecisions
-│       │   │                                (retained exception — not yet fully migrated,
-│       │   │                                see Wave 6 report)
-│       │   ├── projections/              ← per-ticker DCF + aiThesis JSON (retained exception)
+│       │   ├── projections/              ← per-ticker DCF + aiThesis JSON copies (the
+│       │   │                                valuations are in projection_version)
 │       │   ├── etf_analysis/             ← ETF analysis results (versioned)
 │       │   └── theses/                   ← investment_thesis.md + sub_strategies/
 │       └── tests/
@@ -182,15 +178,15 @@ InvestmentToolkit/                         ← repo root
 - `TradeLog.tsx` — order history (Working / Inactive / Planned / Filled / Cancelled tabs)
 - `Portfolio.tsx` — drift vs. target weights
 
-**State:** No global store — pages fetch from `/api/*` on mount. `portfolio.json` is the source of truth for positions (backed by `domain_model.sqlite`'s `account_investment` table); `target-portfolio.json` for thesis + targets (retained JSON exception, see §4).
+**State:** No global store — pages fetch from `/api/*` on mount. positions come from `domain_model.sqlite`'s `account_investment` / `investment_price` tables, and the thesis, targets and breakers from `investment`, `strategy_pillar` and `thesis_breaker` (ADR-038).
 
 ### 3.2. Backend — Express API
 **Technologies:** Node.js, Express, TypeScript (compiled to `dist/`), Zod validation  
 **Port:** 3001  
 **Key routes:**
-- `GET /api/portfolio` — reads `portfolio.json` + `target-portfolio.json`, computes drift
+- `GET /api/portfolio` — reads positions from `domain_model.sqlite` (`dataSource: 'empty'` when none are synced yet)
 - `GET /api/stock/:ticker` — reads `projections/{TICKER}.json` or `etf_analysis/{TICKER}.json`
-- `POST /api/portfolio/sync-tv/apply` — applies TV broker snapshot to `portfolio.json`
+- `POST /api/portfolio/sync-tv/apply` — applies the TV broker snapshot to `domain_model.sqlite`
 - `GET /api/ta-sweep/results` — reads `intelligence.sqlite`'s TA-sweep events (formerly `ta-sweep-results.json`, migrated Wave 5B)
 
 **Python bridge pattern:** `bridge.ts` spawns Python scripts via `child_process.spawn`. Scripts live in `src/` (NOT copied to `dist/`); always reference via `path.resolve(__dirname, '../src/script.py')`.
@@ -261,26 +257,21 @@ Both are gitignored, private data files created automatically the first time a s
 `initialize_db()` runs — see `docs/architecture/domain-data-model.md` and
 `docs/architecture/supplementary-domain-schemas.md` for full DDL and rationale.
 
-**Retained JSON exceptions** (each formally justified in the Wave 6 report's Retained-JSON
-Rationale Bar, not a generic "out of scope"):
+**Other files.** Portfolio data is SQLite only (ADR-038): `portfolio.json`, `target-portfolio.json`,
+`trade-log.json`, `cash_flows.json` and `thesis_breaker_state.json` are retired. What is still on disk:
 
 | File / Dir | Type | Contents | Gitignored? |
 |-----------|------|----------|-------------|
-| `backend/data/portfolio.json` | JSON | Live positions from TV broker sync | Yes |
-| `backend/data/theses/target-portfolio.json` | JSON | Thesis, pillar targets, per-ticker standingDecision, targetWeight, targetEntryPrice — most fields have no remaining technical migration barrier; `changeLog`/`thesisBreakers` are the two fields needing new schema before full retirement | No |
 | `backend/data/projections/*.json` | JSON | DCF Bear/Base/Bull, aiThesis action/rationale, analyticsLog (also mirrored into `projection_version`/`projection_scenario`) | No |
-| `backend/data/thesis_breaker_state.json` | JSON | Evaluated thesis-breaker state (definitions + evaluation history) — live read/write path for 5 real consumers, not derivable from `investment.thesis_breaker_status` alone | No |
 | `backend/data/etf_analysis/*.json` | JSON | ETF holdings analysis (versioned array) | No |
-| `backend/data/trade-log.json` | JSON | Order history: suggested → submitted → inactive/filled/cancelled | Yes |
-| `backend/data/cash_flows.json` | JSON | Deposits/withdrawals (also mirrored into `cash_flow`/`cash_flow_baseline`) | Yes |
 | `backend/data/theses/` | Markdown + JSON | Investment thesis narrative + sub-strategies | No |
 | `plugins/portfolio-advisor/assets/templates/` | Markdown | Grok sweep prompt templates (daily + weekly) | No |
 | `plugins/portfolio-advisor/references/evolution-log.md` | Markdown | Daily session log (scores, overrides, tool failures) | No |
 | `temp/` | Various | Scratch space for scripts (never /tmp/) | Yes |
 
-**Migrated/archived** (formerly live JSON, now SQLite-backed; superseded files under
-`./ARCHIVE/`): `ta-sweep-results.json` (Wave 5B), `predictions.jsonl` (Wave 5D),
-`account_policy.json` (Wave 5E), `tradingview_alerts_actual.json` and `watchlist.json` (Wave 2),
+**Retired files** (formerly live JSON, now SQLite-backed; superseded files under
+`./ARCHIVE/`): `ta-sweep-results.json`, `predictions.jsonl`,
+`account_policy.json`, `tradingview_alerts_actual.json` and `watchlist.json`,
 82 per-ticker projection files migrated in Wave 1 (originals retained, see above).
 
 **`aiThesis.action` vocabulary:** `INITIATE | ACCUMULATE | MAINTAIN | TRIM | EXIT | WATCHLIST`  
@@ -371,8 +362,8 @@ pytest plugins/tradingview/tests/            # TV CDP unit tests
 | ADR-026/027/028 | Intelligence data layer: `observations.jsonl` (authority, ADR-026) → `intelligence.sqlite` (replayable read model, FTS5, SQLite selection rationale in ADR-027) → generated `research/{TICKER}.summary.md` views, behind a shared `py_services/intelligence/` repository layer (ADR-028). See `ADRs/026_canonical_research_consolidation_and_unified_ingest.md`, `ADRs/027_sqlite_database_selection.md`, `ADRs/028_shared_intelligence_data_access_layer.md`. |
 | ADR-029/030 | Domain Data Model v3.2: persistence domain rationalization and gated migration from flat JSON to `domain_model.sqlite` (ADR-029, Waves 0-5E, closed by Wave 6 program-closure pass) — "store facts, compute aggregates" (ADR-030, e.g. portfolio totals always computed live from `account_investment`/`investment_price`, never stored). See `ADRs/029_persistence_domain_rationalization_and_retirement_gated_migration.md`, `ADRs/030_portfolio_totals_computed_not_stored.md`, and `docs/superpowers/status/wave6-program-closure-report.md` for the final state and retained-JSON rationale. |
 | ADR-dcf-calculator | DCF math lives in `dcf_scenarios.py`, never inlined. One script, one bug surface. |
-| SQLite-first, JSON by exception | Most domains live in `domain_model.sqlite`/`intelligence.sqlite` (gitignored, self-creating). A small, explicitly documented set of JSON files remain as retained exceptions (see §4) — not a permanent hybrid, per ADR-029's pivot objective. |
-| Standing Decision anchor | `standingDecision` in `target-portfolio.json` is the source of truth (also mirrored in `investment.standing_decision_*` columns). A fresh DCF run never silently overrides it — only material delta (>15% FV change) triggers a conflict flag. |
+| SQLite only (ADR-038) | Portfolio data lives in `domain_model.sqlite`, research in `intelligence.sqlite` (both gitignored, self-creating). No JSON fallback; `test_no_retired_file_access` fails if code or a document reintroduces a retired file. |
+| Standing Decision anchor | `investment.standing_decision_*` is the source of truth. A fresh DCF run never silently overrides it — only material delta (>15% FV change) triggers a conflict flag. |
 | Symlink policy | Cross-plugin file sharing via `symlinks.json` + `symlink_manager.py`. Never raw `ln -s`. |
 
 ---
@@ -392,7 +383,7 @@ pytest plugins/tradingview/tests/            # TV CDP unit tests
 |------|-----------|
 | CDP | Chrome DevTools Protocol — WebSocket API used to automate TradingView Desktop |
 | DCF | Discounted Cash Flow — valuation model producing Bear/Base/Bull fair value per share |
-| `standingDecision` | User-confirmed buy/sell/hold decision stored in `target-portfolio.json` (also mirrored in `investment.standing_decision_*` SQLite columns). Not overridden by automated DCF runs. |
+| `standingDecision` | User-confirmed buy/sell/hold decision stored in the `investment.standing_decision_*` columns. Not overridden by automated DCF runs. |
 | `targetEntryPrice` | GTC limit price for accumulating a position; sourced from TA support + DCF margin of safety |
 | `aiThesis.action` | Portfolio-level recommendation (`INITIATE/ACCUMULATE/MAINTAIN/TRIM/EXIT/WATCHLIST`) — distinct from the raw DCF signal |
 | PSU-U.TO | Purpose US Cash ETF (~$100 USD/share on TSX) — the idle cash parking vehicle. All new purchases are funded by trimming this. |

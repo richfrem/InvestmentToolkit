@@ -25,7 +25,7 @@ python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ```
 
 ## Workflow
-1. **Load Thesis**: Ingest active target weights and pillar structures from `target-portfolio.json`.
+1. **Load Thesis**: Ingest active target weights and pillar structures from `domain_model.sqlite` (`portfolio_io.load_thesis_holdings()`).
 2. **Fetch Positions**: Pull live holding values and cash splits from `domain_model.sqlite`.
 3. **Calculate Drift**: Compute drift percentages per holding and aggregate conviction scores per pillar.
 4. **Assess Health**: Evaluate formula health score (0-100) and identify thesis breaker breaches.

@@ -24,11 +24,11 @@ python3 -c "import sqlite3; conn = sqlite3.connect('investment_screener/backend/
 ```
 
 ## Workflow
-1. **Pre-Read**: Ingest ticker rationale, DCF parameters, and framework score from `target-portfolio.json` and projections.
+1. **Pre-Read**: Ingest ticker rationale, DCF parameters, and framework score from the stored thesis (`domain_model.sqlite`) and projections.
 2. **Draft Candidates**: Formulate 2-3 specific, measurable breaker proposals (e.g. margin floor, revenue growth hurdle).
 3. **Interview User**: Present proposals in plain English, explaining trade-offs and monitoring frequency.
 4. **Refine**: Incorporate user feedback or adjustments to thresholds and evaluation types.
-5. **Persist**: Update breaker definitions via `update_thesis.py` or domain model repositories.
+5. **Persist**: Save breaker definitions with `update_thesis.py --holding TICKER --set-breaker '{...}'` (add `--dry-run` first); each write is recorded in `portfolio_change_log`.
 6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification

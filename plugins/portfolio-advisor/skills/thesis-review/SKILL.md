@@ -32,7 +32,7 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py --show
 
 ## Verification
 ```bash
-python3 plugins/portfolio-advisor/scripts/validate_weights.py --target investment_screener/backend/data/theses/target-portfolio.json
+python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode target
 ```
 
 ## References

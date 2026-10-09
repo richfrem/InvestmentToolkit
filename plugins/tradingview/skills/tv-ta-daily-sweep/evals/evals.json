@@ -6,7 +6,7 @@
     "prompt": "/ta-daily-sweep",
     "expected_trigger": "ta_daily_sweep",
     "expected_not_trigger": [],
-    "pass_condition": "Agent runs the Phase 0 health check, verifies portfolio.json and target-portfolio.json exist (Phase 1), then runs `python3 plugins/tradingview/scripts/ta_sweep_batch.py` (Phase 2), telling the user the expected ~2-minute runtime before starting.",
+    "pass_condition": "Agent runs the Phase 0 health check, verifies domain_model.sqlite holds positions and thesis holdings (Phase 1), then runs `python3 plugins/tradingview/scripts/ta_sweep_batch.py` (Phase 2), telling the user the expected ~2-minute runtime before starting.",
     "should_trigger": true
   },
   {
@@ -33,7 +33,7 @@
     "type": "positive",
     "category": "standalone_degradation",
     "prompt": "/ta-daily-sweep",
-    "setup": "portfolio.json's last_updated timestamp is more than 24 hours old.",
+    "setup": "the newest position sync (MAX last_synced_at) is more than 24 hours old.",
     "expected_trigger": "ta_daily_sweep",
     "pass_condition": "Per Phase 1, agent suggests running /tv-portfolio-sync first due to staleness, but this is advisory \u2014 it does not silently proceed with stale data without at least flagging it to the user.",
     "should_trigger": true
