@@ -45,11 +45,11 @@ The true power of this repository is not just the frontend UI—it is the **Agen
 
 > [!TIP]
 > ### 📖 Fresh Clone Setup Guide
-> For a detailed walkthrough on initializing the Agentic OS substrate, choosing your plugin contribution policy, and handling upstream dependencies, consult [`INIT_AGENTS.md`](INIT_AGENTS.md).
+> `INIT_AGENTS.md` is the single, ordered setup guide: prerequisites, `.env`, the Agentic OS substrate and plugin contribution policy, `tradingview-cdp` dependencies, creating and verifying the SQLite databases, TradingView, and optional Questrade.
 
 ### 💬 Just Cloned the Repo? Paste This Prompt to Your AI Agent:
 
-> **"Please read INIT_AGENTS.md and run `/toolkit-onboarding` to bootstrap my investment environment, align plugin contribution preferences, initialize accounts, and connect TradingView."**
+> **"Please read INIT_AGENTS.md and work through it in order, then run `/toolkit-onboarding` to bootstrap my investment environment."**
 
 ---
 
@@ -60,8 +60,8 @@ The true power of this repository is not just the frontend UI—it is the **Agen
 Runs the **`toolkit-onboarding`** master wizard. This coordinator guides you end-to-end through:
 
 0. **Agentic OS Substrate & Contribution Alignment**: Interactively configures plugin maintenance policy (`context/plugin-config.json` via `fork-and-pr`, `local-patch-and-issue`, or `domain-override`), initializes the `context/control_plane.db` SQLite state store, configures pre-commit evolution guards, and verifies substrate liveness via `os-health-check`.
-1. **Pre-Flight Engine & Plugin Install**: Compiles Python venv, installs npm deps, redeploys all 20 plugins via `plugin-syncer`, and initializes private data templates.
-2. **Account & Strategy Pillar Setup**: Configures your account structure (e.g. TFSA primary + RRSP mirror) and seeds target strategy pillars (`Power`, `Compute`, `Data Infra`, `Cash`).
+1. **Runtime check and database protection**: confirms the environment set up in `INIT_AGENTS.md` (venv, npm and `tradingview-cdp` dependencies, plugins, `.env`), backs up `domain_model.sqlite` before the first write, and starts the app through `run-screener`.
+2. **Accounts**: the TFSA, RRSP and CASH accounts are created by the first broker sync (`/tv-portfolio-sync`). Strategy pillars are not seeded yet; they are created as theses are written (open item in `references/map-debt.md`).
 3. **Portfolio Ingestion**: Scrapes active holdings, shares, and USD cash from TradingView Desktop via `/tv-portfolio-sync` (or manual intake via `/stock-intake`).
 4. **Automated DCF & Quality Baseline**: Computes Rule of 40 scores, Piotroski metrics, and Bear/Base/Bull 5-year DCF models across all holdings.
 5. **TradingView Visual Sync & Dashboard Launch**: Injects `AI TA Levels v6` (21/50/200 EMAs + DCF Fair Value + action tiers) onto your live chart and starts the full suite on ports 5173/3001/9222!
