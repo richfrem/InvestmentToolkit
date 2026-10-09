@@ -6,7 +6,7 @@
  *   `py_services/portfolio_io.py`. A test (`tests/utils/lifecycle.spec.ts`) fails if the two
  *   lists differ.
  *
- * Key Functions (Index):
+ * Key Functions:
  *   - LIFECYCLE_STATUSES: statuses writers produce
  *   - INACTIVE_STATUSES: statuses meaning "no longer an active position"
  *   - ACCEPTED_LIFECYCLE_STATUSES: every value a reader or API accepts

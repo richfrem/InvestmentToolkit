@@ -1,7 +1,20 @@
-"""All ``portfolio_change_log`` table reads and writes live here.
+"""portfolio_change_log_repository.py - all ``portfolio_change_log`` reads and writes.
 
-Portfolio-wide version history ({version, date, note} per entry) -- append-only, never
-overwrite/replace an existing entry.
+Purpose:
+    Portfolio-wide version history ({version, date, note} per entry), append-only: an entry is
+    never overwritten or replaced. ``record_change`` is the one function every state-changing
+    target edit calls.
+
+Layer:
+    Backend / Python Services / Data Persistence
+
+Key Functions (Index):
+    - add_change_log_entry(): append an entry with an explicit version
+    - record_change(): append an entry numbered MAX(version) + 1
+    - list_change_log(): all entries, oldest first
+
+Key Input Dependencies:
+    - domain_model.sqlite (``portfolio_change_log`` table)
 """
 
 import sqlite3
