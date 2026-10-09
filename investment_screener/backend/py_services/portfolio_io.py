@@ -26,7 +26,12 @@ Usage Examples:
     TBD
 
 Key Functions (Index):
+    - LIFECYCLE_STATUSES, INACTIVE_STATUSES: the one lifecycle (role) vocabulary
+    - validate_lifecycle_status()
+    - lookup_lifecycle_status()
     - load_portfolio_state()
+    - load_target_weights()
+    - load_thesis_holdings()
     - compute_weights()
     - replace_block()
 
@@ -52,6 +57,12 @@ _DB_PATH = str(_HERE / ".." / "data" / "domain_model.sqlite")
 
 # ── constants ───────────────────────────────────────────────────────────────
 
+# The one lifecycle (role) vocabulary: values stored in investment.lifecycle_status.
+LIFECYCLE_STATUSES = frozenset({"accumulate", "trim", "exit", "initiate", "watchlist"})
+# Statuses that mean "no longer an active position". "exited" and "avoid" are accepted
+# inactive values although the writers only produce "exit".
+INACTIVE_STATUSES = frozenset({"exit", "exited", "avoid"})
+
 ROLE_LABEL: dict[str, str] = {
     "accumulate": "ACCUMULATE ↑",
     "trim":       "TRIM ↓",
@@ -61,6 +72,30 @@ ROLE_LABEL: dict[str, str] = {
     "monitor":    "MONITOR",
     "avoid":      "AVOID ✗",
 }
+
+
+def validate_lifecycle_status(value: str | None) -> str:
+    """Return ``value`` when it is a known lifecycle status, else raise ValueError.
+
+    Every writer of ``investment.lifecycle_status`` validates through this function.
+    """
+    if value in LIFECYCLE_STATUSES or value in INACTIVE_STATUSES:
+        return value
+    raise ValueError(
+        f"invalid lifecycle status {value!r}; must be one of {sorted(LIFECYCLE_STATUSES | INACTIVE_STATUSES)}"
+    )
+
+
+def lookup_lifecycle_status(symbol: str, db_path: str | None = None) -> str | None:
+    """The stored ``investment.lifecycle_status`` for ``symbol``; None when the ticker is unknown."""
+    from domain_model.db_client import initialize_db
+
+    conn = initialize_db(db_path or _DB_PATH)
+    try:
+        row = conn.execute("SELECT lifecycle_status FROM investment WHERE symbol = ?;", (symbol,)).fetchone()
+    finally:
+        conn.close()
+    return row[0] if row else None
 
 
 # ── portfolio state loading ──────────────────────────────────────────────────
@@ -134,7 +169,7 @@ def load_thesis_holdings(db_path: str | None = None) -> list[dict]:
 
     Single canonical thesis-holdings reader. Each holding is a dict with keys
     ticker/name/pillarId/subStrategyId/targetWeight/thesisForInclusion/role/
-    agentRationale. Mirrors InvestmentRepository.ts's listThesisHoldings() --
+    agentRationale/thesisBreakers. Mirrors InvestmentRepository.ts's listThesisHoldings() --
     only rows with a non-null target_weight are thesis holdings.
 
     Args:
@@ -142,16 +177,19 @@ def load_thesis_holdings(db_path: str | None = None) -> list[dict]:
 
     Returns:
         List of dicts with keys: ticker, name, pillarId, subStrategyId,
-        targetWeight, thesisForInclusion, role, agentRationale.
+        targetWeight, thesisForInclusion, role, agentRationale, standingDecisionReason,
+        standingDecisionType, targetEntryPrice, thesisBreakers.
     """
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import list_investments
     from domain_model.price_level_repository import get_price_levels
+    from domain_model.thesis_breaker_repository import list_breakers
 
     resolved_db_path = db_path or _DB_PATH
     conn = initialize_db(resolved_db_path)
     try:
         rows = list_investments(conn)
+        breakers = list_breakers(conn)
         result = []
         for row in rows:
             if row.get("target_weight") is None:
@@ -170,6 +208,7 @@ def load_thesis_holdings(db_path: str | None = None) -> list[dict]:
                 "standingDecisionReason": row.get("standing_decision_reason") or "",
                 "standingDecisionType": row.get("standing_decision_type") or "",
                 "targetEntryPrice": target_entry,
+                "thesisBreakers": breakers.get(row["symbol"], []),
             })
         return result
     finally:
@@ -281,7 +320,8 @@ def main() -> None:
         target_weights = load_target_weights()
         target_weight = target_weights.get(sym, 0.0)
         is_held = shares > 0
-        
+        stored_status = lookup_lifecycle_status(sym)
+
         info = {
             "ticker": sym,
             "shares": shares,
@@ -289,7 +329,7 @@ def main() -> None:
             "market_value": round(shares * price, 2) if price else 0.0,
             "target_weight": target_weight,
             "is_held": is_held,
-            "lifecycle_status": "core" if is_held else "watchlist",
+            "lifecycle_status": stored_status,
             "permitted_actions": ["MAINTAIN", "ACCUMULATE", "TRIM", "EXIT"] if is_held else ["WATCHLIST", "INITIATE"],
         }
         if args.json:

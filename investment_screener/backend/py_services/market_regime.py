@@ -57,6 +57,7 @@ import yfinance as yf
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from market_data import get_prices  # noqa: E402
+from portfolio_io import INACTIVE_STATUSES as INACTIVE_ROLES  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from domain_model.db_client import initialize_db  # noqa: E402
@@ -72,7 +73,6 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
 MARKET_REGIME_PATH = DATA_DIR / "market_regime.json"
 
-INACTIVE_ROLES = {"exit", "exited", "avoid"}
 
 
 def _classify_term_slope(pct_change: float) -> tuple[str, int]:
@@ -170,10 +170,8 @@ def _load_active_tickers(db_path: Path = _DB_PATH) -> list[str]:
     tickers.
 
     Active = lifecycle_status not in INACTIVE_ROLES. The holding's "role" is
-    the investment.lifecycle_status column. update_thesis.py's VALID_ROLES is a
-    different enum and doesn't apply here. The statuses in use are
-    {watchlist, accumulate, initiate, trim, exit}; INACTIVE_ROLES also lists
-    `exited` and `avoid` defensively. Not
+    the investment.lifecycle_status column, vocabulary in
+    portfolio_io.LIFECYCLE_STATUSES; INACTIVE_ROLES is portfolio_io.INACTIVE_STATUSES. Not
     portfolio_io.load_portfolio_state(): that loader reads broker shares/prices from
     domain_model.sqlite and has no role field.
 

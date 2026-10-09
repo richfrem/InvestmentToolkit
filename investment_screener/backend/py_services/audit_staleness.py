@@ -24,7 +24,7 @@ def main():
                MAX(pv.saved_at) as last_projection_date, pv.source, pv.fair_value, pv.action
         FROM investment i
         LEFT JOIN projection_version pv ON i.investment_id = pv.investment_id
-        WHERE (i.target_weight > 0 OR i.lifecycle_status IN ('core', 'accumulate', 'trim'))
+        WHERE (i.target_weight > 0 OR i.lifecycle_status IN ('accumulate', 'trim'))
           AND i.symbol NOT IN ('USD_CASH', 'CASH_USD')
         GROUP BY i.symbol
         ORDER BY last_projection_date ASC

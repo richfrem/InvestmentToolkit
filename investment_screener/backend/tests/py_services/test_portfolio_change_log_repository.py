@@ -32,3 +32,31 @@ def test_list_change_log_ordered_by_date_ascending(tmp_path):
 def test_list_change_log_returns_empty_when_none(tmp_path):
     conn = initialize_db(str(tmp_path / "test.sqlite"))
     assert list_change_log(conn) == []
+
+
+def test_record_change_numbers_versions_from_one_and_increments(tmp_path):
+    from domain_model.portfolio_change_log_repository import record_change
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    record_change(conn, "first")
+    record_change(conn, "second")
+    record_change(conn, "third")
+    entries = list_change_log(conn)
+    assert [e["version"] for e in entries] == ["1", "2", "3"]
+    assert [e["note"] for e in entries] == ["first", "second", "third"]
+
+
+def test_record_change_continues_after_existing_decimal_versions(tmp_path):
+    from domain_model.portfolio_change_log_repository import record_change
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    add_change_log_entry(conn, "9.6", "2026-07-02", "old", "2026-07-02T00:00:00Z")
+    record_change(conn, "new")
+    assert [e["version"] for e in list_change_log(conn)][-1] == "10"
+
+
+def test_record_change_rejects_blank_note(tmp_path):
+    import pytest
+    from domain_model.portfolio_change_log_repository import record_change
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    with pytest.raises(ValueError):
+        record_change(conn, "  ")
+    assert list_change_log(conn) == []

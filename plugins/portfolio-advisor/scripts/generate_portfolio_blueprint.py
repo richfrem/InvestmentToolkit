@@ -187,18 +187,18 @@ def build_thesis_map(db_path: Path | None = None) -> dict:
     follows ``migrate_target_portfolio_to_sqlite.py``'s write path:
     ``role`` -> ``lifecycle_status``, ``targetWeight`` -> ``target_weight``,
     ``thesisForInclusion`` -> ``thesis_for_inclusion``, ``subStrategyId`` ->
-    ``sub_strategy_id``. ``thesisBreakers`` has no list-shaped column
-    on ``investment`` (only the scalar ``thesis_breaker_status``), so it is
-    always returned as ``[]`` here — this mirrors the thesis_breakers.py /
-    update_thesis.py exception rather than forcing a lossy scalar mapping.
+    ``sub_strategy_id``. ``thesisBreakers`` comes from the ``thesis_breaker``
+    table via ``domain_model.thesis_breaker_repository.list_breakers``.
     """
     sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import list_investments
+    from domain_model.thesis_breaker_repository import list_breakers
 
     conn = initialize_db(str(db_path or DOMAIN_DB))
     try:
         rows = list_investments(conn)
+        breakers = list_breakers(conn)
     finally:
         conn.close()
 
@@ -222,7 +222,7 @@ def build_thesis_map(db_path: Path | None = None) -> dict:
             "targetPct":     row.get("target_weight") or 0,
             "role":          row.get("lifecycle_status") or "",
             "thesisNote":    row.get("thesis_for_inclusion") or "",
-            "thesisBreakers": [],
+            "thesisBreakers": breakers.get(ticker, []),
         }
     return holdings
 

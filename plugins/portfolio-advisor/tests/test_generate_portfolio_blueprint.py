@@ -180,3 +180,20 @@ def test_get_ai_signal_no_real_io(tmp_path, monkeypatch):
 
     updated = gpb.update_section_tables(content, current_data, target_data)
     assert "INITIATE" in updated  # No broker shares; caller weights cannot override ownership
+
+
+def test_build_thesis_map_carries_stored_thesis_breakers(tmp_path):
+    from domain_model.thesis_breaker_repository import upsert_breaker
+
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        resolve_pillar(conn, "ai-compute", "AI Compute")
+        nvda_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
+        update_investment_fields(conn, nvda_id, pillar_id="ai-compute", target_weight=5.5)
+        breaker = {"id": "rsi-low", "type": "auto", "metric": "rsi", "operator": "<", "threshold": 30, "horizon": 3}
+        upsert_breaker(conn, "NVDA", breaker)
+    finally:
+        conn.close()
+
+    assert gpb.build_thesis_map(db_path)["NVDA"]["thesisBreakers"] == [breaker]

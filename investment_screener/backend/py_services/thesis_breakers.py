@@ -57,13 +57,9 @@ OVERRIDES_PATH = DATA_DIR / "theses/breaker-overrides.jsonl"
 DB_PATH = DATA_DIR / "domain_model.sqlite"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from domain_model.thesis_breaker_repository import AUTO_METRICS, VALID_OPERATORS  # noqa: E402,F401
 from portfolio_io import load_thesis_holdings  # noqa: E402
 
-AUTO_METRICS = frozenset({
-    "rsi", "dcfFairValueGapPct", "trendState", "momentumPercentile", "pillarAvgScore",
-})
-
-VALID_OPERATORS = frozenset({"<", "<=", ">", ">=", "==", "in"})
 
 
 def evaluate_condition(value: Any, operator: str, threshold: Any) -> bool:
