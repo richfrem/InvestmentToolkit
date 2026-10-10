@@ -345,30 +345,6 @@
    "note": "Reads rendered sub-strategy markdown"
   },
   {
-   "file": "investment_screener/backend/src/routes/thirteenf.ts",
-   "kind": "fs-exists",
-   "label": "",
-   "disposition": "table",
-   "step": "step 6",
-   "note": "Reads 13F JSON"
-  },
-  {
-   "file": "investment_screener/backend/src/routes/thirteenf.ts",
-   "kind": "fs-read",
-   "label": "",
-   "disposition": "table",
-   "step": "step 6",
-   "note": "Reads 13F JSON"
-  },
-  {
-   "file": "investment_screener/backend/src/routes/thirteenf.ts",
-   "kind": "json-literal",
-   "label": "",
-   "disposition": "table",
-   "step": "step 6",
-   "note": "Reads 13F JSON"
-  },
-  {
    "file": "investment_screener/backend/src/routes/trading.ts",
    "kind": "fs-exists",
    "label": "",

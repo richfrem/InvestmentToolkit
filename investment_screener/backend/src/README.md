@@ -19,7 +19,6 @@ src/
 │   ├── screener.ts          # Watchlist and all-holdings screener aggregates
 │   ├── stock.ts             # Stock lookups, metrics, and quotes
 │   ├── theses.ts            # Thesis CRUD, pillars, and rebalancer health check
-│   ├── thirteenf.ts         # SEC 13F parsed filings and diffs
 │   └── trading.ts           # Order placement sessions (CDP) & trade log CRUD
 ├── services/                # Orchestrators and Analytical Coordinators
 │   ├── AnalysisContextBuilder.ts  # Aggregates stock details for AI analysis
