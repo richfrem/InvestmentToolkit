@@ -1,4 +1,4 @@
-"""Tests for audit_json_usage.py — repo-wide JSON/JSONL discovery audit (Task 12A).
+"""Tests for audit_json_usage.py — repo-wide JSON/JSONL discovery audit.
 
 Key Input Dependencies: none (all tests operate on tmp_path fixture repos).
 """
@@ -110,8 +110,7 @@ def test_classify_file_recognizes_model_artifact_projections():
 
 
 def test_classify_file_recognizes_separate_domain_ledger():
-    # predictions.jsonl was archived under ARCHIVE/ in Wave 5D Task 8 (migrated to
-    # intelligence_event); evolution_events.jsonl remains a live separate-domain ledger.
+    # evolution_events.jsonl is a live separate-domain ledger.
     result = classify_file(
         "investment_screener/backend/data/evolution_events.jsonl", references=[]
     )
@@ -289,10 +288,8 @@ def test_links_markdown_documentation_mention(tmp_path):
     assert any(r["confidence"] == "mention_only" for r in all_refs)
 
 
-# The end-to-end check against the real repo's ta-sweep-results.json was retired
-# as its own docstring instructed: the TA sweep now writes TECHNICAL_SWEEP events
-# to the ledger and that file is archived. The tmp_path tests above cover the
-# reference-resolution logic independent of real repo content.
+# The tmp_path tests above cover the reference-resolution logic independent of
+# real repo content.
 
 
 def test_run_audit_does_not_modify_or_delete_any_file(tmp_path):

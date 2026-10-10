@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""One-time migration: backfill account_policy.json + the globalSettings sub-object of
-a target-portfolio.json file into the domain_model.sqlite portfolio_policy singleton
-row (ADR-029).
+"""One-time import of an account-policy export file and the globalSettings object of a
+thesis export file into the domain_model.sqlite portfolio_policy singleton row.
 
-account_policy.json fields (accountPreferenceRules, psuFundingRule, riskBudgetCaps,
+Account-policy fields (accountPreferenceRules, psuFundingRule, riskBudgetCaps,
 bandConfig) map onto portfolio_policy's numeric caps/bands and the two JSON rule-blob
-columns. The globalSettings sub-object (rebalanceFrequency, portfolioValueUSD)
-maps onto rebalance_frequency/portfolio_value_usd_target -- a value-only backfill
-that leaves the source file untouched.
+columns. The thesis export's globalSettings (rebalanceFrequency, portfolioValueUSD)
+maps onto rebalance_frequency/portfolio_value_usd_target. Source files are only read.
 
 Usage:
-    python3 migrate_account_policy_to_sqlite.py --dry-run
-    python3 migrate_account_policy_to_sqlite.py --write
+    python3 migrate_account_policy_to_sqlite.py --account-policy-path POLICY.json \
+        --target-portfolio-path THESIS.json --dry-run
+    python3 migrate_account_policy_to_sqlite.py --account-policy-path POLICY.json \
+        --target-portfolio-path THESIS.json --write
 """
 import argparse
 import json
@@ -21,23 +21,19 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
-DEFAULT_ACCOUNT_POLICY_PATH = REPO_ROOT / "investment_screener/backend/data/account_policy.json"
-DEFAULT_TARGET_PORTFOLIO_PATH = (
-    REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
-)
 DEFAULT_DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 
 def migrate(
     account_policy_path: Path, target_portfolio_path: Path, db_path: Path, dry_run: bool = True
 ) -> dict:
-    """Backfill account_policy.json + a target-portfolio.json file's globalSettings into
+    """Import an account-policy export file + a thesis export file's globalSettings into
     the portfolio_policy singleton row.
 
     Args:
-        account_policy_path: Path to account_policy.json (source of 4 of
+        account_policy_path: Path to the account-policy export (source of 4 of
             the 5 mapped fields).
-        target_portfolio_path: Path to target-portfolio.json (source of
+        target_portfolio_path: Path to the thesis export (source of
             globalSettings.rebalanceFrequency/portfolioValueUSD only -- the rest of
             this file is untouched).
         db_path: domain_model.sqlite to write the portfolio_policy row into.
@@ -102,8 +98,8 @@ def migrate(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--account-policy-path", default=str(DEFAULT_ACCOUNT_POLICY_PATH))
-    parser.add_argument("--target-portfolio-path", default=str(DEFAULT_TARGET_PORTFOLIO_PATH))
+    parser.add_argument("--account-policy-path", required=True, help="Account-policy export file (JSON)")
+    parser.add_argument("--target-portfolio-path", required=True, help="Thesis export file (JSON)")
     parser.add_argument("--db-path", default=str(DEFAULT_DB_PATH))
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--dry-run", action="store_true")

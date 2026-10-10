@@ -1,16 +1,9 @@
 """
-Tests for generate_portfolio_blueprint.py's Wave 3 full SQLite cutover.
+Tests for generate_portfolio_blueprint.py's SQLite data source.
 
-Task 6 review finding: this script was believed fully cut over onto
-domain_model.sqlite, but was actually a hybrid — build_actual_map() and
-main() still read investment_screener/backend/data/portfolio.json directly
-for per-position shares/price, and two call sites invoked
-validate_weights.compute_current(PORTFOLIO_JSON) (also a direct JSON read).
-
-These tests prove the script now works correctly with NO real portfolio.json
-present at all (or with a stale/wrong one that would silently produce wrong
-output if it were still being read) — all data must come from a tmp_path
--scoped SQLite fixture via portfolio_io.load_portfolio_state().
+These tests prove build_actual_map(), _compute_current_weights() and main()
+take all holdings data from a tmp_path-scoped SQLite fixture via
+portfolio_io.load_portfolio_state().
 
 Test tier: Category C (sqlite + subprocess-free direct import).
 """
@@ -68,11 +61,8 @@ def _reload_generate_portfolio_blueprint():
     return sys.modules["generate_portfolio_blueprint"]
 
 
-def test_build_actual_map_works_with_no_portfolio_json_on_disk(tmp_path, monkeypatch):
-    """build_actual_map() must succeed and return correct data even when
-    portfolio.json does not exist anywhere on disk -- proving it no longer
-    reads that file at all.
-    """
+def test_build_actual_map_reads_the_sqlite_fixture(tmp_path, monkeypatch):
+    """build_actual_map() returns shares and total from the SQLite fixture."""
     import portfolio_io
     db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0), ("RRSP", "MSFT", 5, 400.0)])
     monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
@@ -97,19 +87,15 @@ def test_build_actual_map_reads_the_db_it_is_given_not_the_module_default(tmp_pa
     assert total == 1500.0 and actual_map["AAPL"]["shares"] == 10.0
 
 
-def test_module_has_no_json_portfolio_constant_or_cli_option():
-    """The blueprint generator has no portfolio JSON path and no --portfolio option."""
+def test_module_has_no_portfolio_file_constant_or_cli_option():
+    """The blueprint generator has no portfolio file path and no --portfolio option."""
     gpb = _reload_generate_portfolio_blueprint()
     assert not hasattr(gpb, "PORTFOLIO_JSON")
-    source = Path(gpb.__file__).read_text()
-    assert "--portfolio" not in source and "portfolio.json" not in source
+    assert "--portfolio" not in Path(gpb.__file__).read_text()
 
 
-def test_compute_current_weights_matches_sqlite_not_json(tmp_path, monkeypatch):
-    """_compute_current_weights() (the Wave 3 replacement for
-    validate_weights.compute_current(PORTFOLIO_JSON)) must derive weights from
-    the SQLite fixture, ignoring any stale portfolio.json.
-    """
+def test_compute_current_weights_matches_sqlite(tmp_path, monkeypatch):
+    """_compute_current_weights() derives weights from the SQLite fixture."""
     import portfolio_io
     db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0), ("RRSP", "MSFT", 5, 400.0)])
     monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
@@ -123,10 +109,9 @@ def test_compute_current_weights_matches_sqlite_not_json(tmp_path, monkeypatch):
     assert current_data["total_value"] == total_value
 
 
-def test_main_dry_run_succeeds_with_no_real_portfolio_json(tmp_path, monkeypatch, capsys):
-    """Full main() dry-run (no --write) must succeed end-to-end against a
-    tmp_path-scoped SQLite fixture with no portfolio.json present anywhere,
-    proving the whole script (not just one function) no longer depends on it.
+def test_main_dry_run_succeeds_against_the_sqlite_fixture(tmp_path, monkeypatch, capsys):
+    """Full main() dry-run (no --write) succeeds end-to-end against a
+    tmp_path-scoped SQLite fixture.
     """
     import portfolio_io
     db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0)])

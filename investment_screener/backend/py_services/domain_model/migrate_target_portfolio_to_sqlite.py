@@ -1,23 +1,25 @@
-"""Dry-run + real migration of target-portfolio.json/watchlist.json/
-tradingview_alerts_actual.json/thesis_breaker_state.json into the v3.2 domain model.
+"""Dry-run + real import of four export files (thesis, watchlist, alerts, breaker state) into the domain model.
 
-Non-negotiable per this migration's global constraints: --write must never run
-without a --dry-run report first being reviewed and explicitly approved by the
-user (tied to a real data-loss incident from before this corrective effort began).
+Purpose:
+    Build a dry-run report of what four JSON export files would write, and
+    with --write apply it to domain_model.sqlite. --write must never run
+    without a --dry-run report first being reviewed and explicitly approved by
+    the user.
 
-Real confirmed shapes (re-read directly against the real files during Wave 2
-Task 6, not assumed from the spec):
-- target-portfolio.json: top-level {id, name, schemaVersion, version, createdAt,
-  updatedAt, description, pillars, holdings, globalSettings, changeLog}.
-  holdings[].keys ever seen: ticker, name, pillarId, targetWeight, role,
-  subStrategyId, thesisForInclusion, agentRationale, shares, action,
-  priceLevels, standingDecision (type/reason/source/review), targetEntryPrice.
-- watchlist.json: {"watchlist": [{"ticker", "addedAt"}, ...]} -- NOT a flat
-  list (an earlier assumption in this plan's fixtures was wrong; corrected here).
-- tradingview_alerts_actual.json: flat list of
-  {alert_id, symbol (e.g. "NASDAQ:IREN"), type, message, active, price,
-  condition, resolution, created, last_fired, expiration}.
-- thesis_breaker_state.json: {"generatedAt": ..., "holdings": {ticker: status}}.
+Input file shapes:
+- thesis export (--target-portfolio): top-level {id, name, schemaVersion,
+  version, createdAt, updatedAt, description, pillars, holdings,
+  globalSettings, changeLog}. holdings[] keys: ticker, name, pillarId,
+  targetWeight, role, subStrategyId, thesisForInclusion, agentRationale,
+  shares, action, priceLevels, standingDecision (type/reason/source/review),
+  targetEntryPrice.
+- watchlist export (--watchlist): {"watchlist": [{"ticker", "addedAt"}, ...]}
+  (an object, not a flat list).
+- alerts export (--alerts): flat list of {alert_id, symbol (e.g.
+  "NASDAQ:IREN"), type, message, active, price, condition, resolution,
+  created, last_fired, expiration}.
+- breaker-state export (--breaker-state): {"generatedAt": ..., "holdings":
+  {ticker: status}}.
 """
 
 import argparse
@@ -201,7 +203,7 @@ def execute_migration(
                     conn, investment_id,
                     note_date=target.get("updatedAt") or "2026-07-19T00:00:00Z",
                     body=rationale, note_type="MIGRATED_LEGACY_RATIONALE",
-                    source="target-portfolio.json migration (Wave 2)",
+                    source="thesis export migration",
                 )
 
     holdings_tickers = {h.get("ticker") for h in target.get("holdings", []) if h.get("ticker")}
@@ -257,14 +259,10 @@ def execute_migration(
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--target-portfolio",
-                         default="investment_screener/backend/data/theses/target-portfolio.json")
-    parser.add_argument("--watchlist",
-                         default="investment_screener/backend/data/watchlist.json")
-    parser.add_argument("--alerts",
-                         default="investment_screener/backend/data/tradingview_alerts_actual.json")
-    parser.add_argument("--breaker-state",
-                         default="investment_screener/backend/data/thesis_breaker_state.json")
+    parser.add_argument("--target-portfolio", required=True, help="Thesis export file (JSON)")
+    parser.add_argument("--watchlist", required=True, help="Watchlist export file (JSON)")
+    parser.add_argument("--alerts", required=True, help="Alerts export file (JSON)")
+    parser.add_argument("--breaker-state", required=True, help="Breaker-state export file (JSON)")
     parser.add_argument("--db-path",
                          default="investment_screener/backend/data/domain_model.sqlite")
     parser.add_argument("--write", action="store_true",
