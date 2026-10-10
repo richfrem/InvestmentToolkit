@@ -36,6 +36,7 @@
  *   - listWatchlisted() - All investments with is_watchlisted=1, mapped to
  *     {ticker, addedAt}
  *   - listPillars() - All strategy_pillar rows, mapped to {id, name, targetWeight}
+ *   - listDocumentMembers() - thesis_document_member rows as {symbol: [document_id, ...]}
  */
 import Database from 'better-sqlite3';
 import { ensureSchemaReady } from '../utils/schemaVersion';
@@ -220,6 +221,16 @@ export class InvestmentRepository {
         setClauses.push('updated_at = ?');
         params.push(now, investmentId);
         this.db.prepare(`UPDATE investment SET ${setClauses.join(', ')} WHERE investment_id = ?`).run(...params);
+    }
+
+    /** Which thesis documents list each stock: {symbol: [document_id, ...]}, both sorted. */
+    listDocumentMembers(): Record<string, string[]> {
+        const rows = this.db
+            .prepare('SELECT symbol, document_id FROM thesis_document_member ORDER BY symbol, document_id')
+            .all() as Array<{ symbol: string; document_id: string }>;
+        const out: Record<string, string[]> = {};
+        for (const r of rows) (out[r.symbol] ??= []).push(r.document_id);
+        return out;
     }
 
     /** The thesis holdings array. Only rows with a non-null `target_weight`

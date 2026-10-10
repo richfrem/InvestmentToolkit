@@ -47,6 +47,27 @@ import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { InvestmentRepository } from '../services/InvestmentRepository';
 
 const router = express.Router();
+
+/**
+ * The thesis document without its generated "Current Positions (Auto-Updated)" section.
+ * That section was a frozen markdown snapshot of shares, weights and actions written by the
+ * old TV-sync refresh; it went stale. The web app shows the live positions table instead
+ * (frontend/src/components/positions). A section that follows the generated one is kept.
+ */
+export function stripGeneratedPositions(markdown: string): string {
+    const lines = markdown.split('\n');
+    const start = lines.findIndex(l => /^##\s+Current Positions \(Auto-Updated\)\s*$/.test(l));
+    if (start === -1) return markdown;
+    let end = lines.findIndex((l, i) => i > start && /^##\s/.test(l));
+    if (end === -1) end = lines.length;
+    const kept = [...lines.slice(0, start), ...lines.slice(end)];
+    // Drop the divider that introduced the removed section when nothing follows it.
+    if (end === lines.length) {
+        while (kept.length && (kept[kept.length - 1].trim() === '' || kept[kept.length - 1].trim() === '---')) kept.pop();
+        kept.push('');
+    }
+    return kept.join('\n');
+}
 const SUB_STRATEGIES_DIR = path.resolve(__dirname, '../../data/theses/sub_strategies');
 
 interface SubStrategySummary {
@@ -112,7 +133,7 @@ router.get('/sub-strategies/:id', (req, res) => {
             return res.status(404).json({ error: 'Sub-strategy not found' });
         }
 
-        const content = fs.readFileSync(filePath, 'utf-8');
+        const content = stripGeneratedPositions(fs.readFileSync(filePath, 'utf-8'));
         res.json({ id, content });
     } catch (error) {
         console.error('Error reading sub-strategy detail:', error);

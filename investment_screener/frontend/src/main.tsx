@@ -18,9 +18,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { RecommendationsProvider } from './contexts/RecommendationsContext'
+import { PositionRowsProvider } from './components/positions/PositionRowsProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RecommendationsProvider><App /></RecommendationsProvider>
+    <RecommendationsProvider><PositionRowsProvider><App /></PositionRowsProvider></RecommendationsProvider>
   </StrictMode>,
 )

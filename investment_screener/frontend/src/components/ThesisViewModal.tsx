@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import MarkdownContent from './MarkdownContent';
+import { ThesisPositions } from './positions/ThesisPositions';
 
 interface ThesisViewModalProps {
   isOpen: boolean;
@@ -38,7 +39,7 @@ export default function ThesisViewModal({ isOpen, onClose, thesisId }: ThesisVie
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-[100] p-4 sm:p-6 overflow-y-auto">
-      <div className="bg-[#1C1C1E] border border-white/10 rounded-2xl w-full max-w-4xl flex flex-col my-auto shadow-2xl relative">
+      <div className="bg-[#1C1C1E] border border-white/10 rounded-2xl w-full max-w-6xl flex flex-col my-auto shadow-2xl relative">
         <div className="flex justify-between items-center p-4 border-b border-white/5 shrink-0 sticky top-0 bg-[#1C1C1E] rounded-t-2xl z-10">
           <h2 className="text-xl font-bold text-white tracking-tight">Thesis Viewer</h2>
           <button
@@ -57,10 +58,11 @@ export default function ThesisViewModal({ isOpen, onClose, thesisId }: ThesisVie
           ) : error ? (
             <div className="text-red-400 text-center py-20">{error}</div>
           ) : (
-            <div className="prose prose-invert prose-indigo max-w-none prose-h1:text-2xl prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-p:text-gray-300 prose-li:text-gray-300">
+            <div className="prose prose-invert prose-indigo max-w-3xl prose-h1:text-2xl prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-p:text-gray-300 prose-li:text-gray-300">
               <MarkdownContent content={content} />
             </div>
           )}
+          {!loading && !error && thesisId && <ThesisPositions documentId={thesisId} />}
         </div>
       </div>
     </div>
