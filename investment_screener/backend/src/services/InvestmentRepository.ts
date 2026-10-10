@@ -37,6 +37,7 @@
  *     {ticker, addedAt}
  *   - listPillars() - All strategy_pillar rows, mapped to {id, name, targetWeight}
  *   - listDocumentMembers() - thesis_document_member rows as {symbol: [document_id, ...]}
+ *   - getDocumentCurrency() - the one current developments note of a thesis document, or null
  */
 import Database from 'better-sqlite3';
 import { ensureSchemaReady } from '../utils/schemaVersion';
@@ -51,6 +52,13 @@ export interface ThesisHoldingView {
     targetWeight: number | null;
     thesisForInclusion: string | null;
     agentRationale: string | null;
+}
+
+export interface DocumentCurrency {
+    asOf: string;
+    markdown: string;
+    updatedAt: string;
+    updatedBy: string | null;
 }
 
 export interface WatchlistItemView {
@@ -221,6 +229,14 @@ export class InvestmentRepository {
         setClauses.push('updated_at = ?');
         params.push(now, investmentId);
         this.db.prepare(`UPDATE investment SET ${setClauses.join(', ')} WHERE investment_id = ?`).run(...params);
+    }
+
+    /** The current developments note of a thesis document (thesis_document_currency), or null. */
+    getDocumentCurrency(documentId: string): DocumentCurrency | null {
+        const row = this.db
+            .prepare('SELECT as_of, markdown, updated_at, updated_by FROM thesis_document_currency WHERE document_id = ?')
+            .get(documentId) as { as_of: string; markdown: string; updated_at: string; updated_by: string | null } | undefined;
+        return row ? { asOf: row.as_of, markdown: row.markdown, updatedAt: row.updated_at, updatedBy: row.updated_by } : null;
     }
 
     /** Which thesis documents list each stock: {symbol: [document_id, ...]}, both sorted. */

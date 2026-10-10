@@ -33,7 +33,8 @@ python3 plugins/portfolio-advisor/scripts/weekly_review.py --prompt-output temp/
 3. **Multi-Model Dispatch**: Ingest responses from multiple frontier models leveraging their distinct strengths.
 4. **Fact-Check Gate**: Validate macro yield, VIX, and quoted prices against live market data before accepting findings.
 5. **Calibrate & Apply**: Review triangulated findings and apply catalyst adjustments via `apply_catalyst.py` or target weights via `update_targets.py`.
-6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
+6. **Record Findings & Refresh Every Thesis Page**: Record the triangulated findings with `record_news_sweep.py --write`, then work through `thesis_currency.py stale --max-age-days 7`: rewrite each listed page's note from its `context` and `put` it, or `touch` it when nothing material changed (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`).
+7. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Multi-Agent Protocol
 Leverage complementary agent capabilities across the weekly research sweep:

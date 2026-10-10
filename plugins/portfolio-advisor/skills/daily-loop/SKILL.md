@@ -37,7 +37,8 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 3. **Triage (Step 2)**: Present urgent holding alerts, thesis breaker breaches, and price catalysts one ticker at a time.
 4. **Action Cards (Step 3)**: Formulate actionable trade proposals with tranche sizing and PSU-U.TO capital sourcing. For any of the five highest-priority cards marked `refreshFirst` (stale valuation), run `/update-stock-analysis TICKER` first, walk the owner through the new fair value and scenarios, and record the decision they reach with `set_standing_decision.py` before proposing a trade.
 5. **Evolution & Summary (Steps 4-5)**: Log operational friction, record execution receipts, and display final session status.
-6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
+6. **Refresh Thesis Pages**: Run `python3 plugins/portfolio-advisor/scripts/thesis_currency.py stale`; for each page listed with new events, read its `context`, write the short current-developments note and `put` it (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`). Pages with no new events are left alone.
+7. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 

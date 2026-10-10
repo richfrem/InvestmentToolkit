@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import MarkdownContent from './MarkdownContent';
 import { ThesisPositions } from './positions/ThesisPositions';
+import { ThesisCurrency } from './ThesisCurrency';
+import type { CurrencyNote } from './currencyNote';
 
 interface ThesisViewModalProps {
   isOpen: boolean;
@@ -11,6 +13,7 @@ interface ThesisViewModalProps {
 
 export default function ThesisViewModal({ isOpen, onClose, thesisId }: ThesisViewModalProps) {
   const [content, setContent] = useState<string>('');
+  const [currency, setCurrency] = useState<CurrencyNote | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,6 +28,7 @@ export default function ThesisViewModal({ isOpen, onClose, thesisId }: ThesisVie
         })
         .then(data => {
           setContent(data.content);
+          setCurrency(data.currency ?? null);
           setLoading(false);
         })
         .catch(err => {
@@ -58,9 +62,12 @@ export default function ThesisViewModal({ isOpen, onClose, thesisId }: ThesisVie
           ) : error ? (
             <div className="text-red-400 text-center py-20">{error}</div>
           ) : (
+            <>
+            <ThesisCurrency currency={currency} />
             <div className="prose prose-invert prose-indigo max-w-3xl prose-h1:text-2xl prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-p:text-gray-300 prose-li:text-gray-300">
               <MarkdownContent content={content} />
             </div>
+            </>
           )}
           {!loading && !error && thesisId && <ThesisPositions documentId={thesisId} />}
         </div>

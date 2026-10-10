@@ -273,6 +273,18 @@ if false_initiate:
 else:
     ok("No false INITIATE signals on strongly DCF-negative stocks")
 
+# ── 5. Thesis pages current ───────────────────────────────────────────────────
+print("\n── 5. Thesis pages current ─────────────────────────────────────────────")
+sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+from thesis_currency import stale_documents  # noqa: E402
+
+_stale_pages = stale_documents(DB_PATH, REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite", max_age_days=14)
+if _stale_pages:
+    for _page in _stale_pages:
+        warn(f"Thesis page '{_page['document_id']}' needs a refresh ({_page['reason']}): thesis_currency.py context --document {_page['document_id']}")
+else:
+    ok("Every thesis page has a current note (under 15 days old, no newer events)")
+
 # ── Summary ────────────────────────────────────────────────────────────────────
 print("\n── Summary ─────────────────────────────────────────────────────────────")
 if warnings:
