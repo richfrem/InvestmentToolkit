@@ -6,7 +6,7 @@ You are analyzing a highly concentrated, institutional-grade AI infrastructure p
 
 1. **The ASI Race (Primary: Infrastructure & Compute Buildout)**:
    - **GPU Cloud & Neoclouds**: Captures GPU infrastructure supply and sovereign compute capacity. Tickers include `CRWV` (CoreWeave), `NBIS` (Nebius), and `SHAZ` (SharonAI).
-   - **HBM & Memory Scarcity**: Critical silicon storage bottlenecks for AI training and inference. Tickers include `MU` (Micron), `SNDK` (SanDisk/WDC), and `SKHY` (SK Hynix proxy: 000660.KS / OTC: HXSCF).
+   - **HBM & Memory Scarcity**: Critical silicon storage bottlenecks for AI training and inference. Tickers include `MU` (Micron), `SNDK` (Sandisk, a separate company from WDC since February 2025), and `SKHY` (SK hynix ADR, listed on Nasdaq in July 2026).
    - **Foundries, Lithography & EDA**: Foundations of silicon design and manufacturing. Tickers include `TSM` (TSMC), `ASML`, `AMAT` (Applied Materials), `TSEM` (Tower Semi), `SNPS` (Synopsys), and `CDNS` (Cadence).
    - **High-Speed Networking & Optical Interconnects**: Chip-to-chip, server-to-server 800G/1.6T fabrics. Tickers include `CRDO` (Credo), `LITE` (Lumentum), `COHR` (Coherent), `CIEN` (Ciena), and `VIAV` (Viavi).
    - **AI Power Infrastructure**: Baseload power generation, nuclear, fuel cells, and micro-grid prime power for massive gigawatt-scale clusters. Tickers include `VST` (Vistra), `BE` (Bloom Energy), `PSIX` (Power Solutions Intl), `CEG`, and `OKLO`.
@@ -16,7 +16,7 @@ You are analyzing a highly concentrated, institutional-grade AI infrastructure p
    - Institutional ontologies, enterprise AI agent platforms, and operational data execution layers. Core Holding: `PLTR` (Palantir AIP).
 
 3. **Space Infrastructure & Defense AI**:
-   - Government modernization, tactical edge intelligence, and orbital communications. Tickers include `SPCX` (SpaceX private equity proxy), `CACI` (Defense IT/SIGINT), and `RKLB` (Rocket Lab).
+   - Government modernization, tactical edge intelligence, and orbital communications. Tickers include `SPCX` (SpaceX common stock, public since its June 2026 IPO), `CACI` (Defense IT/SIGINT), and `RKLB` (Rocket Lab).
 
 4. **Sovereign Finance & Digital Rails**:
    - Institutional infrastructure for automated machine-to-machine settlement. Tickers include `COIN` and `CRCL`.
@@ -81,6 +81,10 @@ Answer these for the portfolio as a whole:
 4. **Most mispriced position** — which holding looks most over- or under-valued vs. current thesis?
 5. **Top trim / add priorities this month** — 2–3 highest-conviction actions.
 6. **Macro & Sector Regime** — Is the market in a risk-on or risk-off stance? Cite VIX, yields, and overall AI capex sentiment.
+7. **Robotics & Physical AI (sector focus: `KOID`)** — Humanoid / embodied-AI and automation news (Tesla Optimus, Figure, Unitree, Symbotic and similar), sector funding and orders. Say whether the sector moved on company news or on rates and sentiment.
+8. **Cash & rates (`PSU-U.TO`, USD cash)** — USD/CAD and its move, Bank of Canada / Fed expectations, short-term USD yields, and any change to the `PSU-U.TO` distribution or ex-dividend date. Flag Canadian market holidays (the TSX is closed even when US markets are open).
+
+For any dated, material, sourced fact, you may add it at the very end under a `## TICKER` heading (only tickers in the table), `## MACRO`, `## KOID` (theme 7) or `## PSU-U.TO` (theme 8): one factual sentence with its source, `(unverified)` if you could not confirm it from a primary source.
 
 ---
 
