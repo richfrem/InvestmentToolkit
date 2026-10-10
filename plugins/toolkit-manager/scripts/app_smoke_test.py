@@ -62,6 +62,7 @@ class Probe:
     statuses: tuple[int, ...] = (200,)
     json_type: type | tuple[type, ...] = (dict, list)
     keys: tuple[str, ...] = field(default_factory=tuple)
+    numbers: tuple[str, ...] = field(default_factory=tuple)  # keys that must hold a number, never null (the screens format them)
     note: str = ""
 
 
@@ -69,7 +70,10 @@ PROBES = [
     Probe("/health", keys=("status",)),
     Probe("/api/tv-status", keys=("price_source",)),
     Probe("/api/portfolio", json_type=dict, keys=("dataSource",)),
-    Probe("/api/portfolio/summary", json_type=dict, keys=("totalMarketValueUSD", "ytdStartValueCAD", "price_source")),
+    Probe("/api/portfolio/summary", json_type=dict, keys=("totalMarketValueUSD", "ytdStartValueCAD", "price_source"),
+          numbers=("totalMarketValueUSD", "totalMarketValueCAD", "ytdStartValueCAD", "ytdChangePctCAD",
+                   "liveUsdCadRate", "jan1UsdCadRate", "positionCount"),
+          note="a null here crashed the Portfolio Summary screen"),
     Probe("/api/portfolio/performance", (200, 404, 500, 503), note="needs cash-flow data; any JSON answer"),
     Probe("/api/portfolio/weights", json_type=dict),
     Probe("/api/portfolio/status", (200, 404)),
@@ -107,6 +111,9 @@ def check_probe(probe: Probe, status: int, body: object) -> str | None:
             missing = [k for k in probe.keys if k not in body]
             if missing:
                 return f"missing keys {missing}"
+            bad = [k for k in probe.numbers if not isinstance(body.get(k), (int, float)) or isinstance(body.get(k), bool)]
+            if bad:
+                return f"not a number: {bad}"
     return None
 
 

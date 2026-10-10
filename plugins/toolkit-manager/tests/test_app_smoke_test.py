@@ -79,3 +79,15 @@ def test_key_values_summarises_the_headline_numbers():
     assert any("26 positions" in l and "33,714.46" in l for l in lines)
     assert any("2 tickers, 1 with a valuation" in l for l in lines)
     assert any("3 reports" in l for l in lines)
+
+
+def test_a_null_where_the_screen_needs_a_number_fails_the_probe():
+    probe = smoke.Probe("/summary", json_type=dict, keys=("a",), numbers=("a",))
+    assert smoke.check_probe(probe, 200, {"a": 1.5}) is None
+    assert "not a number: ['a']" in smoke.check_probe(probe, 200, {"a": None})
+    assert "not a number" in smoke.check_probe(probe, 200, {"a": "1"})
+
+
+def test_the_summary_probe_requires_numeric_rates_and_totals():
+    summary = next(p for p in smoke.PROBES if p.path == "/api/portfolio/summary")
+    assert {"jan1UsdCadRate", "liveUsdCadRate", "totalMarketValueUSD"} <= set(summary.numbers)

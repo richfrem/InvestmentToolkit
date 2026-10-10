@@ -130,6 +130,8 @@ export interface PortfolioSummary {
     unrealizedGainPctCAD: number;
     liveUsdCadRate: number;
     jan1UsdCadRate: number;
+    /** false until the January 1 USD/CAD rate is recorded with the YTD baseline (jan1UsdCadRate then shows the live rate). */
+    jan1UsdCadRateRecorded?: boolean;
     lastUpdated: string;
     price_source?: string;
 }

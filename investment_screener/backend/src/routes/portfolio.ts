@@ -440,7 +440,10 @@ router.get('/summary', async (_req, res) => {
             unrealizedGainPctUSD: totalBookValueUSD > 0 ? ((totalMarketValueUSD - totalBookValueUSD) / totalBookValueUSD) * 100 : 0,
             unrealizedGainCAD: totalMarketValueCAD - totalBookValueCAD,
             unrealizedGainPctCAD: totalBookValueUSD > 0 ? ((totalMarketValueUSD - totalBookValueUSD) / totalBookValueUSD) * 100 : 0,
-            liveUsdCadRate, jan1UsdCadRate,
+            liveUsdCadRate,
+            // Always a number (the screen formats it); until a January 1 rate is recorded it shows the live rate.
+            jan1UsdCadRate: jan1UsdCadRate ?? liveUsdCadRate,
+            jan1UsdCadRateRecorded: jan1UsdCadRate !== null,
             lastUpdated,
             price_source: priceSource,
         });

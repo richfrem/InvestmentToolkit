@@ -82,7 +82,7 @@ export default function PortfolioSummaryCards({ data }: Props) {
             primaryColor: 'text-amber-400',
             rows: [
                 { label: 'Live USD/CAD', value: data.liveUsdCadRate.toFixed(4), color: 'text-slate-300' },
-                { label: 'Jan 1 Rate', value: data.jan1UsdCadRate.toFixed(4), color: 'text-slate-500' },
+                { label: 'Jan 1 Rate', value: data.jan1UsdCadRateRecorded === false ? 'not set' : data.jan1UsdCadRate.toFixed(4), color: 'text-slate-500' },
             ],
             glow: '',
         },
