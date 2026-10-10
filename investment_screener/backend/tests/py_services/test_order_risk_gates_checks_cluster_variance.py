@@ -143,8 +143,8 @@ def test_check_cluster_variance_unassigned_ticker_falls_back_gracefully():
 
 
 def test_check_cluster_variance_handles_missing_risk_snapshot(monkeypatch, tmp_path):
-    """risk_snapshot=None and no real file present: passed=True, no exception."""
-    monkeypatch.setattr(order_risk_gates, "RISK_SNAPSHOT_PATH", tmp_path / "nonexistent.json")
+    """risk_snapshot=None and no stored snapshot: passed=True, says the check was not evaluated."""
+    monkeypatch.setattr(order_risk_gates, "DB_PATH", tmp_path / "domain_model.sqlite")
 
     order = _order(ticker="CORZ", side="BUY")
     portfolio_state = _portfolio_state({"CORZ": {"pillar_id": "asi_race"}})
@@ -152,6 +152,7 @@ def test_check_cluster_variance_handles_missing_risk_snapshot(monkeypatch, tmp_p
     result = check_cluster_variance(order, portfolio_state, risk_snapshot=None)
 
     assert result["passed"] is True
+    assert "No stored risk snapshot" in result["reason"]
 
 
 def test_check_cluster_variance_pillar_with_no_cluster_entry_returns_true():

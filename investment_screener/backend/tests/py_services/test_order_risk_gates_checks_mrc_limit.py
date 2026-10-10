@@ -3,7 +3,7 @@
 MRC here means Marginal Risk Contribution (Phase 3 E1's real,
 correlation/covariance-aware risk-decomposition metric from
 risk_engine.py), NOT "Maximum Recommended Concentration". This function
-reuses the real risk_snapshot.json data shape and rebalancer.py's E2
+reuses the real stored risk snapshot data shape and rebalancer.py's E2
 compute_risk_budget_check() projection formula
 (old_mrc * 100 * new_weight / current_weight), applied to a single
 ad-hoc order instead of a batch of routed orders.
@@ -157,8 +157,8 @@ def test_check_mrc_limit_skips_projection_for_zero_current_weight():
 
 
 def test_check_mrc_limit_handles_missing_risk_snapshot(monkeypatch, tmp_path):
-    """risk_snapshot=None and no real file present: passed=True, no exception."""
-    monkeypatch.setattr(order_risk_gates, "RISK_SNAPSHOT_PATH", tmp_path / "nonexistent.json")
+    """risk_snapshot=None and no stored snapshot: passed=True, says the check was not evaluated."""
+    monkeypatch.setattr(order_risk_gates, "DB_PATH", tmp_path / "domain_model.sqlite")
 
     order = _order(ticker="CORZ", side="BUY", shares=100.0, price=10.0)
     portfolio_state = _portfolio_state({"CORZ": {"weight_pct": 20.0}}, total_value=100_000.0)
@@ -167,6 +167,26 @@ def test_check_mrc_limit_handles_missing_risk_snapshot(monkeypatch, tmp_path):
 
     assert result["passed"] is True
     assert result["holdings_flagged"] == []
+    assert "No stored risk snapshot" in result["reason"]
+
+
+def test_check_mrc_limit_uses_the_stored_snapshot_when_none_is_passed(monkeypatch, tmp_path):
+    """risk_snapshot=None loads the latest snapshot stored in domain_model.sqlite."""
+    from domain_model.db_client import initialize_db
+    from domain_model.computed_snapshot_repository import save_snapshot
+
+    db_path = tmp_path / "domain_model.sqlite"
+    conn = initialize_db(str(db_path))
+    save_snapshot(conn, "risk_snapshot", {"marginalRiskContribution": {"CORZ": 0.24}})
+    conn.close()
+    monkeypatch.setattr(order_risk_gates, "DB_PATH", db_path)
+
+    order = _order(ticker="CORZ", side="BUY", shares=1000.0, price=10.0)
+    portfolio_state = _portfolio_state({"CORZ": {"weight_pct": 10.0}}, total_value=100_000.0)
+    result = check_mrc_limit(order, portfolio_state, risk_snapshot=None)
+
+    assert result["passed"] is False
+    assert result["holdings_flagged"][0]["ticker"] == "CORZ"
 
 
 def test_check_mrc_limit_only_evaluates_traded_ticker():

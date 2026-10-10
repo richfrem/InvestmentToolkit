@@ -153,14 +153,6 @@
    "note": "Per-ticker info JSON cache"
   },
   {
-   "file": "investment_screener/backend/py_services/harvest_predictions.py",
-   "kind": "read",
-   "label": "rebalance_plan.json",
-   "disposition": "derived-output",
-   "step": "step 2",
-   "note": "Reads rebalance_plan.json"
-  },
-  {
    "file": "investment_screener/backend/py_services/history_store.py",
    "kind": "unresolved",
    "label": "{safe}_history.csv",
@@ -175,14 +167,6 @@
    "disposition": "ledger",
    "step": "step 4",
    "note": "JSONL is written first and replayed into SQLite; flip to SQLite first"
-  },
-  {
-   "file": "investment_screener/backend/py_services/market_regime.py",
-   "kind": "write",
-   "label": "market_regime.json",
-   "disposition": "derived-output",
-   "step": "step 2",
-   "note": "market_regime.json is computed output"
   },
   {
    "file": "investment_screener/backend/py_services/migrate_daily_briefs_to_ledger.py",
@@ -207,14 +191,6 @@
    "disposition": "migration-tool",
    "step": "WS7",
    "note": "One-time loader of a retired file; archived once the data is loaded"
-  },
-  {
-   "file": "investment_screener/backend/py_services/order_risk_gates.py",
-   "kind": "read",
-   "label": "risk_snapshot.json",
-   "disposition": "safety-gate",
-   "step": "step 2",
-   "note": "Order gate reads risk_snapshot.json, which is missing on disk; compute it or fail closed"
   },
   {
    "file": "investment_screener/backend/py_services/pine_script_manager.py",
@@ -255,54 +231,6 @@
    "disposition": "ledger",
    "step": "step 4",
    "note": "Reads predictions JSONL and its schema file"
-  },
-  {
-   "file": "investment_screener/backend/py_services/rebalancer.py",
-   "kind": "read",
-   "label": "risk_snapshot.json",
-   "disposition": "derived-output",
-   "step": "step 2",
-   "note": "rebalance_plan.json / risk_snapshot.json are computed outputs"
-  },
-  {
-   "file": "investment_screener/backend/py_services/rebalancer.py",
-   "kind": "write",
-   "label": "rebalance_plan.json",
-   "disposition": "derived-output",
-   "step": "step 2",
-   "note": "rebalance_plan.json / risk_snapshot.json are computed outputs"
-  },
-  {
-   "file": "investment_screener/backend/py_services/risk_engine.py",
-   "kind": "write",
-   "label": "risk_snapshot.json",
-   "disposition": "derived-output",
-   "step": "step 2",
-   "note": "risk_snapshot.json is computed output; compute on demand or store as a ledger event"
-  },
-  {
-   "file": "investment_screener/backend/py_services/risk_officer.py",
-   "kind": "read",
-   "label": "rebalance_plan.json",
-   "disposition": "derived-output",
-   "step": "step 2",
-   "note": "risk review and override files; store as ledger events"
-  },
-  {
-   "file": "investment_screener/backend/py_services/risk_officer.py",
-   "kind": "write",
-   "label": "risk_officer_overrides.jsonl",
-   "disposition": "derived-output",
-   "step": "step 2",
-   "note": "risk review and override files; store as ledger events"
-  },
-  {
-   "file": "investment_screener/backend/py_services/risk_officer.py",
-   "kind": "write",
-   "label": "risk_officer_review.json",
-   "disposition": "derived-output",
-   "step": "step 2",
-   "note": "risk review and override files; store as ledger events"
   },
   {
    "file": "investment_screener/backend/py_services/stock_intake_persist.py",
