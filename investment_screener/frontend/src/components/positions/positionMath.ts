@@ -17,6 +17,7 @@
  * Key Functions (Index):
  *     - formatWeight(), formatGap(), weightHeat(): display text and cell shading for weights and the gap
  *     - moneyText(): dollar text that honours privacy mode, a dash when unknown
+ *     - normalizePositionRows(): rows from the API with every field present (older backends omit some)
  *     - rowsForDocument(): the rows a thesis document lists, optionally only held ones
  *     - totalsFor(): summed weights, gap and number of positions
  *     - sortRows(): stable sort by an accessor, unknown values last in both directions
@@ -89,9 +90,52 @@ export function formatGap(value: number | null | undefined): string {
     return `${value > 0 ? '+' : '-'}${text}pp`;
 }
 
+const asNumber = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+const asText = (v: unknown, fallback: string): string => (typeof v === 'string' ? v : fallback);
+
+/**
+ * Rows from GET /api/screener/all-holdings with every field present. A backend that has not been
+ * restarted since an upgrade omits newer fields (documents, shares, held ...); filling them here
+ * keeps one stale field from crashing a whole screen. Entries without a ticker are dropped and a
+ * non-list gives no rows.
+ */
+export function normalizePositionRows(raw: unknown): PositionRow[] {
+    if (!Array.isArray(raw)) return [];
+    const rows: PositionRow[] = [];
+    for (const item of raw) {
+        if (!item || typeof item !== 'object') continue;
+        const r = item as Record<string, unknown>;
+        if (typeof r.ticker !== 'string' || !r.ticker) continue;
+        const shares = asNumber(r.shares) ?? 0;
+        rows.push({
+            ticker: r.ticker,
+            name: asText(r.name, r.ticker),
+            assetClass: asText(r.assetClass, 'EQUITY'),
+            pillarId: asText(r.pillarId, 'other'),
+            subStrategyId: asText(r.subStrategyId, 'other'),
+            role: asText(r.role, 'watchlist'),
+            held: typeof r.held === 'boolean' ? r.held : shares > 0,
+            shares,
+            averageCost: asNumber(r.averageCost),
+            bookValue: asNumber(r.bookValue),
+            marketValue: asNumber(r.marketValue),
+            currentPrice: asNumber(r.currentPrice),
+            actualPct: asNumber(r.actualPct),
+            targetPct: asNumber(r.targetPct),
+            gapPct: asNumber(r.gapPct),
+            action: typeof r.action === 'string' ? r.action : null,
+            rationale: typeof r.rationale === 'string' ? r.rationale : null,
+            hasValuation: r.hasValuation === true,
+            isWatched: r.isWatched === true,
+            documents: Array.isArray(r.documents) ? r.documents.filter((d): d is string => typeof d === 'string') : [],
+        });
+    }
+    return rows;
+}
+
 /** The rows a thesis document lists; with scope 'held', only the stocks currently owned. */
 export function rowsForDocument(rows: PositionRow[], documentId: string, scope: DocumentScope): PositionRow[] {
-    return rows.filter(r => r.documents.includes(documentId) && (scope === 'all' || r.held));
+    return rows.filter(r => (r.documents ?? []).includes(documentId) && (scope === 'all' || r.held));
 }
 
 /** Summed weights (unknown skipped), their gap, summed market and book value, and the position count. */

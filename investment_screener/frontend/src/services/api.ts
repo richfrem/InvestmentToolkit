@@ -18,7 +18,7 @@
  *     - saveProjection() - Persists a versioned DCF projection object to the backend
  *     - fetchPositionRows() - One row per ticker (shares, weights, target, thesis documents) for the shared positions table
  */
-import type { PositionRow } from '../components/positions/positionMath';
+import { normalizePositionRows, type PositionRow } from '../components/positions/positionMath';
 export interface StockData {
     symbol: string;
     price: number;
@@ -927,7 +927,7 @@ export interface ValuationSupport {
 export async function fetchPositionRows(): Promise<PositionRow[]> {
     const response = await fetch('/api/screener/all-holdings');
     if (!response.ok) throw new Error('Failed to fetch positions');
-    return response.json();
+    return normalizePositionRows(await response.json());
 }
 
 export async function fetchRecommendations(): Promise<Record<string, RecommendationRecord>> {
