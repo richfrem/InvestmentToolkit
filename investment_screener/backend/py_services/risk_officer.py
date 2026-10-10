@@ -3,13 +3,12 @@
 risk_officer.py - Python utility script.
 
 Purpose:
-    Turns E2's warn-only riskGateWarnings/breakerWarnings (rebalance_plan.json)
+    Turns E2's warn-only riskGateWarnings/breakerWarnings (the stored rebalance plan)
     into real veto power. Reuses E2's exact thresholds — an order is vetoed
     iff either warning list is non-empty; no new numeric caps are introduced.
-    Reads only rebalance_plan.json (the breaker warnings in it come from the evaluated breaker
-    state in domain_model.sqlite) and never mutates it. Owns
-    data/risk_officer_review.json and data/risk_officer_overrides.jsonl
-    exclusively. See docs/superpowers/specs/
+    Reads only the stored rebalance plan (the breaker warnings in it come from the evaluated
+    breaker state in domain_model.sqlite) and never mutates it. Owns the stored
+    risk_officer_review and risk_officer_override snapshots exclusively. See docs/superpowers/specs/
     2026-07-10-g2-risk-officer-red-team-design.md.
 
 Layer:
@@ -29,10 +28,10 @@ Key Functions (Index):
     - main()
 
 Key Input Dependencies:
-    None
+    - domain_model.sqlite computed_snapshot table (latest rebalance_plan)
 
 Key Output Dependencies:
-    None
+    - domain_model.sqlite computed_snapshot table (risk_officer_review, risk_officer_override)
 """
 import argparse
 import json
@@ -41,11 +40,13 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.computed_snapshot_repository import load_latest_snapshot, save_snapshot  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-REBALANCE_PLAN_PATH = DATA_DIR / "rebalance_plan.json"
-REVIEW_PATH = DATA_DIR / "risk_officer_review.json"
-OVERRIDES_PATH = DATA_DIR / "risk_officer_overrides.jsonl"
+DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 
 def _now_iso() -> str:
@@ -54,14 +55,14 @@ def _now_iso() -> str:
 
 
 def classify_orders(orders: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Split rebalance_plan.json's orders into (vetoed, approved).
+    """Split the rebalance plan's orders into (vetoed, approved).
 
     An order is vetoed iff its riskGateWarnings or breakerWarnings list is
     non-empty — E2's existing warn-only signals, now enforced rather than
     merely displayed. No new numeric thresholds are introduced here.
 
     Args:
-        orders: The "orders" list from rebalance_plan.json.
+        orders: The "orders" list from the rebalance plan.
 
     Returns:
         (vetoed, approved). Vetoed entries are the input order dict plus a
@@ -82,29 +83,31 @@ def classify_orders(orders: list[dict[str, Any]]) -> tuple[list[dict[str, Any]],
 
 
 def compute_risk_officer_review(
-    rebalance_plan_path: Path = REBALANCE_PLAN_PATH,
-    output_path: Path = REVIEW_PATH,
+    db_path: Path = DB_PATH,
     save: bool = True,
 ) -> dict[str, Any]:
-    """Load rebalance_plan.json, classify its orders, write risk_officer_review.json.
+    """Load the stored rebalance plan, classify its orders, store the review.
 
     Args:
-        rebalance_plan_path: Path to rebalance_plan.json.
-        output_path: Where to write risk_officer_review.json.
-        save: If False, compute and return without writing the file (mirrors
+        db_path: domain_model.sqlite holding the rebalance_plan snapshot and receiving
+            the risk_officer_review snapshot.
+        save: If False, compute and return without storing the review (mirrors
             rebalancer.py's --no-save pattern).
 
     Returns:
         {"status": "ok"|"no_plan"|"plan_blocked", "generatedAt",
          "sourceRebalancePlanGeneratedAt", "vetoedOrders", "approvedOrders"}.
-        "no_plan" (rebalance_plan_path doesn't exist) and "plan_blocked"
+        "no_plan" (no stored rebalance plan) and "plan_blocked"
         (the plan's blockedReason is non-null) both return empty order
-        lists and write no file — there is nothing to review yet.
+        lists and store nothing — there is nothing to review yet.
     """
-    if not Path(rebalance_plan_path).exists():
+    conn = initialize_db(str(db_path))
+    try:
+        plan = load_latest_snapshot(conn, "rebalance_plan")
+    finally:
+        conn.close()
+    if plan is None:
         return {"status": "no_plan", "vetoedOrders": [], "approvedOrders": []}
-
-    plan = json.loads(Path(rebalance_plan_path).read_text())
     if plan.get("blockedReason"):
         return {"status": "plan_blocked", "vetoedOrders": [], "approvedOrders": []}
 
@@ -117,8 +120,11 @@ def compute_risk_officer_review(
         "approvedOrders": approved,
     }
     if save:
-        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-        Path(output_path).write_text(json.dumps(result, indent=2))
+        conn = initialize_db(str(db_path))
+        try:
+            save_snapshot(conn, "risk_officer_review", result)
+        finally:
+            conn.close()
     return result
 
 
@@ -130,13 +136,13 @@ def log_risk_officer_override(
     veto_reasons: list[str],
     rationale: str,
     overridden_by: str = "user",
-    path: Path = OVERRIDES_PATH,
+    db_path: Path = DB_PATH,
 ) -> None:
     """Append one accountability-trail record for a vetoed-order override.
 
     Called by risk-officer-agent.md — only a human decision to proceed with
-    a vetoed order constitutes an "override." Mirrors thesis_breakers.py's
-    log_breaker_override() exactly: append-only, one JSON object per line.
+    a vetoed order constitutes an "override." Append-only: one risk_officer_override
+    snapshot per call.
 
     Args:
         ticker: Order's ticker.
@@ -146,7 +152,7 @@ def log_risk_officer_override(
         veto_reasons: The order's vetoReasons at time of override.
         rationale: The user's stated reason for proceeding anyway.
         overridden_by: Who made the call — defaults to "user".
-        path: Target JSONL file.
+        db_path: domain_model.sqlite receiving the override record.
     """
     entry = {
         "date": date.today().isoformat(),
@@ -158,9 +164,11 @@ def log_risk_officer_override(
         "rationale": rationale,
         "overriddenBy": overridden_by,
     }
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a") as f:
-        f.write(json.dumps(entry) + "\n")
+    conn = initialize_db(str(db_path))
+    try:
+        save_snapshot(conn, "risk_officer_override", entry)
+    finally:
+        conn.close()
 
 
 def _cli_log_override(
@@ -169,14 +177,12 @@ def _cli_log_override(
     account: str,
     rationale: str,
     overridden_by: str = "user",
-    review_path: Path = REVIEW_PATH,
-    overrides_path: Path = OVERRIDES_PATH,
+    db_path: Path = DB_PATH,
 ) -> None:
-    """Resolve a vetoed order's shares/vetoReasons from risk_officer_review.json, then log.
+    """Resolve a vetoed order's shares/vetoReasons from the stored review, then log.
 
     Thin wrapper so a caller (risk-officer-agent.md, via --log-override) only
-    needs a ticker/action/account/rationale — not risk_officer_review.json's
-    internal shape.
+    needs a ticker/action/account/rationale — not the review's internal shape.
 
     Args:
         ticker: Order's ticker.
@@ -184,16 +190,19 @@ def _cli_log_override(
         account: Order's account.
         rationale: The user's stated reason for proceeding anyway.
         overridden_by: Who made the call — defaults to "user".
-        review_path: Path to risk_officer_review.json.
-        overrides_path: Target JSONL file.
+        db_path: domain_model.sqlite holding the review and receiving the override.
 
     Raises:
-        ValueError: If review_path doesn't exist, or no vetoed order matches
+        ValueError: If there is no stored review, or no vetoed order matches
             (ticker, action, account).
     """
-    if not Path(review_path).exists():
-        raise ValueError(f"{review_path} not found — run risk_officer.py --pretty first")
-    review = json.loads(Path(review_path).read_text())
+    conn = initialize_db(str(db_path))
+    try:
+        review = load_latest_snapshot(conn, "risk_officer_review")
+    finally:
+        conn.close()
+    if review is None:
+        raise ValueError("no stored risk officer review — run risk_officer.py --pretty first")
     match = next(
         (
             o for o in review.get("vetoedOrders", [])
@@ -202,11 +211,11 @@ def _cli_log_override(
         None,
     )
     if match is None:
-        raise ValueError(f"no vetoed order found for {ticker}/{action}/{account} in {review_path}")
+        raise ValueError(f"no vetoed order found for {ticker}/{action}/{account} in the stored review")
     log_risk_officer_override(
         ticker=ticker, action=action, account=account, shares=match.get("shares"),
         veto_reasons=match.get("vetoReasons", []), rationale=rationale,
-        overridden_by=overridden_by, path=overrides_path,
+        overridden_by=overridden_by, db_path=db_path,
     )
 
 
@@ -218,7 +227,7 @@ def main() -> None:
     """
     parser = argparse.ArgumentParser(description="Risk officer veto classification / override logging")
     parser.add_argument("--pretty", action="store_true")
-    parser.add_argument("--no-save", action="store_true", help="Print only, skip writing risk_officer_review.json")
+    parser.add_argument("--no-save", action="store_true", help="Print only, do not store the review")
     parser.add_argument("--log-override", action="store_true", help="Log an override instead of reviewing")
     parser.add_argument("--ticker", help="Ticker (required with --log-override)")
     parser.add_argument("--action", choices=["buy", "sell"], help="Order action (required with --log-override)")

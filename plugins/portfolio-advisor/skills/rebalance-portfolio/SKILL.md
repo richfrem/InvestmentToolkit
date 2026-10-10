@@ -25,7 +25,7 @@ python3 investment_screener/backend/py_services/rebalancer.py --pretty
 
 ## Workflow
 1. **Audit Check**: Query active orders submitted today to suppress duplicate trade suggestions.
-2. **Compute Plan**: Execute `rebalancer.py` to evaluate drift against AI valuation ratings and generate `rebalance_plan.json`.
+2. **Compute Plan**: Execute `rebalancer.py` to evaluate drift against AI valuation ratings and generate the rebalance plan (stored in `domain_model.sqlite` and printed as JSON).
 3. **Risk Officer Gate**: Route proposed orders through `risk_officer.py` to evaluate concentration and cluster variance.
 4. **Present Trades**: Display approved orders with tranche pricing, account allocation, and PSU-U.TO funding.
 5. **HITL Review**: Await human confirmation before providing order drafting commands.

@@ -44,7 +44,7 @@ Unlike rebalancer.py's compute_breaker_warnings() (Phase 3 E2, warn-only,
 never vetoes, batch-shaped), this function returns a REAL veto for a
 single ad-hoc order — Task 5E's own veto authority.
 
-This module reuses the same real data sources (risk_snapshot.json's
+This module reuses the same real data sources (the stored risk snapshot's
 "marginalRiskContribution" and "clusterExposure" fields, Phase 3 E1;
 the evaluated breaker state's "holdings" map, Phase 3 B5) and the same
 real check logic from rebalancer.py's compute_risk_budget_check() and
@@ -121,8 +121,8 @@ Usage:
     result = validate_trade_execution(order, matched_entry)
 
 Key Input Dependencies:
-    - investment_screener/backend/data/risk_snapshot.json (Phase 3 E1's
-      "marginalRiskContribution" and "clusterExposure" fields)
+    - investment_screener/backend/data/domain_model.sqlite computed_snapshot table (the latest
+      risk_snapshot: "marginalRiskContribution" and "clusterExposure" fields)
     - investment_screener/backend/data/account_policy.json (informational —
       real "maxMarginalRiskContributionPct" and
       "maxClusterVarianceContributionPct" defaults mirrored here as
@@ -173,33 +173,30 @@ if sys_path_entry not in sys.path:
     sys.path.insert(0, sys_path_entry)
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.computed_snapshot_repository import load_latest_snapshot  # noqa: E402
 from domain_model.trade_log_entry_repository import list_trade_log_entries  # noqa: E402
 from domain_model.investment_repository import resolve_investment  # noqa: E402
 from domain_model.order_execution_repository import insert_order_execution  # noqa: E402
 
-RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
 # TRADE_LOG_PATH / ORDERS_EXECUTED_PATH removed Wave 4 Task 12: get_trade_log_entries()
 # and log_order_execution() were cut over to DB_PATH (trade_log_entry / order_execution
 # SQLite tables) in Task 8. trade-log.json / orders_executed.jsonl archived to ARCHIVE/.
 
 
-def _load_risk_snapshot() -> Dict[str, Any]:
-    """Load the real risk_snapshot.json, never raising.
+def _load_risk_snapshot(db_path: Optional[Path] = None) -> Dict[str, Any]:
+    """Load the latest stored risk snapshot from domain_model.sqlite.
 
     Returns:
-        Parsed dict, or {} if the file is missing, unreadable, or
-        malformed JSON — matches this project's established
-        "read optional data file" pattern (e.g. load_standing_decisions()
-        in brief_recommendations.py).
+        The snapshot dict, or {} when none has been stored yet (run risk_engine.py).
+        Database errors propagate, like _load_thesis_breaker_state(): a broken database must
+        stop an order rather than skip the check.
     """
-    if not RISK_SNAPSHOT_PATH.exists():
-        return {}
+    conn = initialize_db(str(db_path or DB_PATH))
     try:
-        with open(RISK_SNAPSHOT_PATH) as f:
-            return json.load(f)
-    except (OSError, json.JSONDecodeError):
-        return {}
+        return load_latest_snapshot(conn, "risk_snapshot") or {}
+    finally:
+        conn.close()
 
 
 def _project_new_weight(
@@ -288,7 +285,7 @@ def check_mrc_limit(
 ) -> Dict[str, Any]:
     """Check whether a single, ad-hoc order pushes MRC over the risk budget cap.
 
-    Reuses the same real data source (risk_snapshot.json's
+    Reuses the same real data source (the stored risk snapshot's
     "marginalRiskContribution" field, Phase 3 E1) and the same
     projection technique (rebalancer.py's compute_risk_budget_check(),
     Phase 3 E2: scale existing MRC by the ticker's proposed weight-ratio
@@ -314,9 +311,9 @@ def check_mrc_limit(
         portfolio_state: {"holdings": {ticker: {"weight_pct": float}},
             "total_value": float} — current state BEFORE this order.
             weight_pct is a percentage (e.g. 18.0 for 18%).
-        risk_snapshot: Parsed risk_snapshot.json. If None, loaded from
-            the real RISK_SNAPSHOT_PATH — pass explicitly in tests to
-            avoid real file I/O.
+        risk_snapshot: The stored risk snapshot. If None, loaded from
+            domain_model.sqlite — pass explicitly in tests to
+            avoid real database I/O.
         mrc_cap_pct: The real cap (default 25.0, matching
             account_policy.json's real "maxMarginalRiskContributionPct"
             default).
@@ -344,6 +341,12 @@ def check_mrc_limit(
     current_weight_pct = holdings.get(ticker, {}).get("weight_pct", 0.0)
     current_weight = current_weight_pct / 100.0
 
+    if not risk_snapshot:
+        return {
+            "passed": True,
+            "holdings_flagged": [],
+            "reason": "No stored risk snapshot (run risk_engine.py) — MRC check not evaluated, order not blocked",
+        }
     if old_mrc is None or current_weight <= 0 or total_value <= 0:
         return {
             "passed": True,
@@ -380,7 +383,7 @@ def check_cluster_variance(
     has variance contribution over the real risk budget cap.
 
     Reuses the SAME real data source as rebalancer.py's
-    compute_risk_budget_check() (Phase 3 E2): risk_snapshot.json's
+    compute_risk_budget_check() (Phase 3 E2): the stored risk snapshot's
     "clusterExposure" list (Phase 3 E1's compute_cluster_exposure()
     output — real, already-computed per-pillar variance contribution),
     checked against the real "maxClusterVarianceContributionPct" cap
@@ -412,7 +415,7 @@ def check_cluster_variance(
             distinct from the real underlying source file's camelCase
             "pillarId" (domain_model.sqlite's investment table) — this is an
             ad-hoc caller-constructed dict, not a raw DB row.
-        risk_snapshot: Parsed risk_snapshot.json. If None, loaded via
+        risk_snapshot: The stored risk snapshot. If None, loaded via
             the same _load_risk_snapshot() helper Task 5E-1 already
             defined (reused, not duplicated).
         cluster_cap_pct: Real cap (default 60.0, matching
@@ -435,6 +438,9 @@ def check_cluster_variance(
     cluster_map = {c.get("pillarId"): c for c in cluster_list if isinstance(c, dict)}
     cluster_entry = cluster_map.get(pillar)
 
+    if not risk_snapshot:
+        return {"passed": True, "pillar": pillar, "variance_pct": None,
+                "reason": "No stored risk snapshot (run risk_engine.py) — cluster check not evaluated, order not blocked"}
     if cluster_entry is None:
         return {"passed": True, "pillar": pillar, "variance_pct": None, "reason": "No cluster data for this pillar — order not blocked"}
 
