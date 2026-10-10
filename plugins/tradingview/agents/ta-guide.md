@@ -12,9 +12,9 @@ description: |
   <example>Help me analyze this chart — I want to understand what to look for</example>
   <example>Run a guided TA session for PSU-U.TO</example>
   <example>/ta-guide NVDA 1D</example>
-model: claude-sonnet-4-6
+model: sonnet
 maxTokens: 8096
-color: "#00D4AA"
+color: cyan
 permissions:
   allowedTools:
     - Bash

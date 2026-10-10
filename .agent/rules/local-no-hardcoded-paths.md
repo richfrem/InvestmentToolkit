@@ -6,7 +6,7 @@ globs: ["**/*.md", "**/*.py", "**/*.js", "**/*.ts", "**/*.json", "**/*.pine"]
 # No Hardcoded Absolute Machine Paths Rule
 
 ## 1. Non-Negotiable Invariant
-Hardcoding absolute local user or machine filesystem paths (e.g. `~/...`, `C:\Users\...`, `/home/...`) is strictly prohibited in all:
+Hardcoding absolute local user or machine filesystem paths (such as home directories or root paths) is strictly prohibited in all:
 - Plugins and Skills (`SKILL.md`, references, evals, scripts)
 - Source code (TypeScript, Python, JavaScript, Shell scripts)
 - Indicator definitions (Pine Script)
@@ -20,13 +20,13 @@ Hardcoding absolute local user or machine filesystem paths (e.g. `~/...`, `C:\Us
 ### A. Inside Skills & Plugins
 Always use **skill-root-relative** paths:
 - **Correct**: `references/chart-types-reference.md` or `../scripts/helper.py` or `./scripts/task_manager.py`
-- **Incorrect**: `/Users/.../plugins/tradingview/references/chart-types-reference.md`
+- **Incorrect**: `.../plugins/tradingview/references/chart-types-reference.md` using absolute prefixes
 
 ### B. Inside Python & Node Scripts
 Derive paths dynamically using standard library utilities:
 - **Python**: `Path(__file__).resolve().parent` or `Path.cwd()` or `os.environ.get("WORKSPACE_ROOT")`
 - **Node/TS**: `path.resolve(__dirname, '...')` or `process.cwd()`
-- **Incorrect**: `const root = "/Users/..."`
+- **Incorrect**: `const root = "<absolute-machine-path>"`
 
 ### C. Markdown Links
 Use repository-relative or skill-relative paths:
