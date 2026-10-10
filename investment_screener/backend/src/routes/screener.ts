@@ -20,7 +20,9 @@
  *     getScreenerPositionsFromDb; no priced positions gives an empty list)
  *   - investment_screener/backend/data/domain_model.sqlite (Conviction targets,
  *     via InvestmentRepository.listThesisHoldings())
- *   - investment_screener/backend/data/portfolio-reviews/ (Review logs)
+ *   - investment_screener/backend/data/domain_model.sqlite (saved projections, via
+ *     ProjectionRepository.listProjectedTickers(), for hasValuation)
+ *   - PortfolioAnalysis/strategic-reviews/ (latest review JSON)
  *   - ../services/WatchlistService (watchlistService operations)
  *
  * Key Output Dependencies:
@@ -31,10 +33,11 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { getRecommendations } from '../utils/helpers';
-import { DATA_DIR, PORTFOLIO_REVIEWS_DIR, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
+import { PORTFOLIO_REVIEWS_DIR, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { watchlistService } from '../services/WatchlistService';
 import { InvestmentRepository } from '../services/InvestmentRepository';
 import { PortfolioRepository } from '../services/PortfolioRepository';
+import { ProjectionRepository } from '../services/ProjectionRepository';
 import { getWeightsFromDb } from './portfolio';
 
 const router = express.Router();
@@ -65,6 +68,16 @@ export function getScreenerPositionsFromDb(
             shares: p.quantity,
             price: p.price ?? p.averageCost ?? 0,
         }));
+    } finally {
+        repo.close();
+    }
+}
+
+/** Upper-cased symbols that have a saved projection in projection_version (hasValuation). */
+export function getProjectedTickersFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): Set<string> {
+    const repo = new ProjectionRepository(dbPath);
+    try {
+        return new Set(repo.listProjectedTickers());
     } finally {
         repo.close();
     }
@@ -181,15 +194,8 @@ router.get('/all-holdings', async (_req, res) => {
             }
         } catch { /* no review file — proceed without */ }
 
-        // Find existing projections (hasValuation)
-        const projectionsDir = path.join(DATA_DIR, 'projections');
-        const projectionTickers = new Set<string>();
-        if (fs.existsSync(projectionsDir)) {
-            const projFiles = (await fs.promises.readdir(projectionsDir)).filter(f => f.endsWith('.json'));
-            for (const f of projFiles) {
-                projectionTickers.add(f.replace('.json', '').toUpperCase());
-            }
-        }
+        // Tickers with a saved projection (hasValuation)
+        const projectionTickers = getProjectedTickersFromDb();
 
         // 2. Build the union of all tickers
         const allTickers = new Set<string>([
