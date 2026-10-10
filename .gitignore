@@ -52,7 +52,6 @@ temp/
 .env
 .env.*
 investment_screener/backend/data/portfolio_tv.json
-plugins/portfolio-advisor/references/portfolio.json
 
 # Personal workspace — generated outputs, order screenshots, review artifacts
 PortfolioAnalysis/
@@ -136,14 +135,8 @@ __pycache__/
 *.pyo
 
 # Personal trading data (user-specific, cannot be recovered from git)
-investment_screener/backend/data/trade-log.json
-investment_screener/backend/data/portfolio.json
-investment_screener/backend/data/cash_flows.json
-investment_screener/backend/data/orders_executed.jsonl
 investment_screener/backend/data/observations.jsonl
 investment_screener/backend/data/intelligence_events.jsonl
-investment_screener/backend/data/thesis_breaker_state.json
-investment_screener/backend/data/portfolio.json.bak
 investment_screener/backend/data/portfolio_snapshot.json
 investment_screener/backend/data/ytd_performance_report.json
 investment_screener/backend/data/tv_cdp_responses_cache.jsonl

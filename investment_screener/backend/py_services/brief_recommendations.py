@@ -51,9 +51,6 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
 from risk_reward import refresh_advice  # noqa: E402
 from standing_decision_check import decision_condition  # noqa: E402
-STANDING_DECISIONS_PATH = (
-    REPO_ROOT / "plugins/portfolio-advisor/references/standing-decisions.json"
-)
 
 _ACTIONABLE_BANDS = frozenset({"EXIT", "TRIM", "ACCUMULATE", "INITIATE"})
 
@@ -63,23 +60,21 @@ _TRIM_BAND_PP = 0.5
 REFRESH_CHECK_TOP_N = 5
 
 
-def load_standing_decisions(path: Path | None = None, db_path: str | None = None) -> dict[str, Any]:
-    """Load the user's standing decisions keyed by ticker.
+def load_standing_decisions(db_path: str | None = None) -> dict[str, Any]:
+    """Load the owner's standing decisions keyed by ticker, from domain_model.sqlite.
+
+    The decisions live on ``investment.standing_decision_type`` / ``standing_decision_reason``
+    and reach this function through the canonical recommendation records; there is no file.
 
     Args:
-        path: Standing decisions JSON file.
+        db_path: domain_model.sqlite to read (default: the real database).
 
     Returns:
-        Dict of ticker → decision dict (empty if file missing).
+        Dict of ticker -> standing decision (only tickers that have one).
     """
-    if path is None:
-        from recommendation import recommend_all
-        return {t: r["standing_decision"] for t, r in recommend_all(db_path).items()
-                if r.get("standing_decision")}
-    if not path.exists():
-        return {}
-    with open(path) as f:
-        return json.load(f).get("decisions", {})
+    from recommendation import recommend_all
+    return {t: r["standing_decision"] for t, r in recommend_all(db_path).items()
+            if r.get("standing_decision")}
 
 
 def _signal_summary(s: dict[str, Any]) -> str:

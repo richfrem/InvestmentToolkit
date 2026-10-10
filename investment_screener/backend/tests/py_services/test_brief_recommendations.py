@@ -440,3 +440,30 @@ class TestRefreshFirst:
 
     def test_cards_without_support_data_are_left_alone(self):
         assert all(c["refreshFirst"] is None for c in self._cards(None))
+
+
+# --- standing decisions come from SQLite only ---------------------------------------------------
+
+def test_standing_decisions_are_read_from_the_recommendations_not_from_a_json_file(monkeypatch):
+    import inspect
+
+    import brief_recommendations as br
+    import recommendation
+
+    fake = {
+        "NVDA": {"standing_decision": {"type": "ACCUMULATE_ON_PULLBACK"}},
+        "AMD": {"standing_decision": None},
+        "MU": {"standing_decision": {"type": "MAINTAIN_TRIM_EXTREME"}},
+    }
+    monkeypatch.setattr(recommendation, "recommend_all", lambda db_path=None: fake)
+    assert br.load_standing_decisions() == {
+        "NVDA": {"type": "ACCUMULATE_ON_PULLBACK"}, "MU": {"type": "MAINTAIN_TRIM_EXTREME"},
+    }
+    assert "path" not in inspect.signature(br.load_standing_decisions).parameters
+
+
+def test_the_retired_standing_decisions_json_path_is_gone():
+    import brief_recommendations as br
+
+    assert not hasattr(br, "STANDING_DECISIONS_PATH")
+    assert not (REPO_ROOT / "plugins/portfolio-advisor/references/standing-decisions.json").exists()
