@@ -93,7 +93,6 @@ PRE-COMPLETION GATE:
   3. Did I notice something the next agent will hit again if not fixed?          [YES/NO - 1 line if YES]
 
 If any YES: action taken -> FIX / MAP_DEBT / ESCALATE
-  [Physical Disk Write Verified: wiki/<playbook>.md (if resolved) or references/map-debt.md]
 ```
 
 The block must be emitted as literal text. The task is not complete until every YES has a declared action.
