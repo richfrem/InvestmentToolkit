@@ -10,10 +10,12 @@ import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { getScreenerPositionsFromDb, buildActualPctMap } from '../../src/routes/screener';
+import { getScreenerPositionsFromDb, buildActualPctMap, getProjectedTickersFromDb } from '../../src/routes/screener';
 import { getWeightsFromDb } from '../../src/routes/portfolio';
 import { PortfolioRepository } from '../../src/services/PortfolioRepository';
 import { InvestmentRepository } from '../../src/services/InvestmentRepository';
+import { ProjectionRepository } from '../../src/services/ProjectionRepository';
+import { ProjectionSchema, Projection } from '../../src/utils/zod-schemas';
 
 describe('routes/screener.ts SQLite-backed read helper (Wave 3 Task 6)', () => {
     let dbPath: string;
@@ -120,5 +122,35 @@ describe('buildActualPctMap — single source of truth for current weight %', ()
         const total = Object.values(actualMap).reduce((s, v) => s + v.pct, 0);
         expect(total).to.be.closeTo(100, 0.001);
         expect(actualMap.NVDA.price).to.equal(900);
+    });
+
+    it('getProjectedTickersFromDb returns the symbols with a saved projection (hasValuation) and an empty set otherwise', () => {
+        expect(getProjectedTickersFromDb(dbPath).size).to.equal(0);
+        const repo = new ProjectionRepository(dbPath);
+        try {
+            const projection = ProjectionSchema.parse({
+                ticker: 'NVDA',
+                id: '11111111-1111-4111-8111-111111111111',
+                source: 'USER',
+                schemaVersion: '1.2',
+                version: 0,
+                savedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                name: 'Test',
+                rationale: 'test',
+                snapshot: { price: 100, currency: 'USD', shares: 1000, revenue: 5000, lastActualPS: 5, fiscalPeriod: 'TTM' },
+                dataPreferences: { growthBasis: 'ttm', marginBasis: 'ttm' },
+                scenarios: {
+                    bear: { weight: 0.3, growthRate: 5, netMargin: 10, exitPE: 15, qualityMultiplier: 0.9, shareChange: 0 },
+                    base: { weight: 0.4, growthRate: 10, netMargin: 15, exitPE: 20, qualityMultiplier: 1, shareChange: 0 },
+                    bull: { weight: 0.3, growthRate: 15, netMargin: 20, exitPE: 25, qualityMultiplier: 1.1, shareChange: 0 },
+                },
+                globalSettings: { discountRate: 10, timeHorizon: 5 },
+            }) as Projection;
+            repo.upsertProjection(projection);
+        } finally {
+            repo.close();
+        }
+        expect([...getProjectedTickersFromDb(dbPath)]).to.deep.equal(['NVDA']);
     });
 });

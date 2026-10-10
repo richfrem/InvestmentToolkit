@@ -127,6 +127,12 @@ def test_verify_thesis_sync_spot_and_cash_exemption(tmp_path):
     assert "Found 1 active equity/business thesis holdings requiring DCF projections." in r.stdout
 
 
+def test_projections_dir_option_is_gone():
+    """Projections come from projection_version only; --projections-dir no longer exists."""
+    r = subprocess.run(["python3", str(SCRIPT_PATH), "--projections-dir", "x"], capture_output=True, text=True, cwd=str(REPO_ROOT))
+    assert r.returncode == 2 and "unrecognized arguments" in r.stderr
+
+
 def test_retired_thesis_json_option_is_gone(tmp_path):
     """--thesis-json no longer exists, so a stale caller fails loudly, ."""
     r = subprocess.run(["python3", str(SCRIPT_PATH), "--thesis-json", "x.json"], capture_output=True, text=True, cwd=str(REPO_ROOT))
@@ -134,10 +140,7 @@ def test_retired_thesis_json_option_is_gone(tmp_path):
 
 
 def test_verify_thesis_sync_reads_holdings_from_sqlite_by_default(tmp_path):
-    """Wave 2 consumer cutover: when --thesis-json/--projections-dir are NOT
-    passed, holdings and projection existence are read from domain_model.sqlite
-    (the projections/ flat-file directory was archived after Wave 1 and no
-    longer exists on disk -- this is the real bug this cutover fixes)."""
+    """Holdings and projection existence are read from domain_model.sqlite."""
     db_path = _make_db(tmp_path, [
         {"ticker": "AAPL", "target_weight": 40.0, "lifecycle_status": "accumulate", "has_projection": True},
         {"ticker": "MSFT", "target_weight": 60.0, "lifecycle_status": "accumulate", "has_projection": True},
