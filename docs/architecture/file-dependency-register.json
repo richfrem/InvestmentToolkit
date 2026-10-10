@@ -153,6 +153,14 @@
    "note": "Per-ticker price-history CSV"
   },
   {
+   "file": "investment_screener/backend/py_services/import_valuation_workpapers.py",
+   "kind": "passed",
+   "label": "^([A-Za-z][A-Za-z0-9.\\-]*?)_(.+)\\.json$",
+   "disposition": "migration-tool",
+   "step": "WS7",
+   "note": "One-time loader of the per-stock valuation JSON files in temp/; archived once loaded"
+  },
+  {
    "file": "investment_screener/backend/py_services/migrate_daily_briefs_to_ledger.py",
    "kind": "passed",
    "label": "*.json",
