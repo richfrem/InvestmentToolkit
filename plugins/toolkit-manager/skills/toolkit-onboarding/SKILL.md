@@ -38,7 +38,7 @@ On a fresh clone the database does not exist yet; the launcher (`run-screener`) 
 1. **Verify runtimes and dependencies:**
    - Ensure Python 3.11+ and Node.js 18+ are present.
    - Sync plugins with the `plugin-syncer` skill.
-   - Copy `portfolio-config.json.example` to `portfolio-config.json` in the backend data folder if it is missing.
+   - Record the year-to-date baseline (starting balance, date, January 1 USD/CAD rate) with `set_cash_flow_baseline.py` once the database exists; the YTD summary shows zeros until it is set.
    - Invoke `run-screener` once so the virtual environment, dependencies and database migrations are in place, then stop it if the next steps need the ports free.
    - Invoke `tv-setup` to confirm TradingView Desktop's debugging port is reachable.
 2. **Protect the database before the first write:** `python3 scripts/db_backup.py backup --db domain_model` (see `sqlite-admin` for restore and rebuild). Repeat before every later bulk write.
