@@ -10,7 +10,7 @@ Performs three core sanity checks:
      from domain_model.sqlite's investment table.
   2. Valuation Projections: Every active ticker with a target weight > 0 or in an active role
      (accumulate, trim, exit, initiate) must have a saved projection (projection_version in
-     domain_model.sqlite, or JSON files in a directory given with --projections-dir).
+     domain_model.sqlite).
   3. Total Weights Guard: Asserts that target weights sum to exactly 100% (within 0.1% tolerance).
 
 Exits with 0 on success, 1 on failure.
@@ -18,7 +18,7 @@ Exits with 0 on success, 1 on failure.
 Key Input Dependencies:
     - investment_screener/backend/data/domain_model.sqlite (investment and projection_version tables)
     - investment_screener/backend/data/theses/investment_thesis.md (generated thesis blueprint)
-    - Optional overrides: --thesis-md, --projections-dir, --db
+    - Optional overrides: --thesis-md, --db
 
 Layer:
     Backend / Python Services
@@ -45,7 +45,6 @@ PY_SERVICES_DIR = Path(__file__).resolve().parent
 REPO_ROOT       = PY_SERVICES_DIR.parents[2]
 
 THESIS_MD   = REPO_ROOT / "investment_screener" / "backend" / "data" / "theses" / "investment_thesis.md"
-PROJ_DIR    = REPO_ROOT / "investment_screener" / "backend" / "data" / "projections"
 DB_PATH     = REPO_ROOT / "investment_screener" / "backend" / "data" / "domain_model.sqlite"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
@@ -87,11 +86,7 @@ def _load_holdings_from_db(db_path: Path) -> list[dict]:
 
 
 def _projection_exists_in_db(db_path: Path, ticker: str) -> bool:
-    """True when ``ticker`` has a saved projection in domain_model.sqlite's projection_version.
-
-    The default projections check; the --projections-dir override checks a folder of
-    {TICKER}.json files instead.
-    """
+    """True when ``ticker`` has a saved projection in domain_model.sqlite's projection_version."""
     conn = initialize_db(str(db_path))
     try:
         row = conn.execute(
@@ -107,12 +102,10 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description="Automated Portfolio & Thesis Synchronization Checker")
     parser.add_argument("--thesis-md", type=str, help="Path to investment_thesis.md")
-    parser.add_argument("--projections-dir", type=str, help="Path to projections directory")
     parser.add_argument("--db", type=str, help="Path to domain_model.sqlite")
     args = parser.parse_args()
 
     thesis_md_path = Path(args.thesis_md) if args.thesis_md else THESIS_MD
-    proj_dir_path = Path(args.projections_dir) if args.projections_dir else None
     db_path = Path(args.db) if args.db else DB_PATH
 
     print("==================================================================")
@@ -120,7 +113,7 @@ def main():
     print("==================================================================")
     print(f"Thesis source: {db_path} (domain_model.sqlite)")
     print(f"Thesis MD:   {thesis_md_path}")
-    print(f"Projections source: {proj_dir_path if proj_dir_path else f'{db_path} (domain_model.sqlite)'}\n")
+    print(f"Projections source: {db_path} (domain_model.sqlite)\n")
 
     errors = []
     warnings = []
@@ -205,15 +198,10 @@ def main():
         is_active = ((weight > 0) or (role in ACTIVE_ROLES)) and not is_spot_or_cash
         if is_active:
             total_active += 1
-            if proj_dir_path is not None:
-                proj_path = proj_dir_path / f"{ticker}.json"
-                has_projection = proj_path.exists()
-            else:
-                has_projection = _projection_exists_in_db(db_path, ticker)
-            if not has_projection:
+            if not _projection_exists_in_db(db_path, ticker):
                 active_missing_projections.append(ticker)
 
-    proj_source_desc = proj_dir_path if proj_dir_path is not None else f"{db_path} (domain_model.sqlite)"
+    proj_source_desc = f"{db_path} (domain_model.sqlite)"
     log_ok(f"Found {total_active} active equity/business thesis holdings requiring DCF projections.")
     if active_missing_projections:
         log_fail(f"The following active tickers are missing DCF projections in {proj_source_desc}: {active_missing_projections}")
