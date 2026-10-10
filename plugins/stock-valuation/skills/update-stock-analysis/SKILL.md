@@ -16,15 +16,13 @@ allowed-tools: Bash, Read, Write
 - [References](#references)
 
 ## Constraints
-- **Method and rate contract**: Apply [Valuation method and discount-rate protocol](references/valuation-method-and-discount-rate.md). Match FCFF to WACC and common-equity earnings to cost of equity; retain dated inputs and the reproducible rate audit. Explain and obtain acceptance of a concrete method migration unless already explicitly authorized in this session. Never silently replace a model during an earnings update.
-- **Debt and leverage**: Follow section 7 of the same protocol. Grade the balance sheet with `leverage.py`, discount common-equity earnings at the cost of equity (never WACC), apply the leverage shift to scenario weights for `HIGH` or `SEVERE` grades, state the interest cost each scenario's margin assumes, and save `valuationModel.leverage` and `valuationModel.rateBasis`.
-- **AI forward-evidence gate**: Before valuation or action proposals for AI-exposed names, apply [AI-sector forward valuation evidence](references/ai-forward-valuation.md). Reconcile dated forward estimates, memory/storage or power demand, executable capacity and cash conversion; flag `NEEDS_REVALUATION` when material drivers are missing. This review flag does not replace the canonical action or standing decision.
-- **Recommendation coherence**: Follow [Keeping recommendations coherent](references/recommendation-coherence.md) every session: refresh positions and executed trades first (TradingView by default), present `decision_check.effective` as the stance and reconcile any CONFLICT or OUTDATED standing decision with the owner through `set_standing_decision.py`, rank by today's priority with already-acted-on items last, and state every condition against current chart levels rather than as general guidance.
-- **Adversarial objectivity**: Never anchor fair value to current market price. Derive scenarios independently from fundamentals.
-- **Scenario differentiation**: Bear must cite structural risk or historical trough; Bull must name $\ge 1$ specific catalyst; Base must reflect normalized operating leverage.
-- **Single source of truth**: Use `persist_valuation.py` for versioned valuations in `domain_model.sqlite`; verify any separate intelligence sweep and closing refresh. Never write to retired JSON targets or use ad hoc SQL.
-- **Standing decision anchor**: Check existing `standing_decision_type` before recommending an action change; never flip BUY $\rightarrow$ SELL on $<15\%$ variance.
-- **Local API authentication**: Express `/api/*` endpoints require Bearer token loaded from `.runtime/api-token`.
+- **Method & rate contract**: Follow [Valuation method and discount-rate protocol](references/valuation-method-and-discount-rate.md). Match FCFF to WACC and common-equity earnings to cost of equity; retain dated inputs and reproducible rate audit. Never silently replace model during earnings update.
+- **Debt & leverage**: Follow section 7 of protocol. Grade balance sheet with `leverage.py`, discount common equity at cost of equity, apply leverage shift for `HIGH`/`SEVERE`, state interest cost, and save `valuationModel.leverage` and `valuationModel.rateBasis`.
+- **AI forward-evidence gate**: Follow [AI-sector forward valuation evidence](references/ai-forward-valuation.md). Reconcile dated forward estimates, demand drivers, and capacity; flag `NEEDS_REVALUATION` when drivers are missing.
+- **Recommendation coherence**: Follow [Keeping recommendations coherent](references/recommendation-coherence.md): refresh trades first, reconcile CONFLICT/OUTDATED decisions via `set_standing_decision.py`, and state conditions against chart levels.
+- **Adversarial objectivity & scenarios**: Never anchor fair value to market price. Derive scenarios independently; Bear cites structural risk, Bull names $\ge 1$ catalyst, Base reflects normalized operating leverage.
+- **Single source of truth**: Use `persist_valuation.py` for versioned SQLite domain model. Check `standing_decision_type` before recommending action changes; never flip BUY $\rightarrow$ SELL on $<15\%$ variance.
+- **Local API authentication**: Express `/api/*` endpoints require Bearer token from `.runtime/api-token`.
 
 ## Quick start
 
