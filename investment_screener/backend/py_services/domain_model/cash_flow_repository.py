@@ -80,13 +80,16 @@ def upsert_cash_flow_baseline(
     account: str,
     starting_balance_cad: float,
     starting_date: str,
+    jan1_usd_cad_rate: float | None = None,
 ) -> None:
+    """Insert or update a baseline row. ``jan1_usd_cad_rate`` None keeps an already-recorded rate."""
     conn.execute(
-        "INSERT INTO cash_flow_baseline (account, starting_balance_cad, starting_date) "
-        "VALUES (?, ?, ?) "
+        "INSERT INTO cash_flow_baseline (account, starting_balance_cad, starting_date, jan1_usd_cad_rate) "
+        "VALUES (?, ?, ?, ?) "
         "ON CONFLICT(account) DO UPDATE SET "
         "starting_balance_cad=excluded.starting_balance_cad, "
-        "starting_date=excluded.starting_date;",
-        (account, starting_balance_cad, starting_date),
+        "starting_date=excluded.starting_date, "
+        "jan1_usd_cad_rate=COALESCE(excluded.jan1_usd_cad_rate, cash_flow_baseline.jan1_usd_cad_rate);",
+        (account, starting_balance_cad, starting_date, jan1_usd_cad_rate),
     )
     conn.commit()

@@ -11,6 +11,8 @@ Price source priority (in order):
      overnight/BOATS -> regular last as the safe default.
   2. yfinance fast_info.last_price — reflects extended-hours prices when market is closed.
      Used when TradingView is not running (port 9222 unreachable) or ticker not in watchlist.
+     Skipped with allow_fallback=False (--tradingview-only): a ticker TradingView cannot
+     quote is then reported under "errors" and never priced from another source.
 
 Usage:
     python3 tv_batch_quotes.py '["CRWV", "NVDA", "INTC"]'
@@ -159,11 +161,13 @@ def _yf_fast_quote(ticker: str) -> Optional[dict]:
         return None
 
 
-def batch_quotes(tickers: list[str]) -> dict:
+def batch_quotes(tickers: list[str], allow_fallback: bool = True) -> dict:
     """Resolve prices for multiple tickers: TradingView first, yfinance fallback.
 
     Args:
         tickers: List of plain ticker symbols (no exchange prefix).
+        allow_fallback: When False, tickers missing from the TradingView watchlist are
+            reported under "errors" instead of being quoted from yfinance.
 
     Returns:
         Dict with 'quotes', 'errors', and 'summary' keys.
@@ -181,6 +185,11 @@ def batch_quotes(tickers: list[str]) -> dict:
             tv_count += 1
         else:
             yf_tickers.append(t)
+
+    if yf_tickers and not allow_fallback:
+        for sym in yf_tickers:
+            errors[sym] = "no TradingView quote"
+        yf_tickers = []
 
     # Parallel yfinance fallback for tickers not in TV watchlist
     if yf_tickers:
@@ -213,6 +222,8 @@ def main() -> None:
     import argparse
     parser = argparse.ArgumentParser(description="Batch price resolver — TV first, yfinance fallback.")
     parser.add_argument("tickers", help='JSON array e.g. \'["NVDA","AAPL"]\'')
+    parser.add_argument("--tradingview-only", action="store_true",
+                        help="Never fall back to yfinance; unquoted tickers are reported as errors")
     args = parser.parse_args()
     try:
         tickers = json.loads(args.tickers)
@@ -222,7 +233,7 @@ def main() -> None:
     if not isinstance(tickers, list):
         print(json.dumps({"error": "Input must be a JSON array"}), file=sys.stderr)
         sys.exit(1)
-    print(json.dumps(batch_quotes(tickers), indent=2))
+    print(json.dumps(batch_quotes(tickers, allow_fallback=not args.tradingview_only), indent=2))
 
 
 if __name__ == "__main__":

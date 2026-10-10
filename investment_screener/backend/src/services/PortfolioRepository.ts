@@ -135,6 +135,15 @@ export class PortfolioRepository {
         return row ? row.usd_to_cad_rate : null;
     }
 
+    /** The USD->CAD rate recorded on January 1 with the YTD baseline
+     * (cash_flow_baseline.jan1_usd_cad_rate, account 'ALL'), or null if not recorded. */
+    getJan1UsdCadRate(): number | null {
+        const row = this.db
+            .prepare(`SELECT jan1_usd_cad_rate FROM cash_flow_baseline WHERE account = 'ALL'`)
+            .get() as { jan1_usd_cad_rate: number | null } | undefined;
+        return row?.jan1_usd_cad_rate ?? null;
+    }
+
     /** Mirrors `portfolio_policy_repository.py::get_portfolio_policy` — the single
      * account/portfolio policy row (Wave 5E), or null if never written. TS is
      * read-only for this table: only Python's update_portfolio_policy.py CLI
