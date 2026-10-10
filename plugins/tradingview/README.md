@@ -64,7 +64,7 @@ TradingView Desktop is launched at startup with `--remote-debugging-port=9222`. 
 
 TradingView adds a real-time price layer **only for current price and 1d change%**.
 
-**Automatic fallback:** if TradingView is not running or not reachable, every script silently falls back to yfinance. The screener, heatmap, and portfolio table continue working exactly as before.
+**Automatic fallback:** if TradingView is not running or not reachable, the screener and analysis scripts fall back to yfinance (price refresh is the exception: it uses TradingView only and reports an error instead). The screener, heatmap, and portfolio table continue working exactly as before.
 
 ---
 
@@ -72,7 +72,7 @@ TradingView adds a real-time price layer **only for current price and 1d change%
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| Price Refresh | `/tv-price-refresh` | Live prices for all portfolio positions (TV → yfinance fallback per ticker) |
+| Price Refresh | `/tv-price-refresh` | Live prices for all portfolio positions (TradingView only; unquoted tickers are reported, not estimated) |
 | Alert Sync | `/tv-alert-sync` | Create TradingView price alerts at DCF bear/base/bull targets |
 | Alert Sync (single) | `/tv-alert-sync CRWV` | Alert sync for one ticker |
 | Chart Snapshot | `/tv-snapshot CRWV` | Capture chart screenshot → `PortfolioAnalysis/screenshots/` |

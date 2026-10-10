@@ -6,9 +6,10 @@ Purpose:
     The broker sync updates positions, cash and trades but not prices, so the Daily
     Brief, weights and totals read yesterday's closes until prices are refreshed.
     This reads the refresh scope from domain_model.sqlite, resolves current prices
-    with the canonical resolver (`fetch_portfolio_heatmap.fetch_portfolio_data`:
-    TradingView first, yfinance fallback), and writes through the investment
-    repositories. It needs neither the Express backend nor a running web server.
+    from TradingView real-time quotes only (`fetch_portfolio_heatmap.fetch_portfolio_data`
+    with tradingview_only=True; yfinance never supplies a price), and writes through the
+    investment repositories. A symbol TradingView cannot quote keeps its previous price and
+    is reported as failed/stale. It needs neither the Express backend nor a running web server.
 
 Layer:
     Plugins / TradingView / Scripts
@@ -67,7 +68,7 @@ def refresh_scope(conn) -> list[str]:
 def _default_fetch(items: list[dict]) -> dict:
     from fetch_portfolio_heatmap import fetch_portfolio_data
 
-    return fetch_portfolio_data(items, bust_cache=True)
+    return fetch_portfolio_data(items, bust_cache=True, tradingview_only=True)
 
 
 def refresh_prices(conn, fetch: Callable[[list[dict]], dict] | None = None, now: str | None = None) -> dict:

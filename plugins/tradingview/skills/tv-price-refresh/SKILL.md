@@ -1,13 +1,13 @@
 ---
 name: tv-price-refresh
 plugin: tradingview
-description: Pulls real-time prices for portfolio positions using TradingView Desktop with yfinance fallback. Trigger on /tv-price-refresh or 'refresh prices'.
+description: Pulls real-time prices for portfolio positions from TradingView Desktop only; a ticker TradingView cannot quote is reported, never priced from another source. Trigger on /tv-price-refresh or 'refresh prices'.
 allowed-tools: Bash, Read, Write
 ---
 
 # TradingView Price Refresh
 
-Pulls real-time prices for portfolio positions using TradingView Desktop with yfinance fallback.
+Pulls real-time prices for portfolio positions from TradingView Desktop. Prices never come from another source.
 
 ## Contents
 
@@ -18,12 +18,12 @@ Pulls real-time prices for portfolio positions using TradingView Desktop with yf
 
 ## Constraints
 
-- Price hierarchy: Uses TradingView Desktop CDP live quotes when port 9222 is open, falls back to yfinance per ticker.
-- Never fail entirely when TradingView is down: continue on yfinance and put `[yfinance mode — TradingView not connected]` at the top of the output.
-- Show each quote's source (TradingView or yfinance) with a summary count of real-time, fallback and error quotes. Mark a ticker that cannot be quoted `ERROR`; never fabricate a price.
+- Price source: TradingView Desktop CDP real-time quotes only (port 9222). yfinance is never used for a price.
+- When TradingView is not connected, stop and say so: `TradingView not connected, prices not refreshed`. Do not substitute delayed quotes and do not touch stored prices.
+- Show each quote's source (always TradingView) with a count of quoted and unquoted tickers. Mark a ticker TradingView cannot quote `ERROR` and keep its previous stored price (listed as stale); never fabricate a price.
 - Positions, share counts and book cost are never changed here; route those requests to `/tv-portfolio-sync`.
-- Active chart isolation: TV CDP quotes require active chart symbol matching; batch prices must use yfinance or sequential TV switches.
-- Database update: `scripts/tv_price_refresh.py` (plugins/tradingview/scripts) is the only price writer. It reads held and watchlisted symbols from `domain_model.sqlite`, resolves prices with the canonical resolver (TradingView first, yfinance fallback) and writes through the investment repositories; it needs no backend. `tv_batch_quotes.py` prints quotes and writes nothing. Never write prices with ad-hoc SQL.
+- Quotes are read from the "TV-Full Watchlist" watchlist; a held or watchlisted ticker that is not on it is reported as unquoted. Add it to that watchlist (`/tv-manage-watchlists`) rather than falling back.
+- Database update: `scripts/tv_price_refresh.py` (plugins/tradingview/scripts) is the only price writer. It reads held and watchlisted symbols from `domain_model.sqlite`, resolves prices from TradingView quotes only and writes through the investment repositories; it needs no backend. `tv_batch_quotes.py` prints quotes and writes nothing. Never write prices with ad-hoc SQL.
 
 ## Quick start
 
@@ -37,7 +37,7 @@ The first command saves prices and also refreshes the USD->CAD rate (`--skip-fx`
 
 1. Enumerate held tickers from `domain_model.sqlite`.
 2. Check if TradingView Desktop CDP is reachable (`scripts/tv_health_check.py`).
-3. Fetch real-time quotes with `scripts/tv_batch_quotes.py` (TradingView first, yfinance fallback) for the on-screen table.
+3. Fetch real-time quotes with `scripts/tv_batch_quotes.py --tradingview-only` for the on-screen table.
 4. Persist prices with `tv_price_refresh.py`; the table in step 3 is not what gets saved. Report any `failed`/`stale` symbols.
 5. Output price summary and delta table in chat, with the source of each quote.
 

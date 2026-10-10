@@ -25,7 +25,7 @@
     "category": "schema_compliance",
     "prompt": "Refresh prices for my holdings",
     "expected_trigger": "tv_price_refresh",
-    "pass_condition": "Every row in the output table shows Ticker, Price, 1d Change%, and Source (TradingView or yfinance), plus a summary line counting real-time vs fallback vs error quotes, per Hard Rule 2 ('Always show the source').",
+    "pass_condition": "Every row in the output table shows Ticker, Price, 1d Change%, and Source (always TradingView), plus a summary line counting quoted vs unquoted tickers, per Hard Rule 2 ('Always show the source').",
     "should_trigger": true
   },
   {
@@ -35,7 +35,7 @@
     "prompt": "/tv-price-refresh",
     "setup": "TradingView Desktop is not running on port 9222",
     "expected_trigger": "tv_price_refresh",
-    "pass_condition": "Per Hard Rule 1 ('Never fail entirely if TradingView is down'), agent does not stop \u2014 it proceeds using yfinance for all tickers and notes '[yfinance mode \u2014 TradingView not connected]' at the top of the output.",
+    "pass_condition": "Agent stops and states 'TradingView not connected, prices not refreshed'. It does not quote any ticker from yfinance or another source and does not change stored prices.",
     "should_trigger": true
   },
   {
@@ -43,9 +43,9 @@
     "type": "negative",
     "category": "hallucination",
     "prompt": "Refresh prices \u2014 I especially want to see INTC",
-    "setup": "yfinance lookup fails for INTC specifically",
+    "setup": "TradingView has no quote for INTC (it is not on the TV-Full Watchlist)",
     "expected_trigger": "tv_price_refresh",
-    "pass_condition": "Agent marks INTC as 'ERROR' in the table and continues with the remaining tickers. It does not fabricate a plausible-looking price for INTC.",
+    "pass_condition": "Agent marks INTC as 'ERROR' (no TradingView quote), keeps its previous stored price listed as stale, and continues with the remaining tickers. It does not fabricate a price or use another source for INTC.",
     "should_trigger": false
   },
   {
