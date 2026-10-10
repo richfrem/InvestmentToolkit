@@ -40,7 +40,9 @@ describe('portfolio route: SQLite only, no JSON fallback', () => {
         for (const name of ['PORTFOLIO_FILE', 'THESIS_FILE', 'TARGET_PORTFOLIO_FILE']) {
             expect(paths, name).to.not.match(new RegExp(`export const ${name}\\b`));
         }
-        expect(paths).to.match(/export const YTD_PERFORMANCE_REPORT_FILE\b/);
+        for (const name of ['YTD_PERFORMANCE_REPORT_FILE', 'PORTFOLIO_CONFIG_FILE']) {
+            expect(paths, name).to.not.match(new RegExp(`export const ${name}\\b`));
+        }
     });
 
     it('does not hand a portfolio file path to the performance script', () => {
