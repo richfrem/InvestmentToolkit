@@ -57,7 +57,7 @@ def test_build_consumer_inventory_groups_multiple_json_refs_under_one_consumer()
             consumers=[{"referencing_file": "shared_script.py", "line": 10, "confidence": "exact"}],
         ),
         _file_entry(
-            "investment_screener/backend/data/portfolio.json",
+            "investment_screener/backend/data/authoritative-example.json",
             "ALLOWED_AUTHORITATIVE_JSON",
             consumers=[{"referencing_file": "shared_script.py", "line": 20, "confidence": "exact"}],
         ),
@@ -68,7 +68,7 @@ def test_build_consumer_inventory_groups_multiple_json_refs_under_one_consumer()
     assert len(entry["referenced_json_files"]) == 2
     referenced_paths = {r["json_path"] for r in entry["referenced_json_files"]}
     assert "investment_screener/backend/data/ta-sweep-results.json" in referenced_paths
-    assert "investment_screener/backend/data/portfolio.json" in referenced_paths
+    assert "investment_screener/backend/data/authoritative-example.json" in referenced_paths
 
 
 def test_classify_consumer_migration_required_when_any_ref_is_migrate_candidate():

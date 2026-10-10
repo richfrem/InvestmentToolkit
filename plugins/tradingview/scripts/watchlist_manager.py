@@ -11,9 +11,8 @@ Layer:
     Plugins / TradingView
 
 Key Input Dependencies:
-    - investment_screener/backend/data/domain_model.sqlite (Reads holdings and
-      target projections; Wave 3 Task 6 cutover for holdings — previously
-      portfolio.json — plus ADR-029 for watchlist/projections)
+    - investment_screener/backend/data/domain_model.sqlite (Reads holdings,
+      watchlist membership and target projections)
 
 Usage:
     python3 plugins/tradingview/scripts/watchlist_manager.py
@@ -48,8 +47,7 @@ _CASH_SYMBOL = "CASH_USD"
 
 
 def _load_holdings_symbols(db_path: Path | None = None) -> List[str]:
-    """Return upper-cased held-position symbols from domain_model.sqlite
-    (Wave 3 Task 6 cutover — previously portfolio.json).
+    """Return upper-cased held-position symbols from domain_model.sqlite.
     """
     resolved = db_path or DB_PATH
     if not resolved.exists():
@@ -105,7 +103,7 @@ def load_researched_watchlist(db_path: Path | None = None) -> List[str]:
 # External comment: Retrieve active portfolio symbols
 def load_holdings_watchlist(db_path: Path | None = None) -> List[str]:
     """Retrieve symbols representing active portfolio holdings from
-    domain_model.sqlite (Wave 3 Task 6 cutover — previously portfolio.json)."""
+    domain_model.sqlite."""
     try:
         return _load_holdings_symbols(db_path)
     except Exception:

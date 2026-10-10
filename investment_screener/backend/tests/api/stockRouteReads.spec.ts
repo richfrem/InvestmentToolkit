@@ -1,12 +1,10 @@
 /**
  * stockRouteReads.spec.ts
  *
- * Purpose: proves routes/stock.ts's SQLite-backed read helper (Wave 3 Task 6)
+ * Purpose: proves routes/stock.ts's SQLite-backed read helper
  * — getStockTotalsFromDb — sources the portfolio-wide USD total from
  * domain_model.sqlite (via PortfolioRepository.getPortfolioTotalValue(), same
- * function routes/portfolio.ts's /summary uses) instead of reading
- * portfolio.json's `totals` block directly (stock.ts:125-126 before this
- * rewire), used by POST /portfolio-heatmap.
+ * function routes/portfolio.ts's /summary uses), used by POST /portfolio-heatmap.
  */
 import { expect } from 'chai';
 import fs from 'fs';

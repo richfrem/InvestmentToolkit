@@ -1,12 +1,11 @@
-"""Wave 3 completion — investment.sector / investment.industry columns.
+"""investment.sector / investment.industry columns.
 
-These two nullable TEXT columns close the last enriched-display fact GET /api/portfolio
-needed from portfolio.json (name/pillar_id were already on the table). They are
-resolved by the same real fetch_portfolio_heatmap.py yfinance lookup during a
+These two nullable TEXT columns hold the enriched-display facts GET /api/portfolio
+returns for each holding. They are resolved by the same real fetch_portfolio_heatmap.py yfinance lookup during a
 /refresh-prices call and persisted via update_investment_sector().
 
 All state is tmp_path-scoped SQLite via the real repository functions — no mocking,
-no live yfinance/TradingView call (CLAUDE.md rule 1 + this wave's no-live-ops rule).
+no live yfinance/TradingView call.
 """
 
 import sqlite3

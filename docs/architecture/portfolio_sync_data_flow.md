@@ -7,8 +7,7 @@ This document describes the dual-state model, the five core operational synchron
 > **Wave 7/8 update (2026-08):** `domain_model.sqlite` is now the **sole source of truth** for both
 > the Live Broker State (`account_investment`, `investment_price`, `broker_exchange_rate`, `broker_reported_total`)
 > AND the Conviction Target State (`investment`, `pillar`, `price_level_tier`, `standing_decision`).
-> Both `target-portfolio.json` and `portfolio.json` have been fully retired (ADR-030 / Pitfall #30)
-> and are archived. All Python tools read/write via `portfolio_io.py`, and TypeScript routes use
+> Portfolio data is SQLite only (ADR-038). All Python tools read/write via `portfolio_io.py`, and TypeScript routes use
 > `InvestmentRepository` / `ThesisService` / `PriceLevelRepository`.
 
 ---
@@ -220,12 +219,11 @@ Real, verified state as of this wave's completion:
   tests): a missing `CASH_USD` price row, a `PSU.U.TO`/`PSU-U.TO` ticker-alias mismatch causing a
   duplicate investment identity, and Python/TypeScript exchange-rate coalescing logic that diverged
   on a legitimate zero value (`or` vs. `??` semantics).
-- **`portfolio.json` is no longer the live write target** for the main sync path
-  (`BrokerSyncService.ts::syncAuto()`, `fetch_broker_data.py --snapshot`, `/refresh-prices`) — see
-  ADR-030 and the Wave 3 exit report for the full producer/consumer cutover table.
+- **The main sync path writes only SQLite** (`BrokerSyncService.ts::syncAuto()`,
+  `fetch_broker_data.py --snapshot`, `/refresh-prices`) — see ADR-030 and the Wave 3 exit report for
+  the full producer/consumer table.
 - **Prior waves** (0-2) migrated projections (`projections/*.json` → `projection_version`/
-  `projection_scenario`) and the retired `target-portfolio.json`/`watchlist.json`/
-  `tradingview_alerts_actual.json`/`thesis_breaker_state.json` — see
+  `projection_scenario`), thesis targets, watchlists, alerts and thesis breakers — see
   `docs/superpowers/status/wave1-*`/`wave2-*` reports for those domains' own cutover details.
 - **Remaining waves** (4, 5A-5E) cover trade log/order executions/cash flows, and generated research
   views/TA sweep/daily briefs/predictions/account policy respectively — not yet started as of this

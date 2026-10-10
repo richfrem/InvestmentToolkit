@@ -1,11 +1,6 @@
 """
-Tests for generate_review_json.py — Wave 8 cutover to domain_model.sqlite.
-
-Real bug this replaces: generate() read the whole thesis document (pillarId,
-role, agentRationale, targetWeight per holding) from the now-retired
-target-portfolio.json via validate_weights.compute_target(THESIS_JSON) --
-this is exactly what powered the Portfolio Table UI's stale "Target %"
-column even after investment.target_weight was updated directly in SQLite.
+Tests for generate_review_json.py: generate() reads pillarId, role,
+agentRationale and targetWeight per holding from domain_model.sqlite.
 """
 import sys
 from pathlib import Path
@@ -60,10 +55,8 @@ def test_generate_pillar_list_sourced_from_strategy_pillar_table(tmp_path):
     assert compute_pillar["currentTarget"] == 40.0
 
 
-def test_generate_no_longer_imports_or_reads_target_portfolio_json():
-    """Source-level regression guard: no THESIS_JSON/target-portfolio.json
-    reference anywhere in the module."""
+def test_generate_has_no_file_thesis_source():
+    """Source-level regression guard: no THESIS_JSON reference in the module."""
     src = (SCRIPT_DIR / "generate_review_json.py").read_text()
-    assert "target-portfolio.json" not in src
     assert "THESIS_JSON" not in src
     assert "compute_target" not in src

@@ -119,9 +119,7 @@ def test_projections_present_for_every_holding_pass(db):
     assert system_health._check_projections(db)["status"] == "PASS"
 
 
-def test_check_labels_describe_the_database_not_retired_files():
-    """No check label or module text names a retired file."""
+def test_check_labels_describe_the_database():
+    """The positions check is labelled by what it reads."""
     labels = [name for name, _fn in system_health.CHECKS]
-    assert "Synced positions" in labels and "portfolio.json" not in labels
-    source = Path(system_health.__file__).read_text()
-    assert "portfolio.json" not in source and "target-portfolio.json" not in source
+    assert "Synced positions" in labels

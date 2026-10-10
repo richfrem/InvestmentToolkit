@@ -10,13 +10,12 @@ import { ThesisBreakerRepository } from '../../src/services/ThesisBreakerReposit
 import { ThesisSchema, PriceTierSchema } from '../../src/utils/zod-schemas';
 
 /**
- * Wave 8: proves ThesisService.getThesis()/saveThesis()/updateHolding()/
+ * Proves ThesisService.getThesis()/saveThesis()/updateHolding()/
  * addHolding()/removeHolding()/replaceHoldings() read and write
  * domain_model.sqlite (investment, strategy_pillar, price_level_set/tier,
- * portfolio_change_log tables), replacing the retired
- * data/theses/target-portfolio.json Thesis document.
+ * portfolio_change_log tables).
  */
-describe('ThesisService CRUD (Wave 8 SQLite cutover)', () => {
+describe('ThesisService CRUD (SQLite)', () => {
     let dbPath: string;
     let service: ThesisService;
 
@@ -112,7 +111,7 @@ describe('ThesisService CRUD (Wave 8 SQLite cutover)', () => {
             expect(nvda!.targetEntryPrice).to.equal(140);
         });
 
-        it('does not read data/theses/target-portfolio.json at all (source-level guard)', () => {
+        it('has no thesis-file path helpers (source-level guard)', () => {
             const src = fs.readFileSync(
                 path.resolve(__dirname, '../../src/services/ThesisService.ts'), 'utf-8'
             );

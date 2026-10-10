@@ -2,16 +2,15 @@
 check_available_balance() (Task 5E-5).
 
 check_available_balance() is a BUY-only balance gate: it checks whether
-enough cash is available to cover a BUY order's cost, reusing the real,
-already-synced portfolio.json broker snapshot (this project's existing
-multi-fallback TradingView/broker sync pipeline) rather than a new
-live Broker API integration.
+enough cash is available to cover a BUY order's cost, reusing the already-synced
+broker snapshot in domain_model.sqlite (this project's existing multi-fallback
+TradingView/broker sync pipeline) rather than a new live Broker API
+integration.
 
-get_available_cash() reads that real (but here, always a tmp_path
-fixture) portfolio.json — no test in this file ever touches the real,
-gitignored portfolio.json. check_available_balance() tests pass
-available_cash_override explicitly wherever possible to isolate them from
-get_available_cash()'s own file-reading tests.
+get_available_cash() reads that snapshot from a tmp_path SQLite fixture — no
+test in this file ever touches the real, gitignored database.
+check_available_balance() tests pass available_cash_override explicitly
+wherever possible to isolate them from get_available_cash()'s own tests.
 """
 import json
 import sys
@@ -104,13 +103,11 @@ def test_check_available_balance_fetches_cash_when_not_supplied(monkeypatch):
     assert result["cash_available"] == 5000.0
 
 
-# --- get_available_cash() (Wave 3: reads domain_model.sqlite CASH_USD rows) ---
+# --- get_available_cash() (reads domain_model.sqlite CASH_USD rows) ---
 #
-# The five tests below replace the pre-Wave-3 portfolio.json-fixture tests.
-# Cash is a real CASH_USD account_investment row (Wave 0 decision 5), so both
-# the portfolio-wide total and per-account cash are derived from SQLite via
-# portfolio_repository.get_total_cash_usd/get_account_cash_usd — never from
-# portfolio.json's totals.cashUSD / tvSnapshot balances.
+# Cash is a real CASH_USD account_investment row, so both the portfolio-wide
+# total and per-account cash are derived from SQLite via
+# portfolio_repository.get_total_cash_usd/get_account_cash_usd.
 
 
 def _seed_cash_db(tmp_path, cash_rows):

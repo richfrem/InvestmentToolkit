@@ -1,15 +1,12 @@
 """
 Tests for portfolio_io.py — shared safe I/O layer for all portfolio scripts.
 
-Key invariant under test (Wave 3+):
+Key invariant under test:
   load_portfolio_state() delegates entirely to
   domain_model.portfolio_repository.load_portfolio_state_from_db(). The
   authoritative total is computed exactly once, in portfolio_repository.py's
   get_portfolio_total_value() (an account-level rollup) -- never recomputed
-  ad hoc in this module, and never read from portfolio.json (that JSON-era
-  contract, including the PORTFOLIO_WITH_TOTALS/PORTFOLIO_FLAT fixtures below,
-  was retired by the Wave 3 cutover; see
-  test_load_portfolio_state_reads_from_sqlite_not_json).
+  ad hoc in this module.
 
 Test tier: Category A (pure) + Category B (subprocess / file I/O) + Category C (sqlite).
 """
@@ -25,10 +22,6 @@ import pytest
 REPO_ROOT     = Path(__file__).resolve().parents[4]
 PY_SERVICES   = REPO_ROOT / "investment_screener/backend/py_services"
 PORTFOLIO_IO  = PY_SERVICES / "portfolio_io.py"
-FIXTURES      = REPO_ROOT / "investment_screener/backend/tests/fixtures"
-
-PORTFOLIO_WITH_TOTALS = FIXTURES / "portfolio_with_totals.test.json"
-PORTFOLIO_FLAT        = FIXTURES / "portfolio.test.json"
 
 sys.path.insert(0, str(PY_SERVICES))
 
@@ -47,17 +40,7 @@ def test_portfolio_io_is_importable():
     assert hasattr(mod, "replace_block"),        "Missing replace_block"
 
 
-# ── load_portfolio_state: SQLite-backed (Wave 3+) ────────────────────────────
-#
-# The four tests below replace the pre-Wave-3 JSON-fixture tests
-# (test_load_portfolio_state_returns_broker_total,
-# test_load_portfolio_state_broker_total_differs_from_computed,
-# test_load_portfolio_state_shares_map, test_load_portfolio_state_flat_list_fallback).
-# Those tested a portfolio.json-specific contract (totals.totalUSD,
-# flat-list fallback) that no longer exists once load_portfolio_state()
-# delegates to SQLite — see docstring above. PORTFOLIO_WITH_TOTALS and
-# PORTFOLIO_FLAT fixtures are kept on disk only for historical reference; they
-# are intentionally unused now.
+# ── load_portfolio_state: SQLite-backed ──────────────────────────────────────
 
 def _build_test_db(tmp_path, rows):
     """Build a throwaway domain_model.sqlite with the given (account, symbol,
@@ -155,10 +138,8 @@ def test_load_portfolio_state_empty_db_returns_empty_not_crash(tmp_path, monkeyp
     assert state["total_usd"] == 0
 
 
-def test_load_portfolio_state_reads_from_sqlite_not_json(tmp_path, monkeypatch):
-    """After Wave 3's cutover, load_portfolio_state() must read domain_model.sqlite,
-    not portfolio.json -- even if a stale portfolio.json still exists on disk.
-    """
+def test_load_portfolio_state_reads_from_sqlite(tmp_path, monkeypatch):
+    """load_portfolio_state() reads domain_model.sqlite."""
     sys.path.insert(0, str(PY_SERVICES))
     from domain_model.db_client import initialize_db
     from domain_model.account_repository import upsert_account
@@ -180,13 +161,8 @@ def test_load_portfolio_state_reads_from_sqlite_not_json(tmp_path, monkeypatch):
     import portfolio_io
     monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
 
-    # A stale portfolio.json exists but must NOT be read.
-    stale_json = tmp_path / "portfolio.json"
-    stale_json.write_text('{"holdings": [{"symbol": "MSFT", "shares": 999, "price": 1.0}]}')
-
     state = portfolio_io.load_portfolio_state()
     assert state["shares"] == {"AAPL": 5}
-    assert "MSFT" not in state["shares"]
 
 
 def test_load_portfolio_state_honors_an_explicit_db_path(tmp_path, monkeypatch):
@@ -206,11 +182,11 @@ def test_load_portfolio_state_honors_an_explicit_db_path(tmp_path, monkeypatch):
 
 
 def test_load_portfolio_state_rejects_a_json_path_instead_of_creating_a_database(tmp_path):
-    """A stale caller passing portfolio.json must fail loudly, never turn that file into a SQLite database."""
+    """A caller passing a .json path must fail loudly, never turn that file into a SQLite database."""
     sys.path.insert(0, str(PY_SERVICES))
     import portfolio_io
 
-    stale = tmp_path / "portfolio.json"
+    stale = tmp_path / "state.json"
     with pytest.raises(ValueError, match="SQLite"):
         portfolio_io.load_portfolio_state(stale)
     assert not stale.exists()
@@ -298,12 +274,11 @@ def test_replace_block_is_idempotent():
     assert first == second, "replace_block must be idempotent"
 
 
-# ── target weight loading (Wave 8) ──────────────────────────────────────────
+# ── target weight loading ───────────────────────────────────────────────────
 
 def test_load_target_weights_reads_investment_target_weight(tmp_path):
-    """load_target_weights() must read investment.target_weight from SQLite,
-    replacing the several duplicate direct reads of target-portfolio.json's
-    targetWeight field (generate_review_json.py, validate_weights.py, etc.)."""
+    """load_target_weights() reads investment.target_weight from SQLite; every
+    script shares it (generate_review_json.py, validate_weights.py, etc.)."""
     sys.path.insert(0, str(PY_SERVICES))
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import resolve_investment, update_investment_fields
@@ -332,8 +307,7 @@ def test_load_target_weights_returns_empty_for_no_targets(tmp_path):
 
 
 def test_load_thesis_holdings_reads_investment_columns(tmp_path):
-    """Wave 8: load_thesis_holdings() replaces per-script direct reads of
-    target-portfolio.json's `holdings` array."""
+    """load_thesis_holdings() returns the thesis holdings from investment columns."""
     sys.path.insert(0, str(PY_SERVICES))
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import resolve_investment, update_investment_fields

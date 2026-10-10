@@ -497,15 +497,13 @@ def _seed_portfolio_db(tmp_path, rows):
 
 
 def test_load_portfolio_reads_symbols_from_sqlite_not_json(tmp_path, monkeypatch):
-    """load_portfolio() must return the holdings' symbols from domain_model.sqlite,
-    not portfolio.json — even if a stale portfolio.json exists on disk."""
+    """load_portfolio() returns the holdings' symbols from domain_model.sqlite."""
     sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
     import portfolio_io  # noqa: PLC0415
 
     db_path = _seed_portfolio_db(tmp_path, [("TFSA", "NVDA", 10, 150.0), ("RRSP", "AAPL", 5, 200.0)])
     monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
 
-    # A stale portfolio.json exists but must NOT be read.
     from ta_sweep_batch import load_portfolio  # noqa: PLC0415
     holdings = load_portfolio()
     symbols = {h["symbol"] for h in holdings}
@@ -514,9 +512,7 @@ def test_load_portfolio_reads_symbols_from_sqlite_not_json(tmp_path, monkeypatch
 
 def test_load_target_portfolio_reads_thesis_holdings_from_sqlite_not_json(tmp_path, monkeypatch):
     """load_target_portfolio() must read investment.target_weight/sub_strategy_id
-    from domain_model.sqlite via portfolio_io.load_thesis_holdings() — not the
-    archived target-portfolio.json (regression: this raised FileNotFoundError
-    in production on 2026-08-13 since that file no longer exists on disk)."""
+    from domain_model.sqlite via portfolio_io.load_thesis_holdings()."""
     sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
     import portfolio_io  # noqa: PLC0415
     from domain_model.db_client import initialize_db  # noqa: PLC0415

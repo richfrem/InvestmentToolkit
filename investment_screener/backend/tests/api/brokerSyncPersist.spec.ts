@@ -138,9 +138,9 @@ describe('BrokerSyncService.persistSnapshotToDb', () => {
         }
     });
 
-    it('persistSnapshotToDb writes only the SQLite dbPath — creates no portfolio.json', () => {
-        // Wave 3 Task 8: persistSnapshotToDb is now syncAuto's SOLE write. It must
-        // touch only the SQLite file it is given, never portfolio.json.
+    it('persistSnapshotToDb writes only the SQLite dbPath — creates no JSON file', () => {
+        // persistSnapshotToDb is syncAuto's SOLE write. It must touch only the
+        // SQLite file it is given.
         const guardJson = path.join(os.tmpdir(), `portfolio-guard-${Date.now()}-${Math.random()}.json`);
         expect(fs.existsSync(guardJson)).to.equal(false);
         const snapshot = snapshotWith([
@@ -148,17 +148,16 @@ describe('BrokerSyncService.persistSnapshotToDb', () => {
         ]);
         persistSnapshotToDb(snapshot, dbPath);
         expect(fs.existsSync(dbPath), 'SQLite write should succeed').to.equal(true);
-        expect(fs.existsSync(guardJson), 'no portfolio.json should be produced').to.equal(false);
+        expect(fs.existsSync(guardJson), 'no JSON file should be produced').to.equal(false);
     });
 
-    it('syncAuto no longer writes portfolio.json (source-level regression guard)', () => {
+    it('syncAuto writes only through persistSnapshotToDb (source-level regression guard)', () => {
         // A runtime syncAuto test would require mocking the TradingView CDP
-        // subprocess (prohibited on critical runtime paths), so this guards the
-        // reduction at the source: the removed fs.writeFileSync(PORTFOLIO_FILE,...)
-        // must not reappear inside syncAuto.
+        // subprocess (prohibited on critical runtime paths), so this guards
+        // at the source: syncAuto must not write files directly.
         const src = fs.readFileSync(path.resolve(__dirname, '../../src/services/BrokerSyncService.ts'), 'utf-8');
         const syncAutoBody = src.slice(src.indexOf('export async function syncAuto'));
-        expect(syncAutoBody).to.not.match(/fs\.writeFileSync\s*\(\s*PORTFOLIO_FILE/);
+        expect(syncAutoBody).to.not.match(/fs\.writeFileSync/);
         expect(syncAutoBody).to.match(/persistSnapshotToDb\(snapshot\)/);
     });
 

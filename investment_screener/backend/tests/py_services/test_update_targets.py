@@ -1,11 +1,7 @@
 """
-Tests for update_targets.py — Wave 8 cutover to domain_model.sqlite.
-
-Real bug this replaces: load()/save() read/wrote target-portfolio.json
-directly; the canonical target-weight editor tool used during conversation
-(via /calibrate-targets, /thesis-review) would have kept editing a file no
-longer read by the live app once portfolio.json-style retirement extended
-to this domain.
+Tests for update_targets.py, the canonical target-weight editor
+(used via /calibrate-targets and /thesis-review). It reads and writes
+domain_model.sqlite.
 """
 import sys
 from pathlib import Path
@@ -87,7 +83,3 @@ def test_apply_add_creates_new_investment_row(tmp_path, monkeypatch):
     assert row[0] == 5.0
     assert row[1] == "compute"
 
-
-def test_no_longer_references_target_portfolio_json():
-    src = (SCRIPT_DIR / "update_targets.py").read_text()
-    assert "target-portfolio.json" not in src

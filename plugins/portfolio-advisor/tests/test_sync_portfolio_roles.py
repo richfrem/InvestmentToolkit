@@ -1,10 +1,5 @@
-"""Tests for sync_portfolio_roles.py — Wave 8 cutover to domain_model.sqlite.
-
-Real bug this replaces: sync_roles() read AND wrote
-target-portfolio.json's holdings[].role directly (json.loads/write_text) --
-this script's entire purpose is syncing lifecycle_status/role from actual
-held positions, and it kept writing to a file the live app no longer reads
-once the thesis document itself was retired.
+"""Tests for sync_portfolio_roles.py, which syncs investment.lifecycle_status
+(role) in domain_model.sqlite from the actual held positions.
 """
 import sys
 from pathlib import Path
@@ -69,9 +64,8 @@ def test_sync_roles_leaves_correct_role_unchanged(tmp_path, monkeypatch):
     assert row[0] == "accumulate"
 
 
-def test_no_longer_references_target_portfolio_json():
+def test_has_no_file_role_source():
     src = (SCRIPT_DIR / "sync_portfolio_roles.py").read_text()
-    assert "target-portfolio.json" not in src
     assert "TARGET_JSON" not in src
 
 

@@ -268,7 +268,7 @@ def test_tradingview_connection_and_broker_login(tmp_path):
 
 @pytest.mark.skipif(not TV_AVAILABLE, reason="TradingView not reachable on port 9222")
 def test_fresh_portfolio_exits_0(tmp_path):
-    """A fresh portfolio.json (under 60 min old) must produce exit 0."""
+    """Positions synced under 60 minutes ago must produce exit 0."""
     portfolio = _make_portfolio(tmp_path, age_minutes=0)
     r = _run(
         "--ticker", "AAPL", "--action", "buy", "--shares", "1",

@@ -1,16 +1,11 @@
 /**
  * BrokerSyncServiceStdoutIpc.spec.ts
  *
- * Purpose: proves the Wave 3 Domain Data Model v3.2 completion cutover of
- * BrokerSyncService.spawnFetchBroker's IPC return channel from a portfolio.json
- * re-read to parsing the subprocess's stdout as JSON.
- *
- * The former mechanism read portfolio.json.tvSnapshot back off disk after
- * fetch_broker_data.py exited. The new mechanism parses the last non-empty line
- * of the subprocess's stdout as JSON — so it must work even when portfolio.json
- * does NOT exist at all, and must ignore stderr progress noise (mixed-stream
- * safety). These tests use a synthetic fake "python" script, never the live CDP
- * connection or the real domain_model.sqlite/portfolio.json.
+ * Purpose: proves BrokerSyncService.spawnFetchBroker's IPC return channel
+ * parses the last non-empty line of the subprocess's stdout as JSON, and
+ * ignores stderr progress noise (mixed-stream safety). These tests use a
+ * synthetic fake "python" script, never the live CDP connection or the real
+ * domain_model.sqlite.
  */
 import { expect } from 'chai';
 import fs from 'fs';
@@ -36,7 +31,7 @@ describe('BrokerSyncService.spawnFetchBroker (stdout IPC)', () => {
         positions: [{ symbol: 'MSFT', quantity: 4, avgFillPrice: 410, accountType: 'TFSA', accountId: '1' }],
     };
 
-    it('parses the snapshot from stdout, ignoring stderr progress noise, with no portfolio.json', async () => {
+    it('parses the snapshot from stdout, ignoring stderr progress noise', async () => {
         const json = JSON.stringify(fixture);
         // Emit lots of stderr noise + a final single-line JSON blob on stdout.
         const script = writeFakeScript(

@@ -8,7 +8,7 @@ only keeps the long-standing ``derive_action`` call signature and CLI so the
 backend and report scripts keep working. The frontend must never recompute actions.
 
 CLI usage (called by backend):
-  python3 portfolio_action.py --all --portfolio <path> --target <path>
+  python3 portfolio_action.py --all [--db <domain_model.sqlite>]
   -> prints JSON: { "ZS": "TRIM", "INTC": "WATCHLIST", ... }
 
 Key Input Dependencies:
@@ -72,18 +72,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--all", action="store_true", required=True)
-    parser.add_argument(
-        "--portfolio", required=True,
-        help="Legacy portfolio.json path, kept for CLI back-compat; no longer "
-             "read directly. Actual holdings now come from domain_model.sqlite.",
-    )
-    parser.add_argument(
-        "--target",
-        required=True,
-        help="Legacy target-portfolio.json path, kept for CLI back-compat; "
-             "no longer read directly. Target weights now come from the "
-             "domain-model sqlite DB (see --db).",
-    )
     parser.add_argument(
         "--db",
         default=str(Path(__file__).resolve().parents[3] / "investment_screener/backend/data/domain_model.sqlite"),

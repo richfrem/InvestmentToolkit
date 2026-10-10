@@ -199,13 +199,6 @@ def preflight_checks(process_env: Dict[str, str]) -> None:
     if not os.path.exists(env_file):
         Colors.print("Note: No .env file found — copy .env.example to configure optional services.", Colors.YELLOW)
     
-    portfolio_path = os.path.join("frontend", "src", "data", "portfolio.json")
-    portfolio_example = os.path.join("frontend", "src", "data", "portfolio.json.example")
-    
-    if not os.path.exists(portfolio_path) and os.path.exists(portfolio_example):
-        Colors.print("Creating initial portfolio from example...", Colors.YELLOW)
-        shutil.copy(portfolio_example, portfolio_path)
-
     # Pre-flight: fix root-owned node_modules (caused by accidental sudo npm/rm)
     node_modules_dir = os.path.join(ROOT_DIR, "investment_screener", "node_modules")
     if os.path.exists(node_modules_dir) and not IS_WINDOWS:

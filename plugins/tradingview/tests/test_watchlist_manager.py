@@ -102,8 +102,7 @@ class TestLoadWatchlistedSymbols(unittest.TestCase):
 
 
 class TestLoadHoldingsFromSqlite(unittest.TestCase):
-    """Wave 3 Task 6 — held positions come from account_investment in
-    domain_model.sqlite, not portfolio.json."""
+    """Held positions come from account_investment in domain_model.sqlite."""
 
     def _seed_holding(self, conn, ticker):
         from domain_model.account_repository import upsert_account

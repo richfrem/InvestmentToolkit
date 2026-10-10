@@ -287,9 +287,8 @@ def test_latest_by_source_picks_latest_saved_at_among_ai_agent_rows(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# --update-thesis (Wave 2 Task 10 cutover): agentRationale now becomes an
-# append-only investment_note row + investment.agent_rationale refresh,
-# instead of a string-concatenated write into target-portfolio.json.
+# --update-thesis: agentRationale becomes an append-only investment_note row
+# plus an investment.agent_rationale refresh.
 # ---------------------------------------------------------------------------
 
 def test_update_thesis_adds_note_and_refreshes_agent_rationale(tmp_path):

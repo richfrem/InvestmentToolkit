@@ -15,12 +15,10 @@ Open **Claude Code** or **GitHub Copilot CLI** in the project terminal and type 
 `domain_model.sqlite` (`account` / `investment` / `account_investment` / `price_level_set` /
 `price_level_tier` / `portfolio_policy` tables, among others) is the sole source of truth for
 portfolio holdings, thesis targets, pillars, price levels, standing decisions, trades, cash flows and
-thesis breakers. `portfolio.json`, `theses/target-portfolio.json`, `trade-log.json`, `cash_flows.json` and
-`thesis_breaker_state.json` are retired — commands below read/write SQLite via
+thesis breakers. Commands below read/write SQLite via
 `investment_screener/backend/py_services/portfolio_io.py`'s `load_portfolio_state()`/
 `load_thesis_holdings()`/`load_target_weights()` (Python) or `InvestmentRepository`/
-`ThesisService`/`PriceLevelRepository` (TypeScript backend). Only the `projections/*.json` copies of
-valuations remain on disk (the valuations themselves are in `projection_version`) — see
+`ThesisService`/`PriceLevelRepository` (TypeScript backend). Valuations are in `projection_version` — see
 `data-architecture/domain-data-model.md` for the schema and `data-architecture/sql/` for the DDL.
 Back up and export the databases with the `sqlite-admin` skill.
 

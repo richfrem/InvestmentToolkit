@@ -29,8 +29,7 @@ from domain_model.account_investment_repository import upsert_account_investment
 
 
 class TestLoadActualWeightsReadsSqlite:
-    """Wave 3 Task 6: _load_actual_weights() must read domain_model.sqlite,
-    never portfolio.json."""
+    """_load_actual_weights() reads domain_model.sqlite."""
 
     def test_computes_weight_pct_from_sqlite_holdings(self, tmp_path):
         db_path = tmp_path / "domain_model.sqlite"
@@ -265,8 +264,7 @@ class TestLoadDcf:
 
 
 class TestLoadTargetWeights:
-    """_load_target_weights must read investment.target_weight from
-    domain_model.sqlite (Wave 2 consumer cutover), not target-portfolio.json."""
+    """_load_target_weights reads investment.target_weight from domain_model.sqlite."""
 
     def test_reads_target_weight_from_sqlite(self, tmp_path):
         from domain_model.db_client import initialize_db  # noqa: PLC0415

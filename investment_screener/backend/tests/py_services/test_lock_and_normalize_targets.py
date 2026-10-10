@@ -103,9 +103,3 @@ def test_retired_target_file_option_is_gone():
     """--target-file no longer exists, so a stale caller fails loudly."""
     r = _run("--target-file", "x.json", "--zeros", "AAPL")
     assert r.returncode == 2 and "unrecognized arguments" in r.stderr
-
-
-def test_script_never_names_a_retired_file():
-    """The source mentions neither portfolio.json nor target-portfolio.json."""
-    source = SCRIPT_PATH.read_text()
-    assert "portfolio.json" not in source and "target-portfolio.json" not in source

@@ -27,18 +27,16 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
-DEFAULT_PORTFOLIO = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 MAINTAIN_THRESHOLD = 0.5  # pp — within this band = MAINTAIN
 
 
 def build_actual_pct_map() -> dict[str, float]:
     """Return {ticker: actual weight %} sourced from domain_model.sqlite.
 
-    Wave 3 cutover (ADR-030): shares/prices/total_usd come from
-    ``portfolio_io.load_portfolio_state()`` (already aggregated per-symbol across
-    accounts) and the weight-% formula is delegated to
-    ``portfolio_io.compute_weights()`` — no shares×price re-computation from a
-    JSON file here, and no second denominator computation.
+    Shares, prices and total_usd come from ``portfolio_io.load_portfolio_state()``
+    (already aggregated per-symbol across accounts) and the weight-% formula is
+    delegated to ``portfolio_io.compute_weights()`` (ADR-030) — no second
+    denominator computation here.
     """
     sys.path.insert(0, str(PY_SERVICES))
     from portfolio_io import load_portfolio_state, compute_weights
@@ -65,9 +63,6 @@ def assign_action(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Re-label recommendation actions based on actual holdings")
     parser.add_argument("--recs", required=True, help="Path to recommendations JSON file")
-    parser.add_argument("--portfolio", default=str(DEFAULT_PORTFOLIO),
-                        help="Legacy portfolio.json path; kept for CLI back-compat. "
-                             "Actual holdings now come from domain_model.sqlite.")
     parser.add_argument("--threshold", type=float, default=MAINTAIN_THRESHOLD,
                         help=f"pp band within which position is MAINTAIN (default {MAINTAIN_THRESHOLD})")
     parser.add_argument("--dry-run", action="store_true", help="Print changes without writing")
@@ -83,7 +78,7 @@ def main() -> None:
     with open(recs_path) as f:
         recs = json.load(f)
 
-    # Build actual pct map from domain_model.sqlite (Wave 3 cutover, ADR-030)
+    # Build actual pct map from domain_model.sqlite
     sys.path.insert(0, str(PY_SERVICES))
     from recommendation import recommend_all
     records = recommend_all(args.db)

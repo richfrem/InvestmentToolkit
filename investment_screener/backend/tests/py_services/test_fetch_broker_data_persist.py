@@ -1,13 +1,11 @@
 """
-Tests fetch_broker_data.py's Wave 3 Task 5.7 rewire: write_snapshot() now also
-persists the real snapshot's per-account positions/cash into domain_model.sqlite
-via _persist_snapshot_to_db(), additive alongside the existing portfolio.json write.
+Tests fetch_broker_data.py: write_snapshot() persists the real snapshot's
+per-account positions/cash into domain_model.sqlite via _persist_snapshot_to_db().
 
 fetch_broker_data.py is the real target of two symlinks
 (investment_screener/backend/py_services/fetch_broker_data.py and
 plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py) --
-confirmed identical via `diff` before this rewire, so editing this one real file
-rewires all three access paths together (not 3 independent write paths).
+so editing this one real file changes all three access paths together.
 """
 import json
 import sys
@@ -134,9 +132,8 @@ def test_persist_snapshot_to_db_skips_non_real_accounts_and_zero_qty(tmp_path):
 
 
 def test_write_snapshot_persists_to_sqlite_only(tmp_path, monkeypatch):
-    """Wave 3 completion: write_snapshot is now SQLite-only. It persists the real
-    per-account positions/cash to domain_model.sqlite and does NOT write
-    portfolio.json anymore (the former IPC/holdings/totals JSON write is gone)."""
+    """write_snapshot is SQLite-only: it persists the real per-account
+    positions/cash to domain_model.sqlite and writes no JSON file."""
     monkeypatch.setattr(fetch_broker_data, "DATA_DIR", str(tmp_path))
     db_path = str(tmp_path / "domain_model.sqlite")
     monkeypatch.setattr(fetch_broker_data, "DOMAIN_MODEL_DB_PATH", db_path)
@@ -144,17 +141,15 @@ def test_write_snapshot_persists_to_sqlite_only(tmp_path, monkeypatch):
 
     fetch_broker_data.write_snapshot(SNAPSHOT, balances=None)
 
-    # portfolio.json must NOT be written anymore.
-    assert not (tmp_path / "portfolio.json").exists()
+    assert not list(tmp_path.glob("*.json"))
 
     conn = initialize_db(db_path)
     rows = {r["investment_id"]: r for r in list_account_investments(conn, account_id="TFSA")}
     assert rows["MSFT"]["quantity"] == 4
 
 
-def test_write_snapshot_never_touches_portfolio_json_even_with_balances(tmp_path, monkeypatch):
-    """Even with a live balances payload (which formerly drove the totals/holdings
-    JSON write), no portfolio.json is produced."""
+def test_write_snapshot_writes_no_json_even_with_balances(tmp_path, monkeypatch):
+    """Even with a live balances payload, no JSON file is produced."""
     monkeypatch.setattr(fetch_broker_data, "DATA_DIR", str(tmp_path))
     db_path = str(tmp_path / "domain_model.sqlite")
     monkeypatch.setattr(fetch_broker_data, "DOMAIN_MODEL_DB_PATH", db_path)
@@ -163,12 +158,12 @@ def test_write_snapshot_never_touches_portfolio_json_even_with_balances(tmp_path
     balances = {"totalEquityUSDCombined": 30373.98, "marketValueUSDCombined": 29000.0,
                 "cashUSDCombined": 1373.98}
     fetch_broker_data.write_snapshot(SNAPSHOT, balances=balances)
-    assert not (tmp_path / "portfolio.json").exists()
+    assert not list(tmp_path.glob("*.json"))
 
 
 def test_persist_snapshot_to_db_normalizes_broker_ticker_alias(tmp_path):
     """PSU.U.TO is Broker's broker-format symbol for the same real fund
-    fetch_portfolio_heatmap.py/target-portfolio.json track as PSU-U.TO. If this
+    fetch_portfolio_heatmap.py and the thesis tables track as PSU-U.TO. If this
     isn't normalized before resolve_investment(), a real sync creates a second,
     duplicate `investment` row/position for the identical real holding (see
     CLAUDE.md pitfall #18 and the one-time fix_psu_alias_and_cash_price.py

@@ -25,8 +25,8 @@ from domain_model.account_investment_repository import upsert_account_investment
 
 
 def _make_db_with_holdings(tmp_path, tickers):
-    """Seed domain_model.sqlite with held positions — Wave 3 Task 6 cutover of
-    _load_tickers() off portfolio.json onto SQLite."""
+    """Seed domain_model.sqlite with held positions for
+    _load_tickers()."""
     db_path = tmp_path / "domain_model.sqlite"
     conn = initialize_db(str(db_path))
     upsert_account(conn, "TFSA", "TFSA", "TFSA")

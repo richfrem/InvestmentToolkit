@@ -1,12 +1,10 @@
-"""Tests for earnings_expectations.py's domain_model.sqlite read paths
-(Wave 2 consumer cutover) — previously read target-portfolio.json directly.
+"""Tests for earnings_expectations.py's domain_model.sqlite read paths.
 
 Covers:
   - harvest_earnings_expectations()'s ticker-list load, when `tickers=None`,
-    now reads investment.symbol from domain_model.sqlite.
-  - get_earnings_context()'s holding lookup now reads investment.target_weight
-    / investment.lifecycle_status instead of target-portfolio.json's
-    targetWeight / role fields.
+    reads investment.symbol from domain_model.sqlite.
+  - get_earnings_context()'s holding lookup reads investment.target_weight
+    / investment.lifecycle_status.
 """
 from __future__ import annotations
 

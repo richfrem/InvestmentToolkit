@@ -26,11 +26,9 @@ from domain_model.investment_repository import (  # noqa: E402
 
 
 def _seed_holding(db_path, ticker, target_weight, lifecycle_status):
-    """get_earnings_context() reads holding data from domain_model.sqlite (Wave 2
-    consumer cutover) via the module-level, monkeypatchable _DB_PATH -- no longer
-    from target-portfolio.json, so `patch("builtins.open", ...)` has no effect on
-    this part of the function anymore. Tests must seed a real (tmp) SQLite db and
-    monkeypatch _DB_PATH to it instead.
+    """get_earnings_context() reads holding data from domain_model.sqlite via the
+    module-level, monkeypatchable _DB_PATH. Tests seed a real (tmp) SQLite db and
+    monkeypatch _DB_PATH to it.
     """
     conn = initialize_db(str(db_path))
     investment_id = resolve_investment(conn, ticker, asset_class="EQUITY", currency="USD")

@@ -1,7 +1,6 @@
 """Tests for verify_portfolio_total.py — the ADR-030 reconciliation safeguard.
 
-Covers the Wave 3 Task 6 cutover of compute_our_total() from portfolio.json
-onto domain_model.sqlite: in stored-price mode the total must equal
+Covers compute_our_total() on domain_model.sqlite: in stored-price mode the total must equal
 get_portfolio_total_value() (never an independent shares*price re-sum), and
 the per-position breakdown must still be derivable for the diff/reconciliation
 report.

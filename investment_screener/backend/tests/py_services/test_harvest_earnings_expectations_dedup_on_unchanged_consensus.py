@@ -8,7 +8,6 @@ Every call below passes predictions_path=tmp_path/... so no test in this file
 can ever write to the real, tracked predictions.jsonl — even the tests whose
 other mocks (_fetch_consensus_for_ticker, _append_prediction) are incomplete.
 """
-import json
 import sys
 from pathlib import Path
 from unittest.mock import patch, MagicMock
@@ -216,43 +215,29 @@ class TestHarvestEarningsExpectationsDedup:
         mock_append.assert_not_called()
         assert result == []
 
-    def test_harvest_uses_target_portfolio_when_no_tickers(self, tmp_path):
-        """When tickers not provided, harvest loads from target-portfolio.json."""
-        target_data = {
-            "holdings": [
-                {"ticker": "AAPL"},
-                {"ticker": "MSFT"},
-            ]
-        }
+    def test_harvest_loads_tickers_from_database_when_none_given(self, tmp_path, monkeypatch):
+        """When tickers are not provided, harvest loads every investment symbol from domain_model.sqlite."""
+        import earnings_expectations
+        from domain_model.db_client import initialize_db
+        from domain_model.investment_repository import resolve_investment
 
-        new_consensus = {
-            "consensus_eps": 1.05,
-            "consensus_revenue": 3.8e11,
-            "earnings_date": "2026-07-15"
-        }
+        db_path = tmp_path / "domain_model.sqlite"
+        conn = initialize_db(str(db_path))
+        for symbol in ("AAPL", "MSFT"):
+            resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
+        conn.close()
+        monkeypatch.setattr(earnings_expectations, "_DB_PATH", db_path)
 
-        mock_open_inst = MagicMock()
-        mock_open_inst.__enter__.return_value.read.return_value = json.dumps(target_data)
+        fetched = []
 
-        with patch("earnings_expectations._fetch_consensus_for_ticker",
-                   return_value=new_consensus), \
+        def fake_consensus(ticker):
+            fetched.append(ticker)
+            return None
+
+        with patch("earnings_expectations._fetch_consensus_for_ticker", side_effect=fake_consensus), \
              patch("earnings_expectations._load_predictions", return_value=[]), \
-             patch("builtins.open", create=True) as mock_file, \
-             patch("earnings_expectations._append_prediction"), \
-             patch("earnings_expectations._make_prediction_id",
-                   return_value="TEST:earnings_expectation:2026-07-12"), \
-             patch("earnings_expectations.date") as mock_date_class, \
-             patch("earnings_expectations.yf.Ticker") as mock_ticker:
-
-            mock_date_class.today.return_value.isoformat.return_value = "2026-07-12"
-            mock_file.return_value.__enter__.return_value = MagicMock(
-                read=lambda: json.dumps(target_data)
-            )
-            mock_ticker_inst = MagicMock()
-            mock_ticker_inst.info = {"currentPrice": 210.0}
-            mock_ticker.return_value = mock_ticker_inst
-
+             patch("earnings_expectations._append_prediction"):
             result = harvest_earnings_expectations(predictions_path=tmp_path / "predictions.jsonl")
 
-        # Should have tried to load target portfolio
-        assert result is not None
+        assert sorted(fetched) == ["AAPL", "MSFT"]
+        assert result == []

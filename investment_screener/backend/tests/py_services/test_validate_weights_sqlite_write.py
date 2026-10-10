@@ -87,9 +87,3 @@ def test_retired_file_options_are_gone():
     for option in ("--target", "--portfolio"):
         proc = _run(option, "x.json")
         assert proc.returncode == 2 and "unrecognized arguments" in proc.stderr
-
-
-def test_script_never_names_a_retired_file():
-    """The source mentions neither portfolio.json nor target-portfolio.json."""
-    source = SCRIPT_PATH.read_text()
-    assert "portfolio.json" not in source and "target-portfolio.json" not in source

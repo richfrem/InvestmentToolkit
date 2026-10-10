@@ -67,8 +67,3 @@ def test_promote_option_is_gone():
     """--promote did nothing; a stale caller now fails loudly."""
     r = subprocess.run([sys.executable, str(SCRIPT), "--promote"], capture_output=True, text=True)
     assert r.returncode == 2 and "unrecognized arguments" in r.stderr
-
-
-def test_source_names_no_retired_portfolio_file():
-    """The script no longer mentions portfolio.json."""
-    assert "portfolio.json" not in SCRIPT.read_text()

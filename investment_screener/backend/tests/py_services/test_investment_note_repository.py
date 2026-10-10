@@ -58,7 +58,7 @@ def test_migrated_legacy_rationale_note_type(tmp_path):
     add_note(
         conn, investment_id, "2026-07-19T00:00:00Z",
         "DCF: INITIATE | FV $285 vs $421 price | -32.4% upside.",
-        note_type="MIGRATED_LEGACY_RATIONALE", source="target-portfolio.json migration",
+        note_type="MIGRATED_LEGACY_RATIONALE", source="thesis migration",
     )
     notes = list_notes(conn, investment_id)
     assert notes[0]["note_type"] == "MIGRATED_LEGACY_RATIONALE"

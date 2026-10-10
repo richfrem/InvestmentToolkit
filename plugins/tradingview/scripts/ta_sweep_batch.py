@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-ta_sweep_batch.py — Daily TA sweep across the combined portfolio-holdings + watchlist ticker universe (Wave 5B).
+ta_sweep_batch.py — Daily TA sweep across the combined portfolio-holdings + watchlist ticker universe.
 =========================================================================
 
 Purpose:
-    Reads portfolio.json for current holdings, runs a batch CDP scan via
+    Reads current holdings from domain_model.sqlite, runs a batch CDP scan via
     tradingview-cdp/cli.js sweep, cross-references DCF projections and
-    target-portfolio.json for context, then outputs enriched JSON to stdout.
+    thesis target weights for context, then outputs enriched JSON to stdout.
 
 Layer:
     Plugins / TradingView
@@ -40,8 +40,8 @@ TV_CLI          = REPO_ROOT / "tradingview-cdp/cli.js"
 TA_SWEEP_RESULTS_PATH = REPO_ROOT / "investment_screener/backend/data/ta-sweep-results.json"
 
 # Always skip — cash / non-equity entries. "CASH_USD" is the domain_model.sqlite
-# symbol for the cash position (Wave 3 cutover); "USD_CASH" was the legacy
-# portfolio.json symbol — both kept so neither source can leak a cash "ticker".
+# symbol for the cash position; "USD_CASH" is kept so neither spelling can leak
+# a cash "ticker".
 DEFAULT_SKIP: set[str] = {"PSU.U.TO", "PSU-U.TO", "USD_CASH", "CASH_USD"}
 
 # --validate mode: local (technicals.py) vs. TV Data Window cross-check
@@ -476,7 +476,7 @@ def enrich_results(
 
     Args:
         scan_results: Raw per-ticker rows from sweep.js.
-        target_map:   target-portfolio holdings keyed by ticker.
+        target_map:   thesis holdings keyed by ticker.
         dcf_loader:   Callable ticker → DCF dict or None (defaults to load_dcf).
         levels_loader: Callable ticker → price levels dict or None (defaults to load_levels).
         snapshot_fn:  Optional callable for local technical snapshot fallback.

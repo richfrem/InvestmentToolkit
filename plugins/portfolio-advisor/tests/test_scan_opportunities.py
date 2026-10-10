@@ -23,8 +23,7 @@ import scan_opportunities  # noqa: E402
 
 
 class TestLoadPortfolioReadsSqlite:
-    """Wave 3 Task 6: load_portfolio() must read domain_model.sqlite, never
-    portfolio.json."""
+    """load_portfolio() reads domain_model.sqlite."""
 
     def test_computes_shares_price_value_and_book_pl(self, tmp_path):
         db_path = tmp_path / "test.sqlite"
@@ -60,8 +59,8 @@ class TestLoadPortfolioReadsSqlite:
 
 
 def test_load_thesis_reads_from_sqlite_not_json(tmp_path):
-    """Wave 2 rewire: thesis fields must come from investment.target_weight
-    et al. via the domain-model repository, not target-portfolio.json."""
+    """Thesis fields come from investment.target_weight et al. via the
+    domain-model repository."""
     db_path = tmp_path / "test.sqlite"
     conn = initialize_db(str(db_path))
     try:

@@ -1,11 +1,10 @@
 /**
  * screenerRouteReads.spec.ts
  *
- * Purpose: proves routes/screener.ts's SQLite-backed read helper (Wave 3 Task 6)
+ * Purpose: proves routes/screener.ts's SQLite-backed read helper
  * — getScreenerPositionsFromDb — reads per-symbol quantity/price aggregated from
  * account_investment/investment_price via a tmp-scoped SQLite file, never the
- * real domain_model.sqlite, replacing GET /all-holdings' portfolio.json
- * `holdings`/flat-array read (screener.ts:95-96 before this rewire).
+ * real domain_model.sqlite, for GET /all-holdings.
  */
 import { expect } from 'chai';
 import fs from 'fs';

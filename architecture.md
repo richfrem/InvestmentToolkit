@@ -257,8 +257,7 @@ Both are gitignored, private data files created automatically the first time a s
 `initialize_db()` runs — see `docs/architecture/domain-data-model.md` and
 `docs/architecture/supplementary-domain-schemas.md` for full DDL and rationale.
 
-**Other files.** Portfolio data is SQLite only (ADR-038): `portfolio.json`, `target-portfolio.json`,
-`trade-log.json`, `cash_flows.json` and `thesis_breaker_state.json` are retired. What is still on disk:
+**Other files.** Portfolio data is SQLite only (ADR-038). What is still on disk:
 
 | File / Dir | Type | Contents | Gitignored? |
 |-----------|------|----------|-------------|
