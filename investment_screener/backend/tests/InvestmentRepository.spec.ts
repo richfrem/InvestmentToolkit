@@ -3,6 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { execFileSync } from 'child_process';
+import Database from 'better-sqlite3';
 import { InvestmentRepository } from '../src/services/InvestmentRepository';
 import { DOMAIN_MODEL_DB_FILE } from '../src/utils/paths';
 
@@ -51,6 +52,22 @@ describe('InvestmentRepository', () => {
                 targetWeight: 5.5,
                 thesisForInclusion: 'Thesis text',
                 agentRationale: 'Rationale text',
+            });
+        });
+    });
+
+    describe('listDocumentMembers', () => {
+        it('maps each ticker to the thesis documents that list it, sorted, and is empty without members', () => {
+            expect(repo.listDocumentMembers()).to.deep.equal({});
+            const db = new Database(dbPath);
+            const insert = db.prepare('INSERT INTO thesis_document_member (document_id, symbol, added_at) VALUES (?, ?, ?)');
+            insert.run('power_infrastructure', 'NVDA', 'now');
+            insert.run('asi_race', 'NVDA', 'now');
+            insert.run('robotics_automation', 'TSLA', 'now');
+            db.close();
+            expect(repo.listDocumentMembers()).to.deep.equal({
+                NVDA: ['asi_race', 'power_infrastructure'],
+                TSLA: ['robotics_automation'],
             });
         });
     });

@@ -1,0 +1,82 @@
+import { describe, expect, it } from 'vitest';
+import { formatGap, formatWeight, moneyText, rowsForDocument, sortRows, totalsFor, type PositionRow } from './positionMath';
+
+const row = (over: Partial<PositionRow>): PositionRow => ({
+    ticker: 'AAA', name: 'AAA', assetClass: 'EQUITY', pillarId: 'p', subStrategyId: 's', role: 'core', held: true,
+    shares: 1, averageCost: null, bookValue: null, marketValue: 100, currentPrice: 100, actualPct: 5, targetPct: 4,
+    gapPct: 1, action: 'MAINTAIN', rationale: null, hasValuation: true, isWatched: false, documents: [], ...over,
+});
+
+describe('formatWeight and formatGap', () => {
+    it('shows a dash for an unknown weight, never 0', () => {
+        expect(formatWeight(null)).toBe('—');
+        expect(formatWeight(0)).toBe('0.0%');
+        expect(formatWeight(6.54)).toBe('6.5%');
+    });
+    it('shows the gap signed in percentage points and a dash when unknown', () => {
+        expect(formatGap(null)).toBe('—');
+        expect(formatGap(1.5)).toBe('+1.5pp');
+        expect(formatGap(-0.04)).toBe('0.0pp');
+        expect(formatGap(0.04)).toBe('0.0pp');
+        expect(formatGap(0)).toBe('0.0pp');
+        expect(formatGap(-0.06)).toBe('-0.1pp');
+        expect(formatGap(-2.44)).toBe('-2.4pp');
+    });
+});
+
+describe('rowsForDocument', () => {
+    const rows = [row({ ticker: 'A', documents: ['asi'] }), row({ ticker: 'B', documents: ['asi', 'power'] }),
+        row({ ticker: 'C', documents: [], held: false })];
+    it('keeps only the tickers the document lists', () => {
+        expect(rowsForDocument(rows, 'asi', 'all').map(r => r.ticker)).toEqual(['A', 'B']);
+        expect(rowsForDocument(rows, 'power', 'all').map(r => r.ticker)).toEqual(['B']);
+    });
+    it('held scope drops tickers that are not held', () => {
+        const mixed = [row({ ticker: 'A', documents: ['asi'] }), row({ ticker: 'B', documents: ['asi'], held: false })];
+        expect(rowsForDocument(mixed, 'asi', 'held').map(r => r.ticker)).toEqual(['A']);
+    });
+});
+
+describe('totalsFor', () => {
+    it('sums actual and target weight and reports the gap, ignoring unknown weights', () => {
+        const t = totalsFor([row({ actualPct: 5, targetPct: 4 }), row({ actualPct: null, targetPct: 2 }), row({ actualPct: 3, targetPct: null })]);
+        expect(t.actualPct).toBe(8);
+        expect(t.targetPct).toBe(6);
+        expect(t.gapPct).toBe(2);
+        expect(t.heldCount).toBe(3);
+    });
+    it('counts only held rows as positions', () => {
+        expect(totalsFor([row({ held: true }), row({ held: false, actualPct: null })]).heldCount).toBe(1);
+    });
+});
+
+describe('sortRows', () => {
+    it('sorts numbers with unknown values last in both directions', () => {
+        const rows = [row({ ticker: 'A', actualPct: 2 }), row({ ticker: 'B', actualPct: null }), row({ ticker: 'C', actualPct: 9 })];
+        const get = (r: PositionRow) => r.actualPct;
+        expect(sortRows(rows, get, 'desc').map(r => r.ticker)).toEqual(['C', 'A', 'B']);
+        expect(sortRows(rows, get, 'asc').map(r => r.ticker)).toEqual(['A', 'C', 'B']);
+    });
+    it('sorts text case-insensitively and does not change the input', () => {
+        const rows = [row({ ticker: 'b' }), row({ ticker: 'A' })];
+        expect(sortRows(rows, r => r.ticker, 'asc').map(r => r.ticker)).toEqual(['A', 'b']);
+        expect(rows.map(r => r.ticker)).toEqual(['b', 'A']);
+    });
+});
+
+describe('moneyText', () => {
+    const fmt = (v: number) => `$${v}`;
+    it('formats, masks in privacy mode, and dashes an unknown value', () => {
+        expect(moneyText(5, false, fmt)).toBe('$5');
+        expect(moneyText(5, true, fmt)).toBe('$••••');
+        expect(moneyText(null, true, fmt)).toBe('—');
+        expect(moneyText(0, false, fmt)).toBe('$0');
+    });
+});
+
+describe('sortRows ties', () => {
+    it('keeps the incoming order for rows that tie, so a pre-ordering shows through', () => {
+        const rows = [row({ ticker: 'A', actualPct: 0 }), row({ ticker: 'B', actualPct: 0 }), row({ ticker: 'C', actualPct: 3 })];
+        expect(sortRows(rows, r => r.actualPct, 'desc').map(r => r.ticker)).toEqual(['C', 'A', 'B']);
+    });
+});

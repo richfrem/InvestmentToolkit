@@ -16,7 +16,9 @@
  *     - fetchStockData() - Retrieves comprehensive financial and profile data for a specific ticker
  *     - fetchPortfolioSummary() - Fetches account-level valuation metrics (USD/CAD) and YTD performance
  *     - saveProjection() - Persists a versioned DCF projection object to the backend
+ *     - fetchPositionRows() - One row per ticker (shares, weights, target, thesis documents) for the shared positions table
  */
+import type { PositionRow } from '../components/positions/positionMath';
 export interface StockData {
     symbol: string;
     price: number;
@@ -919,6 +921,13 @@ export interface ValuationSupport {
     max: number;
     age_days: number | null;
     checks: { id: string; label: string; ok: boolean; note: string }[];
+}
+
+/** One row per ticker (shares, weights, target, gap, thesis documents) from the database read model. */
+export async function fetchPositionRows(): Promise<PositionRow[]> {
+    const response = await fetch('/api/screener/all-holdings');
+    if (!response.ok) throw new Error('Failed to fetch positions');
+    return response.json();
 }
 
 export async function fetchRecommendations(): Promise<Record<string, RecommendationRecord>> {

@@ -12,7 +12,7 @@
  *   - GET /watchlist - Retrieves user watchlist
  *   - POST /watchlist/add - Adds a ticker to the watchlist
  *   - POST /watchlist/remove - Removes a ticker from the watchlist
- *   - GET /all-holdings - Aggregates data from watchlist, thesis, actual portfolio, and reviews into a unified map
+ *   - GET /all-holdings - One row per ticker (buildPositionRows) from watchlist, thesis, positions, weights and recommendations
  * 
  * Key Input Dependencies:
  *   - investment_screener/backend/data/domain_model.sqlite (Live portfolio
@@ -39,6 +39,7 @@ import { InvestmentRepository } from '../services/InvestmentRepository';
 import { PortfolioRepository } from '../services/PortfolioRepository';
 import { ProjectionRepository } from '../services/ProjectionRepository';
 import { getWeightsFromDb } from './portfolio';
+import { buildPositionRows } from '../services/positionRows';
 
 const router = express.Router();
 
@@ -58,7 +59,7 @@ router.get('/recommendations', async (_req, res) => {
  * null (not []) when SQLite has no priced position data yet. */
 export function getScreenerPositionsFromDb(
     dbPath: string = DOMAIN_MODEL_DB_FILE
-): Array<{ symbol: string; shares: number; price: number }> | null {
+): Array<{ symbol: string; shares: number; price: number; averageCost: number | null }> | null {
     const repo = new PortfolioRepository(dbPath);
     try {
         const positions = repo.listPositionsBySymbol();
@@ -67,6 +68,7 @@ export function getScreenerPositionsFromDb(
             symbol: p.symbol,
             shares: p.quantity,
             price: p.price ?? p.averageCost ?? 0,
+            averageCost: p.averageCost ?? null,
         }));
     } finally {
         repo.close();
@@ -166,13 +168,14 @@ router.get('/all-holdings', async (_req, res) => {
 
         const repo = new InvestmentRepository(DOMAIN_MODEL_DB_FILE);
         let thesisHoldings;
+        let documentsByTicker: Record<string, string[]>;
         try {
             thesisHoldings = repo.listThesisHoldings();
+            documentsByTicker = repo.listDocumentMembers();
         } finally {
             repo.close();
         }
-        const thesisMap = new Map(thesisHoldings.map(h => [h.ticker, h]));
-
+        
         // Positions come live from domain_model.sqlite (account_investment JOIN investment_price
         // via PortfolioRepository); no priced positions gives an empty list.
         const positions: any[] = getScreenerPositionsFromDb() ?? [];
@@ -197,43 +200,22 @@ router.get('/all-holdings', async (_req, res) => {
         // Tickers with a saved projection (hasValuation)
         const projectionTickers = getProjectedTickersFromDb();
 
-        // 2. Build the union of all tickers
-        const allTickers = new Set<string>([
-            ...watchedTickers,
-            ...thesisMap.keys(),
-            ...Object.keys(actualMap),
-            ...projectionTickers
-        ]);
-
-        // 3. Map each ticker in the union
-        const result = Array.from(allTickers).map(ticker => {
-            const isCash = ticker === 'USD_CASH' || ticker.includes('CASH');
-            const h = thesisMap.get(ticker);
-            const live = actualMap[ticker];
-            const rev = reviewMap[ticker];
-            const hasValuation = projectionTickers.has(ticker);
-            const isWatched = watchedTickers.has(ticker);
-
-            // The action is the canonical recommendation verbatim (no fallbacks here).
-            const rec = recommendations[ticker] ?? null;
-            const action: string | null = rec?.action ?? null;
-
-            return {
-                ticker,
-                name: h?.name ?? (ticker === 'USD_CASH' ? 'US Dollar Cash' : ticker),
-                assetClass: h?.assetClass ?? (ticker.includes('CASH') ? 'CASH' : 'EQUITY'),
-                pillarId: h?.pillarId ?? (isCash ? 'cash' : 'other'),
-                subStrategyId: h?.subStrategyId ?? (isCash ? 'cash' : 'other'),
-                role: h?.role ?? (live ? 'untracked' : 'watchlist'),
-                targetPct: h?.targetWeight ?? null,
-                actualPct: live?.pct ?? null,
-                currentPrice: live?.price ?? null,
-                action,
-                recommendation: rec,
-                rationale: rev?.rationale ?? h?.agentRationale ?? h?.thesisForInclusion ?? (isWatched ? 'Monitored via Watchlist' : null),
-                hasValuation,
-                isWatched
-            };
+        // 2. One row per ticker (shares, cost, weight, target, gap, stance): the shared read model.
+        const weights: Record<string, number> = {};
+        for (const [ticker, live] of Object.entries(actualMap)) weights[ticker] = live.pct;
+        const rationaleByTicker: Record<string, string | null | undefined> = {};
+        for (const [ticker, rev] of Object.entries(reviewMap)) rationaleByTicker[ticker] = (rev as any)?.rationale;
+        const result = buildPositionRows({
+            thesisHoldings,
+            positions: positions.map(p => ({
+                symbol: p.symbol, shares: p.shares, price: p.price, averageCost: p.averageCost ?? null,
+            })),
+            weights,
+            recommendations,
+            watched: watchedTickers,
+            projected: projectionTickers,
+            rationaleByTicker,
+            documentsByTicker,
         });
 
         res.json(result);

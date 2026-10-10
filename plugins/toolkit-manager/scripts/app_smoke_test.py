@@ -92,6 +92,8 @@ PROBES = [
     Probe("/api/theses/target-portfolio", (200, 404)),
     Probe("/api/theses/target-portfolio/health", (200, 404)),
     Probe("/api/theses/sub-strategies", json_type=(dict, list)),
+    Probe("/api/theses/sub-strategies/asi_race", (200, 404), json_type=dict, keys=("content",),
+          note="the written thesis only; the frozen positions tables are stripped"),
     Probe("/api/trading/audit/today", json_type=dict, keys=("events",)),
     Probe("/api/trading/log", json_type=(dict, list)),
     Probe("/api/daily-brief/latest", (200, 404)),
