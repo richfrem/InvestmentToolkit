@@ -5,7 +5,7 @@ You are analyzing a sophisticated, institutionally structured investment portfol
 
 1. **The ASI Race (Primary: Infrastructure & Compute Buildout)**:
    - **GPU Cloud & Neoclouds**: Captures GPU infrastructure supply and sovereign compute capacity. Tickers include `CRWV` (CoreWeave), `NBIS` (Nebius), and `SHAZ` (SharonAI).
-   - **HBM & Memory Scarcity**: Critical silicon storage bottlenecks for AI training and inference. Tickers include `MU` (Micron), `SNDK` (SanDisk/WDC), and `SKHY` (SK Hynix proxy: 000660.KS / OTC: HXSCF).
+   - **HBM & Memory Scarcity**: Critical silicon storage bottlenecks for AI training and inference. Tickers include `MU` (Micron), `SNDK` (Sandisk, a separate company from WDC since February 2025), and `SKHY` (SK hynix ADR, listed on Nasdaq in July 2026).
    - **Foundries, Lithography & EDA**: Foundations of silicon design and manufacturing. Tickers include `TSM` (TSMC), `ASML`, `AMAT` (Applied Materials), `TSEM` (Tower Semi), `SNPS` (Synopsys), and `CDNS` (Cadence).
    - **High-Speed Networking & Optical Interconnects**: Chip-to-chip, server-to-server 800G/1.6T fabrics. Tickers include `CRDO` (Credo), `LITE` (Lumentum), `COHR` (Coherent), `CIEN` (Ciena), and `VIAV` (Viavi).
    - **AI Power Infrastructure**: Baseload power generation, nuclear, fuel cells, and micro-grid prime power for massive gigawatt-scale clusters. Tickers include `VST` (Vistra), `BE` (Bloom Energy), `PSIX` (Power Solutions Intl), `CEG`, and `OKLO`.
@@ -15,7 +15,7 @@ You are analyzing a sophisticated, institutionally structured investment portfol
    - Institutional ontologies, enterprise AI agent platforms, and operational data execution layers. Core Holding: `PLTR` (Palantir AIP).
 
 3. **Space Infrastructure & Defense AI**:
-   - Government modernization, tactical edge intelligence, and orbital communications. Tickers include `SPCX` (SpaceX private equity proxy), `CACI` (Defense IT/SIGINT), and `RKLB` (Rocket Lab).
+   - Government modernization, tactical edge intelligence, and orbital communications. Tickers include `SPCX` (SpaceX common stock, public since its June 2026 IPO), `CACI` (Defense IT/SIGINT), and `RKLB` (Rocket Lab).
 
 4. **Sovereign Finance & Digital Rails**:
    - Institutional infrastructure for automated machine-to-machine settlement. Tickers include `COIN` and `CRCL`.
@@ -33,7 +33,7 @@ Please review all material news, earnings, SEC filings, and macro developments f
 - **QUANTITATIVE EVIDENCE STANDARD:** State specific figures where applicable—such as contract values ($), power capacities (MW/GW), hash rates (EH/s), GPU cluster counts, delivery timelines, or specific broker upgrades with price targets.
 - **EVIDENCE LABELS & CITATIONS:** For every claim that could impact a trade, provide a dated source citation or link. Label items **FRESH** (published in the last 14 days) or **BACKGROUND** (historical context). State plainly what you could not verify.
 - **MACRO BENCHMARK FIGURES:** Quote the US 10-year Treasury yield and VIX with the specific date/time of your reading.
-- **SMART MONEY CONTEXT (SA LP LIQUIDATION):** Spence Analytics LP (SA LP) was reported by major financial news (CNBC / TechCrunch) to have liquidated its entire public equities portfolio to Citadel on 2026-07-30, retaining only private assets. Therefore, do **not** cite pre-liquidation (e.g. 2026-06-30) 13F filings as current positions; only report dated post-liquidation facts.
+- **SMART MONEY CONTEXT (SA LP LIQUIDATION):** Situational Awareness LP (SA LP, Aschenbrenner's fund) was reported (Reuters, CNBC, Bloomberg) to have sold most of its public stock holdings to Citadel on or about 2026-07-30; reports differ on whether all public holdings were sold, and the fund keeps other assets including private investments. Therefore, do **not** cite pre-liquidation (e.g. 2026-06-30) 13F filings as current positions; only report dated post-liquidation facts.
 - **CHALLENGE OUR BASELINE ANCHORS:** Below is our current portfolio baseline data (prices, 1W moves, target weights). If any figure conflicts with your live sources, explicitly list it under "Prompt Corrections / Anchor Discrepancies" at the end of your response.
 
 ---
@@ -72,6 +72,24 @@ Synthesize this week's market developments:
 3. **Supply Chain & Single-Source Bottlenecks**: High-speed optical transceivers (800G/1.6T), CoWoS advanced packaging, and high-voltage power transformers.
 4. **Bitcoin Mining Power Pivot**: Economics of miner-to-HPC transitions, hardware impairments, and utility interconnection timelines.
 5. **Space & Defense Infrastructure**: Government contracts, satellite constellations, and launch cadence.
+6. **Robotics & Physical AI (sector focus: `KOID`)**: Humanoid and embodied-AI developments this week: Tesla Optimus, Figure, Unitree and other named programs, warehouse and industrial automation deployments (for example Symbotic), actuator/sensor/reducer supply chains, and funding or order announcements. Say whether the sector moved on company news or on rates and sentiment.
+7. **Cash & rates (`PSU-U.TO`, USD cash)**: USD/CAD level and move, Bank of Canada and Fed expectations, money-market and short-term USD yields, and any change to the `PSU-U.TO` fund's distribution or ex-dividend date. Note any Canadian market holiday: the TSX is closed on Canadian holidays even when US markets are open.
+
+### Part 4 — Ledger-ready findings
+After Parts 1 to 3, end with one short section per item that has a **dated, material, sourced** fact, so it can be recorded verbatim. Use exactly this shape:
+
+```markdown
+## NVDA
+- 2026-10-04: one factual sentence (source: SEC 8-K / company release / named outlet).
+## MACRO
+- 10Y, VIX and credit-spread readings with the date and time.
+## KOID
+- Robotics-sector findings (Theme 6), each dated and sourced.
+## PSU-U.TO
+- Cash, USD/CAD, rates and holiday findings (Theme 7), each dated and sourced.
+```
+Rules: use `## TICKER` headings only for tickers in the table above, plus `## MACRO`, `## KOID` and `## PSU-U.TO`. One to three bullets each. Facts only, no recommendations. Mark anything you could not confirm from a primary source as `(unverified)`. Omit tickers with nothing material this week.
+
 
 
 ## AI forward-evidence gate
