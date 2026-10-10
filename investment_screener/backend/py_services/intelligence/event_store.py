@@ -1,66 +1,61 @@
-"""Shared event-append helper for the ``observations.jsonl`` ledger.
+"""Event-append helper for the intelligence ledger (``intelligence.sqlite``).
 
-This is the single place ``event_sequence`` assignment, ``content_hash``
-computation, and idempotency-key dedup logic live. Every writer (research
-migration, SKILL.md-driven writers, etc.) should call ``append_event``
-rather than writing to the ledger file directly, per ADR-028's
-"Replay-first authority flow" — the ledger file is the source of truth and
-the SQLite read model (see ``db_client.py`` / ``replay_ledger.py``) is
-rebuilt from it.
+Purpose:
+    The single place ``event_sequence`` assignment, ``content_hash`` computation, ticker to
+    instrument resolution and idempotency-key dedup live. Every writer (research
+    persistence, TA sweeps, prediction ledger, daily brief, SKILL.md-driven writers) calls
+    ``append_event`` or ``append_or_supersede_event`` with an open ledger connection; the
+    ledger database is the only store (ADR-028, ADR-038).
+
+Layer:
+    Backend / Python Services / Data Persistence
+
+Usage Examples:
+    python3 -m intelligence.event_store --event-type RESEARCH_IMPORT --ticker NVDA \\
+        --effective-at 2026-10-09 --status ACTIVE --title "NVDA note" --body "text"
+
+Key Functions (Index):
+    - default_db_path(): canonical intelligence.sqlite location
+    - append_event(): insert one event (deduped by idempotency key) and return its id
+    - append_or_supersede_event(): insert, or correct the event already written under a key
+    - _main(): CLI for SKILL.md-driven writers
+
+Key Input Dependencies:
+    - intelligence.sqlite (via db_client.initialize_db)
+
+Key Output Dependencies:
+    - intelligence_event, instrument rows
 """
 
-import json
 import hashlib
+import json
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .event_repository import insert_event
+from .instrument_repository import resolve_instrument
 
-def _last_sequence(jsonl_path: str) -> int:
-    """Return the highest ``event_sequence`` already present in the ledger.
 
-    Args:
-        jsonl_path: Path to the JSONL ledger file.
+def default_db_path() -> Path:
+    """Return the canonical ``intelligence.sqlite`` location.
 
-    Returns:
-        The highest sequence number found, or 0 if the file does not exist
-        or contains no events yet.
+    Derived from this file's location so the default works regardless of the caller's cwd.
     """
-    path = Path(jsonl_path)
-    if not path.exists():
-        return 0
-    last = 0
-    for line in path.read_text().splitlines():
-        if not line.strip():
-            continue
-        last = json.loads(line)["event_sequence"]
-    return last
+    repo_root = Path(__file__).resolve().parents[4]
+    return repo_root / "investment_screener/backend/data/intelligence.sqlite"
 
 
-def _find_by_idempotency_key(jsonl_path: str, idempotency_key: str):
-    """Look up an existing event_id for a given idempotency key.
-
-    Args:
-        jsonl_path: Path to the JSONL ledger file.
-        idempotency_key: Caller-supplied dedup key to search for.
-
-    Returns:
-        The matching ``event_id`` if found, else ``None``.
-    """
-    path = Path(jsonl_path)
-    if not path.exists():
-        return None
-    for line in path.read_text().splitlines():
-        if not line.strip():
-            continue
-        record = json.loads(line)
-        if record.get("idempotency_key") == idempotency_key:
-            return record["event_id"]
-    return None
+def _find_by_idempotency_key(conn, idempotency_key: str):
+    """Return the ``event_id`` already stored under ``idempotency_key``, else None."""
+    row = conn.execute(
+        "SELECT event_id FROM intelligence_event WHERE idempotency_key = ?;", (idempotency_key,)
+    ).fetchone()
+    return row[0] if row else None
 
 
 def append_event(
-    jsonl_path: str,
+    conn,
     event_type: str,
     effective_at: str,
     status: str,
@@ -72,17 +67,16 @@ def append_event(
     supersedes_event_id: str | None = None,
     idempotency_key: str | None = None,
 ) -> str:
-    """Append a new event record to the JSONL ledger.
+    """Insert a new event into ``intelligence_event`` and return its id.
 
-    Assigns an incrementing ``event_sequence``, computes a ``content_hash``,
-    and — when ``idempotency_key`` is supplied and already present in the
-    ledger — returns the existing event's id instead of writing a duplicate
-    row.
+    Assigns the next ``event_sequence``, computes a ``content_hash``, resolves ``ticker`` to
+    an ``instrument_id`` and, when ``idempotency_key`` is already stored, returns the
+    existing event's id instead of writing a duplicate. When ``supersedes_event_id`` is set
+    the superseded event becomes ``SUPERSEDED``.
 
     Args:
-        jsonl_path: Path to the JSONL ledger file (created if missing).
-        event_type: One of the ``intelligence_event.event_type`` taxonomy
-            values (see ``db_client.py``).
+        conn: Open sqlite3 connection to the ledger (``db_client.initialize_db``).
+        event_type: One of the ``intelligence_event.event_type`` taxonomy values.
         effective_at: ISO date/timestamp the event pertains to.
         status: One of the ``intelligence_event.status`` taxonomy values.
         title: Short event title.
@@ -94,11 +88,13 @@ def append_event(
         idempotency_key: Optional caller-supplied dedup key.
 
     Returns:
-        The ``event_id`` of the newly written (or deduped, pre-existing)
-        event.
+        The ``event_id`` of the newly written (or deduped, pre-existing) event.
+
+    Raises:
+        ValueError: If the database rejects the row (invalid event_type/status).
     """
     if idempotency_key:
-        existing = _find_by_idempotency_key(jsonl_path, idempotency_key)
+        existing = _find_by_idempotency_key(conn, idempotency_key)
         if existing:
             return existing
 
@@ -106,10 +102,11 @@ def append_event(
     content_hash = hashlib.sha256(
         f"{event_type}|{effective_at}|{title}|{body_markdown}".encode("utf-8")
     ).hexdigest()
+    sequence = conn.execute("SELECT COALESCE(MAX(event_sequence), 0) + 1 FROM intelligence_event;").fetchone()[0]
     record = {
         "event_id": event_id,
-        "event_sequence": _last_sequence(jsonl_path) + 1,
-        "ticker": ticker,
+        "event_sequence": sequence,
+        "instrument_id": resolve_instrument(conn, ticker) if ticker else None,
         "event_type": event_type,
         "effective_at": effective_at,
         "ingested_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -122,93 +119,70 @@ def append_event(
         "idempotency_key": idempotency_key,
         "content_hash": content_hash,
     }
-    path = Path(jsonl_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a") as f:
-        f.write(json.dumps(record) + "\n")
+    if not insert_event(conn, record):
+        raise ValueError(
+            f"ledger rejected event {event_type!r}/{status!r} (invalid event_type or status, or a duplicate key)"
+        )
+    if supersedes_event_id:
+        conn.execute(
+            "UPDATE intelligence_event SET status = 'SUPERSEDED' WHERE event_id = ?;", (supersedes_event_id,)
+        )
+        conn.commit()
     return event_id
 
 
-def _latest_in_idempotency_chain(jsonl_path: str, idempotency_key: str):
+def _latest_in_idempotency_chain(conn, idempotency_key: str):
     """Return (record, chain_length) for the newest event written under a key.
 
-    A chain is the original event (``key``) plus any corrections
-    (``key#r2``, ``key#r3``, ...) appended by ``append_or_supersede_event``.
-
-    Args:
-        jsonl_path: Path to the JSONL ledger file.
-        idempotency_key: Base (un-suffixed) idempotency key.
+    A chain is the original event (``key``) plus any corrections (``key#r2``, ``key#r3``, ...)
+    appended by ``append_or_supersede_event``.
 
     Returns:
-        ``(latest_record, chain_length)``, or ``(None, 0)`` if no event has
-        been written under the key yet.
+        ``(latest_record, chain_length)`` where the record has ``event_id`` and
+        ``payload_json``, or ``(None, 0)`` if no event has been written under the key yet.
     """
-    path = Path(jsonl_path)
-    if not path.exists():
+    rows = conn.execute(
+        "SELECT event_id, payload_json, idempotency_key FROM intelligence_event "
+        "WHERE idempotency_key = ? OR idempotency_key LIKE ? ORDER BY event_sequence;",
+        (idempotency_key, f"{idempotency_key}#r%"),
+    ).fetchall()
+    if not rows:
         return None, 0
-    latest, count = None, 0
-    for line in path.read_text().splitlines():
-        if not line.strip():
-            continue
-        record = json.loads(line)
-        key = record.get("idempotency_key") or ""
-        if key == idempotency_key or key.startswith(f"{idempotency_key}#r"):
-            latest, count = record, count + 1
-    return latest, count
+    latest = rows[-1]
+    return {"event_id": latest[0], "payload_json": latest[1]}, len(rows)
 
 
-def append_or_supersede_event(
-    jsonl_path: str,
-    *,
-    idempotency_key: str,
-    payload: dict,
-    **event_fields,
-) -> str:
+def append_or_supersede_event(conn, *, idempotency_key: str, payload: dict, **event_fields) -> str:
     """Append an event, or correct the one already written under its key.
 
-    ``append_event`` treats an existing ``idempotency_key`` as "already
-    written" and drops the new payload, so a same-key re-run can never fix
-    bad data. This keeps true retries idempotent but lets a changed payload
-    through as a correction that supersedes the previous event, which the
-    replay then flips to ``SUPERSEDED``.
+    ``append_event`` treats an existing ``idempotency_key`` as "already written" and drops the
+    new payload, so a same-key re-run can never fix bad data. This keeps true retries
+    idempotent but lets a changed payload through as a correction that supersedes the previous
+    event, which then becomes ``SUPERSEDED``.
 
     Args:
-        jsonl_path: Path to the JSONL ledger file (created if missing).
+        conn: Open sqlite3 connection to the ledger.
         idempotency_key: Base dedup key for the logical event.
-        payload: Structured payload; compared against the latest event in
-            the key's chain to tell a retry from a correction.
+        payload: Structured payload; compared against the latest event in the key's chain to
+            tell a retry from a correction.
         **event_fields: Remaining ``append_event`` arguments.
 
     Returns:
-        The ``event_id`` of the event now current for the key — the existing
-        one when the payload is unchanged, else the newly appended one.
+        The ``event_id`` of the event now current for the key: the existing one when the
+        payload is unchanged, else the newly appended one.
     """
-    latest, chain_length = _latest_in_idempotency_chain(jsonl_path, idempotency_key)
+    latest, chain_length = _latest_in_idempotency_chain(conn, idempotency_key)
     if latest is None:
-        return append_event(jsonl_path, payload=payload, idempotency_key=idempotency_key, **event_fields)
+        return append_event(conn, payload=payload, idempotency_key=idempotency_key, **event_fields)
     if latest.get("payload_json") == json.dumps(payload):
         return latest["event_id"]
     return append_event(
-        jsonl_path,
+        conn,
         payload=payload,
         supersedes_event_id=latest["event_id"],
         idempotency_key=f"{idempotency_key}#r{chain_length + 1}",
         **event_fields,
     )
-
-
-def _default_jsonl_path() -> Path:
-    """Return the canonical ``observations.jsonl`` location.
-
-    Derived from this file's location so the default works regardless of
-    the caller's cwd, per the ``investment_screener/backend/data/``
-    convention used by ``market_regime.py`` et al.
-
-    Returns:
-        The repo-relative default path to the JSONL ledger.
-    """
-    repo_root = Path(__file__).resolve().parents[4]
-    return repo_root / "investment_screener/backend/data/observations.jsonl"
 
 
 def _main() -> None:
@@ -225,7 +199,7 @@ def _main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Append one event to the observations.jsonl ledger."
+        description="Append one event to the intelligence ledger (intelligence.sqlite)."
     )
     parser.add_argument("--event-type", required=True, dest="event_type")
     parser.add_argument("--ticker")
@@ -237,10 +211,10 @@ def _main() -> None:
     parser.add_argument("--source-id", dest="source_id")
     parser.add_argument("--idempotency-key", dest="idempotency_key")
     parser.add_argument(
-        "--jsonl-path",
-        dest="jsonl_path",
-        default=str(_default_jsonl_path()),
-        help="Path to the observations.jsonl ledger (default: %(default)s).",
+        "--db-path",
+        dest="db_path",
+        default=str(default_db_path()),
+        help="Path to intelligence.sqlite (default: %(default)s).",
     )
     args = parser.parse_args()
 
@@ -252,8 +226,11 @@ def _main() -> None:
         parser.error("one of --body-file or --body is required")
         return
 
+    from .db_client import initialize_db
+
+    conn = initialize_db(args.db_path)
     event_id = append_event(
-        args.jsonl_path,
+        conn,
         event_type=args.event_type,
         effective_at=args.effective_at,
         status=args.status,
@@ -263,6 +240,7 @@ def _main() -> None:
         source_id=args.source_id,
         idempotency_key=args.idempotency_key,
     )
+    conn.close()
     print(event_id)
 
 

@@ -1,18 +1,13 @@
 """Regression test: harvest_earnings_expectations() must never write to the real
-ledger unless explicitly told to.
+ledger database unless explicitly told to.
 
-Since Wave 5D the write lands in the intelligence ledger (observations.jsonl,
-overridden via jsonl_path); predictions.jsonl is archived and must not reappear.
-
-Root cause (logged in .agent/map-debt.md as OPEN before this fix): the function
-had no path-override parameter at all, so any test that forgot to mock
-_fetch_consensus_for_ticker/_append_prediction (e.g. a test that only mocked
-_load_predictions to simulate a missing-file error) would silently fall through
-to a REAL yfinance network call and a REAL append to the tracked ledger file.
-This test proves the fix: passing predictions_path routes both the read and
-the write to an isolated tmp_path file, never the real one, even when the
-per-ticker network/consensus mocks are absent.
+The write lands in the intelligence ledger database given by ``intel_db_path``. A test that
+only mocked ``_load_predictions`` (to simulate a failure) once fell through to a REAL yfinance
+network call and a REAL write. These tests prove that passing ``intel_db_path`` routes both the
+read and the write to an isolated tmp_path database, even when the per-ticker network and
+consensus mocks are absent.
 """
+import sqlite3
 import sys
 from pathlib import Path
 from unittest.mock import patch, MagicMock
@@ -20,8 +15,7 @@ from unittest.mock import patch, MagicMock
 REPO_ROOT = Path(__file__).resolve().parents[4]
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-REAL_PREDICTIONS_PATH = DATA_DIR / "predictions.jsonl"
-REAL_LEDGER_PATH = DATA_DIR / "observations.jsonl"
+REAL_LEDGER_PATH = DATA_DIR / "intelligence.sqlite"
 
 sys.path.insert(0, str(PY_SERVICES))
 
@@ -29,18 +23,15 @@ from earnings_expectations import harvest_earnings_expectations  # noqa: E402
 
 
 def _real_files_state():
-    """(exists, mtime, size) per real data file — gitignored, so absent in a fresh worktree."""
-    return [
-        (p.exists(), p.stat().st_mtime, p.stat().st_size) if p.exists() else (False, None, None)
-        for p in (REAL_PREDICTIONS_PATH, REAL_LEDGER_PATH)
-    ]
+    """(exists, mtime, size) of the real ledger database — gitignored, so absent in a fresh worktree."""
+    p = REAL_LEDGER_PATH
+    return [(p.exists(), p.stat().st_mtime, p.stat().st_size) if p.exists() else (False, None, None)]
 
 
-def test_harvest_writes_to_overridden_path_not_the_real_ledger(tmp_path):
-    """A fully-mocked harvest call, given explicit path overrides, must
-    read/write only tmp_path files and leave the real ledger untouched."""
-    fake_path = tmp_path / "predictions.jsonl"
-    fake_ledger = tmp_path / "observations.jsonl"
+def test_harvest_writes_to_the_overridden_database_not_the_real_ledger(tmp_path):
+    """A fully-mocked harvest call, given an explicit intel_db_path, reads and writes only that
+    database and leaves the real ledger untouched."""
+    fake_db = tmp_path / "intelligence.sqlite"
     real_before = _real_files_state()
 
     new_consensus = {
@@ -56,30 +47,28 @@ def test_harvest_writes_to_overridden_path_not_the_real_ledger(tmp_path):
         mock_ticker_inst.info = {"currentPrice": 210.0}
         mock_ticker.return_value = mock_ticker_inst
 
-        result = harvest_earnings_expectations(
-            ["AAPL"], predictions_path=fake_path,
-            intel_db_path=tmp_path / "intelligence.sqlite",
-            jsonl_path=fake_ledger,
-        )
+        result = harvest_earnings_expectations(["AAPL"], intel_db_path=fake_db)
 
     assert len(result) == 1
-    assert "AAPL:earnings_expectation:2026-07-12" in fake_ledger.read_text(), \
+    conn = sqlite3.connect(str(fake_db))
+    keys = [r[0] for r in conn.execute("SELECT idempotency_key FROM intelligence_event;")]
+    conn.close()
+    assert "prediction-claim-AAPL:earnings_expectation:2026-07-12" in keys, \
         "expected the override ledger to receive the write"
     assert _real_files_state() == real_before, \
-        "real ledger files must never be touched when paths are overridden"
+        "the real ledger database must never be touched when intel_db_path is overridden"
 
 
-def test_harvest_missing_predictions_file_does_not_touch_real_ledger_even_without_full_mocks(tmp_path):
-    """Regression for the exact bug found: a test that only mocks _load_predictions
-    (to simulate a missing/corrupt file) must not silently fall through to a real
-    network call and a real write, just because predictions_path was overridden."""
-    fake_path = tmp_path / "predictions.jsonl"
+def test_harvest_load_failure_does_not_touch_the_real_ledger_even_without_full_mocks(tmp_path):
+    """A test that only mocks _load_predictions (to simulate a failure) must not silently fall
+    through to a real network call and a real write, just because intel_db_path was overridden."""
+    fake_db = tmp_path / "intelligence.sqlite"
     real_before = _real_files_state()
 
     with patch("earnings_expectations._load_predictions",
-               side_effect=FileNotFoundError("predictions.jsonl not found")), \
+               side_effect=FileNotFoundError("ledger not found")), \
          patch("earnings_expectations._fetch_consensus_for_ticker", return_value=None):
-        result = harvest_earnings_expectations(["AAPL"], predictions_path=fake_path)
+        result = harvest_earnings_expectations(["AAPL"], intel_db_path=fake_db)
 
     assert result == []
     assert _real_files_state() == real_before

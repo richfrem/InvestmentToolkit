@@ -34,11 +34,6 @@ REPO_ROOT       = Path(__file__).resolve().parents[3]
 DB_PATH         = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 TV_CLI          = REPO_ROOT / "tradingview-cdp/cli.js"
 
-# Conventional default path for the optional --save-results flat-file export (opt-in only,
-# Wave 5B) — used when --save-results is passed with no explicit value. Not auto-written and
-# not served by any backend route.
-TA_SWEEP_RESULTS_PATH = REPO_ROOT / "investment_screener/backend/data/ta-sweep-results.json"
-
 # Always skip — cash / non-equity entries. "CASH_USD" is the domain_model.sqlite
 # symbol for the cash position; "USD_CASH" is kept so neither spelling can leak
 # a cash "ticker".
@@ -504,79 +499,44 @@ def enrich_results(
     return enriched
 
 
-def save_sweep_results(
-    results: list[dict[str, Any]],
-    jsonl_path: Path | None = None,
-    db_path: Path | None = None,
-    json_export_path: Path | None = None,
-) -> None:
-    """Write TECHNICAL_SWEEP events to the ledger and SQLite read-model (always) and,
-    only if json_export_path is given, an ad-hoc flat-JSON export snapshot.
+def save_sweep_results(results: list[dict[str, Any]], db_path: Path | None = None) -> None:
+    """Write one TECHNICAL_SWEEP event per ticker to the intelligence ledger.
 
-    Wave 5B (ADR-029): the ledger/SQLite write is the source of truth and always runs.
-    The flat-file JSON export is now opt-in only — for manual debugging/export, never a
-    dependency any real consumer relies on (ta-sweep-results.json itself was archived
-    to ARCHIVE/ this wave; see Task 5).
+    A same-day re-sweep with different readings supersedes the earlier event (plain
+    idempotency would silently keep a bad batch for the rest of the day).
 
     Args:
-        results: Enriched per-ticker sweep results from main sweep loop.
-        jsonl_path: Optional path to observations.jsonl ledger (defaults to the standard path).
-        db_path: Optional path to intelligence.sqlite database (defaults to the standard path).
-        json_export_path: If given, also write a flat {timestamp, scan_date, count, results}
-            JSON snapshot to this path — opt-in only, not written by default.
+        results: Enriched per-ticker sweep results from the main sweep loop.
+        db_path: Optional path to intelligence.sqlite (defaults to the standard path).
     """
-    now = datetime.now(timezone.utc)
-    scan_date = now.strftime("%Y-%m-%d")
-
-    if json_export_path is not None:
-        payload: dict[str, Any] = {
-            "timestamp": now.isoformat(),
-            "scan_date": scan_date,
-            "count": len(results),
-            "results": results,
-        }
-        json_export_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(json_export_path, "w") as f:
-            json.dump(payload, f, indent=2)
-
-    from intelligence.event_store import append_or_supersede_event, _default_jsonl_path
-    from intelligence.replay_ledger import replay_events_to_db
+    from intelligence.event_store import append_or_supersede_event
     from intelligence.db_client import initialize_db
     import sys
 
-    # Testing guardrail: bypass writing to real ledger during generic tests that do not configure mock paths
-    if "pytest" in sys.modules and jsonl_path is None and db_path is None:
+    # Testing guardrail: bypass writing to the real ledger during generic tests that do not configure a path
+    if "pytest" in sys.modules and db_path is None:
         return
 
-    resolved_jsonl_path = jsonl_path or _default_jsonl_path()
+    scan_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     resolved_db_path = db_path or (REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
-
-    for res in results:
-        ticker = res["ticker"]
-        # Convert any negative or invalid ADX/RSI values to string or omit if not matching bounds,
-        # but the payload_json will contain the full dict cleanly.
-        # A same-day re-sweep with different readings supersedes the earlier event
-        # (plain idempotency would silently keep a bad batch for the rest of the day).
-        append_or_supersede_event(
-            str(resolved_jsonl_path),
-            event_type="TECHNICAL_SWEEP",
-            effective_at=scan_date,
-            status="ACTIVE",
-            title=f"TA Sweep for {ticker}",
-            body_markdown=f"Batch technical indicators for {ticker}.",
-            ticker=ticker,
-            source_id="tradingview-cdp",
-            payload=res,
-            idempotency_key=f"ta-sweep-{ticker}-{scan_date}",
-        )
-
-    # 3. Replay to SQLite read-model
     conn = initialize_db(str(resolved_db_path))
     try:
-        replay_events_to_db(str(resolved_jsonl_path), conn)
+        for res in results:
+            ticker = res["ticker"]
+            append_or_supersede_event(
+                conn,
+                event_type="TECHNICAL_SWEEP",
+                effective_at=scan_date,
+                status="ACTIVE",
+                title=f"TA Sweep for {ticker}",
+                body_markdown=f"Batch technical indicators for {ticker}.",
+                ticker=ticker,
+                source_id="tradingview-cdp",
+                payload=res,
+                idempotency_key=f"ta-sweep-{ticker}-{scan_date}",
+            )
     finally:
         conn.close()
-
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
@@ -586,16 +546,6 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Daily TA sweep across portfolio holdings")
     parser.add_argument("--skip",  default="", help="Extra comma-separated tickers to skip")
     parser.add_argument("--delay", default="1500", help="CDP wait ms per ticker (default 1500)")
-    parser.add_argument(
-        "--save-results",
-        nargs="?",
-        const=str(TA_SWEEP_RESULTS_PATH),
-        metavar="PATH",
-        help=(
-            "Also export a flat-file JSON snapshot to PATH (default default: no export — "
-            "ledger/SQLite write is always the source of truth)"
-        ),
-    )
     parser.add_argument(
         "--holdings-only",
         action="store_true",
@@ -633,12 +583,7 @@ def main() -> None:
 
     print(json.dumps(scan_results, indent=2))
 
-    # SQLite/ledger write is always the source of truth (Wave 5B) — the --save-results
-    # flag now controls an OPTIONAL flat-JSON export only, off by default.
-    export_path = Path(args.save_results) if args.save_results else None
-    save_sweep_results(scan_results, json_export_path=export_path)
-    if export_path:
-        print(f"Results also exported → {export_path}", file=sys.stderr)
+    save_sweep_results(scan_results)
 
 
 if __name__ == "__main__":

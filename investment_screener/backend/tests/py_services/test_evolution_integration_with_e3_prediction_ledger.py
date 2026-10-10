@@ -17,10 +17,7 @@ from evolution_events import (  # noqa: E402
     generate_evolution_correlation_report,
     load_events,
 )
-from prediction_ledger import (  # noqa: E402
-    append_prediction,
-    load_predictions,
-)
+from prediction_ledger import append_prediction  # noqa: E402
 
 
 class TestEvolutionIntegrationRoundTrip:
@@ -30,8 +27,8 @@ class TestEvolutionIntegrationRoundTrip:
         """Full end-to-end workflow: emit events, generate report."""
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Emit multiple event types during a week
         emit_earnings_event(
@@ -69,13 +66,10 @@ class TestEvolutionIntegrationRoundTrip:
     def test_emitters_coexist_with_prediction_ledger(self, tmp_path, monkeypatch):
         """Verify evolution events don't interfere with E3 ledger."""
         import evolution_events
-        import prediction_ledger
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        predictions_path = tmp_path / "predictions.jsonl"
+        events_path = tmp_path / "domain_model.sqlite"
 
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
-        monkeypatch.setattr(prediction_ledger, "PREDICTIONS_PATH", predictions_path)
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Emit to both systems
         emit_earnings_event(
@@ -90,31 +84,33 @@ class TestEvolutionIntegrationRoundTrip:
             "ticker": "AAPL",
             "type": "action_rating",
         }
-        ledger_path = tmp_path / "observations.jsonl"
-        append_prediction(pred, predictions_path, jsonl_path=ledger_path)
+        db_path = tmp_path / "intelligence.sqlite"
+        append_prediction(pred, db_path)
 
-        # Both systems keep their own files: evolution events in their JSONL,
-        # predictions as PREDICTION_CLAIM events in the intelligence ledger
-        # (predictions.jsonl is no longer written since Wave 5D).
+        # Evolution events and prediction claims are stored separately; predictions are
+        # PREDICTION_CLAIM events in the intelligence ledger database.
         events = load_events(events_path)
+        import sqlite3
+        conn = sqlite3.connect(str(db_path))
         claims = [
-            json.loads(json.loads(line)["payload_json"])
-            for line in ledger_path.read_text().splitlines()
-            if json.loads(line)["event_type"] == "PREDICTION_CLAIM"
+            json.loads(row[0])
+            for row in conn.execute(
+                "SELECT payload_json FROM intelligence_event WHERE event_type = 'PREDICTION_CLAIM';"
+            )
         ]
+        conn.close()
 
         assert len(events) == 1
         assert events[0]["event_id"] == "AAPL:earnings_catalyst:2026-01-15"
         assert len(claims) == 1
         assert claims[0]["id"] == "AAPL:action_rating:2026-01-15"
-        assert not predictions_path.exists()
 
     def test_weekly_report_with_multiple_events(self, tmp_path, monkeypatch):
         """Generate weekly report aggregating multiple event types."""
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Add multiple events in week
         emit_earnings_event(
@@ -151,8 +147,8 @@ class TestEvolutionIntegrationRoundTrip:
         """Verify dedup when same event is re-emitted."""
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # First emission
         emit_earnings_event(
@@ -185,8 +181,8 @@ class TestEvolutionIntegrationRoundTrip:
         """Verify report aggregates by all 6 event types."""
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Create one event of each type in the week
         emit_earnings_event(
@@ -223,8 +219,8 @@ class TestEvolutionIntegrationRoundTrip:
         """Verify report has ISO format timestamp."""
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_earnings_event(
             ticker="AAPL",
@@ -244,7 +240,7 @@ class TestEvolutionIntegrationRoundTrip:
         import evolution_events
 
         # Use invalid path to force errors
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", Path("/invalid/path"))
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", Path("/invalid/path"))
 
         # None of these should raise
         emit_earnings_event("A", EarningsGrade.BEAT, "2026-01-15")
@@ -262,8 +258,8 @@ class TestEvolutionIntegrationRoundTrip:
         """Verify position context data is preserved through storage."""
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_earnings_event(
             ticker="AAPL",
@@ -285,8 +281,8 @@ class TestEvolutionIntegrationRoundTrip:
         """Verify weekly report doesn't include events from other weeks."""
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_earnings_event(
             ticker="AAPL",

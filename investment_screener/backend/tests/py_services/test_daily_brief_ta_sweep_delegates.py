@@ -41,21 +41,16 @@ def test_ta_age_hours_reads_from_database(tmp_path):
     from intelligence.db_client import initialize_db  # noqa: E402
     from intelligence.event_store import append_event  # noqa: E402
 
-    import sqlite3
-    import time
-
     db_path = tmp_path / "intelligence.sqlite"
-    jsonl_path = tmp_path / "observations.jsonl"
 
     # Initialize test database
     conn = initialize_db(str(db_path))
     conn.execute("INSERT INTO instrument VALUES ('us-msft', 'MSFT', 'NASDAQ', 'Microsoft', '2026-07-18', NULL);")
     conn.commit()
-    conn.close()
 
     # Append TECHNICAL_SWEEP to ledger
     append_event(
-        str(jsonl_path),
+        conn,
         event_type="TECHNICAL_SWEEP",
         effective_at="2026-07-18",
         status="ACTIVE",
@@ -66,11 +61,6 @@ def test_ta_age_hours_reads_from_database(tmp_path):
         payload={"ticker": "MSFT"},
         idempotency_key="ta-sweep-msft-2026-07-18"
     )
-
-    # Replay event to DB
-    from intelligence.replay_ledger import replay_events_to_db
-    conn = sqlite3.connect(str(db_path))
-    replay_events_to_db(str(jsonl_path), conn)
     conn.close()
 
     age = _ta_age_hours(db_path=str(db_path))
@@ -94,11 +84,8 @@ def test_load_latest_ta_sweep_count_reads_from_database(tmp_path):
     from daily_brief import _load_latest_ta_sweep_count  # noqa: PLC0415
     from intelligence.db_client import initialize_db  # noqa: E402
     from intelligence.event_store import append_event  # noqa: E402
-    from intelligence.replay_ledger import replay_events_to_db  # noqa: E402
-    import sqlite3
 
     db_path = tmp_path / "intelligence.sqlite"
-    jsonl_path = tmp_path / "observations.jsonl"
 
     conn = initialize_db(str(db_path))
     for ticker in ("MSFT", "NVDA", "AAPL"):
@@ -107,17 +94,14 @@ def test_load_latest_ta_sweep_count_reads_from_database(tmp_path):
             (f"us-{ticker.lower()}", ticker, ticker),
         )
     conn.commit()
-    conn.close()
 
     for ticker in ("MSFT", "NVDA", "AAPL"):
         append_event(
-            str(jsonl_path), event_type="TECHNICAL_SWEEP", effective_at="2026-07-18",
+            conn, event_type="TECHNICAL_SWEEP", effective_at="2026-07-18",
             status="ACTIVE", title=f"TA Sweep {ticker}", body_markdown="x",
             ticker=ticker, source_id="tradingview-cdp", payload={"ticker": ticker},
             idempotency_key=f"ta-sweep-{ticker}-2026-07-18",
         )
-    conn = sqlite3.connect(str(db_path))
-    replay_events_to_db(str(jsonl_path), conn)
     conn.close()
 
     count = _load_latest_ta_sweep_count(db_path=str(db_path))

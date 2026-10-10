@@ -5,8 +5,8 @@ evolution_events.py - Python utility script.
 Purpose:
     Evolution events — G4 append-only event ledger and tracking system.
 
-Tracks six types of portfolio evolution events with append-only JSONL storage:
-  - data/evolution_events.jsonl    one record per event
+Tracks six types of portfolio evolution events, stored in domain_model.sqlite
+(evolution_event table, one row per event record):
   - Dedup on (ticker, event_type, event_date)
   - Outcome fields NULL until 7/30 day windows have passed
 
@@ -27,7 +27,7 @@ Usage:
     )
 
 Key Input Dependencies:
-    - investment_screener/backend/data/evolution_events.jsonl (existing events, for dedup and outcome backfill)
+    - investment_screener/backend/data/domain_model.sqlite evolution_event table (existing events, for dedup and outcome backfill)
     - yfinance for historical price data (7/30-day outcome windows)
 
 Layer:
@@ -47,8 +47,8 @@ Key Functions (Index):
     - _make_event_context()
     - _make_event_outcome()
     - _make_evolution_event()
-    - _append_jsonl()
-    - _load_jsonl()
+    - _append_event()
+    - _load_events()
     - _dedup_key()
     - _should_append_event()
     - emit_earnings_event()
@@ -63,7 +63,7 @@ Key Functions (Index):
     - main()
 
 Key Output Dependencies:
-    - investment_screener/backend/data/evolution_events.jsonl (append-only; rewritten when outcomes are populated)
+    - investment_screener/backend/data/domain_model.sqlite evolution_event table (rows appended; outcomes filled in later)
 """
 from __future__ import annotations
 
@@ -76,9 +76,19 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.evolution_event_repository import (  # noqa: E402
+    insert_event,
+    list_events,
+    list_events_with_seq,
+    update_event,
+)
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-EVOLUTION_EVENTS_PATH = DATA_DIR / "evolution_events.jsonl"
+EVOLUTION_DB_PATH = DATA_DIR / "domain_model.sqlite"
 
 
 # ── Enums and Event Types ──────────────────────────────────────────────────────
@@ -170,19 +180,22 @@ def _make_evolution_event(
 # ── Helper Functions ───────────────────────────────────────────────────────────
 
 
-def _append_jsonl(record: dict[str, Any], path: Path) -> None:
-    """Append one JSON record as a line, creating parent dirs as needed."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a") as f:
-        f.write(json.dumps(record) + "\n")
+def _append_event(record: dict[str, Any], db_path: Path) -> None:
+    """Store one event record in the evolution_event table of the database at ``db_path``."""
+    conn = initialize_db(str(db_path))
+    try:
+        insert_event(conn, record)
+    finally:
+        conn.close()
 
 
-def _load_jsonl(path: Path) -> list[dict[str, Any]]:
-    """Load every record from a JSONL file, or [] if it doesn't exist."""
-    if not path.exists():
-        return []
-    with open(path) as f:
-        return [json.loads(line) for line in f if line.strip()]
+def _load_events(db_path: Path) -> list[dict[str, Any]]:
+    """Every stored event record, oldest first."""
+    conn = initialize_db(str(db_path))
+    try:
+        return list_events(conn)
+    finally:
+        conn.close()
 
 
 def _dedup_key(record: dict[str, Any]) -> tuple[str, str, str]:
@@ -233,7 +246,7 @@ def emit_earnings_event(
         shares: Position size.
     """
     try:
-        existing = _load_jsonl(EVOLUTION_EVENTS_PATH)
+        existing = _load_events(EVOLUTION_DB_PATH)
         event = _make_evolution_event(
             ticker=ticker,
             event_type=EventType.EARNINGS_CATALYST,
@@ -254,7 +267,7 @@ def emit_earnings_event(
             shares=shares,
         )
         if _should_append_event(event, existing):
-            _append_jsonl(event, EVOLUTION_EVENTS_PATH)
+            _append_event(event, EVOLUTION_DB_PATH)
     except Exception:
         # Non-blocking: silently fail
         pass
@@ -283,7 +296,7 @@ def emit_breaker_override_event(
         shares: Position size.
     """
     try:
-        existing = _load_jsonl(EVOLUTION_EVENTS_PATH)
+        existing = _load_events(EVOLUTION_DB_PATH)
         event = _make_evolution_event(
             ticker=ticker,
             event_type=EventType.THESIS_BREAKER_OVERRIDE,
@@ -299,7 +312,7 @@ def emit_breaker_override_event(
             shares=shares,
         )
         if _should_append_event(event, existing):
-            _append_jsonl(event, EVOLUTION_EVENTS_PATH)
+            _append_event(event, EVOLUTION_DB_PATH)
     except Exception:
         # Non-blocking: silently fail
         pass
@@ -330,7 +343,7 @@ def emit_rebalance_event(
         shares: Position size.
     """
     try:
-        existing = _load_jsonl(EVOLUTION_EVENTS_PATH)
+        existing = _load_events(EVOLUTION_DB_PATH)
         event = _make_evolution_event(
             ticker=ticker,
             event_type=EventType.REBALANCE_EXECUTION,
@@ -347,7 +360,7 @@ def emit_rebalance_event(
             shares=shares,
         )
         if _should_append_event(event, existing):
-            _append_jsonl(event, EVOLUTION_EVENTS_PATH)
+            _append_event(event, EVOLUTION_DB_PATH)
     except Exception:
         # Non-blocking: silently fail
         pass
@@ -376,7 +389,7 @@ def emit_price_move_event(
         shares: Position size.
     """
     try:
-        existing = _load_jsonl(EVOLUTION_EVENTS_PATH)
+        existing = _load_events(EVOLUTION_DB_PATH)
         event = _make_evolution_event(
             ticker=ticker,
             event_type=EventType.LARGE_PRICE_MOVE,
@@ -392,7 +405,7 @@ def emit_price_move_event(
             shares=shares,
         )
         if _should_append_event(event, existing):
-            _append_jsonl(event, EVOLUTION_EVENTS_PATH)
+            _append_event(event, EVOLUTION_DB_PATH)
     except Exception:
         # Non-blocking: silently fail
         pass
@@ -419,7 +432,7 @@ def emit_dividend_event(
         shares: Position size.
     """
     try:
-        existing = _load_jsonl(EVOLUTION_EVENTS_PATH)
+        existing = _load_events(EVOLUTION_DB_PATH)
         event = _make_evolution_event(
             ticker=ticker,
             event_type=EventType.DIVIDEND_EVENT,
@@ -434,7 +447,7 @@ def emit_dividend_event(
             shares=shares,
         )
         if _should_append_event(event, existing):
-            _append_jsonl(event, EVOLUTION_EVENTS_PATH)
+            _append_event(event, EVOLUTION_DB_PATH)
     except Exception:
         # Non-blocking: silently fail
         pass
@@ -461,7 +474,7 @@ def emit_forced_exit_event(
         shares: Position size (before exit).
     """
     try:
-        existing = _load_jsonl(EVOLUTION_EVENTS_PATH)
+        existing = _load_events(EVOLUTION_DB_PATH)
         event = _make_evolution_event(
             ticker=ticker,
             event_type=EventType.FORCED_EXIT,
@@ -482,7 +495,7 @@ def emit_forced_exit_event(
             shares=shares,
         )
         if _should_append_event(event, existing):
-            _append_jsonl(event, EVOLUTION_EVENTS_PATH)
+            _append_event(event, EVOLUTION_DB_PATH)
     except Exception:
         # Non-blocking: silently fail
         pass
@@ -505,67 +518,73 @@ def populate_event_outcomes() -> None:
     try:
         import yfinance as yf
 
-        events = _load_jsonl(EVOLUTION_EVENTS_PATH)
-        updated = False
-
-        for event in events:
-            ctx = event.get("context", {})
-            ticker = ctx.get("ticker")
-            event_date_str = ctx.get("event_date")
-            current_price = ctx.get("current_price")
-
-            if not ticker or not event_date_str or not current_price:
-                continue
-
-            outcome = event.get("outcome", {})
-            # Skip if outcome already populated
-            if outcome.get("outcome_seven_day") is not None:
-                continue
-
-            try:
-                event_dt = datetime.fromisoformat(event_date_str)
-                today = datetime.now(timezone.utc)
-
-                # 7-day window
-                seven_day_dt = event_dt + timedelta(days=7)
-                if today >= seven_day_dt:
-                    yf_ticker = yf.Ticker(ticker)
-                    hist = yf_ticker.history(start=event_date_str, end=seven_day_dt.date())
-                    if not hist.empty:
-                        seven_day_price = hist["Close"].iloc[-1]
-                        outcome["seven_day_price"] = float(seven_day_price)
-                        outcome["outcome_seven_day"] = (
-                            (seven_day_price - current_price) / current_price * 100
-                        )
-                        updated = True
-
-                # 30-day window
-                thirty_day_dt = event_dt + timedelta(days=30)
-                if today >= thirty_day_dt:
-                    yf_ticker = yf.Ticker(ticker)
-                    hist = yf_ticker.history(start=event_date_str, end=thirty_day_dt.date())
-                    if not hist.empty:
-                        thirty_day_price = hist["Close"].iloc[-1]
-                        outcome["thirty_day_price"] = float(thirty_day_price)
-                        outcome["outcome_thirty_day"] = (
-                            (thirty_day_price - current_price) / current_price * 100
-                        )
-                        updated = True
-
-                event["outcome"] = outcome
-            except Exception:
-                # Skip this event on error
-                continue
-
-        if updated:
-            # Rewrite the file with updated outcomes
-            EVOLUTION_EVENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-            with open(EVOLUTION_EVENTS_PATH, "w") as f:
-                for event in events:
-                    f.write(json.dumps(event) + "\n")
+        conn = initialize_db(str(EVOLUTION_DB_PATH))
+        try:
+            _fill_outcomes(conn, yf)
+        finally:
+            conn.close()
     except Exception:
         # Non-blocking: silently fail
         pass
+
+
+def _fill_outcomes(conn, yf) -> None:
+    """Fill in 7/30-day outcomes for stored events whose window has passed."""
+    events = list_events_with_seq(conn)
+    updated_seqs: list[int] = []
+
+    for event_seq, event in events:
+        ctx = event.get("context", {})
+        ticker = ctx.get("ticker")
+        event_date_str = ctx.get("event_date")
+        current_price = ctx.get("current_price")
+
+        if not ticker or not event_date_str or not current_price:
+            continue
+
+        outcome = event.get("outcome", {})
+        # Skip if outcome already populated
+        if outcome.get("outcome_seven_day") is not None:
+            continue
+
+        try:
+            event_dt = datetime.fromisoformat(event_date_str)
+            today = datetime.now(timezone.utc)
+
+            # 7-day window
+            seven_day_dt = event_dt + timedelta(days=7)
+            if today >= seven_day_dt:
+                yf_ticker = yf.Ticker(ticker)
+                hist = yf_ticker.history(start=event_date_str, end=seven_day_dt.date())
+                if not hist.empty:
+                    seven_day_price = hist["Close"].iloc[-1]
+                    outcome["seven_day_price"] = float(seven_day_price)
+                    outcome["outcome_seven_day"] = (
+                        (seven_day_price - current_price) / current_price * 100
+                    )
+                    updated_seqs.append(event_seq)
+
+            # 30-day window
+            thirty_day_dt = event_dt + timedelta(days=30)
+            if today >= thirty_day_dt:
+                yf_ticker = yf.Ticker(ticker)
+                hist = yf_ticker.history(start=event_date_str, end=thirty_day_dt.date())
+                if not hist.empty:
+                    thirty_day_price = hist["Close"].iloc[-1]
+                    outcome["thirty_day_price"] = float(thirty_day_price)
+                    outcome["outcome_thirty_day"] = (
+                        (thirty_day_price - current_price) / current_price * 100
+                    )
+                    updated_seqs.append(event_seq)
+
+            event["outcome"] = outcome
+        except Exception:
+            # Skip this event on error
+            continue
+
+    for event_seq, event in events:
+        if event_seq in updated_seqs:
+            update_event(conn, event_seq, event)
 
 
 # ── Correlation Reporting ─────────────────────────────────────────────────────
@@ -587,7 +606,7 @@ def generate_evolution_correlation_report(
         Dict with event_summary, correlation_stats, and recommendations.
     """
     try:
-        events = _load_jsonl(EVOLUTION_EVENTS_PATH)
+        events = _load_events(EVOLUTION_DB_PATH)
 
         # Filter to week range
         week_events = [
@@ -654,9 +673,9 @@ def generate_evolution_correlation_report(
 # ── CLI / Testing ──────────────────────────────────────────────────────────────
 
 
-def load_events(path: Path = EVOLUTION_EVENTS_PATH) -> list[dict[str, Any]]:
-    """Load all events from the JSONL file."""
-    return _load_jsonl(path)
+def load_events(path: Path | None = None) -> list[dict[str, Any]]:
+    """Load all stored events from the database at ``path`` (default: EVOLUTION_DB_PATH)."""
+    return _load_events(path or EVOLUTION_DB_PATH)
 
 
 def main() -> None:

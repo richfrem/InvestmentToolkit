@@ -3,7 +3,7 @@
 Validates that harvest_earnings_expectations() handles NULL consensus gracefully,
 logging no claim and continuing to next ticker.
 
-Every call below passes predictions_path=tmp_path/... so no test in this file
+Every call below passes intel_db_path=tmp_path/... so no test in this file
 can ever write to the real, tracked predictions.jsonl — including
 test_harvest_missing_predictions_file_returns_empty, which previously had no
 mocks for _fetch_consensus_for_ticker/_append_prediction at all and made a
@@ -39,7 +39,7 @@ class TestHarvestEarningsExpectationsNullConsensus:
              patch("earnings_expectations._load_predictions", return_value=[]), \
              patch("earnings_expectations._append_prediction") as mock_append:
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should NOT append
         mock_append.assert_not_called()
@@ -78,7 +78,7 @@ class TestHarvestEarningsExpectationsNullConsensus:
             mock_ticker_inst.info = {"currentPrice": 210.0}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["MSFT"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["MSFT"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should append (EPS is present)
         mock_append.assert_called_once()
@@ -97,7 +97,7 @@ class TestHarvestEarningsExpectationsNullConsensus:
              patch("earnings_expectations._load_predictions", return_value=[]), \
              patch("earnings_expectations._append_prediction") as mock_append:
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should NOT append (no earnings date)
         mock_append.assert_not_called()
@@ -110,7 +110,7 @@ class TestHarvestEarningsExpectationsNullConsensus:
              patch("earnings_expectations._load_predictions", return_value=[]), \
              patch("earnings_expectations._append_prediction") as mock_append:
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should NOT append
         mock_append.assert_not_called()
@@ -147,7 +147,7 @@ class TestHarvestEarningsExpectationsNullConsensus:
             mock_ticker_inst.info = {"currentPrice": 210.0}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["AAPL", "MSFT"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL", "MSFT"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should append only MSFT claim
         mock_append.assert_called_once()
@@ -157,7 +157,7 @@ class TestHarvestEarningsExpectationsNullConsensus:
     def test_harvest_empty_tickers_list_returns_empty(self, tmp_path):
         """When no tickers to harvest, return empty list."""
         with patch("earnings_expectations._load_predictions", return_value=[]):
-            result = harvest_earnings_expectations([], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations([], intel_db_path=tmp_path / "intelligence.sqlite")
 
         assert result == []
 
@@ -188,7 +188,7 @@ class TestHarvestEarningsExpectationsNullConsensus:
 
             mock_date_class.today.return_value.isoformat.return_value = "2026-07-12"
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should NOT append (exception during price fetch)
         mock_append.assert_not_called()
@@ -203,7 +203,7 @@ class TestHarvestEarningsExpectationsNullConsensus:
         (real yfinance network hit) and a REAL _append_prediction() write to the
         tracked ledger — the exact bug logged in .agent/map-debt.md. Now fully
         mocked (consensus returns None, so the loop skips the ticker) and given
-        an isolated predictions_path, so it can never touch the real file even
+        an isolated intel_db_path, so it can never touch the real file even
         if a future edit reintroduces a missing mock.
         """
         with patch("earnings_expectations._load_predictions",
@@ -211,7 +211,7 @@ class TestHarvestEarningsExpectationsNullConsensus:
              patch("earnings_expectations._fetch_consensus_for_ticker", return_value=None), \
              patch("earnings_expectations._append_prediction") as mock_append:
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         mock_append.assert_not_called()
         assert result == []

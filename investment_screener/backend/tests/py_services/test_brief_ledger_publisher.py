@@ -29,22 +29,20 @@ from brief_ledger_publisher import publish_daily_brief  # noqa: E402
 
 
 def _ledger(tmp_path):
-    jsonl = str(tmp_path / "observations.jsonl")
-    conn = initialize_db(str(tmp_path / "intelligence.sqlite"))
-    return jsonl, conn
+    return initialize_db(str(tmp_path / "intelligence.sqlite"))
 
 
-def _publish(jsonl, conn, day, marker, second):
+def _publish(conn, day, marker, second):
     brief = {"date": day, "marker": marker, "recommendations": []}
     return publish_daily_brief(
-        brief, jsonl, conn, day,
+        brief, conn, day,
         now=datetime(2026, 10, 1, 15, 0, second, tzinfo=timezone.utc),
     )
 
 
 def test_first_scan_of_the_day_is_published(tmp_path):
-    jsonl, conn = _ledger(tmp_path)
-    _publish(jsonl, conn, "2026-10-01", "first", 1)
+    conn = _ledger(tmp_path)
+    _publish(conn, "2026-10-01", "first", 1)
 
     latest = get_latest_event_by_type(conn, "REVIEW_DAILY")
     assert json.loads(latest["payload_json"])["marker"] == "first"
@@ -52,9 +50,9 @@ def test_first_scan_of_the_day_is_published(tmp_path):
 
 
 def test_second_scan_same_day_replaces_the_first_in_latest(tmp_path):
-    jsonl, conn = _ledger(tmp_path)
-    first_id = _publish(jsonl, conn, "2026-10-01", "first", 1)
-    second_id = _publish(jsonl, conn, "2026-10-01", "second", 2)
+    conn = _ledger(tmp_path)
+    first_id = _publish(conn, "2026-10-01", "first", 1)
+    second_id = _publish(conn, "2026-10-01", "second", 2)
 
     assert second_id != first_id
     latest = get_latest_event_by_type(conn, "REVIEW_DAILY")
@@ -67,11 +65,11 @@ def test_second_scan_same_day_replaces_the_first_in_latest(tmp_path):
 
 
 def test_history_keeps_exactly_one_active_brief_per_day(tmp_path):
-    jsonl, conn = _ledger(tmp_path)
-    _publish(jsonl, conn, "2026-09-30", "yesterday", 1)
-    _publish(jsonl, conn, "2026-10-01", "first", 2)
-    _publish(jsonl, conn, "2026-10-01", "second", 3)
-    _publish(jsonl, conn, "2026-10-01", "third", 4)
+    conn = _ledger(tmp_path)
+    _publish(conn, "2026-09-30", "yesterday", 1)
+    _publish(conn, "2026-10-01", "first", 2)
+    _publish(conn, "2026-10-01", "second", 3)
+    _publish(conn, "2026-10-01", "third", 4)
 
     active = list_active_events_by_type(conn, "REVIEW_DAILY")
     markers = sorted(json.loads(e["payload_json"])["marker"] for e in active)
@@ -79,18 +77,18 @@ def test_history_keeps_exactly_one_active_brief_per_day(tmp_path):
 
 
 def test_a_new_day_does_not_supersede_the_previous_day(tmp_path):
-    jsonl, conn = _ledger(tmp_path)
-    _publish(jsonl, conn, "2026-09-30", "yesterday", 1)
-    _publish(jsonl, conn, "2026-10-01", "today", 2)
+    conn = _ledger(tmp_path)
+    _publish(conn, "2026-09-30", "yesterday", 1)
+    _publish(conn, "2026-10-01", "today", 2)
 
     active = list_active_events_by_type(conn, "REVIEW_DAILY")
     assert len(active) == 2
 
 
 def test_two_scans_in_the_same_second_both_publish(tmp_path):
-    jsonl, conn = _ledger(tmp_path)
-    _publish(jsonl, conn, "2026-10-01", "first", 5)
-    _publish(jsonl, conn, "2026-10-01", "second", 5)
+    conn = _ledger(tmp_path)
+    _publish(conn, "2026-10-01", "first", 5)
+    _publish(conn, "2026-10-01", "second", 5)
 
     latest = get_latest_event_by_type(conn, "REVIEW_DAILY")
     assert json.loads(latest["payload_json"])["marker"] == "second"

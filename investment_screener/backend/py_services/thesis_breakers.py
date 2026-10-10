@@ -35,11 +35,11 @@ Key Functions (Index):
 
 Key Input Dependencies:
     - investment_screener/backend/data/domain_model.sqlite (breaker definitions, prior evaluated state)
-    - theses/breaker-overrides.jsonl (accountability trail for override decisions)
+    - domain_model.sqlite thesis_breaker_override table (accountability trail for override decisions)
 
 Key Output Dependencies:
     - thesis_breaker_state rows and investment.thesis_breaker_status in domain_model.sqlite
-    - theses/breaker-overrides.jsonl (log_breaker_override only)
+    - domain_model.sqlite thesis_breaker_override table (log_breaker_override only)
 """
 from __future__ import annotations
 
@@ -51,11 +51,11 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-OVERRIDES_PATH = DATA_DIR / "theses/breaker-overrides.jsonl"
 DB_PATH = DATA_DIR / "domain_model.sqlite"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from domain_model.thesis_breaker_repository import AUTO_METRICS, VALID_OPERATORS  # noqa: E402,F401
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.thesis_breaker_repository import AUTO_METRICS, VALID_OPERATORS, insert_override  # noqa: E402,F401
 from portfolio_io import load_breaker_state, load_thesis_holdings  # noqa: E402
 
 
@@ -318,7 +318,6 @@ def compute_breaker_state(
         (metric/operator/threshold/horizon/note/type) with its evaluated
         state and the holding's targetWeight (for triage sort order).
     """
-    from domain_model.db_client import initialize_db
     from domain_model.thesis_breaker_repository import replace_breaker_state
 
     target_data = {"holdings": load_thesis_holdings(str(db_path))}
@@ -372,7 +371,7 @@ def log_breaker_override(
     horizon: Any,
     rationale: str,
     overridden_by: str = "user",
-    path: Path = OVERRIDES_PATH,
+    db_path: Path = DB_PATH,
 ) -> None:
     """Append one accountability-trail record for a TRIGGERED-breaker override.
 
@@ -389,7 +388,7 @@ def log_breaker_override(
         horizon: The breaker's horizon (int for auto, str for manual).
         rationale: The user's stated reason for holding through.
         overridden_by: Who made the call — defaults to "user".
-        path: Target JSONL file.
+        db_path: domain_model.sqlite receiving the override record.
     """
     entry = {
         "date": date.today().isoformat(),
@@ -403,9 +402,11 @@ def log_breaker_override(
         "rationale": rationale,
         "overriddenBy": overridden_by,
     }
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a") as f:
-        f.write(json.dumps(entry) + "\n")
+    conn = initialize_db(str(db_path))
+    try:
+        insert_override(conn, entry)
+    finally:
+        conn.close()
 
 
 def _cli_log_override(
@@ -413,7 +414,6 @@ def _cli_log_override(
     breaker_id: str,
     rationale: str,
     overridden_by: str = "user",
-    overrides_path: Path = OVERRIDES_PATH,
     db_path: Path = DB_PATH,
 ) -> None:
     """Resolve a breaker's definition + current state, then log an override.
@@ -427,8 +427,7 @@ def _cli_log_override(
         breaker_id: The breaker's id, as defined in domain_model.sqlite.
         rationale: The user's stated reason for holding through.
         overridden_by: Who made the call — defaults to "user".
-        overrides_path: Target JSONL file.
-        db_path: Path to domain_model.sqlite.
+        db_path: Path to domain_model.sqlite (holds the breaker and receives the override).
 
     Raises:
         ValueError: If the ticker or breaker id isn't found.
@@ -447,7 +446,7 @@ def _cli_log_override(
         ticker=ticker, breaker_id=breaker_id, metric=definition["metric"],
         current_value=entry.get("currentValue"), threshold=definition["threshold"],
         streak=entry.get("currentStreak"), horizon=definition["horizon"],
-        rationale=rationale, overridden_by=overridden_by, path=overrides_path,
+        rationale=rationale, overridden_by=overridden_by, db_path=db_path,
     )
 
 

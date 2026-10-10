@@ -18,8 +18,8 @@ class TestEmitForcedExitEvent:
     def test_emit_stop_loss_exit(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_forced_exit_event(
             ticker="CORZ",
@@ -41,8 +41,8 @@ class TestEmitForcedExitEvent:
     def test_emit_manual_exit(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_forced_exit_event(
             ticker="AAPL",
@@ -61,8 +61,8 @@ class TestEmitForcedExitEvent:
     def test_emit_thesis_breach_exit(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_forced_exit_event(
             ticker="TSLA",
@@ -81,8 +81,8 @@ class TestEmitForcedExitEvent:
     def test_emit_profitable_exit(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_forced_exit_event(
             ticker="NVDA",
@@ -99,8 +99,8 @@ class TestEmitForcedExitEvent:
     def test_event_id_format(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_forced_exit_event(
             ticker="MSFT",
@@ -115,7 +115,7 @@ class TestEmitForcedExitEvent:
     def test_non_blocking_on_error(self, tmp_path, monkeypatch):
         import evolution_events
 
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", Path("/invalid/path"))
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", Path("/invalid/path"))
 
         # Should not raise
         emit_forced_exit_event(
@@ -128,8 +128,8 @@ class TestEmitForcedExitEvent:
     def test_dedup_on_same_ticker_type_date(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # First exit
         emit_forced_exit_event(
@@ -154,8 +154,8 @@ class TestEmitForcedExitEvent:
     def test_exit_without_entry_price(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_forced_exit_event(
             ticker="AAPL",
@@ -171,8 +171,8 @@ class TestEmitForcedExitEvent:
     def test_exit_with_full_position_context(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_forced_exit_event(
             ticker="CORZ",

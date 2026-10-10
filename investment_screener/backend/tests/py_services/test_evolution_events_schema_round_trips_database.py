@@ -13,8 +13,8 @@ from evolution_events import (  # noqa: E402
     _make_evolution_event,
     _make_event_context,
     _make_event_outcome,
-    _append_jsonl,
-    _load_jsonl,
+    _append_event,
+    _load_events,
 )
 
 
@@ -101,11 +101,11 @@ class TestEvolutionEvent:
         assert event["event_id"] == "TSLA:dividend_event:2026-07-10"
 
 
-class TestJSONLRoundTrip:
-    """Test JSONL append and load round-trip."""
+class TestDatabaseRoundTrip:
+    """Test event append and load round-trip through the database."""
 
     def test_append_and_load_single_event(self, tmp_path):
-        path = tmp_path / "events.jsonl"
+        path = tmp_path / "domain_model.sqlite"
         event = _make_evolution_event(
             ticker="AAPL",
             event_type=EventType.EARNINGS_CATALYST,
@@ -113,15 +113,15 @@ class TestJSONLRoundTrip:
             context={},
             event_details={"grade": "beat"},
         )
-        _append_jsonl(event, path)
-        loaded = _load_jsonl(path)
+        _append_event(event, path)
+        loaded = _load_events(path)
 
         assert len(loaded) == 1
         assert loaded[0]["event_id"] == event["event_id"]
         assert loaded[0]["event_details"]["grade"] == "beat"
 
     def test_append_multiple_without_truncate(self, tmp_path):
-        path = tmp_path / "events.jsonl"
+        path = tmp_path / "domain_model.sqlite"
         event1 = _make_evolution_event(
             ticker="AAPL",
             event_type=EventType.EARNINGS_CATALYST,
@@ -136,20 +136,20 @@ class TestJSONLRoundTrip:
             context={},
             event_details={"dividend_amount": 0.5},
         )
-        _append_jsonl(event1, path)
-        _append_jsonl(event2, path)
-        loaded = _load_jsonl(path)
+        _append_event(event1, path)
+        _append_event(event2, path)
+        loaded = _load_events(path)
 
         assert len(loaded) == 2
         assert loaded[0]["event_id"] == "AAPL:earnings_catalyst:2026-01-01"
         assert loaded[1]["event_id"] == "TSLA:dividend_event:2026-01-02"
 
-    def test_load_missing_file_returns_empty_list(self, tmp_path):
-        path = tmp_path / "does_not_exist.jsonl"
-        assert _load_jsonl(path) == []
+    def test_load_from_a_new_database_returns_empty_list(self, tmp_path):
+        path = tmp_path / "does_not_exist.sqlite"
+        assert _load_events(path) == []
 
-    def test_jsonl_preserves_nested_structures(self, tmp_path):
-        path = tmp_path / "events.jsonl"
+    def test_nested_structures_are_preserved(self, tmp_path):
+        path = tmp_path / "domain_model.sqlite"
         event = _make_evolution_event(
             ticker="CORZ",
             event_type=EventType.REBALANCE_EXECUTION,
@@ -163,8 +163,8 @@ class TestJSONLRoundTrip:
             entry_price=10.0,
             shares=100.0,
         )
-        _append_jsonl(event, path)
-        loaded = _load_jsonl(path)
+        _append_event(event, path)
+        loaded = _load_events(path)
 
         assert loaded[0]["event_details"]["order_type"] == "buy"
         assert loaded[0]["event_details"]["order_quantity"] == 50
@@ -172,7 +172,7 @@ class TestJSONLRoundTrip:
         assert loaded[0]["context"]["shares"] == 100.0
 
     def test_jsonl_handles_null_values(self, tmp_path):
-        path = tmp_path / "events.jsonl"
+        path = tmp_path / "domain_model.sqlite"
         event = _make_evolution_event(
             ticker="AAPL",
             event_type=EventType.EARNINGS_CATALYST,
@@ -180,8 +180,8 @@ class TestJSONLRoundTrip:
             context={},
             event_details={"grade": "beat", "surprise_pct": None},
         )
-        _append_jsonl(event, path)
-        loaded = _load_jsonl(path)
+        _append_event(event, path)
+        loaded = _load_events(path)
 
         assert loaded[0]["event_details"]["surprise_pct"] is None
         assert loaded[0]["outcome"]["outcome_seven_day"] is None

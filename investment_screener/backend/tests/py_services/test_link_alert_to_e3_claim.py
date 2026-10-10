@@ -93,21 +93,18 @@ def test_link_alert_to_claim_reads_real_claims_from_intelligence_ledger(
     """
     from intelligence.db_client import initialize_db
     from intelligence.event_store import append_event
-    from intelligence.replay_ledger import replay_events_to_db
 
     save_alert_metadata(_make_record(id="alert-123"))
 
-    ledger_path = tmp_path / "observations.jsonl"
     db_path = tmp_path / "intelligence.sqlite"
     conn = initialize_db(str(db_path))
     append_event(
-        str(ledger_path), event_type="PREDICTION_CLAIM", effective_at="2026-07-12",
+        conn, event_type="PREDICTION_CLAIM", effective_at="2026-07-12",
         status="ACTIVE", title="Prediction claim: AAPL earnings_expectation (2026-07-12)",
         body_markdown="Direction: bullish, horizon: 90 days.", ticker="AAPL",
         payload={"id": "claim-abc", "ticker": "AAPL", "type": "earnings_expectation"},
         idempotency_key="prediction-claim-claim-abc",
     )
-    replay_events_to_db(str(ledger_path), conn)
     conn.close()
 
     result = link_alert_to_claim("alert-123", "claim-abc", db_path=str(db_path))

@@ -58,7 +58,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from prediction_ledger import (  # noqa: E402
     HORIZON_DAYS,
-    PREDICTIONS_PATH,
     append_prediction,
     latest_prediction_for,
     make_prediction_id,
@@ -233,9 +232,7 @@ def build_breaker_forecast_claims(
 
 def harvest_rebalance_and_breaker_claims(
     db_path: Path = DB_PATH,
-    predictions_path: Path = PREDICTIONS_PATH,
     intel_db_path: str = DEFAULT_INTEL_DB_PATH,
-    jsonl_path=None,
 ) -> list[dict[str, Any]]:
     """Harvest rebalance_order and breaker_forecast claims, if their sources have content.
 
@@ -245,14 +242,9 @@ def harvest_rebalance_and_breaker_claims(
     Args:
         db_path: domain_model.sqlite holding the last /rebalance run's stored plan, breaker
             definitions and evaluated state.
-        intel_db_path: intelligence.sqlite path to read existing prediction
-            claims from for dedup (Wave 5D Task 3 consumer cutover -- replaces
-            the former predictions.jsonl read). Tests should override this
-            with a tmp_path-scoped sqlite file.
-        jsonl_path: Passed through to append_prediction()'s intelligence-ledger
-            dual-write (observations.jsonl by default). Tests must override
-            this with a tmp_path-scoped file so they never write to the real
-            observations.jsonl.
+        intel_db_path: intelligence.sqlite path to read existing prediction claims from (for
+            dedup) and to write new PREDICTION_CLAIM events to. Tests should override this with
+            a tmp_path-scoped sqlite file.
     """
     existing = _load_predictions_from_ledger(intel_db_path)
     new_records: list[dict[str, Any]] = []
@@ -266,14 +258,14 @@ def harvest_rebalance_and_breaker_claims(
         claim_date = (rebalance_plan.get("generatedAt") or "")[:10]
         if claim_date:
             for claim in build_rebalance_order_claims(rebalance_plan, claim_date):
-                new_records += _append_if_new(claim, existing, predictions_path, jsonl_path)
+                new_records += _append_if_new(claim, existing, intel_db_path)
 
     breaker_state = load_breaker_state(db_path)
     claim_date = (breaker_state.get("generatedAt") or "")[:10]
     if claim_date:
         target_data = {"holdings": load_thesis_holdings(str(db_path))}
         for claim in build_breaker_forecast_claims(breaker_state, target_data, claim_date):
-            new_records += _append_if_new(claim, existing, predictions_path, jsonl_path)
+            new_records += _append_if_new(claim, existing, intel_db_path)
 
     return new_records
 
@@ -300,7 +292,7 @@ def _fetch_base_prices(ticker: str, claim_date: str) -> tuple[float, float] | No
 
 
 def _append_if_new(
-    claim: dict[str, Any], existing: list[dict[str, Any]], predictions_path: Path, jsonl_path=None
+    claim: dict[str, Any], existing: list[dict[str, Any]], intel_db_path
 ) -> list[dict[str, Any]]:
     """Append claim as a new prediction record unless it's an unchanged dup.
 
@@ -341,35 +333,23 @@ def _append_if_new(
         "inputsHash": _hash_claim(claim["claim"]),
         "harvestedAt": _now_iso(),
     }
-    append_prediction(record, predictions_path, jsonl_path=jsonl_path)
+    append_prediction(record, intel_db_path)
     existing.append(record)
     return [record]
 
 
 def harvest_action_and_dcf_claims(
     db_path: Path = DB_PATH,
-    predictions_path: Path = PREDICTIONS_PATH,
     intel_db_path: str = DEFAULT_INTEL_DB_PATH,
-    jsonl_path=None,
 ) -> list[dict[str, Any]]:
     """Harvest action_rating and dcf_fair_value claims from every investment
     with at least one projection_version row in domain_model.sqlite.
 
     Args:
-        db_path: Path to domain_model.sqlite (Wave 2 consumer cutover --
-            replaces the former projections/*.json directory glob, which no
-            longer exists on disk since Wave 1's archive).
-        predictions_path: Ledger path new prediction records are appended to
-            (JSONL remains the write path's target during the Hybrid
-            dual-write window; unaffected by this read-path cutover).
-        intel_db_path: intelligence.sqlite path to read existing prediction
-            claims from for dedup (Wave 5D Task 3 consumer cutover -- replaces
-            the former predictions.jsonl read). Tests should override this
-            with a tmp_path-scoped sqlite file.
-        jsonl_path: Passed through to append_prediction()'s intelligence-ledger
-            dual-write (observations.jsonl by default). Tests must override
-            this with a tmp_path-scoped file so they never write to the real
-            observations.jsonl.
+        db_path: Path to domain_model.sqlite (projections come from projection_version).
+        intel_db_path: intelligence.sqlite path to read existing prediction claims from (for
+            dedup) and to write new PREDICTION_CLAIM events to. Tests should override this with
+            a tmp_path-scoped sqlite file.
 
     Returns:
         Every newly appended prediction record this run.
@@ -385,7 +365,7 @@ def harvest_action_and_dcf_claims(
             claim = builder(ticker, projection)
             if claim is None:
                 continue
-            new_records += _append_if_new(claim, existing, predictions_path, jsonl_path)
+            new_records += _append_if_new(claim, existing, intel_db_path)
     return new_records
 
 

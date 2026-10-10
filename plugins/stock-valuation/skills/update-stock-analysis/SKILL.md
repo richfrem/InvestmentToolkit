@@ -57,7 +57,7 @@ python3 plugins/stock-valuation/scripts/fetch_financials.py {TICKER} > temp/eval
    python3 plugins/stock-valuation/scripts/persist_valuation.py --file temp/evaluations/{TICKER}_valuation_payload.json --rate-audit temp/evaluations/{TICKER}_rate_audit.json --db /ABSOLUTE/MAIN_CHECKOUT/investment_screener/backend/data/domain_model.sqlite
    ```
 6. **Compile Research Report**:
-   Write the Markdown deep dive, then publish with `persist_research.py --file REPORT.md --db /ABSOLUTE/MAIN_CHECKOUT/investment_screener/backend/data/intelligence.sqlite --jsonl /ABSOLUTE/MAIN_CHECKOUT/investment_screener/backend/data/observations.jsonl`. Dated reports are served from the ledger, so a file alone is insufficient. Read back with `query_ledger_research.py --get {TICKER}_{YYYY-MM-DD}.md`.
+   Write the Markdown deep dive, then publish with `persist_research.py --file REPORT.md --db /ABSOLUTE/MAIN_CHECKOUT/investment_screener/backend/data/intelligence.sqlite`. Dated reports are served from the ledger, so a file alone is insufficient. Read back with `query_ledger_research.py --get {TICKER}_{YYYY-MM-DD}.md`.
 7. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification

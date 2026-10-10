@@ -295,7 +295,6 @@ class TestEvaluateBreakersNoBreakers:
         assert result == {}
 
 
-import json as _json
 
 from thesis_breakers import (  # noqa: E402
     _cli_log_override,
@@ -399,35 +398,44 @@ class TestComputeBreakerState:
         assert "target_portfolio_path" not in Path(thesis_breakers.__file__).read_text()
 
 
+def _overrides(db_path):
+    from domain_model.db_client import initialize_db
+    from domain_model.thesis_breaker_repository import list_overrides
+    conn = initialize_db(str(db_path))
+    try:
+        return list_overrides(conn)
+    finally:
+        conn.close()
+
+
 class TestLogBreakerOverride:
-    def test_appends_one_jsonl_line(self, tmp_path):
-        path = tmp_path / "breaker-overrides.jsonl"
+    def test_stores_one_override_record(self, tmp_path):
+        path = tmp_path / "domain_model.sqlite"
         log_breaker_override(
             ticker="NBIS", breaker_id="nbis-trend-breakdown", metric="trendState",
             current_value="DOWNTREND", threshold=["DOWNTREND"], streak=5, horizon=5,
             rationale="Vera Rubin ramp de-risks the downtrend; holding through",
-            path=path,
+            db_path=path,
         )
-        lines = path.read_text().strip().splitlines()
-        assert len(lines) == 1
-        entry = _json.loads(lines[0])
+        entries = _overrides(path)
+        assert len(entries) == 1
+        entry = entries[0]
         assert entry["ticker"] == "NBIS"
         assert entry["breakerId"] == "nbis-trend-breakdown"
         assert entry["overriddenBy"] == "user"
         assert "date" in entry
 
     def test_second_call_appends_not_overwrites(self, tmp_path):
-        path = tmp_path / "breaker-overrides.jsonl"
+        path = tmp_path / "domain_model.sqlite"
         log_breaker_override(
             ticker="NBIS", breaker_id="a", metric="rsi", current_value=25, threshold=30,
-            streak=3, horizon=3, rationale="first", path=path,
+            streak=3, horizon=3, rationale="first", db_path=path,
         )
         log_breaker_override(
             ticker="PANW", breaker_id="b", metric="rsi", current_value=25, threshold=30,
-            streak=3, horizon=3, rationale="second", path=path,
+            streak=3, horizon=3, rationale="second", db_path=path,
         )
-        lines = path.read_text().strip().splitlines()
-        assert len(lines) == 2
+        assert [e["rationale"] for e in _overrides(path)] == ["first", "second"]
 
 
 class TestCliLogOverride:
@@ -438,15 +446,14 @@ class TestCliLogOverride:
             "currentStreak": 5, "streakStartDate": "2026-07-04",
             "lastEvaluatedAt": "2026-07-09T00:00:00Z", "status": "TRIGGERED"}}}
         db_path = _seed_nbis(tmp_path, [TREND_BREAKER], state=state)
-        overrides_path = tmp_path / "breaker-overrides.jsonl"
 
         _cli_log_override(
             ticker="NBIS", breaker_id="nbis-trend-breakdown",
             rationale="Vera Rubin ramp de-risks the downtrend",
-            overrides_path=overrides_path, db_path=db_path,
+            db_path=db_path,
         )
 
-        entry = _json.loads(overrides_path.read_text().strip().splitlines()[0])
+        entry = _overrides(db_path)[0]
         assert entry["metric"] == "trendState"
         assert entry["currentValue"] == "DOWNTREND"
         assert entry["streak"] == 5
@@ -461,7 +468,7 @@ class TestCliLogOverride:
         with pytest.raises(ValueError, match="not found in domain_model.sqlite"):
             _cli_log_override(
                 ticker="NOPE", breaker_id="x", rationale="r",
-                overrides_path=tmp_path / "o.jsonl", db_path=db_path,
+                db_path=db_path,
             )
 
     def test_unknown_breaker_id_raises(self, tmp_path):
@@ -470,7 +477,7 @@ class TestCliLogOverride:
         with pytest.raises(ValueError, match="not found on NBIS"):
             _cli_log_override(
                 ticker="NBIS", breaker_id="nope", rationale="r",
-                overrides_path=tmp_path / "o.jsonl", db_path=db_path,
+                db_path=db_path,
             )
 
     def test_no_stored_state_still_logs_with_null_streak(self, tmp_path):
@@ -481,13 +488,12 @@ class TestCliLogOverride:
             "status": "TRIGGERED", "statusSetAt": "2026-07-09", "reviewCadenceDays": 90,
         }
         db_path = _seed_nbis(tmp_path, [manual])
-        overrides_path = tmp_path / "breaker-overrides.jsonl"
 
         _cli_log_override(
             ticker="NBIS", breaker_id="nbis-ndr-floor", rationale="Board confirmed NDR recovery plan",
-            overrides_path=overrides_path, db_path=db_path,
+            db_path=db_path,
         )
 
-        entry = _json.loads(overrides_path.read_text().strip())
+        entry = _overrides(db_path)[0]
         assert entry["streak"] is None
         assert entry["horizon"] == "2 quarters"

@@ -9,24 +9,22 @@ Purpose:
 
     A second scan on the same day supersedes the first (the earlier event is flipped
     to SUPERSEDED), so "latest" is the newest brief and history keeps exactly one
-    ACTIVE brief per day. Before this module, daily_brief.py wrote every brief with the
-    fixed idempotency key ``daily-brief-<date>``; ``append_event`` dedupes on that key,
-    so only the first scan of a day ever reached the page.
+    ACTIVE brief per day. A fixed idempotency key ``daily-brief-<date>`` would make
+    ``append_event`` drop every scan after the first, so re-runs get a per-run key.
 
 Layer:
     Backend / Python Services / Intelligence ledger
 
 Usage Examples:
     from brief_ledger_publisher import publish_daily_brief
-    publish_daily_brief(brief, jsonl_path, conn, "2026-10-01")
+    publish_daily_brief(brief, conn, "2026-10-01")
 
 Key Functions (Index):
-    - publish_daily_brief(brief, jsonl_path, conn, today_str, now) - append + replay,
-      superseding any ACTIVE brief already published for ``today_str``.
+    - publish_daily_brief(brief, conn, today_str, now) - append, superseding any ACTIVE
+      brief already published for ``today_str``.
 
 Key Input Dependencies:
-    - intelligence.event_store.append_event (JSONL ledger writer)
-    - intelligence.replay_ledger.replay_events_to_db (JSONL -> SQLite read model)
+    - intelligence.event_store.append_event (ledger writer)
 """
 from __future__ import annotations
 
@@ -34,22 +32,19 @@ from datetime import datetime, timezone
 from typing import Any
 
 from intelligence.event_store import append_event
-from intelligence.replay_ledger import replay_events_to_db
 
 
 def publish_daily_brief(
     brief: dict[str, Any],
-    jsonl_path: str,
     conn,
     today_str: str,
     now: datetime | None = None,
 ) -> str:
-    """Append ``brief`` as a REVIEW_DAILY event and replay it into the read model.
+    """Append ``brief`` as a REVIEW_DAILY event.
 
     Args:
         brief: The finished daily brief payload.
-        jsonl_path: Path to the observations.jsonl ledger.
-        conn: Open sqlite3 connection to intelligence.sqlite (read-model schema applied).
+        conn: Open sqlite3 connection to intelligence.sqlite.
         today_str: The brief's date, ``YYYY-MM-DD``; used as ``effective_at``.
         now: Clock override for tests; defaults to the current UTC time.
 
@@ -69,8 +64,8 @@ def publish_daily_brief(
     stamp = (now or datetime.now(timezone.utc)).strftime("%H%M%S%f")
     key = f"daily-brief-{today_str}" if prior_id is None else f"daily-brief-{today_str}-{stamp}"
 
-    event_id = append_event(
-        jsonl_path,
+    return append_event(
+        conn,
         event_type="REVIEW_DAILY",
         effective_at=today_str,
         status="ACTIVE",
@@ -82,5 +77,3 @@ def publish_daily_brief(
         supersedes_event_id=prior_id,
         idempotency_key=key,
     )
-    replay_events_to_db(jsonl_path, conn)
-    return event_id

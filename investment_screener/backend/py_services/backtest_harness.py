@@ -22,7 +22,7 @@ Usage:
 Key Input Dependencies:
     - git history (commit-by-commit snapshots of the thesis file)
     - yfinance for historical OHLCV data
-    - investment_screener/backend/data/predictions.jsonl (E3 correlation)
+    - investment_screener/backend/data/intelligence.sqlite (E3 prediction claims, for correlation)
 
 Layer:
     Backend / Python Services
@@ -69,7 +69,6 @@ import yfinance as yf
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
 BACKTEST_REPORT_PATH = DATA_DIR / "backtest_report.json"
-PREDICTIONS_PATH = DATA_DIR / "predictions.jsonl"
 PRICE_CACHE_DIR = REPO_ROOT / "temp" / "backtest_price_cache"
 
 _PY_SERVICES_DIR = Path(__file__).resolve().parent
@@ -554,11 +553,8 @@ def correlate_with_prediction_ledger(
 
     Args:
         backtest_report: Output from generate_backtest_report().
-        db_path: intelligence.sqlite path to read PREDICTION_CLAIM events from
-            (Wave 5D Task 3 consumer cutover -- replaces the former
-            predictions.jsonl direct-read). Tests should override this with
-            a tmp_path-scoped sqlite file so they never read the real,
-            tracked intelligence.sqlite.
+        db_path: intelligence.sqlite path to read PREDICTION_CLAIM events from. Tests should
+            override this with a tmp_path-scoped sqlite file so they never read the real database.
 
     Returns:
         Correlation report with keys:

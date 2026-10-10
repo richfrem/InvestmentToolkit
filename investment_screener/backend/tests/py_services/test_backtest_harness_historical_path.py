@@ -25,25 +25,22 @@ def test_extract_historical_targets_tries_both_pre_and_post_move_paths():
 
 
 class TestCorrelateWithPredictionLedger:
-    """Wave 5D Task 3: correlate_with_prediction_ledger() must read
-    PREDICTION_CLAIM events from intelligence.sqlite, not predictions.jsonl."""
+    """correlate_with_prediction_ledger() reads PREDICTION_CLAIM events from intelligence.sqlite."""
 
     def _seed_claim(self, tmp_path, db_path, claim_date="2026-07-10", ticker="CORZ"):
         from intelligence.db_client import initialize_db
         from intelligence.event_store import append_event
-        from intelligence.replay_ledger import replay_events_to_db
 
-        ledger_path = tmp_path / "observations.jsonl"
         conn = initialize_db(str(db_path))
         append_event(
-            str(ledger_path), event_type="PREDICTION_CLAIM", effective_at=claim_date,
+            conn, event_type="PREDICTION_CLAIM", effective_at=claim_date,
             status="ACTIVE", title=f"Prediction claim: {ticker} action_rating ({claim_date})",
             body_markdown="Direction: bullish, horizon: 90 days.", ticker=ticker,
             payload={"ticker": ticker, "type": "action_rating", "date": claim_date,
                      "id": f"{ticker}:action_rating:{claim_date}"},
             idempotency_key=f"prediction-claim-{ticker}:action_rating:{claim_date}",
         )
-        replay_events_to_db(str(ledger_path), conn)
+        conn.close()
 
     def test_links_predictions_matching_rebalance_date_and_ticker(self, tmp_path):
         db_path = tmp_path / "intelligence.sqlite"

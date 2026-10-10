@@ -3,7 +3,7 @@
 Validates that harvest_earnings_expectations() appends new claim when
 consensus updates mid-week (multi-source scenario).
 
-Every call below passes predictions_path=tmp_path/... so no test in this file
+Every call below passes intel_db_path=tmp_path/... so no test in this file
 can ever write to the real, tracked predictions.jsonl.
 """
 import json
@@ -69,7 +69,7 @@ class TestHarvestEarningsExpectationsConsensusChange:
             mock_ticker_inst.info = {"currentPrice": 125.00, "regularMarketPrice": 125.00}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["NVDA"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["NVDA"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should log new claim
         mock_append.assert_called_once()
@@ -120,7 +120,7 @@ class TestHarvestEarningsExpectationsConsensusChange:
             mock_ticker_inst.info = {"currentPrice": 210.0}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         mock_append.assert_called_once()
         appended_claim = mock_append.call_args[0][0]
@@ -191,7 +191,7 @@ class TestHarvestEarningsExpectationsConsensusChange:
             mock_ticker_inst.info = {"currentPrice": 125.00}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["NVDA"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["NVDA"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should append new claim (Friday's revision)
         mock_append.assert_called_once()
@@ -233,7 +233,7 @@ class TestHarvestEarningsExpectationsConsensusChange:
                    return_value=[prior_pred]), \
              patch("earnings_expectations._append_prediction") as mock_append:
 
-            result = harvest_earnings_expectations(["MSFT"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["MSFT"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should NOT append (consensus unchanged)
         mock_append.assert_not_called()

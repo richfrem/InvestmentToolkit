@@ -185,7 +185,7 @@ python3 plugins/tradingview/scripts/tv_launch.py
 python3 plugins/tradingview/scripts/ta_sweep_batch.py
 python3 plugins/tradingview/scripts/ta_sweep_batch.py --skip HUMN,WYFI    # skip specific tickers
 python3 plugins/tradingview/scripts/ta_sweep_batch.py --delay 1200         # faster scan (~1.2s/ticker)
-python3 plugins/tradingview/scripts/ta_sweep_batch.py --save-results PATH  # also export a flat-file JSON snapshot (opt-in)
+
 # Results written to the Intelligence Ledger (TECHNICAL_SWEEP events) / SQLite read-model, not to a flat JSON file by default.
 
 # --- Order Management (requires TradingView Desktop + broker connected) ---

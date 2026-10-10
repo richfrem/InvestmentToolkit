@@ -10,7 +10,7 @@ Layer:
 
 Key Input Dependencies:
     - domain_model.sqlite at schema version 2 or later (``investment``, ``thesis_breaker``,
-      ``thesis_breaker_state`` tables)
+      ``thesis_breaker_state`` tables); version 4 or later for ``thesis_breaker_override``
 
 Breaker definitions and evaluated state cross this boundary in the dict shapes the
 evaluator (``thesis_breakers.py``) and its consumers already use:
@@ -30,6 +30,7 @@ Key Functions (Index):
     - list_breakers(): definitions for one ticker (list) or every ticker (dict)
     - upsert_breaker(), delete_breaker(), set_manual_status()
     - replace_breaker_state(), list_breaker_state()
+    - insert_override(), list_overrides(): the append-only breaker override trail
 """
 
 import json
@@ -247,3 +248,25 @@ def list_breaker_state(conn: sqlite3.Connection) -> dict[str, dict[str, dict]]:
                      "stale": None if r["is_stale"] is None else bool(r["is_stale"])}
         out.setdefault(r["symbol"], {})[r["breaker_id"]] = entry
     return out
+
+
+def insert_override(conn: sqlite3.Connection, entry: dict) -> int:
+    """Append one breaker override record (needs ``ticker``, ``breakerId``, ``date``); return its sequence."""
+    cursor = conn.execute(
+        "INSERT INTO thesis_breaker_override (ticker, breaker_id, override_date, override_json) "
+        "VALUES (?, ?, ?, ?);",
+        (entry["ticker"], entry["breakerId"], entry["date"], json.dumps(entry)),
+    )
+    conn.commit()
+    return cursor.lastrowid
+
+
+def list_overrides(conn: sqlite3.Connection, ticker: str | None = None) -> list[dict]:
+    """Override records, oldest first; only ``ticker``'s when given."""
+    if ticker is None:
+        rows = conn.execute("SELECT override_json FROM thesis_breaker_override ORDER BY override_seq;").fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT override_json FROM thesis_breaker_override WHERE ticker = ? ORDER BY override_seq;", (ticker,)
+        ).fetchall()
+    return [json.loads(r[0]) for r in rows]

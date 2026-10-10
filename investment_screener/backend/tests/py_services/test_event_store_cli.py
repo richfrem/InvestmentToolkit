@@ -1,12 +1,10 @@
-"""Tests for the ``intelligence.event_store`` CLI wrapper (Task 10).
+"""Tests for the ``intelligence.event_store`` CLI wrapper.
 
-Uses real subprocess execution (no mocking) per
-``.agent/rules/test-driven-development.md``'s "No Mocking on Critical
-Runtime Paths" rule — this CLI is the entry point SKILL.md instructions
-shell out to directly.
+Uses real subprocess execution (no mocking): this CLI is the entry point SKILL.md
+instructions shell out to directly.
 """
 
-import json
+import sqlite3
 import subprocess
 import sys
 from pathlib import Path
@@ -16,7 +14,7 @@ SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 
 
 def test_cli_appends_event_from_body_file(tmp_path):
-    jsonl_path = tmp_path / "observations.jsonl"
+    db_path = tmp_path / "intelligence.sqlite"
     body_file = tmp_path / "body.md"
     body_file.write_text("# PLTR research\nSome findings.")
 
@@ -29,7 +27,7 @@ def test_cli_appends_event_from_body_file(tmp_path):
             "--status", "ACTIVE",
             "--title", "PLTR research update",
             "--body-file", str(body_file),
-            "--jsonl-path", str(jsonl_path),
+            "--db-path", str(db_path),
         ],
         cwd=str(SCRIPT_DIR),
         capture_output=True,
@@ -37,18 +35,20 @@ def test_cli_appends_event_from_body_file(tmp_path):
     )
 
     assert result.returncode == 0, result.stderr
-    lines = [json.loads(l) for l in jsonl_path.read_text().splitlines()]
-    assert len(lines) == 1
-    assert lines[0]["ticker"] == "PLTR"
-    assert lines[0]["event_type"] == "RESEARCH_IMPORT"
-    assert lines[0]["status"] == "ACTIVE"
-    assert lines[0]["title"] == "PLTR research update"
-    assert lines[0]["body_markdown"] == "# PLTR research\nSome findings."
-    assert lines[0]["event_id"] in result.stdout
+    conn = sqlite3.connect(str(db_path))
+    rows = conn.execute(
+        "SELECT event_id, event_type, status, title, body_markdown FROM intelligence_event;"
+    ).fetchall()
+    conn.close()
+    assert len(rows) == 1
+    event_id, event_type, status, title, body = rows[0]
+    assert (event_type, status, title) == ("RESEARCH_IMPORT", "ACTIVE", "PLTR research update")
+    assert body == "# PLTR research\nSome findings."
+    assert event_id in result.stdout
 
 
 def test_cli_requires_a_body_source(tmp_path):
-    jsonl_path = tmp_path / "observations.jsonl"
+    db_path = tmp_path / "intelligence.sqlite"
 
     result = subprocess.run(
         [
@@ -58,7 +58,7 @@ def test_cli_requires_a_body_source(tmp_path):
             "--effective-at", "2026-07-18",
             "--status", "ACTIVE",
             "--title", "PLTR research update",
-            "--jsonl-path", str(jsonl_path),
+            "--db-path", str(db_path),
         ],
         cwd=str(SCRIPT_DIR),
         capture_output=True,
@@ -66,4 +66,4 @@ def test_cli_requires_a_body_source(tmp_path):
     )
 
     assert result.returncode != 0
-    assert not jsonl_path.exists()
+    assert not db_path.exists()

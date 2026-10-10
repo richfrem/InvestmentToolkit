@@ -1,11 +1,11 @@
 """Test for Task 3: Harvest core logic (dedup on unchanged consensus).
 
-Validates that harvest_earnings_expectations() reads tail of predictions.jsonl
+Validates that harvest_earnings_expectations() reads the tail of the prediction claims
 efficiently, dedups on (ticker, type, earnings_date), and appends new claim
 only if consensus changed or no prior record exists.
 
-Every call below passes predictions_path=tmp_path/... so no test in this file
-can ever write to the real, tracked predictions.jsonl — even the tests whose
+Every call below passes intel_db_path=tmp_path/... so no test in this file
+can ever write to the real intelligence ledger — even the tests whose
 other mocks (_fetch_consensus_for_ticker, _append_prediction) are incomplete.
 """
 import sys
@@ -67,7 +67,7 @@ class TestHarvestEarningsExpectationsDedup:
 
             mock_date.today.return_value.isoformat.return_value = "2026-07-12"
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should NOT append new prediction
         mock_append.assert_not_called()
@@ -120,7 +120,7 @@ class TestHarvestEarningsExpectationsDedup:
             }
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should append new prediction
         mock_append.assert_called_once()
@@ -150,7 +150,7 @@ class TestHarvestEarningsExpectationsDedup:
             mock_ticker_inst.info = {"currentPrice": 210.0}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         mock_append.assert_called_once()
         assert len(result) == 1
@@ -198,7 +198,7 @@ class TestHarvestEarningsExpectationsDedup:
             mock_ticker_inst.info = {"currentPrice": 210.0}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         # Should still work with limit
         assert len(result) == 1
@@ -210,7 +210,7 @@ class TestHarvestEarningsExpectationsDedup:
              patch("earnings_expectations._fetch_consensus_for_ticker", return_value=None), \
              patch("earnings_expectations._append_prediction") as mock_append:
 
-            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(["AAPL"], intel_db_path=tmp_path / "intelligence.sqlite")
 
         mock_append.assert_not_called()
         assert result == []
@@ -237,7 +237,7 @@ class TestHarvestEarningsExpectationsDedup:
         with patch("earnings_expectations._fetch_consensus_for_ticker", side_effect=fake_consensus), \
              patch("earnings_expectations._load_predictions", return_value=[]), \
              patch("earnings_expectations._append_prediction"):
-            result = harvest_earnings_expectations(predictions_path=tmp_path / "predictions.jsonl")
+            result = harvest_earnings_expectations(intel_db_path=tmp_path / "intelligence.sqlite")
 
         assert sorted(fetched) == ["AAPL", "MSFT"]
         assert result == []
