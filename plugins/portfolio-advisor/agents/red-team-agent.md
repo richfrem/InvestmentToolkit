@@ -8,6 +8,8 @@ description: >
   update_stock_analysis/SKILL.md (after Step 4) and rebalance-portfolio/SKILL.md
   (after Step 1b) before either skill presents its final recommendation to
   the user. Output is conversational only — never persisted to disk.
+model: inherit
+color: red
 tools: ["Read"]
 ---
 

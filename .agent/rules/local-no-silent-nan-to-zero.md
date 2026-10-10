@@ -8,9 +8,9 @@ globs: ["investment_screener/backend/py_services/*.py", "plugins/**/scripts/*.py
 ## The Problem This Rule Solves
 
 `portfolio_performance.py` computed 1d/1w/1m portfolio returns via
-`safe_float(price)`, which converted any `NaN` price to `0.0`. On 2026-07-02,
-PSU-U.TO (TSX-listed) had no trading data for 2026-07-01 (Canada Day — TSX
-closed, all US tickers traded normally). `safe_float(NaN)` silently zeroed out
+`safe_float(price)`, which converted any `NaN` price to `0.0`. In a holiday closure scenario,
+PSU-U.TO (TSX-listed) had no trading data for Canada Day while TSX was
+closed and US tickers traded normally. `safe_float(NaN)` silently zeroed out
 an ~$8,000 position's contribution to *yesterday's* portfolio total, producing
 a reported **+29.79% single-day gain** on the live dashboard — a number a user
 caught immediately as impossible, but a smaller version of this exact bug
@@ -71,7 +71,7 @@ because `0.0` is a valid float, not an exception.
 
 ## Where This Applies
 
-- `portfolio_performance.py` — fixed 2026-07-02, reference implementation.
+- `portfolio_performance.py` — reference implementation.
 - Any future script that fetches batched historical price data across
   multiple exchanges/currencies (yfinance, TV CDP) and sums it into a total.
 - `computeWeightsMap()` / `buildPortfolioSnapshot()` (TypeScript) — same

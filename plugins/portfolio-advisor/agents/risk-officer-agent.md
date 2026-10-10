@@ -11,6 +11,8 @@ description: >
   banner) — never dispatches itself.
 dependencies:
   - skill:rebalance-portfolio
+model: inherit
+color: yellow
 tools: ["Bash", "Read", "Write"]
 ---
 

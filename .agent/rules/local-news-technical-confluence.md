@@ -9,7 +9,7 @@ globs: ["plugins/portfolio-advisor/agents/*.md", "plugins/portfolio-advisor/skil
 
 Agents were recommending EXIT/TRIM/ACCUMULATE/INITIATE purely from DCF + TA conviction
 scores, without checking whether a recent news catalyst (earnings, contract, partnership)
-had already moved the stock — or explained the technical signal. On 2026-07-01, BE scored
+had already moved the stock — or explained the technical signal. For example, BE scored
 EXIT (-4: DCF SELL, RSI cooling, volume dry after a big day) from technicals alone. Both
 Grok and Gemini news sweeps, run independently, surfaced a live catalyst (Brookfield fuel-cell
 deal expanded 5x to $25B / Oracle 2.8GW deal) that both converted into "TRIM the rally, not
