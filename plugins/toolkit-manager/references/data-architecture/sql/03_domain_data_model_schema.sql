@@ -23,7 +23,7 @@
 -- 01_intelligence_ledger_schema.sql's `instrument` table is absorbed into `investment`
 -- here, not kept as a separate table. Applying this schema for real requires re-pointing
 -- intelligence_event's existing instrument_id references (and event_repository.py /
--- replay_ledger.py / models.py / instrument_repository.py) at `investment` — a real,
+-- models.py / instrument_repository.py) at `investment` — a real,
 -- small (2 dependent files, already measured) migration, not a zero-cost rename.
 
 CREATE TABLE account (
