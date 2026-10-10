@@ -153,6 +153,20 @@ describe('ProjectionRepository', () => {
         });
     });
 
+    describe('listProjectedTickers', () => {
+        it('returns the upper-cased symbols that have a saved projection, once each', () => {
+            expect(repo.listProjectedTickers()).to.deep.equal([]);
+            const first = ProjectionSchema.safeParse(makeProjection({ ticker: 'NVDA' })).data as Projection;
+            const v1 = repo.upsertProjection(first);
+            repo.upsertProjection({ ...v1 } as Projection); // second version of the same projection
+            const other = ProjectionSchema.safeParse(
+                makeProjection({ ticker: 'AMD', id: '22222222-2222-4222-8222-222222222222' })
+            ).data as Projection;
+            repo.upsertProjection(other);
+            expect(repo.listProjectedTickers()).to.deep.equal(['AMD', 'NVDA']);
+        });
+    });
+
     describe('findByTicker / findAll', () => {
         it('uses the Python decimal-rate contract even above 100% and preserves absent rates', () => {
             const script = path.resolve(__dirname, '../../../plugins/stock-valuation/scripts/persist_valuation.py');
