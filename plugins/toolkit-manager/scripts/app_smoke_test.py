@@ -94,7 +94,6 @@ PROBES = [
     Probe("/api/theses/sub-strategies", json_type=(dict, list)),
     Probe("/api/trading/audit/today", json_type=dict, keys=("events",)),
     Probe("/api/trading/log", json_type=(dict, list)),
-    Probe("/api/13f/summary", (200, 404)),
     Probe("/api/daily-brief/latest", (200, 404)),
     Probe("/api/daily-brief/history", json_type=(dict, list)),
 ]

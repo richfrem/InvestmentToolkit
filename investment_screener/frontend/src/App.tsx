@@ -26,7 +26,6 @@ import { PrivacyProvider } from './context/PrivacyContext';
 
 import ScreenerPage from './pages/ScreenerPage';
 import TradeLog from './pages/TradeLog';
-import ThirteenFPage from './pages/ThirteenFPage';
 import ThesesPage from './pages/ThesesPage';
 import DailyBriefPage from './pages/DailyBriefPage';
 
@@ -44,7 +43,6 @@ function App() {
               <Route path="analysis" element={<Dashboard />} />
               <Route path="trade-log" element={<TradeLog />} />
               <Route path="theses" element={<ThesesPage />} />
-              <Route path="13f" element={<ThirteenFPage />} />
               <Route path="daily-brief" element={<DailyBriefPage />} />
               <Route path="settings" element={<Settings />} />
             </Route>
