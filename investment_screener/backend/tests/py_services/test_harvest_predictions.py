@@ -309,9 +309,8 @@ class TestHarvestRebalanceAndBreakerClaims:
 
     @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
     def test_missing_rebalance_plan_and_no_breaker_state_is_not_an_error(self, _mock_prices, tmp_path):
-        """No plan file and no evaluated breaker state harvests nothing, without error."""
+        """No stored plan and no evaluated breaker state harvests nothing, without error."""
         result = harvest_rebalance_and_breaker_claims(
-            rebalance_plan_path=tmp_path / "no_such_plan.json",
             db_path=self._db(tmp_path),
             predictions_path=tmp_path / "predictions.jsonl",
             intel_db_path=tmp_path / "intelligence.sqlite",
@@ -321,15 +320,17 @@ class TestHarvestRebalanceAndBreakerClaims:
 
     @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
     def test_harvests_from_both_sources_when_present(self, _mock_prices, tmp_path):
-        """A rebalance plan file plus a TRIGGERED breaker in SQLite give both claim types."""
-        plan_path = tmp_path / "rebalance_plan.json"
-        plan_path.write_text(json.dumps({
+        """A stored rebalance plan plus a TRIGGERED breaker in SQLite give both claim types."""
+        from domain_model.computed_snapshot_repository import save_snapshot
+        db_path = self._db(tmp_path, with_triggered_breaker=True)
+        conn = initialize_db(str(db_path))
+        save_snapshot(conn, "rebalance_plan", {
             "generatedAt": "2026-07-10T14:00:00Z",
             "orders": [{"ticker": "CORZ", "action": "buy", "riskGateWarnings": [], "breakerWarnings": []}],
-        }))
+        })
+        conn.close()
         result = harvest_rebalance_and_breaker_claims(
-            rebalance_plan_path=plan_path,
-            db_path=self._db(tmp_path, with_triggered_breaker=True),
+            db_path=db_path,
             predictions_path=tmp_path / "predictions.jsonl",
             intel_db_path=tmp_path / "intelligence.sqlite",
             jsonl_path=tmp_path / "observations.jsonl",

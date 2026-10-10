@@ -5,7 +5,7 @@ harvest_predictions.py - Python utility script.
 Purpose:
     Harvest predictions — E3 claim harvester, reads persisted artifacts only.
 
-Never modifies rebalance_plan.json or the thesis breaker state in
+Never modifies the stored rebalance plan or the thesis breaker state in
 domain_model.sqlite — purely additive, reads them and appends new
 claims to data/predictions.jsonl. Dedup is done by comparing against the
 most recently harvested claim of the same (ticker, type) already on the
@@ -74,6 +74,7 @@ DB_PATH = DATA_DIR / "domain_model.sqlite"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.computed_snapshot_repository import load_latest_snapshot  # noqa: E402
 from portfolio_io import load_breaker_state, load_thesis_holdings  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection_by_source,
@@ -180,11 +181,9 @@ def build_dcf_fair_value_claim(ticker: str, projection: dict[str, Any]) -> dict[
     }
 
 
-REBALANCE_PLAN_PATH = DATA_DIR / "rebalance_plan.json"
-
 
 def build_rebalance_order_claims(rebalance_plan: dict[str, Any], claim_date: str) -> list[dict[str, Any]]:
-    """Extract rebalance_order claims from a rebalance_plan.json dict.
+    """Extract rebalance_order claims from a stored rebalance plan dict.
 
     buy -> bullish, sell -> bearish. gateWarningsPresent is recorded but not
     itself gradable — it's traceability only, matching the design's
@@ -233,7 +232,6 @@ def build_breaker_forecast_claims(
 
 
 def harvest_rebalance_and_breaker_claims(
-    rebalance_plan_path: Path = REBALANCE_PLAN_PATH,
     db_path: Path = DB_PATH,
     predictions_path: Path = PREDICTIONS_PATH,
     intel_db_path: str = DEFAULT_INTEL_DB_PATH,
@@ -241,12 +239,12 @@ def harvest_rebalance_and_breaker_claims(
 ) -> list[dict[str, Any]]:
     """Harvest rebalance_order and breaker_forecast claims, if their sources have content.
 
-    rebalance_plan.json is only written after a /rebalance run, and the breaker state in
+    The rebalance plan is only stored after a /rebalance run, and the breaker state in
     domain_model.sqlite may be empty; neither being present yet is a normal state, not an error.
 
     Args:
-        rebalance_plan_path: The last /rebalance run's plan file.
-        db_path: domain_model.sqlite holding breaker definitions and evaluated state.
+        db_path: domain_model.sqlite holding the last /rebalance run's stored plan, breaker
+            definitions and evaluated state.
         intel_db_path: intelligence.sqlite path to read existing prediction
             claims from for dedup (Wave 5D Task 3 consumer cutover -- replaces
             the former predictions.jsonl read). Tests should override this
@@ -259,9 +257,12 @@ def harvest_rebalance_and_breaker_claims(
     existing = _load_predictions_from_ledger(intel_db_path)
     new_records: list[dict[str, Any]] = []
 
-    if rebalance_plan_path.exists():
-        with open(rebalance_plan_path) as f:
-            rebalance_plan = json.load(f)
+    conn = initialize_db(str(db_path))
+    try:
+        rebalance_plan = load_latest_snapshot(conn, "rebalance_plan")
+    finally:
+        conn.close()
+    if rebalance_plan is not None:
         claim_date = (rebalance_plan.get("generatedAt") or "")[:10]
         if claim_date:
             for claim in build_rebalance_order_claims(rebalance_plan, claim_date):

@@ -5,10 +5,10 @@ rebalancer.py - Python utility script.
 Purpose:
     Formalizes /rebalance + portfolio_action.py's informal drift/capital/
     account logic into a real engine: per-holding drift bands (not point
-    targets), a risk-budget check against E1's risk_snapshot.json,
+    targets), a risk-budget check against E1's stored risk snapshot,
     Canada-aware account/tax placement, and an ordered sells-before-buys
     order-plan output. Never mutates any input file — owns
-    data/rebalance_plan.json exclusively. See docs/superpowers/specs/
+    the stored rebalance_plan snapshot exclusively. See docs/superpowers/specs/
     2026-07-09-rebalancer-v2-design.md.
 
 Layer:
@@ -58,6 +58,7 @@ from domain_model.account_investment_repository import list_account_investments 
 from domain_model.investment_repository import get_investment  # noqa: E402
 from domain_model.portfolio_repository import get_last_synced_at  # noqa: E402
 from domain_model.portfolio_policy_repository import get_portfolio_policy  # noqa: E402
+from domain_model.computed_snapshot_repository import load_latest_snapshot, save_snapshot  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection,
     get_latest_projection_by_source,
@@ -65,9 +66,7 @@ from domain_model.projection_repository import (  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-RISK_SNAPSHOT_PATH = DATA_DIR / "risk_snapshot.json"
 DB_PATH = DATA_DIR / "domain_model.sqlite"
-REBALANCE_PLAN_PATH = DATA_DIR / "rebalance_plan.json"
 
 DEFAULT_BAND_CONFIG: dict[str, float] = {"relativePct": 20.0, "absolutePct": 1.5, "criticalMultiplier": 2.0}
 
@@ -495,7 +494,7 @@ def compute_risk_budget_check(
     Args:
         routed_orders: Output of compute_account_routing() (only buys matter).
         bands: Output of compute_bands() (for currentWeight/targetWeight).
-        risk_snapshot: Parsed risk_snapshot.json, or None if unavailable.
+        risk_snapshot: The stored risk snapshot, or None if unavailable.
         account_policy: Parsed account_policy.json (riskBudgetCaps).
         target_data: {"holdings": load_thesis_holdings(...)} (pillarId per holding).
 
@@ -659,7 +658,7 @@ def _build_order_entries(
         breaker_warnings: Output of compute_breaker_warnings().
 
     Returns:
-        Orders in the shape rebalance_plan.json's "orders" field expects.
+        Orders in the shape the rebalance plan's "orders" field expects.
     """
     orders: list[dict[str, Any]] = []
     for order in routed:
@@ -729,18 +728,17 @@ def _load_account_policy_from_db(db_path: Path) -> dict[str, Any]:
 
 
 def compute_rebalance_plan(
-    risk_snapshot_path: Path = RISK_SNAPSHOT_PATH,
     db_path: Path = DB_PATH,
 ) -> dict[str, Any]:
     """Primary orchestrator — builds the full rebalance order plan.
 
-    Never mutates any input file — owns data/rebalance_plan.json exclusively
-    (main()'s --no-save-gated write). Checks no-trade conditions first; if
-    any fire, returns early with blockedReason set and orders: [].
+    Reads the stored risk snapshot and everything else from domain_model.sqlite; stores
+    the plan there only from main() (unless --no-save). Checks no-trade conditions first;
+    if any fire, returns early with blockedReason set and orders: [].
 
     Args:
-        risk_snapshot_path: Path to risk_snapshot.json (E1 output).
-        db_path: Path to domain_model.sqlite.
+        db_path: Path to domain_model.sqlite (holdings, policy, breaker state and the
+            latest stored risk snapshot).
 
     Returns:
         The full rebalance plan dict — see docs/superpowers/specs/
@@ -772,11 +770,13 @@ def compute_rebalance_plan(
         candidates, account_positions, account_cash_usd, account_policy, target_data, state["prices"]
     )
 
-    risk_snapshot = None
-    if Path(risk_snapshot_path).exists():
-        risk_snapshot = json.loads(Path(risk_snapshot_path).read_text())
-    else:
-        warnings.append("risk_snapshot.json not found — risk-budget check skipped")
+    conn = initialize_db(str(db_path))
+    try:
+        risk_snapshot = load_latest_snapshot(conn, "risk_snapshot")
+    finally:
+        conn.close()
+    if risk_snapshot is None:
+        warnings.append("no stored risk snapshot in domain_model.sqlite — risk-budget check skipped")
     risk_warnings = compute_risk_budget_check(routed, bands, risk_snapshot, account_policy, target_data)
 
     breaker_state = load_breaker_state(db_path)
@@ -802,19 +802,20 @@ def compute_rebalance_plan(
 def main() -> None:
     """CLI entry point — computes the rebalance plan and prints/saves it.
 
-    Writes data/rebalance_plan.json unless --no-save is passed. Never
-    mutates any input file (spec §3.3).
+    Stores the plan in domain_model.sqlite unless --no-save is passed (spec §3.3).
     """
     parser = argparse.ArgumentParser(description="Rebalance order plan")
     parser.add_argument("--pretty", action="store_true")
-    parser.add_argument("--no-save", action="store_true", help="Print only, skip writing rebalance_plan.json")
+    parser.add_argument("--no-save", action="store_true", help="Print only, do not store the plan in domain_model.sqlite")
     args = parser.parse_args()
 
     plan = compute_rebalance_plan()
     if not args.no_save:
-        REBALANCE_PLAN_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with open(REBALANCE_PLAN_PATH, "w") as f:
-            json.dump(plan, f, indent=2)
+        conn = initialize_db(str(DB_PATH))
+        try:
+            save_snapshot(conn, "rebalance_plan", plan)
+        finally:
+            conn.close()
 
     print(json.dumps(plan, indent=2 if args.pretty else None))
 

@@ -1,0 +1,708 @@
+{
+ "dependencies": [
+  {
+   "file": "investment_screener/backend/py_services/alert_manager.py",
+   "kind": "write",
+   "label": "alerts_state.jsonl",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "alerts_state.jsonl; the alert table exists"
+  },
+  {
+   "file": "investment_screener/backend/py_services/audit_json_usage.py",
+   "kind": "passed",
+   "label": ".json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads and writes its own report files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/audit_json_usage.py",
+   "kind": "passed",
+   "label": ".metrics.json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads and writes its own report files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/audit_json_usage.py",
+   "kind": "passed",
+   "label": "\\.jsonl?\\b",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads and writes its own report files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/audit_json_usage.py",
+   "kind": "passed",
+   "label": "evolution_events.jsonl",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads and writes its own report files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/audit_json_usage.py",
+   "kind": "passed",
+   "label": "json-file",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads and writes its own report files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/audit_json_usage.py",
+   "kind": "passed",
+   "label": "plugin.json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads and writes its own report files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/audit_json_usage.py",
+   "kind": "passed",
+   "label": "ta-sweep-results.json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads and writes its own report files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/audit_json_usage.py",
+   "kind": "write",
+   "label": "allowed-json-register.json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads and writes its own report files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/audit_json_usage.py",
+   "kind": "write",
+   "label": "json-discovery-audit.json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads and writes its own report files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/backtest_harness.py",
+   "kind": "write",
+   "label": "{ticker}_{target_date}.json",
+   "disposition": "pipeline-scratch",
+   "step": "step 7",
+   "note": "Writes per-ticker backtest JSON"
+  },
+  {
+   "file": "investment_screener/backend/py_services/build_consumer_inventory.py",
+   "kind": "read",
+   "label": "docs/architecture/json-discovery-audit.json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads json-discovery-audit.json, writes its inventory"
+  },
+  {
+   "file": "investment_screener/backend/py_services/build_consumer_inventory.py",
+   "kind": "write",
+   "label": "task18-consumer-inventory.json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Audit tool: reads json-discovery-audit.json, writes its inventory"
+  },
+  {
+   "file": "investment_screener/backend/py_services/cache.py",
+   "kind": "unresolved",
+   "label": "{data_class}_{safe_key}.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Per-ticker JSON caches"
+  },
+  {
+   "file": "investment_screener/backend/py_services/domain_model/migrate_projections_to_sqlite.py",
+   "kind": "passed",
+   "label": "*.json",
+   "disposition": "migration-tool",
+   "step": "WS7",
+   "note": "One-time loader of a retired file; archived once the data is loaded"
+  },
+  {
+   "file": "investment_screener/backend/py_services/evolution_events.py",
+   "kind": "write",
+   "label": "evolution_events.jsonl",
+   "disposition": "ledger",
+   "step": "step 4",
+   "note": "evolution_events.jsonl; move to the ledger or a table"
+  },
+  {
+   "file": "investment_screener/backend/py_services/extract_portfolio_symbols.py",
+   "kind": "exists",
+   "label": "stocks.xlsx",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads stocks.xlsx, writes portfolio_symbols.json"
+  },
+  {
+   "file": "investment_screener/backend/py_services/extract_portfolio_symbols.py",
+   "kind": "write",
+   "label": "portfolio_symbols.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads stocks.xlsx, writes portfolio_symbols.json"
+  },
+  {
+   "file": "investment_screener/backend/py_services/fetch_portfolio_heatmap.py",
+   "kind": "unresolved",
+   "label": "{safe}_info.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Per-ticker info JSON cache"
+  },
+  {
+   "file": "investment_screener/backend/py_services/history_store.py",
+   "kind": "unresolved",
+   "label": "{safe}_history.csv",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Per-ticker price-history CSV"
+  },
+  {
+   "file": "investment_screener/backend/py_services/intelligence/event_store.py",
+   "kind": "unresolved",
+   "label": "investment_screener/backend/data/observations.jsonl",
+   "disposition": "ledger",
+   "step": "step 4",
+   "note": "JSONL is written first and replayed into SQLite; flip to SQLite first"
+  },
+  {
+   "file": "investment_screener/backend/py_services/migrate_daily_briefs_to_ledger.py",
+   "kind": "passed",
+   "label": "*.json",
+   "disposition": "migration-tool",
+   "step": "WS7",
+   "note": "One-time loader of a retired file; archived once the data is loaded"
+  },
+  {
+   "file": "investment_screener/backend/py_services/migrate_research_report_pointers.py",
+   "kind": "passed",
+   "label": "*.json",
+   "disposition": "migration-tool",
+   "step": "WS7",
+   "note": "One-time loader of a retired file; archived once the data is loaded"
+  },
+  {
+   "file": "investment_screener/backend/py_services/migrate_research_report_pointers.py",
+   "kind": "passed",
+   "label": ".json.tmp",
+   "disposition": "migration-tool",
+   "step": "WS7",
+   "note": "One-time loader of a retired file; archived once the data is loaded"
+  },
+  {
+   "file": "investment_screener/backend/py_services/pine_script_manager.py",
+   "kind": "write",
+   "label": "registry.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Pine script registry.json"
+  },
+  {
+   "file": "investment_screener/backend/py_services/portfolio_io.py",
+   "kind": "passed",
+   "label": ".json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "JSON path handling; check what it still opens"
+  },
+  {
+   "file": "investment_screener/backend/py_services/prediction_ledger.py",
+   "kind": "read",
+   "label": "predictions.jsonl",
+   "disposition": "ledger",
+   "step": "step 4",
+   "note": "Reads predictions JSONL and its schema file"
+  },
+  {
+   "file": "investment_screener/backend/py_services/prediction_ledger.py",
+   "kind": "read",
+   "label": "predictions_graded.jsonl",
+   "disposition": "ledger",
+   "step": "step 4",
+   "note": "Reads predictions JSONL and its schema file"
+  },
+  {
+   "file": "investment_screener/backend/py_services/prediction_ledger.py",
+   "kind": "read",
+   "label": "schemas/prediction.schema.json",
+   "disposition": "ledger",
+   "step": "step 4",
+   "note": "Reads predictions JSONL and its schema file"
+  },
+  {
+   "file": "investment_screener/backend/py_services/stock_intake_persist.py",
+   "kind": "write",
+   "label": "{canonical}.json",
+   "disposition": "pipeline-scratch",
+   "step": "step 7",
+   "note": "Writes a per-ticker JSON during intake"
+  },
+  {
+   "file": "investment_screener/backend/py_services/system_health.py",
+   "kind": "passed",
+   "label": "orders-*.jsonl",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Checks order audit files"
+  },
+  {
+   "file": "investment_screener/backend/py_services/thesis_breakers.py",
+   "kind": "write",
+   "label": "theses/breaker-overrides.jsonl",
+   "disposition": "ledger",
+   "step": "step 4",
+   "note": "breaker-overrides.jsonl; move to thesis_breaker tables"
+  },
+  {
+   "file": "investment_screener/backend/py_services/tv_cdp_health.py",
+   "kind": "write",
+   "label": "tv_cdp_errors.jsonl",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Resilience cache and error JSONL"
+  },
+  {
+   "file": "investment_screener/backend/py_services/tv_cdp_health.py",
+   "kind": "write",
+   "label": "tv_cdp_responses_cache.jsonl",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Resilience cache and error JSONL"
+  },
+  {
+   "file": "investment_screener/backend/py_services/verify_thesis_sync.py",
+   "kind": "exists",
+   "label": "{ticker}.json",
+   "disposition": "table",
+   "step": "step 3",
+   "note": "Checks projections/<ticker>.json exists; use projection_version"
+  },
+  {
+   "file": "investment_screener/backend/src/middleware/localAuth.ts",
+   "kind": "fs-exists",
+   "label": "",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Local API token file (.runtime/api-token); a secret, not data"
+  },
+  {
+   "file": "investment_screener/backend/src/middleware/localAuth.ts",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Local API token file (.runtime/api-token); a secret, not data"
+  },
+  {
+   "file": "investment_screener/backend/src/middleware/localAuth.ts",
+   "kind": "fs-write",
+   "label": "",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Local API token file (.runtime/api-token); a secret, not data"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/docs.ts",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "document",
+   "step": "step 5",
+   "note": "Serves research/*.md, thesis, strategic-review and agent-guide documents; research becomes an export of the ledger"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/docs.ts",
+   "kind": "fs-write",
+   "label": "",
+   "disposition": "document",
+   "step": "step 5",
+   "note": "Serves research/*.md, thesis, strategic-review and agent-guide documents; research becomes an export of the ledger"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/portfolio.ts",
+   "kind": "fs-exists",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads portfolio-config.json and ytd_performance_report.json"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/portfolio.ts",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads portfolio-config.json and ytd_performance_report.json"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/screener.ts",
+   "kind": "fs-exists",
+   "label": "",
+   "disposition": "ts-reader",
+   "step": "step 3",
+   "note": "Lists projections/*.json for hasValuation (use projection_version) and reads strategic-review JSON (step 5)"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/screener.ts",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "ts-reader",
+   "step": "step 3",
+   "note": "Lists projections/*.json for hasValuation (use projection_version) and reads strategic-review JSON (step 5)"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/screener.ts",
+   "kind": "fs-write",
+   "label": "",
+   "disposition": "ts-reader",
+   "step": "step 3",
+   "note": "Lists projections/*.json for hasValuation (use projection_version) and reads strategic-review JSON (step 5)"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/screener.ts",
+   "kind": "json-literal",
+   "label": "",
+   "disposition": "ts-reader",
+   "step": "step 3",
+   "note": "Lists projections/*.json for hasValuation (use projection_version) and reads strategic-review JSON (step 5)"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/stock.ts",
+   "kind": "fs-exists",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads etf_analysis/<SYM>.json"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/stock.ts",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads etf_analysis/<SYM>.json"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/stock.ts",
+   "kind": "json-literal",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads etf_analysis/<SYM>.json"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/theses.ts",
+   "kind": "fs-exists",
+   "label": "",
+   "disposition": "document",
+   "step": "step 5",
+   "note": "Reads rendered sub-strategy markdown"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/theses.ts",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "document",
+   "step": "step 5",
+   "note": "Reads rendered sub-strategy markdown"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/thirteenf.ts",
+   "kind": "fs-exists",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads 13F JSON"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/thirteenf.ts",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads 13F JSON"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/thirteenf.ts",
+   "kind": "json-literal",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads 13F JSON"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/trading.ts",
+   "kind": "fs-exists",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads the TradingView order audit JSONL"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/trading.ts",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads the TradingView order audit JSONL"
+  },
+  {
+   "file": "investment_screener/backend/src/routes/trading.ts",
+   "kind": "json-literal",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Reads the TradingView order audit JSONL"
+  },
+  {
+   "file": "investment_screener/backend/src/services/ProjectionService.ts",
+   "kind": "json-literal",
+   "label": "",
+   "disposition": "ts-reader",
+   "step": "step 3",
+   "note": "JSON path literal for projections"
+  },
+  {
+   "file": "investment_screener/backend/src/services/ThesisService.ts",
+   "kind": "fs-exists",
+   "label": "",
+   "disposition": "document",
+   "step": "step 5",
+   "note": "Reads a prompt template markdown"
+  },
+  {
+   "file": "investment_screener/backend/src/services/ThesisService.ts",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "document",
+   "step": "step 5",
+   "note": "Reads a prompt template markdown"
+  },
+  {
+   "file": "investment_screener/backend/src/utils/paths.ts",
+   "kind": "json-literal",
+   "label": "",
+   "disposition": "ts-reader",
+   "step": "step 3",
+   "note": "Path constants for data files"
+  },
+  {
+   "file": "plugins/etf-analysis/scripts/persist_etf_analysis.py",
+   "kind": "write",
+   "label": "{ticker}.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "ETF analysis JSON; needs a table or ledger event type"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/daily_brief.py",
+   "kind": "write",
+   "label": "{date.today().isoformat()}.json",
+   "disposition": "ledger",
+   "step": "step 5",
+   "note": "Writes daily-briefs/*.json besides the ledger event"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/daily_brief.py",
+   "kind": "write",
+   "label": "{today}.json",
+   "disposition": "ledger",
+   "step": "step 5",
+   "note": "Writes daily-briefs/*.json besides the ledger event"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+   "kind": "passed",
+   "label": "{EDGAR_BASE}/submissions/CIK{cik10}.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "13F filings JSON; needs tables"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+   "kind": "unresolved",
+   "label": "{acc_nodash(accession)}.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "13F filings JSON; needs tables"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+   "kind": "unresolved",
+   "label": "{cik10}_diff.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "13F filings JSON; needs tables"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+   "kind": "unresolved",
+   "label": "{cik10}_index.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "13F filings JSON; needs tables"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
+   "kind": "passed",
+   "label": "*.json",
+   "disposition": "run-state",
+   "step": "step 7",
+   "note": "Reads temp/news files"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+   "kind": "write",
+   "label": "{args.date}-PortfolioAnalysisRecommendations.json",
+   "disposition": "review",
+   "step": "step 5",
+   "note": "Writes PortfolioAnalysisRecommendations JSON; store as a REVIEW ledger event"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/research_parity_report.py",
+   "kind": "passed",
+   "label": "*.json",
+   "disposition": "tooling",
+   "step": "step 5",
+   "note": "Read-only parity report; deleted when the JSONL files are archived"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/research_parity_report.py",
+   "kind": "read",
+   "label": "intelligence_events.jsonl",
+   "disposition": "tooling",
+   "step": "step 5",
+   "note": "Read-only parity report; deleted when the JSONL files are archived"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/research_parity_report.py",
+   "kind": "read",
+   "label": "observations.jsonl",
+   "disposition": "tooling",
+   "step": "step 5",
+   "note": "Read-only parity report; deleted when the JSONL files are archived"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/run_daily.py",
+   "kind": "write",
+   "label": "run_manifest.json",
+   "disposition": "run-state",
+   "step": "step 7",
+   "note": "run_manifest.json in temp/ run folders"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/verify_daily_run.py",
+   "kind": "read",
+   "label": "run_manifest.json",
+   "disposition": "run-state",
+   "step": "step 7",
+   "note": "Reads run_manifest.json"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/weekly_review.py",
+   "kind": "passed",
+   "label": "*.json",
+   "disposition": "run-state",
+   "step": "step 7",
+   "note": "Scans temp review files"
+  },
+  {
+   "file": "plugins/portfolio-advisor/scripts/ytd_return.py",
+   "kind": "write",
+   "label": "investment_screener/backend/data/ytd_performance_report.json",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Writes ytd_performance_report.json"
+  },
+  {
+   "file": "plugins/stock-valuation/scripts/fetch_financials.py",
+   "kind": "write",
+   "label": "{safe_ticker}.json",
+   "disposition": "pipeline-scratch",
+   "step": "step 7",
+   "note": "Valuation pipeline intermediate JSON"
+  },
+  {
+   "file": "plugins/stock-valuation/scripts/recalculate_forward_valuation.py",
+   "kind": "write",
+   "label": "{name}.json",
+   "disposition": "pipeline-scratch",
+   "step": "step 7",
+   "note": "Valuation pipeline intermediate JSON"
+  },
+  {
+   "file": "plugins/toolkit-manager/scripts/audit_file_dependencies.py",
+   "kind": "passed",
+   "label": "\\.jsonl?[",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Guard: contains the patterns it detects and writes its own register"
+  },
+  {
+   "file": "plugins/toolkit-manager/scripts/audit_file_dependencies.py",
+   "kind": "write",
+   "label": "docs/architecture/file-dependency-register.json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Guard: contains the patterns it detects and writes its own register"
+  },
+  {
+   "file": "plugins/toolkit-manager/scripts/audit_sqlite_usage.py",
+   "kind": "passed",
+   "label": "|thesis_breaker_state\\.json",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Guard: contains the file-name patterns it detects"
+  },
+  {
+   "file": "plugins/toolkit-manager/scripts/sqlite_admin.py",
+   "kind": "read",
+   "label": "manifest.json",
+   "disposition": "decision",
+   "step": "end",
+   "note": "Export folder manifest.json: owner decides whether the export manifest may stay JSON or becomes a .sql/.txt file"
+  },
+  {
+   "file": "plugins/toolkit-manager/scripts/sqlite_admin.py",
+   "kind": "write",
+   "label": "manifest.json",
+   "disposition": "decision",
+   "step": "end",
+   "note": "Export folder manifest.json: owner decides whether the export manifest may stay JSON or becomes a .sql/.txt file"
+  },
+  {
+   "file": "plugins/tradingview/scripts/ta_sweep_single.py",
+   "kind": "passed",
+   "label": "investment_screener/backend/data/intelligence_events.jsonl",
+   "disposition": "ledger",
+   "step": "step 4",
+   "note": "Writes intelligence_events.jsonl"
+  },
+  {
+   "file": "tradingview-cdp/core/audit.js",
+   "kind": "fs-read",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Writes the order audit JSONL"
+  },
+  {
+   "file": "tradingview-cdp/core/audit.js",
+   "kind": "fs-write",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Writes the order audit JSONL"
+  },
+  {
+   "file": "tradingview-cdp/core/audit.js",
+   "kind": "json-literal",
+   "label": "",
+   "disposition": "table",
+   "step": "step 6",
+   "note": "Writes the order audit JSONL"
+  }
+ ]
+}

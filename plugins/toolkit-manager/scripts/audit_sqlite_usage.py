@@ -552,6 +552,7 @@ DOC_HISTORY_FILES = {
     # generated audit snapshots
     "docs/architecture/json-discovery-audit.json", "docs/architecture/json-discovery-audit.md",
     "docs/architecture/allowed-json-register.json", "docs/architecture/allowed-json-register.md",
+    "docs/architecture/file-dependency-register.json",
     # the migration reference: it documents the mapping from the retired files to the tables
     "docs/architecture/domain-data-model.md", "docs/architecture/supplementary-domain-schemas.md",
     "docs/architecture/migration-inventory-and-strategy.md",

@@ -353,3 +353,25 @@ class TestComputeMarketRegime:
         cbrs = next(t for t in result["tickerRegimes"] if t["ticker"] == "CBRS")
         assert cbrs["trend"] is None  # insufficient history
         assert any("CBRS" in w for w in result["warnings"])
+
+
+def test_cli_stores_the_regime_in_the_database(tmp_path, monkeypatch, capsys):
+    """main() stores the computed regime in domain_model.sqlite; --no-save stores nothing."""
+    import market_regime
+    from domain_model.computed_snapshot_repository import load_latest_snapshot
+
+    db_path = tmp_path / "domain_model.sqlite"
+    monkeypatch.setattr(market_regime, "_DB_PATH", db_path)
+    monkeypatch.setattr(market_regime, "compute_market_regime", lambda *a, **k: {"regime": "RISK_ON"})
+
+    monkeypatch.setattr(sys, "argv", ["market_regime.py", "--no-save"])
+    market_regime.main()
+    conn = initialize_db(str(db_path))
+    assert load_latest_snapshot(conn, "market_regime") is None
+    conn.close()
+
+    monkeypatch.setattr(sys, "argv", ["market_regime.py"])
+    market_regime.main()
+    conn = initialize_db(str(db_path))
+    assert load_latest_snapshot(conn, "market_regime") == {"regime": "RISK_ON"}
+    conn.close()
