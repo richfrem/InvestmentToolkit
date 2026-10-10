@@ -62,6 +62,7 @@ from portfolio_io import INACTIVE_STATUSES as INACTIVE_ROLES  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.computed_snapshot_repository import save_snapshot  # noqa: E402
 
 _DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
 from macro_regime import (  # noqa: E402
@@ -71,7 +72,6 @@ from technicals import _true_range, _wilder_smooth  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-MARKET_REGIME_PATH = DATA_DIR / "market_regime.json"
 
 
 
@@ -573,14 +573,16 @@ def compute_market_regime(db_path: Path = _DB_PATH) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Market regime classifier")
     parser.add_argument("--pretty", action="store_true")
-    parser.add_argument("--no-save", action="store_true", help="Print only, skip writing market_regime.json")
+    parser.add_argument("--no-save", action="store_true", help="Print only, do not store the result in domain_model.sqlite")
     args = parser.parse_args()
 
     snapshot = compute_market_regime()
     if not args.no_save:
-        MARKET_REGIME_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with open(MARKET_REGIME_PATH, "w") as f:
-            json.dump(snapshot, f, indent=2)
+        conn = initialize_db(str(_DB_PATH))
+        try:
+            save_snapshot(conn, "market_regime", snapshot)
+        finally:
+            conn.close()
 
     print(json.dumps(snapshot, indent=2 if args.pretty else None))
 

@@ -54,13 +54,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from market_data import get_prices  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.computed_snapshot_repository import save_snapshot  # noqa: E402
 
 _DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
 from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-RISK_SNAPSHOT_PATH = DATA_DIR / "risk_snapshot.json"
 
 MIN_HISTORY_DAYS = 60
 Z_SCORES = {0.95: 1.645, 0.99: 2.326}
@@ -528,14 +527,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Portfolio risk snapshot")
     parser.add_argument("--benchmark", default="SPY")
     parser.add_argument("--pretty", action="store_true")
-    parser.add_argument("--no-save", action="store_true", help="Print only, skip writing risk_snapshot.json")
+    parser.add_argument("--no-save", action="store_true", help="Print only, do not store the snapshot in domain_model.sqlite")
     args = parser.parse_args()
 
     snapshot = compute_risk_snapshot(benchmark=args.benchmark)
     if not args.no_save:
-        RISK_SNAPSHOT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with open(RISK_SNAPSHOT_PATH, "w") as f:
-            json.dump(snapshot, f, indent=2)
+        conn = initialize_db(str(_DB_PATH))
+        try:
+            save_snapshot(conn, "risk_snapshot", snapshot)
+        finally:
+            conn.close()
 
     print(json.dumps(snapshot, indent=2 if args.pretty else None))
 

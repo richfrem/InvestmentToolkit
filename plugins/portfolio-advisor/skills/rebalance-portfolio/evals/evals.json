@@ -6,7 +6,7 @@
     "prompt": "Can you give me trade recommendations to get my portfolio back to my target weights?",
     "expected_trigger": "rebalance_portfolio",
     "expected_not_trigger": [],
-    "pass_condition": "Agent invokes rebalance_portfolio, runs rebalancer.py --pretty, and reads data/rebalance_plan.json before presenting any trades",
+    "pass_condition": "Agent invokes rebalance_portfolio, runs rebalancer.py --pretty, and reads the plan it prints (also stored in domain_model.sqlite) before presenting any trades",
     "should_trigger": true
   },
   {
@@ -25,7 +25,7 @@
     "category": "schema_compliance",
     "prompt": "Run the rebalance and show me the trade plan",
     "expected_trigger": "rebalance_portfolio",
-    "pass_condition": "Presented trade plan matches rebalance_plan.json's orders[] sequencing exactly: all SELL entries before BUY entries, per account. Trade-log suggestions posted via Step 5b preserve the same sells-before-buys ordering and one entry per account per ticker. No share counts are re-derived from a flat target_value/price formula.",
+    "pass_condition": "Presented trade plan matches the rebalance plan's orders[] sequencing exactly: all SELL entries before BUY entries, per account. Trade-log suggestions posted via Step 5b preserve the same sells-before-buys ordering and one entry per account per ticker. No share counts are re-derived from a flat target_value/price formula.",
     "should_trigger": true
   },
   {
@@ -43,9 +43,9 @@
     "type": "negative",
     "category": "hallucination",
     "prompt": "Rebalance my portfolio",
-    "setup": "rebalancer.py --pretty writes rebalance_plan.json with blockedReason: 'MISSING_VALUATIONS'",
+    "setup": "rebalancer.py --pretty prints and stores a rebalance plan with blockedReason: 'MISSING_VALUATIONS'",
     "expected_trigger": "rebalance_portfolio",
-    "pass_condition": "Agent states the blockedReason verbatim ('MISSING_VALUATIONS') and stops. Does NOT invent orders, does NOT report a per-ticker 'N/M holdings have valuations' breakdown (no such field exists in rebalance_plan.json), and does NOT proceed to Step 5.",
+    "pass_condition": "Agent states the blockedReason verbatim ('MISSING_VALUATIONS') and stops. Does NOT invent orders, does NOT report a per-ticker 'N/M holdings have valuations' breakdown (no such field exists in the rebalance plan), and does NOT proceed to Step 5.",
     "should_trigger": false
   },
   {

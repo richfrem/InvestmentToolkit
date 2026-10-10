@@ -1,5 +1,4 @@
 """Tests for rebalancer.py — E2 rebalancer v2 (Phase 3, sub-spec 4)."""
-import json
 import math
 import sys
 from datetime import datetime, timezone
@@ -532,10 +531,19 @@ def _fresh_timestamp() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def _store_risk_snapshot(db_path, snapshot):
+    """Store ``snapshot`` as the latest risk snapshot in the database at ``db_path``."""
+    from domain_model.db_client import initialize_db as _init_snapshot_db
+    from domain_model.computed_snapshot_repository import save_snapshot
+    conn = _init_snapshot_db(str(db_path))
+    try:
+        save_snapshot(conn, "risk_snapshot", snapshot)
+    finally:
+        conn.close()
+
+
 def _write_full_fixture(tmp_path):
-    """A database (thesis holdings, projections, positions, account policy) and a risk snapshot file."""
-    risk_path = tmp_path / "risk_snapshot.json"
-    risk_path.write_text(json.dumps({"marginalRiskContribution": {}, "clusterExposure": []}))
+    """A database (thesis holdings, projections, positions, account policy and a stored risk snapshot)."""
     # All three thesis holdings need a projection row in the DB, or the
     # >30%-missing no-trade check (_check_no_trade_conditions) blocks the plan
     # before any of the "happy path" assertions below get a chance to run — a
@@ -584,14 +592,14 @@ def _write_full_fixture(tmp_path):
     conn.close()
 
     _write_projection(tmp_path, "CRWD", "SELL")
-    return risk_path, db_path
+    _store_risk_snapshot(db_path, {"marginalRiskContribution": {}, "clusterExposure": []})
+    return db_path
 
 
 def test_compute_rebalance_plan_full_shape(tmp_path, monkeypatch):
-    risk_path, db_path = _write_full_fixture(tmp_path)
+    db_path = _write_full_fixture(tmp_path)
     monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     expected_keys = {"generatedAt", "blockedReason", "bands", "orders", "skippedRestores", "accountDataSource", "warnings"}
@@ -606,10 +614,9 @@ def test_compute_rebalance_plan_full_shape(tmp_path, monkeypatch):
 def test_compute_rebalance_plan_honors_the_db_path_it_is_given(tmp_path):
     """The plan is computed from the db_path argument alone: the module default database
     (portfolio_io._DB_PATH) is not consulted, and the account policy comes from SQLite."""
-    risk_path, db_path = _write_full_fixture(tmp_path)
+    db_path = _write_full_fixture(tmp_path)
     assert str(db_path) != portfolio_io._DB_PATH
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert plan["blockedReason"] is None
@@ -619,7 +626,7 @@ def test_compute_rebalance_plan_honors_the_db_path_it_is_given(tmp_path):
 
 
 def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
-    risk_path, db_path = _write_full_fixture(tmp_path)
+    db_path = _write_full_fixture(tmp_path)
     # Zero out two of the three thesis holdings so the sum-to-100 check sees an invalid total.
     from domain_model.db_client import initialize_db
     from domain_model.investment_repository import update_investment_fields, resolve_investment
@@ -628,7 +635,6 @@ def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
     update_investment_fields(conn, resolve_investment(conn, "PSU-U.TO"), target_weight=0.0)
     conn.close()
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert plan["blockedReason"] is not None
@@ -637,7 +643,7 @@ def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
 
 
 def test_compute_rebalance_plan_blocked_when_portfolio_stale(tmp_path):
-    risk_path, db_path = _write_full_fixture(tmp_path)
+    db_path = _write_full_fixture(tmp_path)
     # Staleness derives from account_investment.last_synced_at: re-seed positions with an old
     # last_synced_at to exercise the DATA_STALE path.
     _seed_positions(
@@ -646,30 +652,32 @@ def test_compute_rebalance_plan_blocked_when_portfolio_stale(tmp_path):
         last_synced_at="2020-01-01T00:00:00Z",
     )
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert "DATA_STALE" in plan["blockedReason"]
 
 
 def test_compute_rebalance_plan_degrades_when_risk_snapshot_missing(tmp_path):
-    risk_path, db_path = _write_full_fixture(tmp_path)
-    risk_path.unlink()
+    db_path = _write_full_fixture(tmp_path)
+    from domain_model.db_client import initialize_db as _init_clear
+    conn = _init_clear(str(db_path))
+    conn.execute("DELETE FROM computed_snapshot")
+    conn.commit()
+    conn.close()
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert plan["blockedReason"] is None
-    assert any("risk_snapshot" in w for w in plan["warnings"])
+    assert any("risk snapshot" in w for w in plan["warnings"])
 
 
 def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path, monkeypatch):
-    risk_path, db_path = _write_full_fixture(tmp_path)
+    db_path = _write_full_fixture(tmp_path)
     monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
-    risk_path.write_text(json.dumps({
+    _store_risk_snapshot(db_path, {
         "marginalRiskContribution": {"NBIS": 0.20},
         "clusterExposure": [{"pillarId": "ai_infra", "weight": 0.3, "varianceContributionPct": 30.0}],
-    }))
+    })
     from domain_model.db_client import initialize_db as _init
     from domain_model.thesis_breaker_repository import replace_breaker_state, upsert_breaker
     conn = _init(str(db_path))
@@ -678,7 +686,6 @@ def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path
                                                   "currentStreak": 4, "lastEvaluatedAt": "2026-10-09T00:00:00Z", "status": "TRIGGERED"}}})
     conn.close()
     plan = compute_rebalance_plan(
-        risk_snapshot_path=risk_path,
         db_path=db_path,
     )
     assert not any(o["ticker"] == "NBIS" for o in plan["orders"])

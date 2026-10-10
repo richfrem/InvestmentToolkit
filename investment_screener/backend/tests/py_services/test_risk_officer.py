@@ -1,5 +1,4 @@
 """Tests for risk_officer.py — G2 risk-officer veto classification (Phase 3, sub-spec 5)."""
-import json
 import sys
 from pathlib import Path
 
@@ -7,7 +6,36 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from risk_officer import classify_orders, compute_risk_officer_review  # noqa: E402
+import pytest  # noqa: E402
+
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.computed_snapshot_repository import (  # noqa: E402
+    list_snapshots,
+    load_latest_snapshot,
+    save_snapshot,
+)
+from risk_officer import (  # noqa: E402
+    classify_orders,
+    compute_risk_officer_review,
+    log_risk_officer_override,
+    _cli_log_override,
+)
+
+
+def _store(db_path, name, payload):
+    conn = initialize_db(str(db_path))
+    try:
+        save_snapshot(conn, name, payload)
+    finally:
+        conn.close()
+
+
+def _stored(db_path, name):
+    conn = initialize_db(str(db_path))
+    try:
+        return load_latest_snapshot(conn, name)
+    finally:
+        conn.close()
 
 
 def _order(ticker, risk_warnings=None, breaker_warnings=None, **extra):
@@ -62,81 +90,77 @@ def test_classify_orders_preserves_order_and_handles_mixed_batch():
     assert [o["ticker"] for o in approved] == ["A", "C"]
 
 
-def test_compute_risk_officer_review_no_plan_file_returns_no_plan_status(tmp_path):
-    plan_path = tmp_path / "rebalance_plan.json"
-    output_path = tmp_path / "risk_officer_review.json"
-    result = compute_risk_officer_review(rebalance_plan_path=plan_path, output_path=output_path)
+def test_compute_risk_officer_review_no_stored_plan_returns_no_plan_status(tmp_path):
+    db_path = tmp_path / "domain_model.sqlite"
+    result = compute_risk_officer_review(db_path=db_path)
     assert result["status"] == "no_plan"
     assert result["vetoedOrders"] == []
     assert result["approvedOrders"] == []
-    assert not output_path.exists()
+    assert _stored(db_path, "risk_officer_review") is None
 
 
 def test_compute_risk_officer_review_blocked_plan_returns_plan_blocked_status(tmp_path):
-    plan_path = tmp_path / "rebalance_plan.json"
-    plan_path.write_text(json.dumps({
+    db_path = tmp_path / "domain_model.sqlite"
+    _store(db_path, "rebalance_plan", {
         "generatedAt": "2026-07-10T13:00:00Z", "blockedReason": "DATA_STALE — ...",
         "orders": [], "bands": {}, "skippedRestores": [], "accountDataSource": {}, "warnings": [],
-    }))
-    output_path = tmp_path / "risk_officer_review.json"
-    result = compute_risk_officer_review(rebalance_plan_path=plan_path, output_path=output_path)
+    })
+    result = compute_risk_officer_review(db_path=db_path)
     assert result["status"] == "plan_blocked"
-    assert not output_path.exists()
+    assert _stored(db_path, "risk_officer_review") is None
 
 
-def test_compute_risk_officer_review_writes_file_and_round_trips(tmp_path):
-    plan_path = tmp_path / "rebalance_plan.json"
-    plan_path.write_text(json.dumps({
+def test_compute_risk_officer_review_stores_the_review_and_round_trips(tmp_path):
+    db_path = tmp_path / "domain_model.sqlite"
+    _store(db_path, "rebalance_plan", {
         "generatedAt": "2026-07-10T13:58:00Z", "blockedReason": None,
         "orders": [
             _order("CORZ", risk_warnings=["MRC breach"]),
             _order("MSFT"),
         ],
         "bands": {}, "skippedRestores": [], "accountDataSource": {}, "warnings": [],
-    }))
-    output_path = tmp_path / "risk_officer_review.json"
+    })
 
-    result = compute_risk_officer_review(rebalance_plan_path=plan_path, output_path=output_path)
+    result = compute_risk_officer_review(db_path=db_path)
 
     assert result["status"] == "ok"
     assert result["sourceRebalancePlanGeneratedAt"] == "2026-07-10T13:58:00Z"
     assert "generatedAt" in result
     assert [o["ticker"] for o in result["vetoedOrders"]] == ["CORZ"]
     assert [o["ticker"] for o in result["approvedOrders"]] == ["MSFT"]
-
-    assert output_path.exists()
-    on_disk = json.loads(output_path.read_text())
-    assert on_disk == result
+    assert _stored(db_path, "risk_officer_review") == result
 
 
-def test_compute_risk_officer_review_no_save_skips_write(tmp_path):
-    plan_path = tmp_path / "rebalance_plan.json"
-    plan_path.write_text(json.dumps({
+def test_compute_risk_officer_review_no_save_stores_nothing(tmp_path):
+    db_path = tmp_path / "domain_model.sqlite"
+    _store(db_path, "rebalance_plan", {
         "generatedAt": "x", "blockedReason": None, "orders": [_order("MSFT")],
         "bands": {}, "skippedRestores": [], "accountDataSource": {}, "warnings": [],
-    }))
-    output_path = tmp_path / "risk_officer_review.json"
-    compute_risk_officer_review(rebalance_plan_path=plan_path, output_path=output_path, save=False)
-    assert not output_path.exists()
+    })
+    compute_risk_officer_review(db_path=db_path, save=False)
+    assert _stored(db_path, "risk_officer_review") is None
 
 
-import pytest
-
-from risk_officer import log_risk_officer_override, _cli_log_override  # noqa: E402
+def _overrides(db_path):
+    conn = initialize_db(str(db_path))
+    try:
+        return list_snapshots(conn, "risk_officer_override")
+    finally:
+        conn.close()
 
 
 class TestLogRiskOfficerOverride:
-    def test_appends_one_jsonl_line(self, tmp_path):
-        path = tmp_path / "risk_officer_overrides.jsonl"
+    def test_stores_one_override_record(self, tmp_path):
+        db_path = tmp_path / "domain_model.sqlite"
         log_risk_officer_override(
             ticker="CORZ", action="buy", account="TFSA", shares=10.0,
             veto_reasons=["MRC breach"],
             rationale="Conviction unchanged, MRC estimate is first-order only",
-            path=path,
+            db_path=db_path,
         )
-        lines = path.read_text().strip().splitlines()
-        assert len(lines) == 1
-        entry = json.loads(lines[0])
+        entries = _overrides(db_path)
+        assert len(entries) == 1
+        entry = entries[0]
         assert entry["ticker"] == "CORZ"
         assert entry["action"] == "buy"
         assert entry["account"] == "TFSA"
@@ -146,58 +170,51 @@ class TestLogRiskOfficerOverride:
         assert "date" in entry
 
     def test_second_call_appends_not_overwrites(self, tmp_path):
-        path = tmp_path / "risk_officer_overrides.jsonl"
+        db_path = tmp_path / "domain_model.sqlite"
         log_risk_officer_override(
             ticker="CORZ", action="buy", account="TFSA", shares=10.0,
-            veto_reasons=["a"], rationale="first", path=path,
+            veto_reasons=["a"], rationale="first", db_path=db_path,
         )
         log_risk_officer_override(
             ticker="NBIS", action="buy", account="RRSP", shares=3.0,
-            veto_reasons=["b"], rationale="second", path=path,
+            veto_reasons=["b"], rationale="second", db_path=db_path,
         )
-        lines = path.read_text().strip().splitlines()
-        assert len(lines) == 2
+        assert [e["rationale"] for e in _overrides(db_path)] == ["first", "second"]
 
 
 class TestCliLogOverride:
     def test_resolves_vetoed_order_then_logs(self, tmp_path):
-        review_path = tmp_path / "risk_officer_review.json"
-        overrides_path = tmp_path / "risk_officer_overrides.jsonl"
-        review_path.write_text(json.dumps({
+        db_path = tmp_path / "domain_model.sqlite"
+        _store(db_path, "risk_officer_review", {
             "status": "ok", "generatedAt": "x", "sourceRebalancePlanGeneratedAt": "y",
             "vetoedOrders": [{
                 "ticker": "CORZ", "action": "buy", "account": "TFSA", "shares": 10,
                 "vetoReasons": ["MRC breach"],
             }],
             "approvedOrders": [],
-        }))
+        })
         _cli_log_override(
             ticker="CORZ", action="buy", account="TFSA",
-            rationale="Conviction unchanged",
-            review_path=review_path, overrides_path=overrides_path,
+            rationale="Conviction unchanged", db_path=db_path,
         )
-        entry = json.loads(overrides_path.read_text().strip())
+        entry = _overrides(db_path)[0]
         assert entry["shares"] == 10
         assert entry["vetoReasons"] == ["MRC breach"]
 
-    def test_missing_review_file_raises(self, tmp_path):
-        review_path = tmp_path / "does_not_exist.json"
-        overrides_path = tmp_path / "risk_officer_overrides.jsonl"
-        with pytest.raises(ValueError, match="not found"):
+    def test_missing_review_raises(self, tmp_path):
+        db_path = tmp_path / "domain_model.sqlite"
+        with pytest.raises(ValueError, match="no stored risk officer review"):
             _cli_log_override(
-                ticker="CORZ", action="buy", account="TFSA", rationale="x",
-                review_path=review_path, overrides_path=overrides_path,
+                ticker="CORZ", action="buy", account="TFSA", rationale="x", db_path=db_path,
             )
 
     def test_no_matching_vetoed_order_raises(self, tmp_path):
-        review_path = tmp_path / "risk_officer_review.json"
-        overrides_path = tmp_path / "risk_officer_overrides.jsonl"
-        review_path.write_text(json.dumps({
+        db_path = tmp_path / "domain_model.sqlite"
+        _store(db_path, "risk_officer_review", {
             "status": "ok", "generatedAt": "x", "sourceRebalancePlanGeneratedAt": "y",
             "vetoedOrders": [], "approvedOrders": [],
-        }))
+        })
         with pytest.raises(ValueError, match="no vetoed order"):
             _cli_log_override(
-                ticker="CORZ", action="buy", account="TFSA", rationale="x",
-                review_path=review_path, overrides_path=overrides_path,
+                ticker="CORZ", action="buy", account="TFSA", rationale="x", db_path=db_path,
             )

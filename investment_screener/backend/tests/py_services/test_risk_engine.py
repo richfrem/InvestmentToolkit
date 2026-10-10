@@ -461,3 +461,25 @@ def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_pa
     assert "power" not in cluster_pillars
     ai_infra = next(c for c in snapshot["clusterExposure"] if c["pillarId"] == "ai_infra")
     assert ai_infra["weight"] == pytest.approx(1.0)  # NVDA is the only mrc-eligible holding
+
+
+def test_cli_stores_the_snapshot_in_the_database(tmp_path, monkeypatch, capsys):
+    """main() stores the computed snapshot in domain_model.sqlite; --no-save stores nothing."""
+    from domain_model.computed_snapshot_repository import load_latest_snapshot
+    import risk_engine
+
+    db_path = tmp_path / "domain_model.sqlite"
+    monkeypatch.setattr(risk_engine, "_DB_PATH", db_path)
+    monkeypatch.setattr(risk_engine, "compute_risk_snapshot", lambda benchmark="SPY": {"marginalRiskContribution": {"NVDA": 0.2}})
+
+    monkeypatch.setattr(sys, "argv", ["risk_engine.py", "--no-save"])
+    risk_engine.main()
+    conn = initialize_db(str(db_path))
+    assert load_latest_snapshot(conn, "risk_snapshot") is None
+    conn.close()
+
+    monkeypatch.setattr(sys, "argv", ["risk_engine.py"])
+    risk_engine.main()
+    conn = initialize_db(str(db_path))
+    assert load_latest_snapshot(conn, "risk_snapshot") == {"marginalRiskContribution": {"NVDA": 0.2}}
+    conn.close()
