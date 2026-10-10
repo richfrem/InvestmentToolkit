@@ -29,12 +29,12 @@ import glob
 import json
 import os
 import subprocess
+import tempfile
 import sys
 from pathlib import Path
 from typing import Any, List
 
 REPO_ROOT = Path(__file__).resolve().parent
-FIXTURES = REPO_ROOT / "investment_screener/backend/tests/fixtures"
 
 CRITICAL = "\033[91m[CRITICAL]\033[0m"
 OK = "\033[92m[OK]\033[0m"
@@ -207,20 +207,33 @@ def t0_map_debt() -> bool:
     return run(["python3", str(script)], label="map-debt.md audit")
 
 
+# External comment: Build a throwaway database with two weighted holdings for the bridge smoke test
+def _seed_bridge_smoke_db(db_path: Path) -> None:
+    """Create a temporary domain_model.sqlite with AAPL (60%) and MSFT (40%) target weights."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment, update_investment_fields
+
+    conn = initialize_db(str(db_path))
+    try:
+        for symbol, weight in (("AAPL", 60), ("MSFT", 40)):
+            update_investment_fields(conn, resolve_investment(conn, symbol), target_weight=weight)
+    finally:
+        conn.close()
+
+
 # External comment: Smoke test the python bridge execution via symlink
 def t0_5_bridge_smoke() -> bool:
     """Validates the portfolio action bridge script runs and outputs valid JSON."""
     print(f"\n{HEADER}T0.5 — Bridge smoke (portfolio_action.py via symlink){RESET}")
     symlink = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
-    r = subprocess.run(
-        [
-            "python3", str(symlink),
-            "--all",
-            "--portfolio", str(FIXTURES / "portfolio.test.json"),
-            "--target",   str(FIXTURES / "target_portfolio.test.json"),
-        ],
-        capture_output=True, text=True, cwd=str(REPO_ROOT),
-    )
+    with tempfile.TemporaryDirectory() as tmp:
+        db_path = Path(tmp) / "domain_model.sqlite"
+        _seed_bridge_smoke_db(db_path)
+        r = subprocess.run(
+            ["python3", str(symlink), "--all", "--db", str(db_path)],
+            capture_output=True, text=True, cwd=str(REPO_ROOT),
+        )
     if r.returncode != 0:
         print(f"  {CRITICAL} portfolio_action.py via symlink — non-zero exit")
         print(f"    stderr: {r.stderr.strip()}")
