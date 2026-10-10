@@ -13,7 +13,7 @@ prior reasoning preserved in git history (`git log -- docs/architecture/domain-d
 file renamed from `corrected-persistence-domain-data-model.md` alongside this v3.2 pass),
 not as parallel `-v2`/`-v3`-suffixed documents.
 
-- **v1** (superseded): modeled `portfolio.json`/`target-portfolio.json`/`watchlist.json` as
+- **v1** (superseded): modeled the holdings export/the thesis export/`watchlist.json` as
   three separate root tables (`holdings`, `target_portfolio_entry`, `watchlist_entry`), mirroring
   JSON file boundaries rather than the business concept they jointly describe.
 - **v2** (superseded): corrected v1 by unifying those three into one `POSITION` +
@@ -43,12 +43,12 @@ not as parallel `-v2`/`-v3`-suffixed documents.
   promote scoring fields (moat/management/conviction) to real columns — checked the frontend
   directly, found zero sort/filter usage on them today.
 - **Wave 3 additions** (2026-07-22, no version bump — additive, not a schema redesign): migrated
-  `portfolio.json` (account holdings) into `account`/`investment`/`account_investment`/
+  the holdings export (account holdings) into `account`/`investment`/`account_investment`/
   `investment_price`, and added `broker_exchange_rate`/`broker_reported_total` as the one
   broker-reported fact this domain can't recompute (see ADR-030). Per-account and portfolio
   totals are always computed live from `account_investment`/`investment_price`, never stored.
 - **Wave 3 completion** (post-hoc, `investment.sector`/`investment.industry`): added to carry
-  the two enriched holding-display facts `GET /api/portfolio` needs from `portfolio.json` that
+  the two enriched holding-display facts `GET /api/portfolio` needs from the holdings export that
   the schema didn't already carry (resolved by `fetch_portfolio_heatmap.py`'s yfinance lookup).
   Nullable TEXT, self-healed into any pre-existing real file via `SCHEMA_EVOLUTIONS` in
   `db_client.py` (`CREATE TABLE IF NOT EXISTS` is a no-op against a table that already exists).
@@ -109,7 +109,7 @@ as an alternative.**
 | **Joins for "show AAPL: name, target weight, current shares, market value"** | 3 (`instrument` for identity, `position` for stance, `account_position` aggregate, `instrument_price`) — 4 total including price | 2 (`account_investment` aggregate, `investment_price`) — identity and stance are already on the one row |
 | **Joins for "list research for a ticker"** | 1 (`instrument` → `intelligence_event`) | 1 (`investment` → `intelligence_event`) — no difference |
 | **Joins for "portfolio drift report, all tracked securities"** | 3 (`position`, `account_position` aggregate, `instrument_price`, plus `instrument` for display name = effectively 3-4) | 2 (`account_investment` aggregate, `investment_price`) |
-| **Migration complexity** | Higher — 3 source concepts (portfolio.json, target-portfolio.json, watchlist.json) map to 2 tables, still requires deciding instrument vs. position boundary per field | Lower — same 3 source files map to 2 tables with a cleaner single boundary: "per-account fact" vs. "everything else" |
+| **Migration complexity** | Higher — 3 source concepts (the holdings export, the thesis export, watchlist.json) map to 2 tables, still requires deciding instrument vs. position boundary per field | Lower — same 3 source files map to 2 tables with a cleaner single boundary: "per-account fact" vs. "everything else" |
 | **Represents watchlist-only items** | Yes — `POSITION` row, zero `ACCOUNT_POSITION` rows | Yes — `INVESTMENT` row, zero `ACCOUNT_INVESTMENT` rows. Identical capability. |
 | **Represents target-only items** | Yes, same mechanism | Yes, same mechanism |
 | **Represents cash** | `ACCOUNT_POSITION` row, `instrument_id NULL`, `asset_class='CASH'` | `ACCOUNT_INVESTMENT` row, `investment_id` pointing at a `CASH_USD`/`CASH_CAD` `INVESTMENT` row (asset_class='CASH') — arguably cleaner: cash gets a real identity row like any other tracked thing, consistent with the corrective instruction's own example list ("CASH_USD" listed as an `INVESTMENT` example) |
@@ -666,21 +666,21 @@ Same `investment_price`/live-price dependency as v2 — unresolved by table coun
 
 | Field | Source | v3 target |
 |---|---|---|
-| `holdings[].ticker` | target-portfolio.json | `investment.symbol` (resolves `investment_id`) |
-| `holdings[].name` | target-portfolio.json | `investment.name` |
-| `holdings[].pillarId` | target-portfolio.json | `investment.pillar_id` |
-| `holdings[].subStrategyId` | target-portfolio.json | `investment.sub_strategy_id` |
-| `holdings[].targetWeight` | target-portfolio.json | `investment.target_weight` |
-| `holdings[].role` | target-portfolio.json | `investment.lifecycle_status` (real values: accumulate/avoid/watchlist/trim/initiate/exit) |
-| `holdings[].action` | target-portfolio.json | `investment.target_action` |
-| `holdings[].standingDecision.*` | target-portfolio.json | `investment.standing_decision_{type,reason,source,review}` |
-| `holdings[].targetEntryPrice` | target-portfolio.json | `price_level_tier` row, `tier_kind='TARGET_ENTRY'` — **not** an `investment` column (see below) |
-| `holdings[].thesisForInclusion` | target-portfolio.json | `investment.thesis_for_inclusion` |
-| `holdings[].agentRationale` | target-portfolio.json | `investment.agent_rationale` |
-| `holdings[].priceLevels` | target-portfolio.json | `price_level_set` + `price_level_tier` (`tier_kind='BUY_TIER'`) |
-| `holdings[].shares` | target-portfolio.json | not stored on `investment` — superseded by real-time `account_investment.quantity`, same reasoning as v2 |
-| `symbol`/`shares`/`book_price` | portfolio.json | `account_investment.investment_id`/`quantity`/`average_cost` — **now with real account attribution**, per the resolved `fetch_broker_data.py` finding (v2 §, unchanged) |
-| `market_value`/`price` | portfolio.json | `investment_valuation` view / `investment_price`, not stored |
+| `holdings[].ticker` | the thesis export | `investment.symbol` (resolves `investment_id`) |
+| `holdings[].name` | the thesis export | `investment.name` |
+| `holdings[].pillarId` | the thesis export | `investment.pillar_id` |
+| `holdings[].subStrategyId` | the thesis export | `investment.sub_strategy_id` |
+| `holdings[].targetWeight` | the thesis export | `investment.target_weight` |
+| `holdings[].role` | the thesis export | `investment.lifecycle_status` (real values: accumulate/avoid/watchlist/trim/initiate/exit) |
+| `holdings[].action` | the thesis export | `investment.target_action` |
+| `holdings[].standingDecision.*` | the thesis export | `investment.standing_decision_{type,reason,source,review}` |
+| `holdings[].targetEntryPrice` | the thesis export | `price_level_tier` row, `tier_kind='TARGET_ENTRY'` — **not** an `investment` column (see below) |
+| `holdings[].thesisForInclusion` | the thesis export | `investment.thesis_for_inclusion` |
+| `holdings[].agentRationale` | the thesis export | `investment.agent_rationale` |
+| `holdings[].priceLevels` | the thesis export | `price_level_set` + `price_level_tier` (`tier_kind='BUY_TIER'`) |
+| `holdings[].shares` | the thesis export | not stored on `investment` — superseded by real-time `account_investment.quantity`, same reasoning as v2 |
+| `symbol`/`shares`/`book_price` | the holdings export | `account_investment.investment_id`/`quantity`/`average_cost` — **now with real account attribution**, per the resolved `fetch_broker_data.py` finding (v2 §, unchanged) |
+| `market_value`/`price` | the holdings export | `investment_valuation` view / `investment_price`, not stored |
 | `ticker`/`addedAt` | watchlist.json | `investment.is_watchlisted = 1` / `investment.watchlist_added_at` |
 | `alert_id`/`symbol`/`price`/`condition`/`active`/`created`/`last_fired`/`expiration` | tradingview_alerts_actual.json | `alert` table, `investment_id` resolved from `symbol` (strip `EXCHANGE:` prefix) |
 | `fairValue`/`action`/`rationale` | projections/*.json `aiThesis` | `projection_version.fair_value`/`action`/`rationale` |
@@ -745,7 +745,7 @@ of files to keep in sync.
 ## Migration Implications
 
 Same real producer/consumer inventory as v2 (21 producers, ~33 consumers across
-`portfolio.json`/`target-portfolio.json`/`watchlist.json`), same archive rule, same
+the holdings export/the thesis export/`watchlist.json`), same archive rule, same
 `projection_version` first-implementation recommendation (still the smallest real producer
 count). The only change implementation needs to account for: every reference to `instrument_id`
 in already-built code (`event_repository.py`, `replay_ledger.py`, `models.py`,
@@ -764,7 +764,7 @@ The suspicion these three columns duplicate one status model doesn't hold up aga
   a portfolio-construction/strategy classification; `action` tracks the current recommended
   action (closer to the DCF engine's `aiThesis.action`). Different questions, different answers,
   on the same row, today.
-- **`watchlist.json` (80 tickers) and `role='watchlist'` in `target-portfolio.json` (33 tickers)
+- **`watchlist.json` (80 tickers) and `role='watchlist'` in the thesis export (33 tickers)
   overlap by only 20.** 13 tickers carry `role='watchlist'` but aren't in `watchlist.json` at
   all; 60 tickers are in `watchlist.json` (including active holdings like `ALAB`, `SNDK` with
   `role='accumulate'`/`'initiate'`) despite not having `role='watchlist'`. These are two
@@ -836,15 +836,15 @@ answered from theory. `account_policy.json`, real content:
 
 This is exactly the "rebalance rules"/"portfolio constraints" concept the review asked about —
 real, not hypothetical, and it had no representation anywhere in this model, not even as a
-"stays JSON" entity with a name. `target-portfolio.json`'s `globalSettings` (`rebalanceFrequency`,
+"stays JSON" entity with a name. the thesis export's `globalSettings` (`rebalanceFrequency`,
 `portfolioValueUSD`) is the same category of thing at smaller scale. Adopted as a real (if
 mostly-JSON) entity rather than left unmodeled:
 
 ```sql
 CREATE TABLE portfolio_policy (
     policy_id                          TEXT PRIMARY KEY,   -- fixed singleton row, e.g. 'default'
-    rebalance_frequency                  TEXT,               -- from target-portfolio.json globalSettings
-    portfolio_value_usd_target             REAL,             -- from target-portfolio.json globalSettings
+    rebalance_frequency                  TEXT,               -- from the thesis export globalSettings
+    portfolio_value_usd_target             REAL,             -- from the thesis export globalSettings
     max_marginal_risk_contribution_pct       REAL,           -- from account_policy.json riskBudgetCaps — simple scalar, real column
     max_cluster_variance_contribution_pct      REAL,         -- from account_policy.json riskBudgetCaps
     rebalance_band_relative_pct                  REAL,       -- from account_policy.json bandConfig
