@@ -234,13 +234,18 @@ def resolve_sector(sym: str, norm_sym: str, item_sector: str | None,
     return sector, industry
 
 
-def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
+def fetch_portfolio_data(items: list, bust_cache: bool = False, tradingview_only: bool = False) -> dict:
     """Fetch heatmap data for portfolio items with shares.
 
     Args:
         items: List of portfolio holding dicts (symbol, shares, book_price, …).
         bust_cache: When True, bypass the 15-minute yfinance cache. Use for
             explicit user-triggered refreshes so prices are always live.
+        tradingview_only: When True, every price and day change comes from TradingView quotes
+            and nowhere else. yfinance is still used for names, sectors, earnings dates and
+            history, never for a price. A symbol TradingView cannot quote gets price 0, an
+            "error" and a place in result["missing_prices"]; it is never priced from yfinance
+            or from the stored price.
     """
     history = HistoricalPriceStore()
 
@@ -277,19 +282,23 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
     # (regular -> extended hours -> overnight/BOATS), so q["price"] here is always
     # the current tradable price, not a frozen post-close regular price.
     # Overrides yfinance price in info_map.
+    tv_quotes: dict[str, dict] = {}
     try:
         import sys as _sys
         _tv_scripts = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/scripts")
         if _tv_scripts not in _sys.path:
             _sys.path.insert(0, _tv_scripts)
         from tv_batch_quotes import batch_quotes as _tv_batch  # type: ignore[import]
-        tv_result = _tv_batch(to_fetch)
+        tv_result = _tv_batch(to_fetch, allow_fallback=not tradingview_only)
         for sym, q in tv_result.get("quotes", {}).items():
-            if q.get("source") == "tradingview" and sym in info_map:
-                info_map[sym]["_fastLastPrice"] = q["price"]
-                info_map[sym]["_fastChangePct"] = q.get("changePercent")
+            if q.get("source") == "tradingview":
+                tv_quotes[sym] = q
+                if sym in info_map:
+                    info_map[sym]["_fastLastPrice"] = q["price"]
+                    info_map[sym]["_fastChangePct"] = q.get("changePercent")
     except Exception:
         pass
+    missing_prices: list[str] = []
     if to_fetch:
         prefetch_history(to_fetch, history)
 
@@ -317,22 +326,29 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                 name = info.get("shortName", sym)
                 sector, industry = resolve_sector(sym, norm_sym, item_sector, item_industry, info)
 
-                # Price priority: TradingView live → yfinance fast_info → post/pre-market → current/regular
-                yf_price = (info.get("_fastLastPrice")
-                            or info.get("postMarketPrice")
-                            or info.get("preMarketPrice")
-                            or info.get("currentPrice")
-                            or info.get("regularMarketPrice", 0))
-                prev_close = info.get("_fastPrevClose") or info.get("regularMarketPreviousClose", 0)
-                # Always use live price for display and change calculations.
-                # stored_price may equal book_price (avg fill cost seeded at TV sync) and must
-                # NOT be used as current market price — that would give wildly wrong 1D%.
-                current_price = yf_price if yf_price and yf_price > 0 else (stored_price or 0)
-                # Use TV-provided change% when available (reflects live TradingView session)
-                tv_change_pct = info.get("_fastChangePct")
-                change_pct = tv_change_pct if tv_change_pct is not None else (
-                    ((current_price - prev_close) / prev_close * 100) if prev_close else 0
-                )
+                if tradingview_only:
+                    quote = tv_quotes.get(norm_sym)
+                    if quote is None:
+                        missing_prices.append(sym)
+                    current_price = quote["price"] if quote else 0
+                    change_pct = (quote.get("changePercent") or 0) if quote else 0
+                else:
+                    # Price priority: TradingView live → yfinance fast_info → post/pre-market → current/regular
+                    yf_price = (info.get("_fastLastPrice")
+                                or info.get("postMarketPrice")
+                                or info.get("preMarketPrice")
+                                or info.get("currentPrice")
+                                or info.get("regularMarketPrice", 0))
+                    prev_close = info.get("_fastPrevClose") or info.get("regularMarketPreviousClose", 0)
+                    # Always use live price for display and change calculations.
+                    # stored_price may equal book_price (avg fill cost seeded at TV sync) and must
+                    # NOT be used as current market price — that would give wildly wrong 1D%.
+                    current_price = yf_price if yf_price and yf_price > 0 else (stored_price or 0)
+                    # Use TV-provided change% when available (reflects live TradingView session)
+                    tv_change_pct = info.get("_fastChangePct")
+                    change_pct = tv_change_pct if tv_change_pct is not None else (
+                        ((current_price - prev_close) / prev_close * 100) if prev_close else 0
+                    )
                 hist_changes = history.calc_changes(norm_sym, current_price)
 
             total_market = round(shares * current_price, 2)
@@ -374,6 +390,8 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                 "earnings_date": earnings_info.get("earningsDate") if earnings_info else None,
                 "days_to_earnings": earnings_info.get("daysToEarnings") if earnings_info else None,
             }
+            if tradingview_only and sym != "USD_CASH" and sym in missing_prices:
+                stock_data["error"] = "no TradingView quote"
 
             result["stocks"].append(stock_data)
             result["total_value"] += total_market
@@ -411,7 +429,11 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
             })
 
     result["total_value"] = round(result["total_value"], 2)
-    result["price_source"] = "tradingview" if (_TV_AVAILABLE or used_stored_prices) else "yfinance"
+    if tradingview_only:
+        result["price_source"] = "tradingview" if not missing_prices else "tradingview_partial"
+        result["missing_prices"] = missing_prices
+    else:
+        result["price_source"] = "tradingview" if (_TV_AVAILABLE or used_stored_prices) else "yfinance"
     result["refreshed_at"] = datetime.now(timezone.utc).isoformat()
     return result
 
@@ -427,7 +449,8 @@ def main():
         sys.exit(1)
 
     bust_cache = "--bust-cache" in sys.argv[2:]
-    data = fetch_portfolio_data(items, bust_cache=bust_cache)
+    tradingview_only = "--tradingview-only" in sys.argv[2:]
+    data = fetch_portfolio_data(items, bust_cache=bust_cache, tradingview_only=tradingview_only)
     print(json.dumps(data, indent=2, cls=_NpEncoder))
 
 

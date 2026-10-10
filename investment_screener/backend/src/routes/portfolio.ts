@@ -22,7 +22,7 @@
  *   - GET /status - Returns the latest position sync timestamp
  *   - GET /position/:ticker - Returns price, shares, and per-account breakdown for a ticker
  *   - GET /holdings/:ticker - Retrieves per-account position counts
- *   - POST /refresh-prices - Forces yfinance quote refresh
+ *   - POST /refresh-prices - Refreshes prices from TradingView real-time quotes (503 when TradingView is not connected)
  *   - POST /sync-tv - Gated TradingView CDP sync returning HITL preview diff
  *   - POST /sync-tv/promote - Finalizes the HITL TradingView snapshot into domain_model.sqlite
  *   - POST /sync-tv/apply - One-shot automated sync applying TV data immediately
@@ -271,29 +271,6 @@ export function getWatchlistTickersForRefresh(dbPath: string = DOMAIN_MODEL_DB_F
         return investmentRepo.listWatchlisted().map(w => ({ symbol: w.ticker, shares: 0 }));
     } finally {
         investmentRepo.close();
-    }
-}
-
-/**
- * Delete each symbol's `investment_price` row before a refresh fetch runs, so
- * a symbol whose fetch fails or is skipped reads as missing (0/unknown)
- * afterward instead of silently continuing to serve a stale price. Found
- * 2026-07-27: several held/watchlisted symbols sat a full day stale, frozen
- * at the exact regular-session price with no signal anything was wrong.
- */
-export function clearPricesBeforeRefresh(symbols: string[], dbPath: string = DOMAIN_MODEL_DB_FILE): void {
-    const investmentRepo = new InvestmentRepository(dbPath);
-    const portfolioRepo = new PortfolioRepository(dbPath);
-    try {
-        for (const rawSymbol of symbols) {
-            if (!rawSymbol || rawSymbol === 'USD_CASH') continue;
-            const symbol = normalizeTicker(rawSymbol);
-            const investmentId = investmentRepo.resolveInvestmentId(symbol, 'EQUITY', 'USD');
-            portfolioRepo.clearInvestmentPrice(investmentId);
-        }
-    } finally {
-        investmentRepo.close();
-        portfolioRepo.close();
     }
 }
 
@@ -552,8 +529,13 @@ router.get('/holdings/:ticker', (req, res) => {
 // ── Refresh & Sync ────────────────────────────────────────────────────────────
 
 router.post('/refresh-prices', async (_req, res) => {
-    console.log(`[API] Refreshing portfolio prices from Yahoo...`);
+    console.log(`[API] Refreshing portfolio prices from TradingView...`);
     try {
+        // Prices come from TradingView real-time quotes only; there is no second price source.
+        if (!(await isTradingViewConnected())) {
+            res.status(503).json({ error: 'TradingView Desktop is not connected, so prices were not refreshed. Start TradingView with the debugging port open and try again.' });
+            return;
+        }
         // The ticker list to refresh comes live from account_investment.
         const portfolioData = getHoldingsForDisplayFromDb() ?? [];
         // Refresh scope = held positions PLUS watchlist-only tickers (is_watchlisted=1,
@@ -565,13 +547,10 @@ router.post('/refresh-prices', async (_req, res) => {
         // their price (it doesn't gate on shares).
         const watchlistData = getWatchlistTickersForRefresh();
         const portfolioDataForRefresh = [...portfolioData, ...watchlistData];
-        // Strip stored price so fetch_portfolio_heatmap.py uses live yfinance prices
+        // Strip stored price so fetch_portfolio_heatmap.py uses only the live TradingView quote
         const itemsForFetch = portfolioDataForRefresh.map((item: any) => { const { price, ...rest } = item; return rest; });
-        // Clear each symbol's stored price BEFORE fetching fresh ones, so a symbol whose
-        // fetch fails/times out reads as missing (0/unknown) afterward instead of quietly
-        // continuing to serve a stale price forever — the exact failure mode found
-        // 2026-07-27 (prices frozen a full day stale with no visible signal).
-        clearPricesBeforeRefresh(itemsForFetch.map((item: any) => item.symbol));
+        // A symbol TradingView cannot quote keeps its previous price (a zero would corrupt the
+        // totals) and is listed under `missingPrices` in the response so the staleness is visible.
         // Wave 3 Task 8: a price-only refresh never triggers a full broker sync, so the
         // stored USD->CAD rate could go stale relative to freshly-refreshed USD prices.
         // fetch_broker_data.py --refresh-exchange-rate does a lightweight balances-only
@@ -579,7 +558,7 @@ router.post('/refresh-prices', async (_req, res) => {
         // parallel with the price fetch so the two numbers never drift apart. Best-effort:
         // its failure must not block the price refresh this endpoint exists to perform.
         const [data, exchangeRate] = await Promise.all([
-            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(itemsForFetch), '--bust-cache']),
+            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(itemsForFetch), '--bust-cache', '--tradingview-only']),
             getLiveUsdCadRate(JAN1_USD_CAD_RATE),
             spawnPythonScript('fetch_broker_data.py', ['--refresh-exchange-rate']).catch((err: Error) => {
                 console.warn(`[API] Exchange rate refresh during price refresh failed: `, err.message);
@@ -603,7 +582,10 @@ router.post('/refresh-prices', async (_req, res) => {
         // fresh heatmap prices are still returned inline in this response for the caller.
         const pricesWritten = persistRefreshedPricesToDb(updatedItems);
         console.log(`[Portfolio] refresh-prices: wrote ${pricesWritten} fresh prices to investment_price (SQLite-only).`);
-        res.json({ success: true, updated: updatedItems.length, heatmap: { ...data, exchange_rate: exchangeRate } });
+        res.json({
+            success: true, updated: pricesWritten, missingPrices: data.missing_prices ?? [],
+            heatmap: { ...data, exchange_rate: exchangeRate },
+        });
     } catch (error) {
         console.error(`[API] Error refreshing prices: `, error);
         res.status(500).json({ error: 'Failed to refresh prices' });

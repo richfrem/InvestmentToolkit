@@ -24,7 +24,6 @@ import {
     persistRefreshedPricesToDb,
     getPortfolioTotalUsdFromDb,
     getWatchlistTickersForRefresh,
-    clearPricesBeforeRefresh,
 } from '../../src/routes/portfolio';
 import { PortfolioRepository } from '../../src/services/PortfolioRepository';
 import { InvestmentRepository } from '../../src/services/InvestmentRepository';
@@ -94,6 +93,20 @@ describe('routes/portfolio.ts /refresh-prices -> SQLite-only price persistence',
         expect(handler).to.not.contain('writeFileSync');
     });
 
+    it('the /refresh-prices handler takes prices from TradingView only and does not clear stored prices', () => {
+        const routeSrc = fs.readFileSync(path.resolve(__dirname, '../../src/routes/portfolio.ts'), 'utf-8');
+        const start = routeSrc.indexOf("router.post('/refresh-prices'");
+        const rest = routeSrc.slice(start + 1);
+        const end = rest.indexOf('router.post(');
+        const handler = rest.slice(0, end === -1 ? undefined : end);
+        expect(handler).to.contain("'--tradingview-only'");
+        expect(handler).to.contain('isTradingViewConnected');
+        expect(handler).to.contain('503');
+        expect(handler).to.contain('missingPrices');
+        expect(handler).to.not.match(/yfinance|Yahoo/i);
+        expect(handler).to.not.contain('clearPricesBeforeRefresh');
+    });
+
     it('skips USD_CASH and non-numeric/non-positive prices without throwing', () => {
         seedStale();
         const count = persistRefreshedPricesToDb(
@@ -131,37 +144,6 @@ describe('routes/portfolio.ts /refresh-prices -> SQLite-only price persistence',
             const investmentRepo = new InvestmentRepository(dbPath);
             investmentRepo.close();
             expect(getWatchlistTickersForRefresh(dbPath)).to.deep.equal([]);
-        });
-    });
-
-    // Regression coverage: a symbol whose refresh fetch fails/is skipped must
-    // read as missing afterward, not silently keep serving yesterday's price.
-    describe('clearPricesBeforeRefresh', () => {
-        it('deletes investment_price rows for the given symbols before a refresh fetch', () => {
-            seedStale(); // NVDA priced @ 800
-            const investmentRepo = new InvestmentRepository(dbPath);
-            const portfolioRepo = new PortfolioRepository(dbPath);
-            const nvdaId = investmentRepo.resolveInvestmentId('NVDA', 'EQUITY', 'USD');
-            expect(portfolioRepo.getInvestmentPrice(nvdaId)).to.not.equal(null);
-
-            clearPricesBeforeRefresh(['NVDA'], dbPath);
-
-            expect(portfolioRepo.getInvestmentPrice(nvdaId)).to.equal(null);
-            investmentRepo.close();
-            portfolioRepo.close();
-        });
-
-        it('leaves prices for symbols NOT in the refresh set untouched', () => {
-            seedStale();
-            const investmentRepo = new InvestmentRepository(dbPath);
-            const portfolioRepo = new PortfolioRepository(dbPath);
-            const nvdaId = investmentRepo.resolveInvestmentId('NVDA', 'EQUITY', 'USD');
-
-            clearPricesBeforeRefresh(['AAPL'], dbPath); // unrelated symbol
-
-            expect(portfolioRepo.getInvestmentPrice(nvdaId)).to.not.equal(null);
-            investmentRepo.close();
-            portfolioRepo.close();
         });
     });
 });
