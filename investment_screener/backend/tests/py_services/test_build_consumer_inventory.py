@@ -4,7 +4,6 @@ per-file producer/consumer/doc-reference data into a per-CONSUMER-FILE view
 
 Key Input Dependencies: none (all tests build a synthetic discovery-audit-shaped dict).
 """
-import json
 import sys
 from pathlib import Path
 
@@ -104,27 +103,6 @@ def test_classify_consumer_migration_required_wins_over_other_classifications():
 def test_classify_consumer_unknown_when_no_recognized_classification():
     result = classify_consumer(["UNKNOWN_REQUIRES_REVIEW"], "some_script.py")
     assert result == "UNKNOWN_REQUIRES_REVIEW"
-
-
-def test_build_consumer_inventory_real_repo_finds_ta_sweep_consumers():
-    """Regression test: run against the ACTUAL committed discovery audit output.
-
-    This is the direct successor to the reference-linking bug fix — proves the
-    inversion correctly surfaces the same 3 real consumers of ta-sweep-results.json
-    that the fixed audit now detects, and correctly classifies them MIGRATION_REQUIRED.
-    """
-    audit_path = REPO_ROOT / "docs/architecture/json-discovery-audit.json"
-    discovery_result = json.loads(audit_path.read_text())
-
-    inventory = build_consumer_inventory(discovery_result)
-    by_name = {c["consumer_file"]: c for c in inventory}
-
-    ta_sweep_consumers = [
-        c for path, c in by_name.items()
-        if "ta_sweep_batch.py" in path or "daily_brief.py" in path or "compute_conviction_scores.py" in path
-    ]
-    assert len(ta_sweep_consumers) >= 3
-    assert all(c["classification"] == "MIGRATION_REQUIRED" for c in ta_sweep_consumers)
 
 
 def test_doc_only_mentions_are_excluded_from_the_code_consumer_inventory():

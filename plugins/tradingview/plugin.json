@@ -204,13 +204,7 @@
             "name": "domain-model-sqlite",
             "canonical_path": "investment_screener/backend/data/domain_model.sqlite",
             "owned_by": "investment-screener-app",
-            "purpose": "Portfolio holdings (synced from the broker), target weights, thesis, alerts and price levels for all holdings"
-        },
-        {
-            "name": "projections-dir",
-            "canonical_path": "investment_screener/backend/data/projections/",
-            "owned_by": "stock-valuation",
-            "purpose": "DCF projection JSONs \u2014 source of bear/base/bull alert prices"
+            "purpose": "Portfolio holdings (synced from the broker), target weights, thesis, alerts, price levels and DCF projections (projection_version: source of bear/base/bull alert prices)"
         },
         {
             "name": "intelligence-ledger-sqlite",

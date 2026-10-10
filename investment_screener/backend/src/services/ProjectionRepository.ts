@@ -311,6 +311,17 @@ export class ProjectionRepository {
         return rows.map(r => this.rowToProjection(r));
     }
 
+    /** Upper-cased symbols of every investment that has at least one saved projection. */
+    listProjectedTickers(): string[] {
+        const rows = this.db
+            .prepare(
+                'SELECT DISTINCT i.symbol AS symbol FROM projection_version pv ' +
+                'JOIN investment i ON i.investment_id = pv.investment_id ORDER BY i.symbol'
+            )
+            .all() as Array<{ symbol: string }>;
+        return rows.map(r => r.symbol.toUpperCase());
+    }
+
     findAll(): Projection[] {
         const sql = ProjectionRepository.CURRENT_PER_IDENTITY_SQL.replace('{WHERE_CLAUSE}', '');
         const rows = this.db.prepare(sql).all() as ProjectionVersionRow[];

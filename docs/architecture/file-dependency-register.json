@@ -225,14 +225,6 @@
    "note": "Resilience cache and error JSONL"
   },
   {
-   "file": "investment_screener/backend/py_services/verify_thesis_sync.py",
-   "kind": "exists",
-   "label": "{ticker}.json",
-   "disposition": "table",
-   "step": "step 3",
-   "note": "Checks projections/<ticker>.json exists; use projection_version"
-  },
-  {
    "file": "investment_screener/backend/src/middleware/localAuth.ts",
    "kind": "fs-exists",
    "label": "",
@@ -287,14 +279,6 @@
    "disposition": "table",
    "step": "step 6",
    "note": "Reads portfolio-config.json and ytd_performance_report.json"
-  },
-  {
-   "file": "investment_screener/backend/src/routes/screener.ts",
-   "kind": "fs-exists",
-   "label": "",
-   "disposition": "ts-reader",
-   "step": "step 3",
-   "note": "Lists projections/*.json for hasValuation (use projection_version) and reads strategic-review JSON (step 5)"
   },
   {
    "file": "investment_screener/backend/src/routes/screener.ts",
@@ -407,14 +391,6 @@
    "disposition": "table",
    "step": "step 6",
    "note": "Reads the TradingView order audit JSONL"
-  },
-  {
-   "file": "investment_screener/backend/src/services/ProjectionService.ts",
-   "kind": "json-literal",
-   "label": "",
-   "disposition": "ts-reader",
-   "step": "step 3",
-   "note": "JSON path literal for projections"
   },
   {
    "file": "investment_screener/backend/src/services/ThesisService.ts",

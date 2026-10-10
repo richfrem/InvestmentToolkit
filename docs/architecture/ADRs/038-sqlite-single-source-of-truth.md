@@ -29,9 +29,9 @@ tool and `allowed-json-register` still labelled these files
    fails on any read, stat, write, vestigial parameter or unused path constant for
    the retired files, and on any TypeScript/JavaScript reference to them or to
    `PORTFOLIO_FILE`, `THESIS_FILE`, `TARGET_PORTFOLIO_FILE`, `readPortfolio(`.
-   Five one-time migration tools are allow-listed: `migrate_portfolio_to_sqlite.py`,
+   Four one-time migration tools are allow-listed: `migrate_portfolio_to_sqlite.py`,
    `migrate_target_portfolio_to_sqlite.py`, `migrate_wave4_to_sqlite.py`,
-   `migrate_account_policy_to_sqlite.py`, `remove_drift_threshold_fields.py`.
+   `migrate_account_policy_to_sqlite.py`.
    Adding to the list needs a new ADR. `run_tests.py` runs the guard in the T0 gate.
 4. **Governance matches.** `audit_json_usage.py` classifies the retired names as
    `RETIRED_PORTFOLIO_DATA`, not allowed, and `ALLOWED_AUTHORITATIVE_JSON` no longer

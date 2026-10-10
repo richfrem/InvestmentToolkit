@@ -14,15 +14,9 @@
  *   await projectionService.saveProjection(projectionData);
  *   const list = await projectionService.getProjections('AAPL');
  *
- * Migration note (Task 5, replaces the prior fs.promises + proper-lockfile
- * implementation that wrote `data/projections/{TICKER}.json`):
- *   `proper-lockfile` is no longer used in this file. It existed solely to serialize
- *   concurrent read-modify-write cycles against the ticker's JSON file. SQLite (via
- *   better-sqlite3's synchronous, single-connection API and `db.transaction()`) makes
- *   each upsert atomic at the statement/transaction level, so the same class of race this
- *   file's lock protected against can no longer occur here. `proper-lockfile` remains a
- *   dependency and is still used elsewhere in the codebase — this note only concerns this
- *   file.
+ * Concurrency: SQLite (via better-sqlite3's synchronous, single-connection API and
+ *   `db.transaction()`) makes each upsert atomic at the statement/transaction level, so no
+ *   file lock is needed here.
  *
  * Key Functions (Index):
  *   - getProjections(ticker: string) - Retrieves all stored projection versions for a specific ticker symbol
