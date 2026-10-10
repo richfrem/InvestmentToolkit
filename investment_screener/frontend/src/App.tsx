@@ -13,18 +13,17 @@
  * Key Functions:
  *     - App() - Configures the React Router hierarchy and wraps the application in essential providers (HelpModalProvider)
  */
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Heatmap from './pages/Heatmap';
-import PortfolioTablePage from './pages/PortfolioTablePage';
 import PortfolioSummaryPage from './pages/PortfolioSummaryPage';
 
 import { HelpModalProvider } from './components/HelpModal';
 import { PrivacyProvider } from './context/PrivacyContext';
 
-import ScreenerPage from './pages/ScreenerPage';
+import PortfolioPage from './pages/PortfolioPage';
 import TradeLog from './pages/TradeLog';
 import ThesesPage from './pages/ThesesPage';
 import DailyBriefPage from './pages/DailyBriefPage';
@@ -38,8 +37,10 @@ function App() {
             <Route path="/" element={<MainLayout />}>
               <Route index element={<Heatmap />} />
               <Route path="portfolio-summary" element={<PortfolioSummaryPage />} />
-              <Route path="portfolio-table" element={<PortfolioTablePage />} />
-              <Route path="screener" element={<ScreenerPage />} />
+              <Route path="portfolio" element={<PortfolioPage />} />
+              {/* The old Portfolio Table and Portfolio Advisor pages are one page now. */}
+              <Route path="portfolio-table" element={<Navigate to="/portfolio" replace />} />
+              <Route path="screener" element={<Navigate to="/portfolio" replace />} />
               <Route path="analysis" element={<Dashboard />} />
               <Route path="trade-log" element={<TradeLog />} />
               <Route path="theses" element={<ThesesPage />} />

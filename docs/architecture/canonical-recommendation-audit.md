@@ -7,8 +7,7 @@ The earlier Python checkpoint is `9425f92d`; this follow-up completes the consum
 
 | Surface / producer | Current recommendation source |
 | --- | --- |
-| Portfolio Table / portfolio dashboard | Shared React recommendation snapshot |
-| Screener Table / Advisor table | Same snapshot; browser allocation override removed |
+| Portfolio page (the one positions table; replaced the Portfolio Table and Advisor pages) | Shared React recommendation snapshot; browser allocation override removed |
 | Stock Analysis header / trade-button emphasis | Same snapshot |
 | AI thesis summary | Same snapshot; saved research rationale remains dated research |
 | AI analysis modal | Same snapshot; DCF lens comes from the same record |

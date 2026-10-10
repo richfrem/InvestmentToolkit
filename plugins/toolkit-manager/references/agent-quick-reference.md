@@ -96,7 +96,7 @@ Pre-flight checks every time:
 ### `/update-stock-analysis {TICKER}`
 **Full DCF valuation.** Fetches live financials (yfinance), runs Bear / Base / Bull scenario modelling, produces a weighted fair value, and saves a projection JSON. Uses live price from TradingView Desktop (active chart via CDP) when connected, otherwise yfinance.
 
-Updates the AI rating (BUY / HOLD / SELL) and price target on the Portfolio Advisor table.
+Updates the AI rating (BUY / HOLD / SELL) and price target on the Portfolio page.
 
 ```
 /update-stock-analysis NVDA

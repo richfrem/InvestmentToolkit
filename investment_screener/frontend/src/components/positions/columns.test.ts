@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { COLUMNS, COLUMNS_BY_ID } from './columns';
-import { THESIS_PRESET } from './presets';
+import { PORTFOLIO_PRESET, THESIS_PRESET } from './presets';
+import type { TableRow } from './columns';
+import type { PositionRow } from './positionMath';
 
 describe('column registry', () => {
     it('has unique ids', () => {
@@ -19,5 +21,73 @@ describe('column registry', () => {
     });
     it('the weight columns that the totals row needs define a total', () => {
         for (const id of ['actualPct', 'targetPct', 'gapPct']) expect(typeof COLUMNS_BY_ID[id].total, id).toBe('function');
+    });
+});
+
+const base: PositionRow = {
+    ticker: 'AAA', name: 'AAA Inc', assetClass: 'EQUITY', pillarId: 'p', subStrategyId: 's', role: 'core', held: true,
+    shares: 2, averageCost: 10, bookValue: 20, marketValue: 30, currentPrice: 15, actualPct: 3, targetPct: 2,
+    gapPct: 1, action: 'MAINTAIN', rationale: 'why', hasValuation: true, isWatched: false, documents: [],
+};
+
+describe('portfolio preset and the columns both old tables had', () => {
+    it('every portfolio preset column exists in the registry', () => {
+        for (const id of PORTFOLIO_PRESET.columns) expect(COLUMNS_BY_ID[id], id).toBeDefined();
+        expect(COLUMNS_BY_ID[PORTFOLIO_PRESET.sort.id]).toBeDefined();
+    });
+    it('covers the columns of the old Portfolio Table and Advisor', () => {
+        for (const id of ['symbol', 'name', 'action', 'rr_range', 'actualPct', 'targetPct', 'earnings', 'fairValue', 'price',
+            'gain', 'upside', 'ruleOf40', 'growth', 'model', 'bear', 'base', 'bull', 'change_1d', 'change_1w', 'change_1m',
+            'change_3m', 'change_ytd', 'change_1y', 'change_overall', 'sector', 'shares', 'averageCost', 'bookValue',
+            'marketValue', 'qualityMultiplier', 'subStrategyId', 'lastAnalyzed', 'rationale']) {
+            expect(COLUMNS_BY_ID[id], id).toBeDefined();
+        }
+    });
+    it('sorts by the extras the heatmap and projection supply', () => {
+        const row: TableRow = { ...base, sector: 'Tech', growth: 20, change_1d: 1.5, earningsDate: '2026-11-01' };
+        expect(COLUMNS_BY_ID.sector.sort!(row)).toBe('Tech');
+        expect(COLUMNS_BY_ID.growth.sort!(row)).toBe(20);
+        expect(COLUMNS_BY_ID.change_1d.sort!(row)).toBe(1.5);
+        expect(COLUMNS_BY_ID.earnings.sort!(row)).toBe('2026-11-01');
+    });
+    it('prefers the live price, then the stored price, then the recommendation price', () => {
+        const price = COLUMNS_BY_ID.price.sort!;
+        expect(price({ ...base, livePrice: 99 }, undefined)).toBe(99);
+        expect(price({ ...base }, undefined)).toBe(15);
+        expect(price({ ...base, currentPrice: null }, { price: 7 } as never)).toBe(7);
+    });
+    it('upside and gain come from the recommendation fair value against that price', () => {
+        const rec = { fair_value: 30 } as never;
+        expect(COLUMNS_BY_ID.upside.sort!({ ...base, livePrice: 20 }, rec)).toBeCloseTo(50);
+        expect(COLUMNS_BY_ID.gain.sort!({ ...base, livePrice: 20 }, rec)).toBe(10);
+        expect(COLUMNS_BY_ID.upside.sort!({ ...base, currentPrice: null }, undefined)).toBeNull();
+    });
+    it('colours change and weight cells, and nothing else by default', () => {
+        const row: TableRow = { ...base, change_1d: 6 };
+        expect(COLUMNS_BY_ID.change_1d.background!(row, undefined)).not.toBe('transparent');
+        expect(COLUMNS_BY_ID.actualPct.background!(row, undefined)).toBeTruthy();
+        expect(COLUMNS_BY_ID.sector.background).toBeUndefined();
+    });
+});
+
+describe('action sort', () => {
+    const sort = COLUMNS_BY_ID.action.sort!;
+    const rec = (action: string, over: Record<string, unknown> = {}) => ({ action, fair_value: 100, price: 50, ...over }) as never;
+    it('orders by action priority (open actions first), not alphabetically', () => {
+        const order = ['INITIATE', 'ACCUMULATE', 'MAINTAIN', 'TRIM', 'EXIT', 'WATCHLIST']
+            .map(a => ({ a, v: sort(base, rec(a)) as number }))
+            .sort((x, y) => x.v - y.v).map(x => x.a);
+        expect(order.indexOf('INITIATE')).toBeLessThan(order.indexOf('MAINTAIN'));
+        expect(order.indexOf('ACCUMULATE')).toBeLessThan(order.indexOf('WATCHLIST'));
+    });
+    it('puts an action that was already acted on after every open one', () => {
+        const acted = sort(base, rec('INITIATE', { recent_trades: { context: { status: 'ACTED' } } })) as number;
+        const open = sort(base, rec('WATCHLIST')) as number;
+        expect(acted).toBeGreaterThan(open);
+    });
+    it('breaks ties with the larger upside first', () => {
+        const big = sort({ ...base, livePrice: 50 }, rec('ACCUMULATE', { fair_value: 200 })) as number;
+        const small = sort({ ...base, livePrice: 50 }, rec('ACCUMULATE', { fair_value: 60 })) as number;
+        expect(big).toBeLessThan(small);
     });
 });

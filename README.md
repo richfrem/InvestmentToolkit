@@ -22,10 +22,10 @@ An institutional-grade portfolio management and automated research suite built n
 | ![Live Stock Heatmap](screenshots/stock-heatmap.png) | ![Portfolio Summary](screenshots/portfolio-summary.png) |
 | *Real-time performance treemap across technology, power, compute, and sovereign finance sectors.* | *Strategy allocation donut, time-weighted returns, and cross-account KPI rollups.* |
 
-| **Portfolio Advisor & Intelligence Feed** | **Full 24-Position Portfolio Table** |
+| **Portfolio: scope toggle, action chips and valuation ranges** | **Positions with target vs actual weights** |
 | :---: | :---: |
-| ![Portfolio Advisor](screenshots/screener-advisor.png) | ![Portfolio Table](screenshots/portfolio-table.png) |
-| *Dynamic status filter tabs (All 101, Actionable 15, Core Holdings 24, Watchlist 70, Needs Analysis 100) & intake.* | *Per-holding target vs actual weights, gain/loss metrics, and single-click staging.* |
+| ![Portfolio page](screenshots/screener-advisor.png) | ![Portfolio positions](screenshots/portfolio-table.png) |
+| *One page for holdings, watchlist and everything else: Holdings / Watchlist / All toggle, action chips, sector and strategy filters, valuation range bars (screenshots predate the merge).* | *Per-holding target vs actual weights, gain/loss metrics, and single-click staging.* |
 
 | **Stock Analysis & Thesis Tiers (SNDK)** | **Interactive 5-Year DCF Modeler** |
 | :---: | :---: |
