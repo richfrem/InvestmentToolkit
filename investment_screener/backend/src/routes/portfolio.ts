@@ -30,9 +30,9 @@
  *   - GET /strategy-allocation - Aggregates cash and holdings by sub-strategy and pillar
  * 
  * Key Input Dependencies:
- *   - investment_screener/backend/data/domain_model.sqlite (positions, prices, cash flows, totals)
- *   - investment_screener/backend/data/portfolio-config.json (YTD starting configuration overrides)
- *   - investment_screener/backend/data/ytd_performance_report.json (Output TWR data)
+ *   - investment_screener/backend/data/domain_model.sqlite (positions, prices, cash flows, the YTD
+ *     baseline with its January 1 USD/CAD rate, totals)
+ *   - ytd_return.py --json (TWR performance report, printed on stdout, nothing written to disk)
  * 
  * Key Output Dependencies:
  *   - domain_model.sqlite (sync routes write through BrokerSyncService.persistSnapshotToDb)
@@ -40,11 +40,10 @@
 
 import express from 'express';
 import fs from 'fs';
-import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
 import { brokerSyncService, mergeIntoPortfolio, persistSnapshotToDb } from '../services/BrokerSyncService';
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
-import { PORTFOLIO_CONFIG_FILE, DOMAIN_MODEL_DB_FILE, YTD_PERFORMANCE_REPORT_FILE } from '../utils/paths';
+import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { computeWeightsMap, PortfolioTotals } from '../utils/portfolioSnapshot';
 import { computeStrategyAllocation } from '../utils/strategyAllocation';
 import { PortfolioRepository } from '../services/PortfolioRepository';
@@ -53,19 +52,19 @@ import { normalizeTicker } from '../utils/tickerAliases';
 
 const router = express.Router();
 
-// YTD constants — defaults overridden by portfolio-config.json (gitignored, personal)
-let YTD_START_VALUE_CAD = 34126.27;
-let JAN1_USD_CAD_RATE = 1.3723;
-try {
-    if (fs.existsSync(PORTFOLIO_CONFIG_FILE)) {
-        const cfg = JSON.parse(fs.readFileSync(PORTFOLIO_CONFIG_FILE, 'utf-8'));
-        if (typeof cfg.ytdStartValueCAD === 'number') YTD_START_VALUE_CAD = cfg.ytdStartValueCAD;
-        if (typeof cfg.jan1UsdCadRate === 'number') JAN1_USD_CAD_RATE = cfg.jan1UsdCadRate;
+/** The January 1 USD/CAD rate recorded with the YTD baseline in domain_model.sqlite, or null. */
+export function getJan1UsdCadRateFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): number | null {
+    const repo = new PortfolioRepository(dbPath);
+    try {
+        return repo.getJan1UsdCadRate();
+    } finally {
+        repo.close();
     }
-} catch { /* use compile-time defaults */ }
+}
 
 /**
- * Executes the Python TWR calculation script and reads the generated report.
+ * Runs the Python TWR calculation and returns its JSON report (null when there is no cash-flow
+ * baseline yet). Nothing is written to disk.
  */
 async function loadYtdPerformanceReport(): Promise<any> {
     /*
@@ -75,13 +74,8 @@ async function loadYtdPerformanceReport(): Promise<any> {
       exits non-zero with a JSON {"error": ...} on stdout, which spawnPythonScript() turns into a
       rejected promise, caught below and returned as null.
      */
-    const reportFile = YTD_PERFORMANCE_REPORT_FILE;
-
     try {
-        await spawnPythonScript('ytd_return.py', ['--json']);
-        if (fs.existsSync(reportFile)) {
-            return JSON.parse(fs.readFileSync(reportFile, 'utf-8'));
-        }
+        return await spawnPythonScript('ytd_return.py', ['--json']);
     } catch (err) {
         console.error(`[loadYtdPerformanceReport] Failed to run ytd_return.py:`, err);
     }
@@ -383,7 +377,11 @@ router.get('/summary', async (_req, res) => {
         // price_source 'empty').
         let totalMarketValueUSD = 0;
         let totalMarketValueCAD = 0;
-        let liveUsdCadRate = JAN1_USD_CAD_RATE;
+        // Rate fallback when no live rate was ever synced: the January 1 rate recorded with the
+        // YTD baseline, else 1 (CAD totals then equal USD totals and the summary says so).
+        const jan1UsdCadRate = getJan1UsdCadRateFromDb();
+        const fallbackUsdCadRate = jan1UsdCadRate ?? 1;
+        let liveUsdCadRate = fallbackUsdCadRate;
         let priceSource = 'empty';
 
         const dbTotalUSD = getPortfolioTotalUsdFromDb();
@@ -391,13 +389,13 @@ router.get('/summary', async (_req, res) => {
             // Always the live, SQLite-sourced broker_exchange_rate, so the Portfolio Summary and
             // the Portfolio Table show the same CAD total (stock.ts also always uses
             // getLiveUsdCadRate()).
-            liveUsdCadRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
+            liveUsdCadRate = await getLiveUsdCadRate(fallbackUsdCadRate);
             totalMarketValueUSD = dbTotalUSD;
             totalMarketValueCAD = dbTotalUSD * liveUsdCadRate;
             priceSource = 'domain_model_sqlite';
             console.log(`[Summary] totalUSD=$${totalMarketValueUSD.toFixed(2)} (from domain_model.sqlite)`);
         } else {
-            liveUsdCadRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
+            liveUsdCadRate = await getLiveUsdCadRate(fallbackUsdCadRate);
             console.log(`[Summary] No priced positions in domain_model.sqlite — reporting an empty portfolio`);
         }
 
@@ -415,12 +413,14 @@ router.get('/summary', async (_req, res) => {
         // Fetch time-weighted performance metrics from report
         const twrReport = await loadYtdPerformanceReport();
 
-        let ytdStartValueCAD_toUse = twrReport?.starting_balance_cad ?? YTD_START_VALUE_CAD;
-        let ytdChangeCAD_toUse = twrReport?.dollar_gain_cad ?? (totalMarketValueCAD - YTD_START_VALUE_CAD);
-        let ytdChangePctCAD_toUse = twrReport?.time_weighted_return_pct ?? ((totalMarketValueCAD - YTD_START_VALUE_CAD) / YTD_START_VALUE_CAD) * 100;
-        let ytdSimpleReturnPctCAD = twrReport?.simple_return_pct ?? ((totalMarketValueCAD - YTD_START_VALUE_CAD) / YTD_START_VALUE_CAD) * 100;
+        // Without a recorded baseline there is no year-to-date figure: explicit zeros, not an invented start.
+        const ytdAvailable = twrReport != null;
+        const ytdStartValueCAD_toUse = twrReport?.starting_balance_cad ?? 0;
+        const ytdChangeCAD_toUse = twrReport?.dollar_gain_cad ?? 0;
+        const ytdChangePctCAD_toUse = twrReport?.time_weighted_return_pct ?? 0;
+        const ytdSimpleReturnPctCAD = twrReport?.simple_return_pct ?? 0;
 
-        const ytdStartValueUSD = ytdStartValueCAD_toUse / JAN1_USD_CAD_RATE;
+        const ytdStartValueUSD = ytdStartValueCAD_toUse / (jan1UsdCadRate ?? liveUsdCadRate);
         const ytdChangeUSD = ytdChangeCAD_toUse / liveUsdCadRate;
         const ytdChangePctUSD = ytdChangePctCAD_toUse;
 
@@ -428,6 +428,7 @@ router.get('/summary', async (_req, res) => {
             positionCount,
             totalMarketValueUSD, totalMarketValueCAD,
             totalBookValueUSD, totalBookValueCAD,
+            ytdAvailable,
             ytdStartValueCAD: ytdStartValueCAD_toUse,
             ytdStartValueUSD,
             ytdChangeCAD: ytdChangeCAD_toUse,
@@ -439,7 +440,7 @@ router.get('/summary', async (_req, res) => {
             unrealizedGainPctUSD: totalBookValueUSD > 0 ? ((totalMarketValueUSD - totalBookValueUSD) / totalBookValueUSD) * 100 : 0,
             unrealizedGainCAD: totalMarketValueCAD - totalBookValueCAD,
             unrealizedGainPctCAD: totalBookValueUSD > 0 ? ((totalMarketValueUSD - totalBookValueUSD) / totalBookValueUSD) * 100 : 0,
-            liveUsdCadRate, jan1UsdCadRate: JAN1_USD_CAD_RATE,
+            liveUsdCadRate, jan1UsdCadRate,
             lastUpdated,
             price_source: priceSource,
         });
@@ -559,7 +560,7 @@ router.post('/refresh-prices', async (_req, res) => {
         // its failure must not block the price refresh this endpoint exists to perform.
         const [data, exchangeRate] = await Promise.all([
             spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(itemsForFetch), '--bust-cache', '--tradingview-only']),
-            getLiveUsdCadRate(JAN1_USD_CAD_RATE),
+            getLiveUsdCadRate(getJan1UsdCadRateFromDb() ?? 1),
             spawnPythonScript('fetch_broker_data.py', ['--refresh-exchange-rate']).catch((err: Error) => {
                 console.warn(`[API] Exchange rate refresh during price refresh failed: `, err.message);
                 return null;

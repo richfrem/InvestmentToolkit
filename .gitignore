@@ -51,7 +51,6 @@ temp/
 # Excluded via sparse-checkout or local-only
 .env
 .env.*
-investment_screener/backend/data/portfolio-config.json
 investment_screener/backend/data/portfolio_tv.json
 plugins/portfolio-advisor/references/portfolio.json
 

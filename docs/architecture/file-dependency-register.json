@@ -273,14 +273,6 @@
    "note": "Reads portfolio-config.json and ytd_performance_report.json"
   },
   {
-   "file": "investment_screener/backend/src/routes/portfolio.ts",
-   "kind": "fs-read",
-   "label": "",
-   "disposition": "table",
-   "step": "step 6",
-   "note": "Reads portfolio-config.json and ytd_performance_report.json"
-  },
-  {
    "file": "investment_screener/backend/src/routes/screener.ts",
    "kind": "fs-read",
    "label": "",
@@ -409,14 +401,6 @@
    "note": "Reads a prompt template markdown"
   },
   {
-   "file": "investment_screener/backend/src/utils/paths.ts",
-   "kind": "json-literal",
-   "label": "",
-   "disposition": "ts-reader",
-   "step": "step 3",
-   "note": "Path constants for data files"
-  },
-  {
    "file": "plugins/etf-analysis/scripts/persist_etf_analysis.py",
    "kind": "write",
    "label": "{ticker}.json",
@@ -535,14 +519,6 @@
    "disposition": "run-state",
    "step": "step 7",
    "note": "Scans temp review files"
-  },
-  {
-   "file": "plugins/portfolio-advisor/scripts/ytd_return.py",
-   "kind": "write",
-   "label": "investment_screener/backend/data/ytd_performance_report.json",
-   "disposition": "table",
-   "step": "step 6",
-   "note": "Writes ytd_performance_report.json"
   },
   {
    "file": "plugins/stock-valuation/scripts/fetch_financials.py",

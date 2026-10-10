@@ -13,10 +13,10 @@ Usage Examples:
     python3 plugins/portfolio-advisor/scripts/ytd_return.py [--json]
 
 Key Functions (Index):
-    - load_json(path) - Loads JSON file from path
+    - load_cash_flows() - Reads the cash flows and baseline from domain_model.sqlite
     - calculate_simple_metrics(current_value, cash_flows) - Calculates simple return and dollar gains
     - calculate_twr_return(initial_value, final_value, subperiod_cash_flows) - Computes subperiod TWR percentage
-    - save_and_print_report(report_data, is_json_mode) - Persists performance metrics to output path
+    - save_and_print_report(report_data, is_json_mode) - Prints the performance metrics (JSON with --json)
     - calculate_twr() - Main execution pipeline orchestrator
 
 Key Input Dependencies:
@@ -24,7 +24,7 @@ Key Input Dependencies:
       cash_flow / cash_flow_baseline tables)
 
 Key Output Dependencies:
-    - investment_screener/backend/data/ytd_performance_report.json (TWR performance metrics)
+    - stdout: the TWR performance report (JSON with --json); nothing is written to disk
 """
 
 import json
@@ -57,15 +57,6 @@ def load_current_balance_cad() -> float:
 
 
 # External comment: Reads file contents as JSON
-def load_json(path: Path) -> Dict[str, Any]:
-    """Load and parse JSON from a path, returning empty dict if missing."""
-    if not path.exists():
-        print(f"Warning: {path.name} not found at {path}", file=sys.stderr)
-        return {}
-    with open(path) as f:
-        return json.load(f)
-
-
 def load_cash_flows(db_path: str | Path = DB_PATH) -> Dict[str, Any]:
     """Wave 4 cutover: load cash-flow data from the ``cash_flow`` /
     ``cash_flow_baseline`` SQLite tables (via cash_flow_repository), not
@@ -103,6 +94,7 @@ def load_cash_flows(db_path: str | Path = DB_PATH) -> Dict[str, Any]:
     return {
         "starting_balance_cad": baseline.get("starting_balance_cad", 0.0),
         "starting_date": baseline.get("starting_date"),
+        "jan1_usd_cad_rate": baseline.get("jan1_usd_cad_rate"),
         "cash_flows": [
             {
                 "date": row.get("flow_date"),
@@ -199,15 +191,11 @@ def calculate_twr_return(
     return twr_return, sorted_flows
 
 
-# External comment: Persists the performance JSON report and prints visual metrics
+# External comment: Prints the performance report
 def save_and_print_report(report_data: Dict[str, Any], is_json_mode: bool) -> None:
     """
-    Saves YTD statistics to disk and presents visual summary tables to stdout.
+    Presents the YTD statistics on stdout (JSON in --json mode, a summary table otherwise).
     """
-    report_out_path = REPO_ROOT / "investment_screener/backend/data/ytd_performance_report.json"
-    with open(report_out_path, "w") as f:
-        json.dump(report_data, f, indent=2)
-
     if is_json_mode:
         print(json.dumps(report_data))
     else:
@@ -225,7 +213,6 @@ def save_and_print_report(report_data: Dict[str, Any], is_json_mode: bool) -> No
         print(f"  Simple Net Return:         {report_data['simple_return_pct']:+.2f}%")
         print(f"  Time-Weighted Return (TWR): {report_data['time_weighted_return_pct']:+.2f}%")
         print("=" * 40 + "\n")
-        print(f"✓ Saved YTD performance report to backend/data/ytd_performance_report.json")
 
 
 # External comment: Orchestrates the calculation pipeline
@@ -271,6 +258,7 @@ def calculate_twr() -> None:
         "dollar_gain_cad": simple_metrics["simple_gain"],
         "simple_return_pct": simple_metrics["simple_return"],
         "time_weighted_return_pct": twr_return,
+        "jan1_usd_cad_rate": flows_data.get("jan1_usd_cad_rate"),
         "sub_periods": sorted_flows
     }
     

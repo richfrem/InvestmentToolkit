@@ -20,6 +20,7 @@ import {
     getAccountPositionsFromDb,
     getLastSyncedAtFromDb,
     getBookValueAndCountFromDb,
+    getJan1UsdCadRateFromDb,
     getPositionPriceFromDb,
 } from '../../src/routes/portfolio';
 import { PortfolioRepository } from '../../src/services/PortfolioRepository';
@@ -161,5 +162,25 @@ describe('routes/portfolio.ts SQLite-backed read helpers (Wave 3 Task 6)', () =>
         expect(result.price).to.equal(900);
         // Weighted average cost across TFSA (3@800) + RRSP (1@800) = 800
         expect(result.book_price).to.equal(800);
+    });
+
+    it('getJan1UsdCadRateFromDb is null with no baseline, and returns the recorded rate once set', () => {
+        expect(getJan1UsdCadRateFromDb(dbPath)).to.equal(null);
+        const repo = new PortfolioRepository(dbPath);
+        try {
+            (repo as any).db
+                .prepare("INSERT INTO cash_flow_baseline (account, starting_balance_cad, starting_date) VALUES ('ALL', 37426, '2026-01-01')")
+                .run();
+        } finally {
+            repo.close();
+        }
+        expect(getJan1UsdCadRateFromDb(dbPath)).to.equal(null);
+        const writer = new PortfolioRepository(dbPath);
+        try {
+            (writer as any).db.prepare("UPDATE cash_flow_baseline SET jan1_usd_cad_rate = 1.3723 WHERE account = 'ALL'").run();
+        } finally {
+            writer.close();
+        }
+        expect(getJan1UsdCadRateFromDb(dbPath)).to.equal(1.3723);
     });
 });
