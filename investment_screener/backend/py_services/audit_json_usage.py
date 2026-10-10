@@ -1,5 +1,5 @@
 """audit_json_usage.py — Repository-wide JSON/JSONL discovery, reference, and
-legitimacy audit (Plan Task 12A).
+legitimacy audit.
 
 Purpose:
     Deterministically scan every .json/.jsonl file in the repository plus every
@@ -96,8 +96,8 @@ CLASSIFICATIONS = [
 
 ALLOWED_PREFIX = "ALLOWED_"
 
-# Portfolio data lives only in domain_model.sqlite (ADR-038). A file with one of these names is
-# never allowed: it is a leftover to archive, and no code may read or write it.
+# Portfolio data lives only in domain_model.sqlite (ADR-038). classify_file() labels a file with
+# one of these names RETIRED_PORTFOLIO_DATA and never lists it in the allowed register.
 RETIRED_PORTFOLIO_DATA_NAMES = {
     "portfolio.json", "target-portfolio.json", "trade-log.json", "orders_executed.jsonl",
     "cash_flows.json", "account_policy.json", "watchlist.json", "watchlists.json",
@@ -574,7 +574,7 @@ def render_discovery_md(result: dict) -> str:
             action = "Add to .gitignore, git rm --cached (separate low-risk task)"
         else:
             reason = "Verified-archived, deletion candidate."
-            action = "Confirm archive exists, then delete per the Task 19 cleanup gate."
+            action = "Confirm the archive exists, then delete after owner approval."
         lines.append(f"| `{f['path']}` | {reason} | {action} |")
     if not not_long_term:
         lines.append("| (none) | | |")
@@ -646,7 +646,7 @@ def render_register_md(result: dict) -> str:
 
 
 def write_reports(result: dict, out_dir: str) -> None:
-    """Write all four required Task 12A output files.
+    """Write the four audit output files (discovery and allowed register, each .md and .json).
 
     Args:
         result: Output of run_audit().

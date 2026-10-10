@@ -1,6 +1,5 @@
-"""Wave 3 final closure — the last 4 real portfolio.json consumers now source
-their data from domain_model.sqlite via portfolio_io.load_portfolio_state()
-(ADR-030), not from the flat portfolio.json file.
+"""Portfolio-state consumers source their data from domain_model.sqlite via
+portfolio_io.load_portfolio_state() (ADR-030).
 
 Each test seeds a REAL temp SQLite domain model (no mocking of the aggregation
 logic — CLAUDE.md rule 1) and points portfolio_io at it via its _DB_PATH, then

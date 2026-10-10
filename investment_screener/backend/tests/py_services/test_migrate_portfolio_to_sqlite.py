@@ -47,7 +47,7 @@ FIXTURE_PORTFOLIO = {
 
 
 def test_dry_run_does_not_touch_any_db(tmp_path):
-    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path = tmp_path / "holdings_export.json"
     portfolio_path.write_text(json.dumps(FIXTURE_PORTFOLIO))
     report = run_dry_run_migration(str(portfolio_path))
     assert report["positions_count"] == 2  # one position row per (account, symbol), not per aggregated holding
@@ -59,7 +59,7 @@ def test_real_migration_writes_account_investments_per_real_account(tmp_path):
     """Per ADR-030 / Task 0's finding: real per-account attribution comes from
     tvSnapshot.snapshots[].positions[], never from an invented "account" field
     on the flat holdings[] array (which has no such field in real data)."""
-    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path = tmp_path / "holdings_export.json"
     portfolio_path.write_text(json.dumps(FIXTURE_PORTFOLIO))
     db_path = str(tmp_path / "test.sqlite")
     report = run_real_migration(str(portfolio_path), db_path)
@@ -79,7 +79,7 @@ def test_real_migration_writes_account_investments_per_real_account(tmp_path):
 def test_real_migration_writes_cash_as_investment_rows(tmp_path):
     """Wave 0 resolved decision 5: cash is a real INVESTMENT row (asset_class='CASH'),
     held via account_investment like any other position -- not a separate table."""
-    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path = tmp_path / "holdings_export.json"
     portfolio_path.write_text(json.dumps(FIXTURE_PORTFOLIO))
     db_path = str(tmp_path / "test.sqlite")
     run_real_migration(str(portfolio_path), db_path)
@@ -98,7 +98,7 @@ def test_real_migration_excludes_zero_quantity_positions(tmp_path):
     fixture["tvSnapshot"]["snapshots"][1]["positions"].append(
         {"symbol": "MSFT", "direction": "Long", "quantity": 0, "avgFillPrice": 300.0, "positionId": "p3"}
     )
-    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path = tmp_path / "holdings_export.json"
     portfolio_path.write_text(json.dumps(fixture))
     db_path = str(tmp_path / "test.sqlite")
     report = run_real_migration(str(portfolio_path), db_path)
@@ -112,7 +112,7 @@ def test_real_migration_excludes_zero_quantity_positions(tmp_path):
 
 
 def test_real_migration_is_idempotent(tmp_path):
-    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path = tmp_path / "holdings_export.json"
     portfolio_path.write_text(json.dumps(FIXTURE_PORTFOLIO))
     db_path = str(tmp_path / "test.sqlite")
     run_real_migration(str(portfolio_path), db_path)
@@ -143,7 +143,7 @@ def test_real_migration_includes_cash_account():
         }
     )
     with tempfile.TemporaryDirectory() as tmp:
-        portfolio_path = Path(tmp) / "portfolio.json"
+        portfolio_path = Path(tmp) / "holdings_export.json"
         portfolio_path.write_text(json.dumps(fixture))
         db_path = str(Path(tmp) / "test.sqlite")
 
@@ -169,7 +169,7 @@ def test_real_migration_writes_price_row_for_cash(tmp_path):
     balance, but no investment_price row was ever written for CASH_USD -- so
     portfolio_repository.py's SUM(quantity * price) silently counts cash as worth
     $0. A cash dollar is always worth exactly $1.00; this must be persisted."""
-    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path = tmp_path / "holdings_export.json"
     portfolio_path.write_text(json.dumps(FIXTURE_PORTFOLIO))
     db_path = str(tmp_path / "test.sqlite")
     run_real_migration(str(portfolio_path), db_path)
@@ -181,7 +181,7 @@ def test_real_migration_writes_price_row_for_cash(tmp_path):
 
 
 def test_real_migration_resolves_psu_ticker_alias(tmp_path):
-    """Bug 2: real portfolio.json's flat holdings[] array uses the canonical
+    """Bug 2: real holdings export's flat holdings[] array uses the canonical
     ticker PSU-U.TO (hyphen), but tvSnapshot.snapshots[].positions[] uses the
     broker's raw format PSU.U.TO (period) for the same real position.
     _load_prices_by_symbol() keys its dict off holdings[]'s canonical symbol,
@@ -193,7 +193,7 @@ def test_real_migration_resolves_psu_ticker_alias(tmp_path):
     fixture["tvSnapshot"]["snapshots"][0]["positions"].append(
         {"symbol": "PSU.U.TO", "direction": "Long", "quantity": 23, "avgFillPrice": 95.0, "positionId": "p5"}
     )
-    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path = tmp_path / "holdings_export.json"
     portfolio_path.write_text(json.dumps(fixture))
     db_path = str(tmp_path / "test.sqlite")
     run_real_migration(str(portfolio_path), db_path)
@@ -224,7 +224,7 @@ def test_real_migration_merges_broker_raw_symbol_into_single_investment_identity
     fixture["tvSnapshot"]["snapshots"][1]["positions"].append(
         {"symbol": "PSU.U.TO", "direction": "Long", "quantity": 3, "avgFillPrice": 95.0, "positionId": "p7"}
     )
-    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path = tmp_path / "holdings_export.json"
     portfolio_path.write_text(json.dumps(fixture))
     db_path = str(tmp_path / "test.sqlite")
     run_real_migration(str(portfolio_path), db_path)

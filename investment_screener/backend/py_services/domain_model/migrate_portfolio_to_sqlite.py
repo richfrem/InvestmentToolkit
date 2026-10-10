@@ -1,26 +1,24 @@
-"""migrate_portfolio_to_sqlite.py - One-time migration of a portfolio.json export into SQLite.
+"""migrate_portfolio_to_sqlite.py - One-time import of a holdings export file (JSON) into SQLite.
 
 Purpose:
-    Migrate portfolio.json (gitignored, real broker/account holdings) into
+    Read a holdings export (real broker/account positions) and write it to
     account_investment/investment_price. Dry-run by default; --write is gated,
     same discipline as migrate_target_portfolio_to_sqlite.py.
-    
-    Per ADR-030 and Task 0's real-shape finding: per-account attribution comes
-    from tvSnapshot.snapshots[].positions[] (real accountType/accountId, real
-    quantity/avgFillPrice) -- NOT from the flat, cross-account-aggregated
-    holdings[] array, which carries no per-account field in real data. Cash
-    (balances.cashUSD/cashCAD per account) becomes CASH_USD/CASH_CAD
-    account_investment rows per Wave 0's resolved decision 5, not a separate
-    table. The current market price for each symbol still comes from the flat
-    holdings[] array (the only place a live per-symbol price appears), joined
-    by symbol.
+
+    Per-account attribution comes from tvSnapshot.snapshots[].positions[]
+    (accountType/accountId, quantity/avgFillPrice), not from the flat,
+    cross-account-aggregated holdings[] array, which carries no per-account
+    field. Cash (balances.cashUSD/cashCAD per account) becomes
+    CASH_USD/CASH_CAD account_investment rows. The current market price for
+    each symbol comes from the flat holdings[] array (the only place a live
+    per-symbol price appears), joined by symbol.
 
 Layer:
     Backend / Python Services / Domain Model
 
 Usage Examples:
-    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path PORTFOLIO.json
-    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path PORTFOLIO.json --write
+    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path HOLDINGS_EXPORT.json
+    python3 investment_screener/backend/py_services/domain_model/migrate_portfolio_to_sqlite.py --portfolio-path HOLDINGS_EXPORT.json --write
 
 Key Functions (Index):
     - _load_portfolio_json(): read the JSON file
@@ -31,7 +29,7 @@ Key Functions (Index):
     - main(): CLI entry point
 
 Key Input Dependencies:
-    - A portfolio.json export (--portfolio-path) with tvSnapshot.snapshots[] and holdings[]
+    - A holdings export file (--portfolio-path, required) with tvSnapshot.snapshots[] and holdings[]
     - investment_screener/backend/data/domain_model.sqlite (--db-path)
     - ticker_aliases.py (normalize_ticker), domain_model repositories
 
@@ -138,8 +136,8 @@ def run_real_migration(portfolio_path: str, db_path: str) -> dict:
 
 def main() -> None:
     """CLI: dry run by default, ``--write`` to migrate."""
-    parser = argparse.ArgumentParser(description="Migrate portfolio.json into account_investment/investment_price.")
-    parser.add_argument("--portfolio-path", default="investment_screener/backend/data/portfolio.json")
+    parser = argparse.ArgumentParser(description="Import a holdings export file into account_investment/investment_price.")
+    parser.add_argument("--portfolio-path", required=True, help="Holdings export file (JSON)")
     parser.add_argument("--db-path", default="investment_screener/backend/data/domain_model.sqlite")
     parser.add_argument("--write", action="store_true")
     args = parser.parse_args()

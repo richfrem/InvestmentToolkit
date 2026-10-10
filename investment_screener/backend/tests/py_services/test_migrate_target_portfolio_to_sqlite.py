@@ -18,8 +18,7 @@ from domain_model.migrate_target_portfolio_to_sqlite import (  # noqa: E402
 
 
 def _write_fixture(tmp_path):
-    """Fixture matching the REAL confirmed shapes (read directly against the
-    real files during Wave 2 Task 6): watchlist.json is {"watchlist": [...]},
+    """Fixture matching the real export shapes: the watchlist export is {"watchlist": [...]},
     holdings use pillarId/subStrategyId, standingDecision uses "review" (not
     "lastReviewed"), alerts use "symbol" (exchange-qualified) + "alert_id".
     """
@@ -57,10 +56,10 @@ def _write_fixture(tmp_path):
     ]
     breaker_state = {"generatedAt": "2026-07-10T00:00:00Z", "holdings": {"AAPL": "TRIGGERED"}}
 
-    target_path = tmp_path / "target-portfolio.json"
-    watchlist_path = tmp_path / "watchlist.json"
-    alerts_path = tmp_path / "tradingview_alerts_actual.json"
-    breaker_path = tmp_path / "thesis_breaker_state.json"
+    target_path = tmp_path / "thesis_export.json"
+    watchlist_path = tmp_path / "watchlist_export.json"
+    alerts_path = tmp_path / "alerts_export.json"
+    breaker_path = tmp_path / "breaker_state_export.json"
     target_path.write_text(json.dumps(target))
     watchlist_path.write_text(json.dumps(watchlist_doc))
     alerts_path.write_text(json.dumps(alerts))
@@ -83,13 +82,13 @@ def test_build_dry_run_report_counts_holdings_and_pillars(tmp_path):
 
 
 def test_build_dry_run_report_flags_missing_ticker_as_warning(tmp_path):
-    target_path = tmp_path / "target-portfolio.json"
+    target_path = tmp_path / "thesis_export.json"
     target_path.write_text(json.dumps({"holdings": [{"role": "active"}], "pillars": []}))
-    watchlist_path = tmp_path / "watchlist.json"
+    watchlist_path = tmp_path / "watchlist_export.json"
     watchlist_path.write_text(json.dumps({"watchlist": []}))
-    alerts_path = tmp_path / "tradingview_alerts_actual.json"
+    alerts_path = tmp_path / "alerts_export.json"
     alerts_path.write_text(json.dumps([]))
-    breaker_path = tmp_path / "thesis_breaker_state.json"
+    breaker_path = tmp_path / "breaker_state_export.json"
     breaker_path.write_text(json.dumps({"holdings": {}}))
     report = build_dry_run_report(
         str(target_path), str(watchlist_path), str(alerts_path), str(breaker_path)

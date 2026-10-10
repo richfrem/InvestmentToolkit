@@ -20,7 +20,7 @@ Usage:
     )
 
 Key Input Dependencies:
-    - git history (commit-by-commit target-portfolio.json snapshots)
+    - git history (commit-by-commit snapshots of the thesis file)
     - yfinance for historical OHLCV data
     - investment_screener/backend/data/predictions.jsonl (E3 correlation)
 
@@ -104,13 +104,12 @@ class RebalanceSnapshot:
 
 
 def candidate_target_portfolio_paths() -> list[str]:
-    """Repo-relative paths to try when reading target-portfolio.json out of a
-    historical git commit, post-move path first.
+    """Repo-relative paths of the thesis file to try when reading a historical
+    git commit, newer location first.
 
-    The file moved from investment_screener/backend/data/target-portfolio.json to
-    investment_screener/backend/data/theses/target-portfolio.json partway through
-    this repo's history. A historical reader has no way to know a priori whether a
-    given commit predates the move, so it must try both paths.
+    Commits before the file moved from ``data/`` to ``data/theses/`` hold it at
+    the older path, and a historical reader cannot know which side of the move a
+    given commit is on, so it tries both.
     """
     return [
         "investment_screener/backend/data/theses/target-portfolio.json",
@@ -121,8 +120,8 @@ def candidate_target_portfolio_paths() -> list[str]:
 def extract_historical_targets(commit_hash: str) -> dict[str, float]:
     """Extract target portfolio weights from a historical git commit.
 
-    Clones the repo at commit_hash, reads target-portfolio.json, extracts
-    holdings, and returns {ticker: targetWeight}.
+    Reads the thesis file as it existed at commit_hash, extracts holdings,
+    and returns {ticker: targetWeight}.
 
     Args:
         commit_hash: Full git commit hash to extract from.
@@ -131,10 +130,8 @@ def extract_historical_targets(commit_hash: str) -> dict[str, float]:
         Dict of {ticker: targetWeight} for all holdings, or {} on error.
     """
     try:
-        # target-portfolio.json moved from data/ to data/theses/ partway through
-        # this repo's history -- try the post-move path first, fall back to the
-        # pre-move path so this reader works against commits on either side of
-        # the move (Wave 2 investigation finding; see
+        # Try the newer path first and fall back to the older one so this reader
+        # works on commits on either side of the move (see
         # candidate_target_portfolio_paths()).
         result = None
         for repo_path in candidate_target_portfolio_paths():

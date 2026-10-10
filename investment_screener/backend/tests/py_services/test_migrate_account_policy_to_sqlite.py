@@ -30,8 +30,8 @@ def _write_fixture_target_portfolio(path):
 
 
 def test_migrate_dry_run_reports_fields_without_writing(tmp_path):
-    account_policy_path = tmp_path / "account_policy.json"
-    target_portfolio_path = tmp_path / "target-portfolio.json"
+    account_policy_path = tmp_path / "account_policy_export.json"
+    target_portfolio_path = tmp_path / "thesis_export.json"
     db_path = tmp_path / "domain_model.sqlite"
     _write_fixture_account_policy(account_policy_path)
     _write_fixture_target_portfolio(target_portfolio_path)
@@ -51,8 +51,8 @@ def test_migrate_dry_run_reports_fields_without_writing(tmp_path):
 
 
 def test_migrate_write_upserts_all_fields_correctly(tmp_path):
-    account_policy_path = tmp_path / "account_policy.json"
-    target_portfolio_path = tmp_path / "target-portfolio.json"
+    account_policy_path = tmp_path / "account_policy_export.json"
+    target_portfolio_path = tmp_path / "thesis_export.json"
     db_path = tmp_path / "domain_model.sqlite"
     _write_fixture_account_policy(account_policy_path)
     _write_fixture_target_portfolio(target_portfolio_path)
@@ -79,8 +79,8 @@ def test_migrate_write_upserts_all_fields_correctly(tmp_path):
 
 
 def test_migrate_is_idempotent_on_rerun(tmp_path):
-    account_policy_path = tmp_path / "account_policy.json"
-    target_portfolio_path = tmp_path / "target-portfolio.json"
+    account_policy_path = tmp_path / "account_policy_export.json"
+    target_portfolio_path = tmp_path / "thesis_export.json"
     db_path = tmp_path / "domain_model.sqlite"
     _write_fixture_account_policy(account_policy_path)
     _write_fixture_target_portfolio(target_portfolio_path)

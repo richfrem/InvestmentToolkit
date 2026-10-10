@@ -9,10 +9,9 @@ import backtest_harness  # noqa: E402
 
 
 def test_extract_historical_targets_tries_both_pre_and_post_move_paths():
-    """extract_historical_targets() reads target-portfolio.json out of historical git
-    blobs. The file moved from data/target-portfolio.json to data/theses/
-    target-portfolio.json partway through this repo's history (Wave 2 investigation
-    finding). A commit-SHA-agnostic historical reader must try both paths, since it
+    """extract_historical_targets() reads the thesis file out of historical git
+    blobs. The file moved from data/ to data/theses/ partway through this repo's
+    history. A commit-SHA-agnostic historical reader must try both paths, since it
     has no way to know a priori whether a given historical commit predates the move.
     Silently trying only one path means every commit on the other side of the move
     returns empty/wrong data with no error -- the exact failure mode this test guards.
