@@ -20,8 +20,8 @@ class TestEmitEarningsEvent:
         # Monkeypatch the path for testing
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_earnings_event(
             ticker="AAPL",
@@ -45,8 +45,8 @@ class TestEmitEarningsEvent:
     def test_emit_miss_grade(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_earnings_event(
             ticker="MSFT",
@@ -65,8 +65,8 @@ class TestEmitEarningsEvent:
     def test_emit_in_line_grade(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_earnings_event(
             ticker="NVDA",
@@ -84,8 +84,8 @@ class TestEmitEarningsEvent:
     def test_emit_without_eps_data(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_earnings_event(
             ticker="TSLA",
@@ -101,7 +101,7 @@ class TestEmitEarningsEvent:
         import evolution_events
 
         # Monkeypatch to a bad path
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", Path("/invalid/path"))
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", Path("/invalid/path"))
 
         # Should not raise, just silently fail
         emit_earnings_event(
@@ -113,8 +113,8 @@ class TestEmitEarningsEvent:
     def test_dedup_on_same_ticker_type_date(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Emit first event
         emit_earnings_event(
@@ -141,8 +141,8 @@ class TestEmitEarningsEvent:
     def test_preserves_position_data(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_earnings_event(
             ticker="AAPL",

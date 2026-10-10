@@ -10,7 +10,7 @@ sys.path.insert(0, str(PY_SERVICES))
 
 from evolution_events import (  # noqa: E402
     populate_event_outcomes,
-    _append_jsonl,
+    _append_event,
     load_events,
 )
 
@@ -21,8 +21,8 @@ class TestPopulateEventOutcomes:
     def test_outcome_fields_null_when_window_not_passed(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Create event from today
         today = datetime.now(timezone.utc)
@@ -45,7 +45,7 @@ class TestPopulateEventOutcomes:
             },
             "timestamp": today.isoformat(),
         }
-        _append_jsonl(event, events_path)
+        _append_event(event, events_path)
 
         # Try to populate — windows haven't passed yet
         populate_event_outcomes()
@@ -58,8 +58,8 @@ class TestPopulateEventOutcomes:
     def test_outcome_fields_null_for_missing_price(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Event without current_price
         event = {
@@ -79,7 +79,7 @@ class TestPopulateEventOutcomes:
             },
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        _append_jsonl(event, events_path)
+        _append_event(event, events_path)
 
         populate_event_outcomes()
 
@@ -89,8 +89,8 @@ class TestPopulateEventOutcomes:
     def test_outcome_fields_skipped_if_already_populated(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Event that already has outcome populated
         event = {
@@ -110,7 +110,7 @@ class TestPopulateEventOutcomes:
             },
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        _append_jsonl(event, events_path)
+        _append_event(event, events_path)
 
         populate_event_outcomes()
 
@@ -121,8 +121,8 @@ class TestPopulateEventOutcomes:
     def test_outcome_structure_preserved(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         event = {
             "event_id": "AAPL:earnings_catalyst:2026-01-01",
@@ -141,7 +141,7 @@ class TestPopulateEventOutcomes:
             },
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        _append_jsonl(event, events_path)
+        _append_event(event, events_path)
 
         populate_event_outcomes()
 
@@ -156,8 +156,8 @@ class TestPopulateEventOutcomes:
     def test_multiple_events_processed(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Add multiple events
         for i, ticker in enumerate(["AAPL", "MSFT", "NVDA"]):
@@ -178,7 +178,7 @@ class TestPopulateEventOutcomes:
                 },
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
-            _append_jsonl(event, events_path)
+            _append_event(event, events_path)
 
         populate_event_outcomes()
 
@@ -192,8 +192,8 @@ class TestPopulateEventOutcomes:
     def test_empty_events_file(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Populate with no events
         populate_event_outcomes()
@@ -204,8 +204,8 @@ class TestPopulateEventOutcomes:
     def test_non_blocking_on_yfinance_error(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Event with valid structure
         event = {
@@ -225,7 +225,7 @@ class TestPopulateEventOutcomes:
             },
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        _append_jsonl(event, events_path)
+        _append_event(event, events_path)
 
         # Should not raise on yfinance errors
         populate_event_outcomes()

@@ -654,18 +654,16 @@ def run(
     # supersedes any earlier brief for today so every re-run shows up (a fixed
     # idempotency key used to drop all but the first scan of the day).
     try:
-        from intelligence.event_store import _default_jsonl_path
         from intelligence.db_client import initialize_db
         from brief_ledger_publisher import publish_daily_brief
 
         # Testing guardrail
         if not ("pytest" in sys.modules and db_path is None):
-            resolved_jsonl_path = _default_jsonl_path()
             resolved_db_path = db_path or str(REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
 
             conn = initialize_db(resolved_db_path)
             try:
-                publish_daily_brief(brief, str(resolved_jsonl_path), conn, date.today().isoformat())
+                publish_daily_brief(brief, conn, date.today().isoformat())
             finally:
                 conn.close()
     except Exception as exc:

@@ -18,8 +18,8 @@ class TestEmitRebalanceEvent:
     def test_emit_buy_order(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_rebalance_event(
             ticker="AAPL",
@@ -41,8 +41,8 @@ class TestEmitRebalanceEvent:
     def test_emit_sell_order(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_rebalance_event(
             ticker="MSFT",
@@ -63,8 +63,8 @@ class TestEmitRebalanceEvent:
     def test_emit_with_position_context(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_rebalance_event(
             ticker="NVDA",
@@ -84,8 +84,8 @@ class TestEmitRebalanceEvent:
     def test_event_id_format(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_rebalance_event(
             ticker="TSLA",
@@ -101,7 +101,7 @@ class TestEmitRebalanceEvent:
     def test_non_blocking_on_error(self, tmp_path, monkeypatch):
         import evolution_events
 
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", Path("/invalid/path"))
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", Path("/invalid/path"))
 
         # Should not raise
         emit_rebalance_event(
@@ -115,8 +115,8 @@ class TestEmitRebalanceEvent:
     def test_dedup_on_same_ticker_type_date(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # First order
         emit_rebalance_event(
@@ -143,8 +143,8 @@ class TestEmitRebalanceEvent:
     def test_fractional_shares(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_rebalance_event(
             ticker="AAPL",

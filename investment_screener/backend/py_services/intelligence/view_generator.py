@@ -11,7 +11,6 @@ from pathlib import Path
 
 from intelligence.event_repository import list_active_events_for_ticker
 from intelligence.db_client import initialize_db
-from intelligence.replay_ledger import replay_events_to_db
 
 
 def render_ticker_views(ticker: str, conn, output_dir: str) -> None:
@@ -61,37 +60,26 @@ def _default_data_dir() -> Path:
 
 
 def _main() -> None:
-    """CLI entry point: replay the ledger, then render one ticker's views.
+    """CLI entry point: render one ticker's views from the ledger.
 
-    Thin wrapper for SKILL.md-driven callers (see
-    ``plugins/stock-valuation/skills/stock_valuation/SKILL.md`` and
-    ``.../stock-research/SKILL.md``) that shell out via
-    ``python3 -m intelligence.view_generator {TICKER}`` after appending a
-    new event via ``intelligence.event_store``. Opens (creating if needed)
-    the SQLite read model, replays any not-yet-applied events from the
-    JSONL ledger via ``replay_ledger.replay_events_to_db`` (idempotent —
-    safe to call every time), then calls ``render_ticker_views`` so the
-    freshly-appended event is reflected in the generated
-    ``{ticker}.summary.md`` / ``{ticker}.timeline.md`` views.
+    Thin wrapper for SKILL.md-driven callers that shell out via
+    ``python3 -m intelligence.view_generator {TICKER}`` after appending a new event via
+    ``intelligence.event_store``. Opens the ledger database and calls ``render_ticker_views``
+    so the event is reflected in the generated ``{ticker}.summary.md`` /
+    ``{ticker}.timeline.md`` views.
     """
     import argparse
 
     data_dir = _default_data_dir()
     parser = argparse.ArgumentParser(
-        description="Replay the ledger and render generated research views for one ticker."
+        description="Render generated research views for one ticker from the ledger."
     )
     parser.add_argument("ticker")
-    parser.add_argument(
-        "--jsonl-path",
-        dest="jsonl_path",
-        default=str(data_dir / "observations.jsonl"),
-        help="Path to the observations.jsonl ledger (default: %(default)s).",
-    )
     parser.add_argument(
         "--db-path",
         dest="db_path",
         default=str(data_dir / "intelligence.sqlite"),
-        help="Path to the intelligence.sqlite read model (default: %(default)s).",
+        help="Path to intelligence.sqlite (default: %(default)s).",
     )
     parser.add_argument(
         "--output-dir",
@@ -104,7 +92,6 @@ def _main() -> None:
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     conn = initialize_db(args.db_path)
     try:
-        replay_events_to_db(args.jsonl_path, conn)
         render_ticker_views(args.ticker, conn, args.output_dir)
     finally:
         conn.close()

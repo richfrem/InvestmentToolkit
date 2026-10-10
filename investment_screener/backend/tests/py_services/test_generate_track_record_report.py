@@ -44,32 +44,29 @@ class TestComputeHitRates:
 
 def _seed_ledger(tmp_path):
     """Seed a tmp_path-scoped intelligence.sqlite with one claim + one grade
-    via the real append_event -> replay_events_to_db pipeline (Wave 5D Task 3
-    test-isolation lesson: never point ledger/db writes at real tracked files).
+    via the real append_event (never point ledger writes at the real database).
     """
     from intelligence.db_client import initialize_db
     from intelligence.event_store import append_event
-    from intelligence.replay_ledger import replay_events_to_db
 
-    ledger_path = tmp_path / "observations.jsonl"
     db_path = tmp_path / "intelligence.sqlite"
     conn = initialize_db(str(db_path))
 
     append_event(
-        str(ledger_path), event_type="PREDICTION_CLAIM", effective_at="2026-07-01T00:00:00Z",
+        conn, event_type="PREDICTION_CLAIM", effective_at="2026-07-01T00:00:00Z",
         status="ACTIVE", title="Prediction claim: AAPL action_rating (2026-07-01)",
         body_markdown="Direction: bullish, horizon: 90 days.", ticker="AAPL",
         payload={"id": "A", "ticker": "AAPL", "type": "action_rating", "direction": "bullish"},
         idempotency_key="prediction-claim-A",
     )
     append_event(
-        str(ledger_path), event_type="PREDICTION_GRADED", effective_at="2026-10-01T00:00:00Z",
+        conn, event_type="PREDICTION_GRADED", effective_at="2026-10-01T00:00:00Z",
         status="ACTIVE", title="Prediction grade: AAPL action_rating (correct)",
         body_markdown="Outcome: correct, relative return: 0.1.", ticker="AAPL",
         payload={"predictionId": "A", "verdict": "correct", "outcome": "correct", "relativeReturn": 0.1},
         idempotency_key="prediction-grade-A",
     )
-    replay_events_to_db(str(ledger_path), conn)
+    conn.close()
     return str(db_path)
 
 

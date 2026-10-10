@@ -18,8 +18,8 @@ class TestEmitBreakerOverrideEvent:
     def test_emit_basic_override(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_breaker_override_event(
             ticker="AAPL",
@@ -39,8 +39,8 @@ class TestEmitBreakerOverrideEvent:
     def test_emit_with_position_data(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_breaker_override_event(
             ticker="TSLA",
@@ -60,8 +60,8 @@ class TestEmitBreakerOverrideEvent:
     def test_event_id_format(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_breaker_override_event(
             ticker="NVDA",
@@ -76,7 +76,7 @@ class TestEmitBreakerOverrideEvent:
     def test_non_blocking_on_error(self, tmp_path, monkeypatch):
         import evolution_events
 
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", Path("/invalid/path"))
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", Path("/invalid/path"))
 
         # Should not raise
         emit_breaker_override_event(
@@ -89,8 +89,8 @@ class TestEmitBreakerOverrideEvent:
     def test_dedup_on_same_ticker_type_date(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # First override
         emit_breaker_override_event(
@@ -115,8 +115,8 @@ class TestEmitBreakerOverrideEvent:
     def test_multiple_breakdowns_same_day(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_breaker_override_event(
             ticker="AAPL",

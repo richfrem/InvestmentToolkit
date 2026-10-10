@@ -45,7 +45,6 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from prediction_ledger import (  # noqa: E402
-    GRADED_PATH,
     append_grade,
     grade_claim,
 )
@@ -131,24 +130,13 @@ def _fetch_current_prices(ticker: str) -> tuple[float, float] | None:
     return t, s
 
 
-def run_grading(
-    db_path: str = DEFAULT_INTEL_DB_PATH, graded_path: Path = GRADED_PATH, jsonl_path=None
-) -> list[dict[str, Any]]:
+def run_grading(db_path: str = DEFAULT_INTEL_DB_PATH) -> list[dict[str, Any]]:
     """Find matured, ungraded predictions and append a grade record for each.
 
     Args:
-        db_path: intelligence.sqlite path to read PREDICTION_CLAIM/
-            PREDICTION_GRADED events from (Wave 5D Task 3 consumer cutover --
-            replaces the former predictions.jsonl/predictions_graded.jsonl
-            JSONL reads). Tests should override this with a tmp_path-scoped
-            sqlite file so they never read the real, tracked intelligence.sqlite.
-        graded_path: Ledger path new grade records are appended to (JSONL
-            remains the write path's target during the Hybrid dual-write
-            window; unaffected by this read-path cutover).
-        jsonl_path: Passed through to append_grade()'s intelligence-ledger
-            dual-write (observations.jsonl by default). Tests must override
-            this with a tmp_path-scoped file so they never write to the real
-            observations.jsonl.
+        db_path: intelligence.sqlite path to read PREDICTION_CLAIM/PREDICTION_GRADED events
+            from and write new PREDICTION_GRADED events to. Tests should override this with a
+            tmp_path-scoped sqlite file so they never touch the real intelligence.sqlite.
 
     Returns:
         Every newly appended grade record this run. Predictions whose
@@ -167,7 +155,7 @@ def run_grading(
             continue
         ticker_price_now, spy_price_now = prices
         grade = grade_prediction(prediction, ticker_price_now, spy_price_now, today.isoformat())
-        append_grade(grade, graded_path, jsonl_path=jsonl_path)
+        append_grade(grade, db_path)
         new_grades.append(grade)
     return new_grades
 
@@ -176,8 +164,8 @@ def main() -> None:
     """CLI entrypoint: grade matured predictions, or report matured count in --dry-run mode.
 
     Returns:
-        None. Prints a summary line to stdout; writes new grade records to
-        GRADED_PATH unless --dry-run is passed.
+        None. Prints a summary line to stdout; writes new grade events to
+        the ledger unless --dry-run is passed.
     """
     parser = argparse.ArgumentParser(description="Grade matured predictions")
     parser.add_argument("--dry-run", action="store_true", help="Report matured count, don't write")

@@ -18,8 +18,8 @@ class TestEmitPriceMoveEvent:
     def test_emit_positive_move(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_price_move_event(
             ticker="AAPL",
@@ -39,8 +39,8 @@ class TestEmitPriceMoveEvent:
     def test_emit_negative_move(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_price_move_event(
             ticker="MSFT",
@@ -56,8 +56,8 @@ class TestEmitPriceMoveEvent:
     def test_emit_with_ta_signal(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_price_move_event(
             ticker="NVDA",
@@ -73,8 +73,8 @@ class TestEmitPriceMoveEvent:
     def test_emit_with_adx_signal(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_price_move_event(
             ticker="TSLA",
@@ -89,8 +89,8 @@ class TestEmitPriceMoveEvent:
     def test_event_id_format(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_price_move_event(
             ticker="CORZ",
@@ -104,7 +104,7 @@ class TestEmitPriceMoveEvent:
     def test_non_blocking_on_error(self, tmp_path, monkeypatch):
         import evolution_events
 
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", Path("/invalid/path"))
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", Path("/invalid/path"))
 
         # Should not raise
         emit_price_move_event(
@@ -116,8 +116,8 @@ class TestEmitPriceMoveEvent:
     def test_dedup_on_same_ticker_type_date(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # First move
         emit_price_move_event(
@@ -142,8 +142,8 @@ class TestEmitPriceMoveEvent:
     def test_with_position_context(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         emit_price_move_event(
             ticker="AAPL",

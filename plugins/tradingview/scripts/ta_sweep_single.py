@@ -17,7 +17,6 @@ Key Input Dependencies:
 
 Key Output Dependencies:
     - investment_screener/backend/data/intelligence.sqlite (TECHNICAL_SWEEP event)
-    - investment_screener/backend/data/intelligence_events.jsonl (Canonical event ledger)
 
 Usage:
     python3 plugins/tradingview/scripts/ta_sweep_single.py {TICKER} [--persist]
@@ -37,11 +36,9 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 TV_CLI = REPO_ROOT / "tradingview-cdp/cli.js"
 DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 INTEL_DB_PATH = REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite"
-INTEL_JSONL_PATH = REPO_ROOT / "investment_screener/backend/data/intelligence_events.jsonl"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from intelligence.event_store import append_or_supersede_event  # noqa: E402
-from intelligence.replay_ledger import replay_events_to_db  # noqa: E402
 from intelligence.db_client import initialize_db as init_intel_db  # noqa: E402
 from domain_model.projection_repository import get_latest_projection, get_projection_scenarios  # noqa: E402
 from domain_model.db_client import initialize_db as init_domain_db  # noqa: E402
@@ -115,26 +112,24 @@ def enrich_with_dcf(telemetry: Dict[str, Any], ticker: str) -> Dict[str, Any]:
 
 
 def persist_sweep(payload: Dict[str, Any]) -> None:
-    """Appends to the canonical event ledger and materializes to intelligence.sqlite."""
+    """Writes the sweep as a TECHNICAL_SWEEP event in the intelligence ledger (intelligence.sqlite)."""
     scan_date = datetime.now(timezone.utc).date().isoformat()
     ticker = payload["ticker"]
 
-    append_or_supersede_event(
-        str(INTEL_JSONL_PATH),
-        event_type="TECHNICAL_SWEEP",
-        effective_at=scan_date,
-        status="ACTIVE",
-        title=f"TA Sweep for {ticker}",
-        body_markdown=f"Single-ticker technical indicators for {ticker}.",
-        ticker=ticker,
-        source_id="tradingview-cdp",
-        payload=payload,
-        idempotency_key=f"ta-sweep-{ticker}-{scan_date}",
-    )
-
     conn = init_intel_db(str(INTEL_DB_PATH))
     try:
-        replay_events_to_db(str(INTEL_JSONL_PATH), conn)
+        append_or_supersede_event(
+            conn,
+            event_type="TECHNICAL_SWEEP",
+            effective_at=scan_date,
+            status="ACTIVE",
+            title=f"TA Sweep for {ticker}",
+            body_markdown=f"Single-ticker technical indicators for {ticker}.",
+            ticker=ticker,
+            source_id="tradingview-cdp",
+            payload=payload,
+            idempotency_key=f"ta-sweep-{ticker}-{scan_date}",
+        )
     finally:
         conn.close()
 

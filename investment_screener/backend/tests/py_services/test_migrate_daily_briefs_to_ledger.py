@@ -1,5 +1,4 @@
-"""Tests for migrate_daily_briefs_to_ledger.py — mirrors test_migrate_ta_sweep_to_ledger.py's
-structure for the daily-briefs domain (Wave 5C)."""
+"""Tests for migrate_daily_briefs_to_ledger.py (daily-brief snapshot files -> REVIEW_DAILY events)."""
 import json
 import sys
 from pathlib import Path
@@ -23,14 +22,13 @@ def test_migrate_dry_run_reports_counts_without_writing(tmp_path):
     briefs_dir = tmp_path / "daily-briefs"
     _write_brief(briefs_dir, "2026-07-17", "BULL")
     _write_brief(briefs_dir, "2026-07-18", "CONGESTION")
-    jsonl_path = tmp_path / "observations.jsonl"
     db_path = tmp_path / "intelligence.sqlite"
 
-    report = migrate(briefs_dir, jsonl_path, db_path, dry_run=True)
+    report = migrate(briefs_dir, db_path, dry_run=True)
 
     assert report["source_count"] == 2
     assert report["written_count"] == 0
-    assert not jsonl_path.exists()
+    assert report["to_write_count"] == 2
     assert not db_path.exists()
 
 
@@ -38,13 +36,13 @@ def test_migrate_write_creates_real_rows(tmp_path):
     briefs_dir = tmp_path / "daily-briefs"
     _write_brief(briefs_dir, "2026-07-17", "BULL")
     _write_brief(briefs_dir, "2026-07-18", "CONGESTION")
-    jsonl_path = tmp_path / "observations.jsonl"
     db_path = tmp_path / "intelligence.sqlite"
 
-    report = migrate(briefs_dir, jsonl_path, db_path, dry_run=False)
+    report = migrate(briefs_dir, db_path, dry_run=False)
 
     assert report["source_count"] == 2
     assert report["written_count"] == 2
+    assert report["already_present"] == 0
 
     import sqlite3
     conn = sqlite3.connect(str(db_path))
@@ -66,23 +64,20 @@ def test_migrate_write_is_idempotent_against_a_real_producer_rerun(tmp_path):
     both use the same idempotency_key format (daily-brief-{date})."""
     briefs_dir = tmp_path / "daily-briefs"
     _write_brief(briefs_dir, "2026-07-17", "BULL")
-    jsonl_path = tmp_path / "observations.jsonl"
     db_path = tmp_path / "intelligence.sqlite"
-    migrate(briefs_dir, jsonl_path, db_path, dry_run=False)
+    migrate(briefs_dir, db_path, dry_run=False)
 
     from intelligence.event_store import append_event
-    from intelligence.replay_ledger import replay_events_to_db
     from intelligence.db_client import initialize_db
 
-    append_event(
-        str(jsonl_path), event_type="REVIEW_DAILY", effective_at="2026-07-17", status="ACTIVE",
-        title="Daily Brief for 2026-07-17", body_markdown="rerun",
-        ticker=None, source_id="daily_brief", payload={"date": "2026-07-17"},
-        idempotency_key="daily-brief-2026-07-17",
-    )
     conn = initialize_db(str(db_path))
     try:
-        replay_events_to_db(str(jsonl_path), conn)
+        append_event(
+            conn, event_type="REVIEW_DAILY", effective_at="2026-07-17", status="ACTIVE",
+            title="Daily Brief for 2026-07-17", body_markdown="rerun",
+            ticker=None, source_id="daily_brief", payload={"date": "2026-07-17"},
+            idempotency_key="daily-brief-2026-07-17",
+        )
         count = conn.execute(
             "SELECT COUNT(*) FROM intelligence_event WHERE idempotency_key = ?",
             ("daily-brief-2026-07-17",),
@@ -92,14 +87,24 @@ def test_migrate_write_is_idempotent_against_a_real_producer_rerun(tmp_path):
     assert count == 1
 
 
+def test_migrate_second_run_writes_nothing_and_reports_already_present(tmp_path):
+    briefs_dir = tmp_path / "daily-briefs"
+    _write_brief(briefs_dir, "2026-07-17", "BULL")
+    db_path = tmp_path / "intelligence.sqlite"
+    migrate(briefs_dir, db_path, dry_run=False)
+
+    report = migrate(briefs_dir, db_path, dry_run=False)
+
+    assert report["written_count"] == 0 and report["already_present"] == 1
+
+
 def test_migrate_skips_files_missing_date_field(tmp_path):
     briefs_dir = tmp_path / "daily-briefs"
     briefs_dir.mkdir(parents=True)
     (briefs_dir / "2026-07-19.json").write_text(json.dumps({"macro_regime": {"regime": "BULL"}}))
-    jsonl_path = tmp_path / "observations.jsonl"
     db_path = tmp_path / "intelligence.sqlite"
 
-    report = migrate(briefs_dir, jsonl_path, db_path, dry_run=True)
+    report = migrate(briefs_dir, db_path, dry_run=True)
 
     assert report["source_count"] == 1
     assert report["written_count"] == 0

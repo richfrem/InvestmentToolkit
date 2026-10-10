@@ -299,11 +299,7 @@ try:
     from prediction_ledger import append_prediction as _append_prediction
     from prediction_ledger import append_grade as _append_grade
     from prediction_ledger import grade_claim as _grade_claim
-    from prediction_ledger import PREDICTIONS_PATH
-    # Wave 5D Task 3 consumer cutover: reads now come from intelligence.sqlite's
-    # PREDICTION_CLAIM/PREDICTION_GRADED events instead of predictions.jsonl/
-    # predictions_graded.jsonl -- bound to the same _load_predictions/_load_graded
-    # names so every existing call site and test's monkeypatch target is unchanged.
+    # Reads come from intelligence.sqlite's PREDICTION_CLAIM/PREDICTION_GRADED events.
     from generate_track_record_report import (
         DEFAULT_INTEL_DB_PATH,
         _load_graded_from_ledger as _load_graded,
@@ -316,15 +312,12 @@ except ImportError:
     _load_graded = None
     _append_grade = None
     _grade_claim = None
-    PREDICTIONS_PATH = None
     DEFAULT_INTEL_DB_PATH = None
 
 
 def harvest_earnings_expectations(
     tickers: list[str] | None = None,
-    predictions_path: Path = PREDICTIONS_PATH,
     intel_db_path=DEFAULT_INTEL_DB_PATH,
-    jsonl_path=None,
 ) -> list[dict]:
     """Harvest earnings expectations for given tickers, deduping on unchanged consensus.
 
@@ -336,19 +329,9 @@ def harvest_earnings_expectations(
     Args:
         tickers: List of ticker symbols to harvest. If None, uses all thesis holdings
             from domain_model.sqlite's investment table.
-        predictions_path: Path new prediction records are appended to (JSONL
-            remains the write path's target during the Hybrid dual-write
-            window; unaffected by this read-path cutover). Defaults to the
-            real, tracked predictions.jsonl; tests should override this with
-            a tmp_path fixture so they never write to the real ledger.
-        intel_db_path: intelligence.sqlite path to read existing prediction
-            claims from for dedup. Tests should override this with a
-            tmp_path-scoped sqlite file so they never read the real, tracked
-            intelligence.sqlite.
-        jsonl_path: Passed through to append_prediction()'s intelligence-ledger
-            dual-write (observations.jsonl by default). Tests must override
-            this with a tmp_path-scoped file so they never write to the real
-            observations.jsonl.
+        intel_db_path: intelligence.sqlite path to read existing prediction claims from (for
+            dedup) and to write new PREDICTION_CLAIM events to. Tests should override this with
+            a tmp_path-scoped sqlite file so they never touch the real intelligence.sqlite.
 
     Returns:
         List of newly appended prediction dicts (empty if all were unchanged).
@@ -468,7 +451,7 @@ def harvest_earnings_expectations(
                 harvestedAt=datetime.now(timezone.utc).isoformat(),
             )
 
-            _append_prediction(prediction.model_dump(), predictions_path, jsonl_path=jsonl_path)
+            _append_prediction(prediction.model_dump(), intel_db_path)
             newly_appended.append(prediction.model_dump())
 
         except Exception:
@@ -480,27 +463,18 @@ def harvest_earnings_expectations(
 
 # ── Grade core logic (Tasks 6-7) ────────────────────────────────────────────
 
-def grade_earnings_expectations(
-    intel_db_path=DEFAULT_INTEL_DB_PATH, jsonl_path=None
-) -> list[dict]:
+def grade_earnings_expectations(intel_db_path=DEFAULT_INTEL_DB_PATH) -> list[dict]:
     """Grade earnings expectations by comparing actual results to consensus.
 
     Main function for B4 Task 6-7. Fetches actual EPS/revenue post-earnings,
-    classifies as BEAT/MEET/MISS, and appends to predictions_graded.jsonl
-    (and, per Wave 5D's Hybrid dual-write, the intelligence ledger).
+    classifies as BEAT/MEET/MISS, and appends a PREDICTION_GRADED event to the intelligence ledger.
     Only grades predictions with earnings_date <= today (past-date-only).
     Idempotent: grading same prediction twice produces identical output.
 
     Args:
-        intel_db_path: intelligence.sqlite path to read PREDICTION_CLAIM/
-            PREDICTION_GRADED events from (Wave 5D Task 3 consumer cutover --
-            replaces the former predictions.jsonl/predictions_graded.jsonl
-            reads). Tests should override this with a tmp_path-scoped sqlite
-            file so they never read the real, tracked intelligence.sqlite.
-        jsonl_path: Passed through to append_grade()'s intelligence-ledger
-            dual-write (observations.jsonl by default). Tests must override
-            this with a tmp_path-scoped file so they never write to the real
-            observations.jsonl.
+        intel_db_path: intelligence.sqlite path to read PREDICTION_CLAIM/PREDICTION_GRADED events
+            from and write new PREDICTION_GRADED events to. Tests should override this with a
+            tmp_path-scoped sqlite file so they never touch the real intelligence.sqlite.
 
     Returns:
         List of newly appended grade dicts (empty if no predictions to grade).
@@ -625,7 +599,7 @@ def grade_earnings_expectations(
                 epsSurprisePct=eps_surprise_pct,
             )
 
-            _append_grade(grade_rec.model_dump(), jsonl_path=jsonl_path)
+            _append_grade(grade_rec.model_dump(), intel_db_path)
             newly_graded.append(grade_rec.model_dump())
 
         except Exception:

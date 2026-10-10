@@ -131,10 +131,10 @@ FIXTURE_RESULTS = [
 
 
 class TestSweepResultsPersistence:
-    """ta_sweep_batch.py must persist results to ta-sweep-results.json."""
+    """ta_sweep_batch.py persists results as TECHNICAL_SWEEP events in the ledger database."""
 
-    def test_save_results_flag_in_help(self):
-        """--save-results flag must appear in the CLI help output."""
+    def test_save_results_flag_is_gone(self):
+        """The flat-file export option no longer exists."""
         result = subprocess.run(
             [sys.executable, str(SCRIPT), "--help"],
             capture_output=True,
@@ -142,54 +142,16 @@ class TestSweepResultsPersistence:
             cwd=str(REPO_ROOT),
             timeout=5,
         )
-        assert "--save-results" in result.stdout, (
-            "--save-results flag not found in help output — was it added to argparse?"
-        )
+        assert "--save-results" not in result.stdout
 
-    def test_save_sweep_results_writes_timestamped_json(self, tmp_path: Path):
-        """save_sweep_results() writes {timestamp, scan_date, count, results} to file."""
-        sys.path.insert(0, str(SCRIPT.parent))
-        from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
-
-        out_file = tmp_path / "ta-sweep-results.json"
-        jsonl_path = tmp_path / "observations.jsonl"
-        db_path = tmp_path / "intelligence.sqlite"
-        save_sweep_results(FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
-
-        assert out_file.exists(), "Output file must be created"
-        data = json.loads(out_file.read_text())
-
-        assert "timestamp" in data, "Must include ISO timestamp"
-        assert "scan_date" in data, "Must include scan_date (YYYY-MM-DD)"
-        assert "count" in data, "Must include count of holdings scanned"
-        assert "results" in data, "Must include results array"
-        assert data["count"] == 1
-        assert data["results"][0]["ticker"] == "AAPL"
-
-    def test_save_sweep_results_overwrites_existing(self, tmp_path: Path):
-        """Calling save_sweep_results twice overwrites — no append corruption."""
-        sys.path.insert(0, str(SCRIPT.parent))
-        from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
-
-        out_file = tmp_path / "ta-sweep-results.json"
-        jsonl_path = tmp_path / "observations.jsonl"
-        db_path = tmp_path / "intelligence.sqlite"
-        save_sweep_results(FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
-        save_sweep_results(FIXTURE_RESULTS + FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
-
-        data = json.loads(out_file.read_text())
-        assert data["count"] == 2, "Second write must overwrite — not append"
-
-    def test_save_sweep_results_writes_to_ledger_and_sqlite(self, tmp_path: Path):
-        """save_sweep_results() must write TECHNICAL_SWEEP events to the ledger and SQLite DB."""
+    def test_save_sweep_results_writes_to_the_ledger_database(self, tmp_path: Path):
+        """save_sweep_results() writes one TECHNICAL_SWEEP event per ticker, resolved to its instrument."""
         sys.path.insert(0, str(SCRIPT.parent))
         from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
         sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
         from intelligence.db_client import initialize_db  # noqa: E402
         import sqlite3
 
-        out_file = tmp_path / "ta-sweep-results.json"
-        jsonl_path = tmp_path / "observations.jsonl"
         db_path = tmp_path / "intelligence.sqlite"
 
         # Initialize the test DB and instrument
@@ -198,20 +160,8 @@ class TestSweepResultsPersistence:
         conn.commit()
         conn.close()
 
-        save_sweep_results(FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
+        save_sweep_results(FIXTURE_RESULTS, db_path=db_path)
 
-        # 1. Verify JSON file still exists (legacy compatibility)
-        assert out_file.exists()
-
-        # 2. Verify JSONL ledger contains the TECHNICAL_SWEEP event
-        assert jsonl_path.exists()
-        lines = jsonl_path.read_text().splitlines()
-        assert len(lines) == 1
-        record = json.loads(lines[0])
-        assert record["event_type"] == "TECHNICAL_SWEEP"
-        assert record["ticker"] == "AAPL"
-        
-        # 3. Verify SQLite DB contains the technical sweep event resolved to instrument
         conn = sqlite3.connect(str(db_path))
         cursor = conn.execute("SELECT instrument_id, event_type, status, payload_json FROM intelligence_event;")
         row = cursor.fetchone()
@@ -223,31 +173,21 @@ class TestSweepResultsPersistence:
         assert payload["ticker"] == "AAPL"
         assert payload["rsi"] == 45.0
         conn.close()
+        assert not any(tmp_path.glob("*.json*"))  # no flat file written anywhere
 
-    def test_save_sweep_results_writes_no_json_by_default(self, tmp_path: Path):
-        """Wave 5B: without json_export_path, save_sweep_results must not create any JSON file —
-        only the ledger/SQLite write is unconditional now."""
-        sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/scripts"))
+    def test_save_sweep_results_twice_with_the_same_readings_adds_nothing(self, tmp_path: Path):
+        sys.path.insert(0, str(SCRIPT.parent))
         from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
-
-        jsonl_path = tmp_path / "observations.jsonl"
-        db_path = tmp_path / "intelligence.sqlite"
-        from intelligence.db_client import initialize_db  # noqa: PLC0415
-        conn = initialize_db(str(db_path))
-        conn.execute("INSERT INTO instrument VALUES ('us-aapl', 'AAPL', 'NASDAQ', 'Apple', '2026-01-01', NULL);")
-        conn.commit()
-        conn.close()
-
-        save_sweep_results(FIXTURE_RESULTS, jsonl_path=jsonl_path, db_path=db_path)
-
-        assert not any(tmp_path.glob("*.json"))  # no flat JSON written anywhere
         import sqlite3
-        conn = sqlite3.connect(db_path)
-        count = conn.execute(
-            "SELECT COUNT(*) FROM intelligence_event WHERE event_type = 'TECHNICAL_SWEEP';"
-        ).fetchone()[0]
+
+        db_path = tmp_path / "intelligence.sqlite"
+        save_sweep_results(FIXTURE_RESULTS, db_path=db_path)
+        save_sweep_results(FIXTURE_RESULTS, db_path=db_path)
+
+        conn = sqlite3.connect(str(db_path))
+        count = conn.execute("SELECT COUNT(*) FROM intelligence_event WHERE event_type = 'TECHNICAL_SWEEP';").fetchone()[0]
         conn.close()
-        assert count == len(FIXTURE_RESULTS)  # ledger/SQLite write still unconditional
+        assert count == 1
 
 
 # ── pctToFV denominator tests ─────────────────────────────────────────────────
@@ -665,15 +605,14 @@ def test_save_sweep_results_same_day_resweep_supersedes_bad_rows(tmp_path):
     from intelligence.db_client import initialize_db  # noqa: PLC0415
     from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
 
-    jsonl_path = tmp_path / "observations.jsonl"
     db_path = tmp_path / "intelligence.sqlite"
     conn = initialize_db(str(db_path))
     conn.execute("INSERT INTO instrument VALUES ('us-aapl', 'AAPL', 'NASDAQ', 'Apple', '2026-07-18', NULL);")
     conn.commit()
     conn.close()
 
-    save_sweep_results([{"ticker": "AAPL", "close": 195.13, "adx": 22.0}], jsonl_path=jsonl_path, db_path=db_path)
-    save_sweep_results([{"ticker": "AAPL", "close": 255.40, "adx": 31.5}], jsonl_path=jsonl_path, db_path=db_path)
+    save_sweep_results([{"ticker": "AAPL", "close": 195.13, "adx": 22.0}], db_path=db_path)
+    save_sweep_results([{"ticker": "AAPL", "close": 255.40, "adx": 31.5}], db_path=db_path)
 
     conn = sqlite3.connect(str(db_path))
     active = conn.execute(

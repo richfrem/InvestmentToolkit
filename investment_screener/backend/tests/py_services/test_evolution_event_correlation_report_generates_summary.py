@@ -10,7 +10,7 @@ sys.path.insert(0, str(PY_SERVICES))
 
 from evolution_events import (  # noqa: E402
     generate_evolution_correlation_report,
-    _append_jsonl,
+    _append_event,
 )
 
 
@@ -20,8 +20,8 @@ class TestGenerateEvolutionCorrelationReport:
     def test_report_structure(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Create an event in the week
         event = {
@@ -41,7 +41,7 @@ class TestGenerateEvolutionCorrelationReport:
             },
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        _append_jsonl(event, events_path)
+        _append_event(event, events_path)
 
         report = generate_evolution_correlation_report("2026-01-13", "2026-01-17")
 
@@ -57,8 +57,8 @@ class TestGenerateEvolutionCorrelationReport:
     def test_event_summary_aggregation(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Create multiple event types
         events = [
@@ -116,7 +116,7 @@ class TestGenerateEvolutionCorrelationReport:
         ]
 
         for event in events:
-            _append_jsonl(event, events_path)
+            _append_event(event, events_path)
 
         report = generate_evolution_correlation_report("2026-01-13", "2026-01-22")
 
@@ -138,8 +138,8 @@ class TestGenerateEvolutionCorrelationReport:
     def test_averages_with_null_outcomes(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Mix of events with and without outcomes
         events = [
@@ -180,7 +180,7 @@ class TestGenerateEvolutionCorrelationReport:
         ]
 
         for event in events:
-            _append_jsonl(event, events_path)
+            _append_event(event, events_path)
 
         report = generate_evolution_correlation_report("2026-01-13", "2026-01-20")
 
@@ -192,8 +192,8 @@ class TestGenerateEvolutionCorrelationReport:
     def test_empty_week(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Add event outside the week range
         event = {
@@ -213,7 +213,7 @@ class TestGenerateEvolutionCorrelationReport:
             },
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        _append_jsonl(event, events_path)
+        _append_event(event, events_path)
 
         report = generate_evolution_correlation_report("2026-01-13", "2026-01-17")
 
@@ -229,8 +229,8 @@ class TestGenerateEvolutionCorrelationReport:
     def test_all_event_types_in_summary(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Create one of each event type
         event_types = [
@@ -260,7 +260,7 @@ class TestGenerateEvolutionCorrelationReport:
                 },
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
-            _append_jsonl(event, events_path)
+            _append_event(event, events_path)
 
         report = generate_evolution_correlation_report("2026-01-13", "2026-01-17")
 
@@ -275,8 +275,8 @@ class TestGenerateEvolutionCorrelationReport:
     def test_report_handles_missing_file(self, tmp_path, monkeypatch):
         import evolution_events
 
-        events_path = tmp_path / "evolution_events.jsonl"
-        monkeypatch.setattr(evolution_events, "EVOLUTION_EVENTS_PATH", events_path)
+        events_path = tmp_path / "domain_model.sqlite"
+        monkeypatch.setattr(evolution_events, "EVOLUTION_DB_PATH", events_path)
 
         # Don't create the file
         report = generate_evolution_correlation_report("2026-01-13", "2026-01-17")

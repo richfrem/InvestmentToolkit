@@ -15,16 +15,24 @@ SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 
 sys.path.insert(0, str(SCRIPT_DIR))
 
+from intelligence.db_client import initialize_db  # noqa: E402
 from intelligence.event_store import append_event  # noqa: E402
 
 
-def test_cli_replays_ledger_and_renders_views(tmp_path):
-    jsonl_path = tmp_path / "observations.jsonl"
+def _seed(db_path, **event):
+    conn = initialize_db(str(db_path))
+    try:
+        append_event(conn, **event)
+    finally:
+        conn.close()
+
+
+def test_cli_renders_views_from_the_ledger(tmp_path):
     db_path = tmp_path / "intelligence.sqlite"
     output_dir = tmp_path / "research"
 
-    append_event(
-        str(jsonl_path),
+    _seed(
+        db_path,
         event_type="RESEARCH_IMPORT",
         effective_at="2026-07-18",
         status="ACTIVE",
@@ -36,7 +44,6 @@ def test_cli_replays_ledger_and_renders_views(tmp_path):
     result = subprocess.run(
         [
             sys.executable, "-m", "intelligence.view_generator", "PLTR",
-            "--jsonl-path", str(jsonl_path),
             "--db-path", str(db_path),
             "--output-dir", str(output_dir),
         ],
@@ -54,12 +61,11 @@ def test_cli_replays_ledger_and_renders_views(tmp_path):
 
 
 def test_cli_creates_output_dir_if_missing(tmp_path):
-    jsonl_path = tmp_path / "observations.jsonl"
     db_path = tmp_path / "intelligence.sqlite"
     output_dir = tmp_path / "nested" / "research"
 
-    append_event(
-        str(jsonl_path),
+    _seed(
+        db_path,
         event_type="RESEARCH_IMPORT",
         effective_at="2026-07-18",
         status="ACTIVE",
@@ -71,7 +77,6 @@ def test_cli_creates_output_dir_if_missing(tmp_path):
     result = subprocess.run(
         [
             sys.executable, "-m", "intelligence.view_generator", "CORZ",
-            "--jsonl-path", str(jsonl_path),
             "--db-path", str(db_path),
             "--output-dir", str(output_dir),
         ],

@@ -1,4 +1,4 @@
-import json
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -26,15 +26,18 @@ def test_migrate_to_ledger_appends_one_event_per_file_and_archives_originals(tmp
     research_dir = tmp_path / "research"
     research_dir.mkdir()
     (research_dir / "PLTR_2026-07-02.md").write_text("# PLTR notes\nSome research.")
-    jsonl_path = tmp_path / "observations.jsonl"
+    db_path = tmp_path / "intelligence.sqlite"
     archive_dir = tmp_path / "archive"
 
-    manifest = migrate_to_ledger(str(research_dir), str(jsonl_path), str(archive_dir))
+    manifest = migrate_to_ledger(str(research_dir), str(db_path), str(archive_dir))
 
-    events = [json.loads(l) for l in jsonl_path.read_text().splitlines()]
-    assert len(events) == 1
-    assert events[0]["event_type"] == "RESEARCH_IMPORT"
-    assert events[0]["ticker"] == "PLTR"
+    conn = sqlite3.connect(str(db_path))
+    events = conn.execute(
+        "SELECT e.event_type, i.ticker, e.idempotency_key FROM intelligence_event e "
+        "JOIN instrument i ON i.instrument_id = e.instrument_id;"
+    ).fetchall()
+    conn.close()
+    assert events == [("RESEARCH_IMPORT", "PLTR", "research-import-PLTR_2026-07-02.md")]
     assert manifest["migrated_count"] == 1
 
     # Non-destructive: original still readable at its archived location, not deleted outright

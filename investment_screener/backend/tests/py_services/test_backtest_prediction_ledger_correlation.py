@@ -1,11 +1,9 @@
 """Task 8: Prediction ledger correlation tests.
 
-Updated for Wave 5D Task 3's cutover: correlate_with_prediction_ledger() now
-reads PREDICTION_CLAIM events from intelligence.sqlite (via db_path), not a
-raw predictions.jsonl file. Every test here seeds a tmp_path-scoped sqlite
-file via the real intelligence.event_store/replay_ledger machinery -- never
-the default db_path, which would otherwise silently read the real, tracked
-investment_screener/backend/data/intelligence.sqlite.
+correlate_with_prediction_ledger() reads PREDICTION_CLAIM events from intelligence.sqlite
+(via db_path). Every test here seeds a tmp_path-scoped sqlite file via the real
+intelligence.event_store machinery -- never the default db_path, which would otherwise
+silently read the real investment_screener/backend/data/intelligence.sqlite.
 """
 import sys
 from pathlib import Path
@@ -19,28 +17,23 @@ from backtest_harness import correlate_with_prediction_ledger  # noqa: E402
 
 
 def _seed_prediction_claim(tmp_path, db_path, ticker, claim_date, prediction_id):
-    """Seed one real PREDICTION_CLAIM event via the real ledger/replay path.
+    """Seed one real PREDICTION_CLAIM event via the real ledger path.
 
-    Mirrors test_backtest_harness_historical_path.py's _seed_claim helper --
-    uses the actual key the real predictions.jsonl schema uses ("date"), not
-    the "claimDate" key that turned out to be the Wave 5D Task 6 bug this
-    file's own correlation code (backtest_harness.py) had too.
+    Mirrors test_backtest_harness_historical_path.py's _seed_claim helper; the claim date key
+    is "date" (per the prediction schema), not "claimDate".
     """
     from intelligence.db_client import initialize_db
     from intelligence.event_store import append_event
-    from intelligence.replay_ledger import replay_events_to_db
 
-    ledger_path = tmp_path / "observations.jsonl"
     conn = initialize_db(str(db_path))
     append_event(
-        str(ledger_path), event_type="PREDICTION_CLAIM", effective_at=claim_date,
+        conn, event_type="PREDICTION_CLAIM", effective_at=claim_date,
         status="ACTIVE", title=f"Prediction claim: {ticker} action_rating ({claim_date})",
         body_markdown="Direction: bullish, horizon: 90 days.", ticker=ticker,
         payload={"id": prediction_id, "ticker": ticker, "type": "action_rating",
                  "date": claim_date, "direction": "bullish", "confidence": 0.8},
         idempotency_key=f"prediction-claim-{prediction_id}",
     )
-    replay_events_to_db(str(ledger_path), conn)
     conn.close()
 
 

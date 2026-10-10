@@ -1,4 +1,4 @@
-"""Migrate dated research markdown files into the ``observations.jsonl`` ledger.
+"""Migrate dated research markdown files into the intelligence ledger (``intelligence.sqlite``).
 
 Implements Design Spec §5's 6-phase migration protocol (Scan -> Classify ->
 Manifest -> Stage -> Validate -> Publish & Archive) for the 152 dated
@@ -15,14 +15,15 @@ successfully appending the corresponding ``RESEARCH_IMPORT`` event to the
 ledger — it never removes them outright.
 
 This script writes to the ledger exclusively via
-``intelligence.event_store.append_event`` (ADR-028 — no ad hoc JSONL writing
-outside the shared data layer).
+``intelligence.event_store.append_event`` (ADR-028 — no ad hoc ledger writes outside the
+shared data layer).
 """
 
 import re
 import shutil
 from pathlib import Path
 
+from intelligence.db_client import initialize_db
 from intelligence.event_store import append_event
 
 DATED_FILE_RE = re.compile(r"^([A-Z0-9.\-]+)_(\d{4}-\d{2}-\d{2})\.md$")
@@ -54,16 +55,16 @@ def scan_dated_files(research_dir: str) -> list[dict]:
     return found
 
 
-def migrate_to_ledger(research_dir: str, jsonl_path: str, archive_dir: str) -> dict:
+def migrate_to_ledger(research_dir: str, db_path: str, archive_dir: str) -> dict:
     """Migrate all dated research files in ``research_dir`` into the ledger.
 
     For each dated file found by ``scan_dated_files``: appends one
-    ``RESEARCH_IMPORT`` event to the JSONL ledger via ``append_event``, then
+    ``RESEARCH_IMPORT`` event to the ledger via ``append_event``, then
     archives (moves, never deletes) the source file into ``archive_dir``.
 
     Args:
         research_dir: Directory containing dated research markdown files.
-        jsonl_path: Path to the ``observations.jsonl`` ledger file.
+        db_path: Path to the ``intelligence.sqlite`` ledger database.
         archive_dir: Directory to move successfully-migrated source files
             into. Created if it does not already exist.
 
@@ -73,11 +74,12 @@ def migrate_to_ledger(research_dir: str, jsonl_path: str, archive_dir: str) -> d
     files = scan_dated_files(research_dir)
     Path(archive_dir).mkdir(parents=True, exist_ok=True)
     migrated = 0
+    conn = initialize_db(str(db_path))
     for entry in files:
         source_path = Path(entry["path"])
         body = source_path.read_text()
         append_event(
-            jsonl_path,
+            conn,
             event_type="RESEARCH_IMPORT",
             effective_at=entry["effective_at"],
             status="ACTIVE",
@@ -88,4 +90,5 @@ def migrate_to_ledger(research_dir: str, jsonl_path: str, archive_dir: str) -> d
         )
         shutil.move(str(source_path), str(Path(archive_dir) / source_path.name))
         migrated += 1
+    conn.close()
     return {"migrated_count": migrated}

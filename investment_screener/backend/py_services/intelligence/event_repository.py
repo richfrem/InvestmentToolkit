@@ -13,8 +13,8 @@ def insert_event(conn, event: dict) -> bool:
     (duplicate ``event_id``/``event_sequence``/``idempotency_key``) or a
     CHECK constraint (invalid ``event_type``/``status`` taxonomy value) is
     skipped rather than raising ``IntegrityError``. Callers (see
-    ``replay_ledger.py``) must inspect the return value to know whether the
-    row was actually persisted before advancing any checkpoint bookkeeping.
+    ``event_store.append_event``) must inspect the return value to know whether the
+    row was actually persisted.
 
     Args:
         conn: Open sqlite3 connection with the read-model schema applied.

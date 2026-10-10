@@ -121,14 +121,6 @@
    "note": "One-time loader of a retired file; archived once the data is loaded"
   },
   {
-   "file": "investment_screener/backend/py_services/evolution_events.py",
-   "kind": "write",
-   "label": "evolution_events.jsonl",
-   "disposition": "ledger",
-   "step": "step 4",
-   "note": "evolution_events.jsonl; move to the ledger or a table"
-  },
-  {
    "file": "investment_screener/backend/py_services/extract_portfolio_symbols.py",
    "kind": "exists",
    "label": "stocks.xlsx",
@@ -159,14 +151,6 @@
    "disposition": "table",
    "step": "step 6",
    "note": "Per-ticker price-history CSV"
-  },
-  {
-   "file": "investment_screener/backend/py_services/intelligence/event_store.py",
-   "kind": "unresolved",
-   "label": "investment_screener/backend/data/observations.jsonl",
-   "disposition": "ledger",
-   "step": "step 4",
-   "note": "JSONL is written first and replayed into SQLite; flip to SQLite first"
   },
   {
    "file": "investment_screener/backend/py_services/migrate_daily_briefs_to_ledger.py",
@@ -209,30 +193,6 @@
    "note": "JSON path handling; check what it still opens"
   },
   {
-   "file": "investment_screener/backend/py_services/prediction_ledger.py",
-   "kind": "read",
-   "label": "predictions.jsonl",
-   "disposition": "ledger",
-   "step": "step 4",
-   "note": "Reads predictions JSONL and its schema file"
-  },
-  {
-   "file": "investment_screener/backend/py_services/prediction_ledger.py",
-   "kind": "read",
-   "label": "predictions_graded.jsonl",
-   "disposition": "ledger",
-   "step": "step 4",
-   "note": "Reads predictions JSONL and its schema file"
-  },
-  {
-   "file": "investment_screener/backend/py_services/prediction_ledger.py",
-   "kind": "read",
-   "label": "schemas/prediction.schema.json",
-   "disposition": "ledger",
-   "step": "step 4",
-   "note": "Reads predictions JSONL and its schema file"
-  },
-  {
    "file": "investment_screener/backend/py_services/stock_intake_persist.py",
    "kind": "write",
    "label": "{canonical}.json",
@@ -247,14 +207,6 @@
    "disposition": "table",
    "step": "step 6",
    "note": "Checks order audit files"
-  },
-  {
-   "file": "investment_screener/backend/py_services/thesis_breakers.py",
-   "kind": "write",
-   "label": "theses/breaker-overrides.jsonl",
-   "disposition": "ledger",
-   "step": "step 4",
-   "note": "breaker-overrides.jsonl; move to thesis_breaker tables"
   },
   {
    "file": "investment_screener/backend/py_services/tv_cdp_health.py",
@@ -671,14 +623,6 @@
    "disposition": "decision",
    "step": "end",
    "note": "Export folder manifest.json: owner decides whether the export manifest may stay JSON or becomes a .sql/.txt file"
-  },
-  {
-   "file": "plugins/tradingview/scripts/ta_sweep_single.py",
-   "kind": "passed",
-   "label": "investment_screener/backend/data/intelligence_events.jsonl",
-   "disposition": "ledger",
-   "step": "step 4",
-   "note": "Writes intelligence_events.jsonl"
   },
   {
    "file": "tradingview-cdp/core/audit.js",

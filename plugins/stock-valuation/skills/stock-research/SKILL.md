@@ -51,7 +51,7 @@ Trigger with `/research-stock {TICKER}` or natural language when material events
    - `Class B (Material)`: Margins $\pm 200$ bps, management change $\rightarrow$ Flag for user review.
    - `Class C (Informational)`: Price volatility without fundamental shift $\rightarrow$ Maintain thesis.
 4. **Draft Research Report**:
-   Write `investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md`, then publish with `persist_research.py --file REPORT.md --db /ABSOLUTE/MAIN_CHECKOUT/investment_screener/backend/data/intelligence.sqlite --jsonl /ABSOLUTE/MAIN_CHECKOUT/investment_screener/backend/data/observations.jsonl`. Verify `query_ledger_research.py --get {TICKER}_{YYYY-MM-DD}.md`; the app reads the ledger, not the draft file.
+   Write `investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md`, then publish with `persist_research.py --file REPORT.md --db /ABSOLUTE/MAIN_CHECKOUT/investment_screener/backend/data/intelligence.sqlite`. Verify `query_ledger_research.py --get {TICKER}_{YYYY-MM-DD}.md`; the app reads the ledger, not the draft file.
 5. **Re-Valuation Decision Gate**:
    Present summary card with recommendation (`RE_EVALUATE`, `MAINTAIN_CURRENT`, or `WATCHLIST_ALERT`), existing/proposed method, rate basis and evidence dates, operating changes, sensitivity needs and unresolved gaps. Show old-method versus new-method comparisons for a proposed migration. Chain into `/update-stock-analysis` only within explicit session authorization; otherwise await confirmation.
 
