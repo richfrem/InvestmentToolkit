@@ -238,6 +238,16 @@ def t0_5_bridge_smoke() -> bool:
     return True
 
 
+# External comment: No code may read or write a data file that is not listed, with its removal step, in the register
+def t0_file_dependency_guard() -> bool:
+    """Fails when code gains a data-file dependency the register does not list, or keeps a removed one."""
+    print(f"\n{HEADER}T0 — File dependency guard{RESET}")
+    return run(
+        ["python3", "plugins/toolkit-manager/scripts/audit_file_dependencies.py", "--root", ".", "--check"],
+        label="every data-file dependency is registered",
+    )
+
+
 # External comment: Portfolio data lives only in SQLite; no code may touch the retired files
 def t0_retired_file_guard() -> bool:
     """Fails when any code reads, writes or stats a retired portfolio data file (ADR-038)."""
@@ -284,6 +294,7 @@ def main() -> None:
         ("T0 Invariance",      t0_symlink_cwd_invariance),
         ("T0 Map Debt",        t0_map_debt),
         ("T0 Retired files",   t0_retired_file_guard),
+        ("T0 File dependencies", t0_file_dependency_guard),
     ]:
         if not fn():
             print(f"\n{CRITICAL} Gate FAILED — aborting remaining tiers.")
