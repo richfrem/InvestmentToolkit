@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatGap, formatWeight, moneyText, weightHeat, rowsForDocument, sortRows, totalsFor, type PositionRow } from './positionMath';
+import { formatGap, formatWeight, moneyText, normalizePositionRows, weightHeat, rowsForDocument, sortRows, totalsFor, type PositionRow } from './positionMath';
 
 const row = (over: Partial<PositionRow>): PositionRow => ({
     ticker: 'AAA', name: 'AAA', assetClass: 'EQUITY', pillarId: 'p', subStrategyId: 's', role: 'core', held: true,
@@ -97,5 +97,38 @@ describe('totalsFor market and book value', () => {
         const t = totalsFor([row({ marketValue: 100, bookValue: 80 }), row({ marketValue: 50, bookValue: null }), row({ marketValue: null, bookValue: 10 })]);
         expect(t.marketValue).toBe(150);
         expect(t.bookValue).toBe(90);
+    });
+});
+
+describe('rows from an older or partial backend', () => {
+    it('rowsForDocument treats a row with no documents list as in no thesis instead of crashing', () => {
+        const old = { ...row({ ticker: 'OLD' }), documents: undefined } as unknown as PositionRow;
+        expect(rowsForDocument([old, row({ ticker: 'NEW', documents: ['asi'] })], 'asi', 'all').map(r => r.ticker)).toEqual(['NEW']);
+    });
+
+    it('normalizePositionRows fills what an older /all-holdings row lacks', () => {
+        const [r] = normalizePositionRows([{ ticker: 'LDOS', name: 'Leidos', actualPct: null, targetPct: 0, action: 'INITIATE' }]);
+        expect(r.documents).toEqual([]);
+        expect(r.held).toBe(false);
+        expect(r.shares).toBe(0);
+        expect(r.marketValue).toBeNull();
+        expect(r.gapPct).toBeNull();
+        expect(r.isWatched).toBe(false);
+        expect(r.ticker).toBe('LDOS');
+    });
+
+    it('treats a row with shares as held when the backend does not say so', () => {
+        expect(normalizePositionRows([{ ticker: 'A', shares: 3 }])[0].held).toBe(true);
+    });
+
+    it('keeps every field the current backend sends', () => {
+        const full = row({ ticker: 'FULL', documents: ['d'], held: false, actualPct: 0 });
+        expect(normalizePositionRows([full])[0]).toEqual(full);
+    });
+
+    it('drops entries with no ticker and returns an empty list for a non-list', () => {
+        expect(normalizePositionRows([{ name: 'x' }, null, 5, { ticker: 'OK' }]).map(r => r.ticker)).toEqual(['OK']);
+        expect(normalizePositionRows({ error: 'boom' })).toEqual([]);
+        expect(normalizePositionRows(null)).toEqual([]);
     });
 });
