@@ -64,6 +64,7 @@ Present a structured, interactive menu of prioritized next steps:
 - **Target Calibration**: If adjusting weights, seamlessly transition into `/calibrate-targets` with 100% normalization.
 - **Rebalancing Execution**: If generating orders, invoke `rebalancer.py --pretty` (`/rebalance-portfolio`), apply `risk_officer.py`, and draft account-level orders with PSU-U.TO funding.
 - **Persist Dossier**: Scaffold `PortfolioAnalysis/strategic-reviews/YYYY-MM-DD-PortfolioAnalysisRecommendations.md` with `generate_review.py` and fill in every pending section, including the Priority Action List.
+- **Refresh Thesis Pages**: Refresh every thesis page's current-developments note with `thesis_currency.py` (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`). If the review changed a thesis's conviction, structure or sizing, also update that page's own prose so it agrees.
 - **Closing Refresh**: Always finish with `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification

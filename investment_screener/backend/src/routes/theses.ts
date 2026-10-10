@@ -44,7 +44,7 @@ import fs from 'fs';
 import path from 'path';
 import { thesisService } from '../services/ThesisService';
 import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
-import { InvestmentRepository } from '../services/InvestmentRepository';
+import { InvestmentRepository, type DocumentCurrency } from '../services/InvestmentRepository';
 
 const router = express.Router();
 
@@ -54,6 +54,23 @@ const router = express.Router();
  * old TV-sync refresh; it went stale. The web app shows the live positions table instead
  * (frontend/src/components/positions). A section that follows the generated one is kept.
  */
+/** A note older than this many days is shown as out of date. */
+export const CURRENCY_STALE_DAYS = 7;
+
+export interface CurrencyView extends DocumentCurrency {
+    ageDays: number;
+    stale: boolean;
+}
+
+/** The note with its age in whole days and a stale flag; null when the document has no note. */
+export function currencyView(note: DocumentCurrency | null, today: Date = new Date()): CurrencyView | null {
+    if (!note) return null;
+    const asOf = new Date(`${note.asOf}T00:00:00Z`).getTime();
+    const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+    const ageDays = Math.max(0, Math.round((todayUtc - asOf) / 86_400_000));
+    return { ...note, ageDays, stale: ageDays > CURRENCY_STALE_DAYS };
+}
+
 export function stripGeneratedPositions(markdown: string): string {
     const lines = markdown.split('\n');
     const start = lines.findIndex(l => /^##\s+Current Positions \(Auto-Updated\)\s*$/.test(l));
@@ -134,7 +151,14 @@ router.get('/sub-strategies/:id', (req, res) => {
         }
 
         const content = stripGeneratedPositions(fs.readFileSync(filePath, 'utf-8'));
-        res.json({ id, content });
+        const repo = new InvestmentRepository(DOMAIN_MODEL_DB_FILE);
+        let currency: CurrencyView | null;
+        try {
+            currency = currencyView(repo.getDocumentCurrency(id));
+        } finally {
+            repo.close();
+        }
+        res.json({ id, content, currency });
     } catch (error) {
         console.error('Error reading sub-strategy detail:', error);
         res.status(500).json({ error: 'Failed to read sub-strategy' });

@@ -72,6 +72,20 @@ describe('InvestmentRepository', () => {
         });
     });
 
+    describe('getDocumentCurrency', () => {
+        it('is null until a note exists, then returns the one current note', () => {
+            expect(repo.getDocumentCurrency('asi_race')).to.equal(null);
+            const db = new Database(dbPath);
+            db.prepare('INSERT INTO thesis_document_currency (document_id, as_of, markdown, updated_at, updated_by) VALUES (?, ?, ?, ?, ?)')
+                .run('asi_race', '2026-10-09', '- Buyback raised', '2026-10-09T10:00:00Z', 'daily-loop');
+            db.close();
+            expect(repo.getDocumentCurrency('asi_race')).to.deep.equal({
+                asOf: '2026-10-09', markdown: '- Buyback raised', updatedAt: '2026-10-09T10:00:00Z', updatedBy: 'daily-loop',
+            });
+            expect(repo.getDocumentCurrency('other')).to.equal(null);
+        });
+    });
+
     describe('listWatchlisted', () => {
         it('returns only is_watchlisted=1 rows as {ticker, addedAt}', () => {
             repo.setWatchlisted('WL1', true, '2026-01-01T00:00:00.000Z');

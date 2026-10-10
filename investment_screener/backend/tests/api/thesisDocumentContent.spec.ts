@@ -6,7 +6,7 @@
  * actions); the web app shows the live positions table instead.
  */
 import { expect } from 'chai';
-import { stripGeneratedPositions } from '../../src/routes/theses';
+import { currencyView, stripGeneratedPositions } from '../../src/routes/theses';
 
 const DOC = [
     '# Thesis', '', '## 6. Committee Decision', '', '- APPROVED', '', '---', '',
@@ -38,5 +38,33 @@ describe('stripGeneratedPositions', () => {
     it('returns a document without the section unchanged', () => {
         const plain = '# Thesis\n\ntext\n';
         expect(stripGeneratedPositions(plain)).to.equal(plain);
+    });
+});
+
+describe('currencyView', () => {
+    const note = { asOf: '2026-10-05', markdown: '- item', updatedAt: '2026-10-05T10:00:00Z', updatedBy: 'daily-loop' };
+    const today = new Date('2026-10-10T12:00:00Z');
+
+    it('is null when the document has no note', () => {
+        expect(currencyView(null, today)).to.equal(null);
+    });
+
+    it('gives the age in days and marks a note older than a week as stale', () => {
+        const v = currencyView(note, today)!;
+        expect(v.ageDays).to.equal(5);
+        expect(v.stale).to.equal(false);
+        const old = currencyView({ ...note, asOf: '2026-10-01' }, today)!;
+        expect(old.ageDays).to.equal(9);
+        expect(old.stale).to.equal(true);
+    });
+
+    it('carries the note text and who wrote it', () => {
+        const v = currencyView(note, today)!;
+        expect(v.markdown).to.equal('- item');
+        expect(v.updatedBy).to.equal('daily-loop');
+    });
+
+    it('never reports a negative age for a note dated today', () => {
+        expect(currencyView({ ...note, asOf: '2026-10-10' }, today)!.ageDays).to.equal(0);
     });
 });
