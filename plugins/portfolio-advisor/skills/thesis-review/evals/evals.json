@@ -25,7 +25,7 @@
     "category": "schema_compliance",
     "prompt": "Let's add a new strategy for quantum computing exposure.",
     "expected_trigger": "thesis_review",
-    "pass_condition": "Skill itself does NOT run update_targets.py, validate_weights.py, or generate_portfolio_blueprint.py directly. Per the skill's own instruction ('Do NOT run these scripts yourself. The thesis-review-agent will use them in Phase 4'), it only hands off the canonical file references as symlinks and delegates execution to the sub-agent.",
+    "pass_condition": "Skill itself does NOT run update_targets.py, or validate_weights.py directly. Per the skill's own instruction ('Do NOT run these scripts yourself. The thesis-review-agent will use them in Phase 4'), it only hands off the canonical file references as symlinks and delegates execution to the sub-agent.",
     "should_trigger": true
   },
   {

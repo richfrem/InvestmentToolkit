@@ -4,7 +4,8 @@ update_targets.py — Precision target-weight editor for domain_model.sqlite.
 
 This is the canonical script for updating thesis target weights during conversation.
 After any update it auto-normalizes to 100% and prints a clear diff.
-Optionally regenerates investment_thesis.md blueprint.
+The thesis pages are live in the web app, so there is nothing to regenerate; `--blueprint` is a
+deprecated alias that only re-syncs roles.
 
 Usage:
   # Set specific weights (can be 0 to EXIT):
@@ -21,7 +22,7 @@ Usage:
   # Print current weights sorted by target (no changes):
   python3 update_targets.py --show
 
-  # After setting weights, auto-normalize and regenerate blueprint:
+  # After setting weights, auto-normalize (and re-sync roles):
   python3 update_targets.py --set VST=1.0 BE=2.5 --write --blueprint
 
   # Dry-run (show diff but don't write):
@@ -39,7 +40,6 @@ from repo_root import find_repo_root  # noqa: E402  (shared helper; replaced pri
 REPO_ROOT     = find_repo_root(Path(__file__))
 DB_PATH       = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 VALIDATE_PY   = REPO_ROOT / "plugins/portfolio-advisor/scripts/validate_weights.py"
-BLUEPRINT_PY  = REPO_ROOT / "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py"
 REFRESH_ALL   = REPO_ROOT / "plugins/portfolio-advisor/scripts/refresh_all.py"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
@@ -269,11 +269,9 @@ def apply_remove(data: dict, tickers: list[str], dry_run: bool) -> dict:
 
 
 def run_blueprint() -> None:
-    """Run the full refresh pipeline (roles + blueprint) after any target change."""
-    script = REFRESH_ALL if REFRESH_ALL.exists() else BLUEPRINT_PY
-    extra  = [] if REFRESH_ALL.exists() else ["--write"]
+    """Re-sync roles after a target change (refresh_all.py). The thesis pages are live, so that is all."""
     result = subprocess.run(
-        [sys.executable, str(script)] + extra,
+        [sys.executable, str(REFRESH_ALL)],
         capture_output=True, text=True
     )
     if result.returncode != 0:
@@ -340,7 +338,7 @@ def main():
     parser.add_argument("--write",     action="store_true",
                         help="Write changes to domain_model.sqlite (auto-normalizes)")
     parser.add_argument("--blueprint", action="store_true",
-                        help="After writing, regenerate investment_thesis.md blueprint")
+                        help="Deprecated: the thesis pages are live now, so this only re-syncs roles (refresh_all.py)")
     parser.add_argument("--dry-run",   action="store_true",
                         help="Print diff but don't write anything")
 
@@ -379,10 +377,10 @@ def main():
         show_weights(data, "Updated targets")
 
         if args.blueprint:
-            print("\n── Regenerating investment_thesis.md blueprint ──")
+            print("\n── Re-syncing roles (thesis pages are live; nothing else to regenerate) ──")
             run_blueprint()
     else:
-        print("\nHint: add --write to persist changes, --blueprint to also update thesis.md")
+        print("\nHint: add --write to persist changes")
         show_weights(normalize(data), "Projected targets (not written)")
 
 

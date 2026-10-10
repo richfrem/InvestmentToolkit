@@ -39,6 +39,26 @@ import { spawnPythonScript } from '../services/bridge';
 
 const router = express.Router();
 
+/** Where the web app puts the live positions tables in the master thesis. */
+export const LIVE_POSITIONS_MARKER = '[[LIVE_POSITIONS]]';
+
+const BLUEPRINT_START = '<!-- AUTO_UPDATE_START: portfolio_blueprint -->';
+const BLUEPRINT_END = '<!-- AUTO_UPDATE_END: portfolio_blueprint -->';
+
+/**
+ * The master thesis with its generated "Portfolio Blueprint" block replaced by the
+ * live-positions marker. That block was a frozen snapshot of every position (weights, actions,
+ * upside); the web app renders live tables at the marker instead. An unterminated block is left
+ * alone so a broken marker can never swallow the rest of the document.
+ */
+export function replaceGeneratedBlueprint(markdown: string): string {
+    const start = markdown.indexOf(BLUEPRINT_START);
+    if (start === -1) return markdown;
+    const end = markdown.indexOf(BLUEPRINT_END, start);
+    if (end === -1) return markdown;
+    return markdown.slice(0, start) + LIVE_POSITIONS_MARKER + markdown.slice(end + BLUEPRINT_END.length);
+}
+
 // ── Research reports ──────────────────────────────────────────────────────────
 
 export const DATED_FILENAME_RE = /^[A-Z0-9.-]{1,10}_\d{4}-\d{2}-\d{2}\.md$/;
@@ -143,7 +163,7 @@ router.get('/research', async (_req, res) => {
 
 router.get('/docs/investment-thesis', async (_req, res) => {
     try {
-        const content = await fs.promises.readFile( THESIS_DOC_PATH, 'utf-8');
+        const content = replaceGeneratedBlueprint(await fs.promises.readFile( THESIS_DOC_PATH, 'utf-8'));
         let thesisName = 'Investment Thesis';
         let thesisDescription = '';
         try {

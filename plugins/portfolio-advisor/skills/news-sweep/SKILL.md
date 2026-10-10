@@ -33,7 +33,7 @@ python3 plugins/portfolio-advisor/scripts/generate_news_prompt.py --output temp/
 2. **Multi-Model Sweep**: Run prompt across frontier models according to schedule (Grok daily default; escalate to ChatGPT/Claude on major moves or binary events).
 3. **Fact-Check Gate**: Verify stated macro yields (10Y), VIX, and quoted prices against live market data before trusting findings.
 4. **Triangulate & Present**: Cross-check findings across models, categorize as CONFLUENCE, PARTIAL, or CONFLICT, and flag required user confirmations.
-5. **Apply & Refresh**: Update scenario weights with `apply_catalyst.py --write` or targets with `update_targets.py --write --blueprint`.
+5. **Apply & Refresh**: Update scenario weights with `apply_catalyst.py --write` or targets with `update_targets.py --write`.
 6. **Record Findings & Refresh Thesis Pages**: Write the triangulated findings as `## TICKER` sections and record them with `record_news_sweep.py --source <model> --write` so they are kept in the ledger (a sweep that is not recorded is lost). Then refresh the thesis pages whose stocks appear in them with `thesis_currency.py` (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`).
 7. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 

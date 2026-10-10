@@ -1,7 +1,8 @@
 """refresh_all.run_refresh() is the one closing step every review workflow runs.
 
-By default it only refreshes roles and the thesis pages (unchanged behaviour,
-relied on by update_targets.py, update_thesis.py and the broker sync scripts).
+By default it only syncs roles (relied on by update_targets.py, update_thesis.py and the
+broker sync scripts). The thesis pages are live in the web app, so it no longer regenerates
+the frozen blueprint tables or the per-thesis position blocks.
 With publish=True it also regenerates today's review JSON, republishes the
 daily brief and runs the consistency check, so the Portfolio Advisor and Daily
 Brief pages match what the session decided.
@@ -29,8 +30,6 @@ def _record_runs(monkeypatch, exit_codes=None):
 
 THESIS_STEPS = [
     ("sync_portfolio_roles.py", []),
-    ("generate_portfolio_blueprint.py", ["--write"]),
-    ("generate_sub_strategy_blocks.py", []),
 ]
 PUBLISH_STEPS = [
     ("generate_review_json.py", ["--yes"]),
@@ -65,3 +64,19 @@ def test_publish_flag_on_the_command_line(monkeypatch):
     except SystemExit as exit_info:
         assert exit_info.code == 0
     assert calls == THESIS_STEPS + PUBLISH_STEPS
+
+
+def test_the_frozen_table_generators_are_never_run(monkeypatch):
+    calls = _record_runs(monkeypatch)
+    refresh_all.run_refresh(publish=True)
+    names = [name for name, _ in calls]
+    assert "generate_portfolio_blueprint.py" not in names
+    assert "generate_sub_strategy_blocks.py" not in names
+
+
+def test_the_retired_skip_blueprint_flag_is_gone(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["refresh_all.py", "--skip-blueprint"])
+    try:
+        refresh_all.main()
+    except SystemExit as exit_info:
+        assert exit_info.code == 2  # argparse: unrecognized argument

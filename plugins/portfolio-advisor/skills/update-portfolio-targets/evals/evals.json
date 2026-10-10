@@ -6,7 +6,7 @@
     "prompt": "Set NVDA to 8% and META to 4.5%",
     "expected_trigger": "update_portfolio_targets",
     "expected_not_trigger": [],
-    "pass_condition": "Agent uses the canonical update_targets.py script with --set NVDA=8.0 META=4.5 --write --blueprint, not the legacy update_thesis.py, per 'Canonical edit script: update_targets.py \u2190 use this'.",
+    "pass_condition": "Agent uses the canonical update_targets.py script with --set NVDA=8.0 META=4.5 --write, not the legacy update_thesis.py, per 'Canonical edit script: update_targets.py \u2190 use this'.",
     "should_trigger": true
   },
   {

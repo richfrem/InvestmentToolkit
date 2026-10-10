@@ -28,7 +28,7 @@ allowed-tools: Bash, Read, Write
 - **Position Sizing Caps**: No holding may exceed 15.00% and no strategy pillar may exceed 40.00% of total portfolio.
 - **Standing Decision Anchor**: Require >15% Fair Value delta or confirmed fundamental catalysts to revisit standing decisions.
 - **Capital Sourcing Invariant**: All buy proposals must identify `PSU-U.TO` shares to sell in the same account first (Rule 17).
-- **Refresh Chain**: Write target changes with `update_targets.py --write --blueprint`, then always finish with the Closing Refresh in Phase 4 (`refresh_all.py --publish`).
+- **Refresh Chain**: Write target changes with `update_targets.py --write`, then always finish with the Closing Refresh in Phase 4 (`refresh_all.py --publish`).
 
 ## Quick start
 ```bash
