@@ -13,7 +13,7 @@ discipline) — do not treat any inventory count or cutover status below as curr
 # Big-Domain Migration Design: holdings, target_portfolio_entry, projection_version
 
 Full column-level design for the three domains identified as carrying the actual architectural
-value of this migration: `portfolio.json`, `target-portfolio.json`, `projections/*.json`. No
+value of this migration: the holdings export, the thesis export, `projections/*.json`. No
 code has been written. This document exists to be reviewed and corrected before any
 implementation starts, and to answer directly: if these three migrate, how much does
 persistence complexity actually go down.
@@ -23,7 +23,7 @@ Producer/consumer counts below are real — gathered by grepping every referenci
 
 ---
 
-## 1. `holdings` (replaces `portfolio.json`)
+## 1. `holdings` (replaces the holdings export)
 
 ### Column-level schema
 
@@ -53,7 +53,7 @@ CREATE INDEX idx_holdings_account ON holdings(account);
 CREATE INDEX idx_holdings_instrument ON holdings(instrument_id);
 ```
 
-`tvSnapshot` (the third top-level key in the current `portfolio.json`) is raw broker-sync
+`tvSnapshot` (the third top-level key in the current the holdings export) is raw broker-sync
 diagnostic data (per CLAUDE.md pitfall #27's exchange-rate note) — represented above as
 `portfolio_totals` columns rather than a preserved blob, since its fields (`totalEquityCADCombined`
 etc.) are exactly the columns the app needs to query, not opaque payload.
@@ -63,12 +63,12 @@ etc.) are exactly the columns the app needs to query, not opaque payload.
 1. Write `portfolio_ledger/holdings_repository.py` (+ TS equivalent) with `upsert_holding()`,
    `list_holdings(account=None)`, `get_totals()`.
 2. `BrokerSyncService.ts` and `fetch_broker_data.py` — the only two real sync-time producers —
-   switch from writing `portfolio.json` to calling the repository's upsert.
+   switch from writing the holdings export to calling the repository's upsert.
 3. Every consumer switches from `fs.readFile(PORTFOLIO_FILE)` to a repository read call.
 4. Run both paths in parallel for one full sync cycle, diff JSON output against SQL query
    output row-for-row (same byte-parity discipline used for the research migration).
-5. Only after parity is proven and every real consumer is confirmed migrated: `git mv
-   portfolio.json ARCHIVE/investment_screener/backend/data/portfolio.json.pre-migration` (this
+5. Only after parity is proven and every real consumer is confirmed migrated: move
+   the holdings export to `ARCHIVE/investment_screener/backend/data/` (this
    file is gitignored/private — archiving it locally, not committing the actual holdings data;
    only the migration event itself needs to be documented).
 
@@ -80,7 +80,7 @@ etc.) are exactly the columns the app needs to query, not opaque payload.
 `thesis_breakers.py`, `ta_sweep_batch.py`, `fetch_broker_data.py`, `place_order.py`,
 `fetch_financials.py`, `ytd_return.py`, `relabel_actions.py`, `validate_weights.py`,
 `update_price_levels.py`, `update_thesis.py`, `daily_brief.py` — **20 real producers.**
-(`audit_json_usage.py` excluded — it only contains the string "portfolio.json" as a
+(`audit_json_usage.py` excluded — it only contains the string "the holdings export" as a
 classification pattern, it doesn't write portfolio data; confirmed by reading the match context.)
 
 ### Consumer inventory (read-only, need a read-path swap)
@@ -99,19 +99,19 @@ classification pattern, it doesn't write portfolio data; confirmed by reading th
 
 All 20 producers write via the repository, all ~32 consumers read via the repository, byte-parity
 proven across at least one full sync cycle, zero remaining `fs.readFile`/`json.load` calls
-against `portfolio.json`'s literal path (verifiable by grep returning zero I/O matches, doc/audit
+against the holdings export's literal path (verifiable by grep returning zero I/O matches, doc/audit
 mentions excluded).
 
 ### Rollback strategy
 
-Restore `portfolio.json` from `ARCHIVE/`, revert the producer/consumer commits (all real code
+Restore the holdings export from `ARCHIVE/`, revert the producer/consumer commits (all real code
 changes, so a normal `git revert` applies), no data loss since the repository writes were
 additive/parallel during the transition period, never destructive to the JSON file until archive
 step.
 
 ---
 
-## 2. `target_portfolio_entry` (replaces `target-portfolio.json`)
+## 2. `target_portfolio_entry` (replaces the thesis export)
 
 ### Column-level schema
 
@@ -174,7 +174,7 @@ it's the single most safety-critical piece of logic touching this file.
 ### Archive criteria / Rollback strategy
 
 Same discipline as `holdings`. This file is git-tracked (not gitignored), so the archive step
-here is a real `git mv target-portfolio.json ARCHIVE/...` with full history preserved, not a
+here is a real `git mv the thesis export ARCHIVE/...` with full history preserved, not a
 local-only backup.
 
 ---
@@ -300,7 +300,7 @@ commit (single service, low risk), reverts consumer commits.
 
 ## Complexity Reduction — Answering the Actual Question
 
-**How many JSON files disappear:** `portfolio.json` (1) + `target-portfolio.json` (1) +
+**How many JSON files disappear:** the holdings export (1) + the thesis export (1) +
 `projections/*.json` (144) = **146 files**, out of 212 total JSON/JSONL files catalogued
 repo-wide. That's **69% of the file count** — but file count overstates it, since 144 of those
 146 are one-per-ticker instances of the same schema, not 144 independently-shaped domains.
