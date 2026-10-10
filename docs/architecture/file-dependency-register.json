@@ -545,6 +545,14 @@
    "note": "Valuation pipeline intermediate JSON"
   },
   {
+   "file": "plugins/toolkit-manager/scripts/app_smoke_test.py",
+   "kind": "passed",
+   "label": "data-dir",
+   "disposition": "tooling",
+   "step": "",
+   "note": "Verification tool: copies the real databases and calls the app; the data-dir pattern is a word in its text"
+  },
+  {
    "file": "plugins/toolkit-manager/scripts/audit_file_dependencies.py",
    "kind": "passed",
    "label": "\\.jsonl?[",
