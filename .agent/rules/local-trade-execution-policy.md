@@ -1,3 +1,8 @@
+---
+description: Terms of use and trade execution policy prohibiting unattended autonomous trading and requiring human-in-the-loop confirmation.
+globs: ["plugins/tradingview/**", "plugins/portfolio-advisor/**", "plugins/questrade/**"]
+---
+
 # TradingView Terms of Use & Trade Execution Policy
 
 ## 1. Context & Background
