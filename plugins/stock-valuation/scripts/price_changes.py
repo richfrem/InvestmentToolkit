@@ -5,7 +5,7 @@ price_changes.py — the single % change calculation for price periods.
 Purpose:
     One definition of "1D / 1W / 1M / 3M / YTD / 1Y / 5Y change" for every
     surface: fetch_financials 'performance' (Stock Analysis chips) and
-    history_store.calc_changes (heatmap, Portfolio Table, Screener). Before
+    history_store.calc_changes (heatmap, Portfolio page). Before
     2026-09-28 those were two copies that disagreed (1W was 4 trading days back
     in one and 5 in the other) and one reported missing history as 0.0%.
 

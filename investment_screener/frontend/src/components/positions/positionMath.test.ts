@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatGap, formatWeight, moneyText, rowsForDocument, sortRows, totalsFor, type PositionRow } from './positionMath';
+import { formatGap, formatWeight, moneyText, weightHeat, rowsForDocument, sortRows, totalsFor, type PositionRow } from './positionMath';
 
 const row = (over: Partial<PositionRow>): PositionRow => ({
     ticker: 'AAA', name: 'AAA', assetClass: 'EQUITY', pillarId: 'p', subStrategyId: 's', role: 'core', held: true,
@@ -10,17 +10,17 @@ const row = (over: Partial<PositionRow>): PositionRow => ({
 describe('formatWeight and formatGap', () => {
     it('shows a dash for an unknown weight, never 0', () => {
         expect(formatWeight(null)).toBe('—');
-        expect(formatWeight(0)).toBe('0.0%');
-        expect(formatWeight(6.54)).toBe('6.5%');
+        expect(formatWeight(0)).toBe('0.00%');
+        expect(formatWeight(6.546)).toBe('6.55%');
     });
     it('shows the gap signed in percentage points and a dash when unknown', () => {
         expect(formatGap(null)).toBe('—');
-        expect(formatGap(1.5)).toBe('+1.5pp');
-        expect(formatGap(-0.04)).toBe('0.0pp');
-        expect(formatGap(0.04)).toBe('0.0pp');
-        expect(formatGap(0)).toBe('0.0pp');
-        expect(formatGap(-0.06)).toBe('-0.1pp');
-        expect(formatGap(-2.44)).toBe('-2.4pp');
+        expect(formatGap(1.5)).toBe('+1.50pp');
+        expect(formatGap(-0.004)).toBe('0.00pp');
+        expect(formatGap(0.004)).toBe('0.00pp');
+        expect(formatGap(0)).toBe('0.00pp');
+        expect(formatGap(-0.06)).toBe('-0.06pp');
+        expect(formatGap(-2.444)).toBe('-2.44pp');
     });
 });
 
@@ -78,5 +78,24 @@ describe('sortRows ties', () => {
     it('keeps the incoming order for rows that tie, so a pre-ordering shows through', () => {
         const rows = [row({ ticker: 'A', actualPct: 0 }), row({ ticker: 'B', actualPct: 0 }), row({ ticker: 'C', actualPct: 3 })];
         expect(sortRows(rows, r => r.actualPct, 'desc').map(r => r.ticker)).toEqual(['C', 'A', 'B']);
+    });
+});
+
+describe('weightHeat', () => {
+    it('shades a funded weight, stronger for bigger weights, and leaves 0 and unknown unshaded', () => {
+        expect(weightHeat(null, 'actual')).toBeUndefined();
+        expect(weightHeat(0, 'target')).toBeUndefined();
+        expect(weightHeat(12, 'actual')).toContain('16, 185, 129');
+        expect(weightHeat(12, 'target')).toContain('99, 102, 241');
+        expect(weightHeat(24, 'actual')).toBe(weightHeat(12, 'actual'));
+        expect(weightHeat(3, 'actual')).not.toBe(weightHeat(9, 'actual'));
+    });
+});
+
+describe('totalsFor market and book value', () => {
+    it('sums market value and book value, skipping unknown values', () => {
+        const t = totalsFor([row({ marketValue: 100, bookValue: 80 }), row({ marketValue: 50, bookValue: null }), row({ marketValue: null, bookValue: 10 })]);
+        expect(t.marketValue).toBe(150);
+        expect(t.bookValue).toBe(90);
     });
 });

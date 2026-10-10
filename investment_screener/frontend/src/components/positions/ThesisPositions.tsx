@@ -53,7 +53,7 @@ export function ThesisPositions({ documentId }: { documentId: string }) {
                     ))}
                 </div>
             </div>
-            <PositionsTable rows={shown} preset={THESIS_PRESET}
+            <PositionsTable rows={shown} columnIds={THESIS_PRESET.columns} initialSort={THESIS_PRESET.sort} totals={THESIS_PRESET.totals}
                 onRowClick={row => navigate(`/analysis?ticker=${row.ticker}`)}
                 emptyMessage={all.length === 0 ? 'No stocks are linked to this thesis yet.' : 'You hold none of the stocks in this thesis.'} />
         </section>

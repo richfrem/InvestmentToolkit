@@ -15,7 +15,7 @@
  *     totalsFor(rows)                              // { actualPct, targetPct, gapPct, heldCount }
  *
  * Key Functions (Index):
- *     - formatWeight(), formatGap(): display text for weights and the weight gap
+ *     - formatWeight(), formatGap(), weightHeat(): display text and cell shading for weights and the gap
  *     - moneyText(): dollar text that honours privacy mode, a dash when unknown
  *     - rowsForDocument(): the rows a thesis document lists, optionally only held ones
  *     - totalsFor(): summed weights, gap and number of positions
@@ -58,12 +58,21 @@ export interface PositionTotals {
     actualPct: number;
     targetPct: number;
     gapPct: number;
+    marketValue: number;
+    bookValue: number;
     heldCount: number;
 }
 
-/** A weight as text with one decimal; a dash when unknown (null is not 0). */
+/** A weight as text with two decimals (small positions matter); a dash when unknown (null is not 0). */
 export function formatWeight(value: number | null | undefined): string {
-    return value == null ? '—' : `${value.toFixed(1)}%`;
+    return value == null ? '—' : `${value.toFixed(2)}%`;
+}
+
+/** Cell background for a weight: emerald for actual, indigo for target; none for 0 or unknown. */
+export function weightHeat(pct: number | null | undefined, kind: 'actual' | 'target'): string | undefined {
+    if (!pct || pct <= 0) return undefined;
+    const intensity = Math.min(pct / 12, 1);
+    return kind === 'actual' ? `rgba(16, 185, 129, ${intensity * 0.32})` : `rgba(99, 102, 241, ${intensity * 0.32})`;
 }
 
 /** Dollar text via ``format``, masked in privacy mode, a dash when the value is unknown. */
@@ -72,11 +81,11 @@ export function moneyText(value: number | null | undefined, hidden: boolean, for
     return hidden ? '$••••' : format(value);
 }
 
-/** The actual-minus-target gap in percentage points, signed (plain 0.0pp when it rounds to zero); a dash when unknown. */
+/** The actual-minus-target gap in percentage points, signed (plain 0.00pp when it rounds to zero); a dash when unknown. */
 export function formatGap(value: number | null | undefined): string {
     if (value == null) return '—';
-    const text = Math.abs(value).toFixed(1);
-    if (text === '0.0') return '0.0pp';
+    const text = Math.abs(value).toFixed(2);
+    if (text === '0.00') return '0.00pp';
     return `${value > 0 ? '+' : '-'}${text}pp`;
 }
 
@@ -85,11 +94,13 @@ export function rowsForDocument(rows: PositionRow[], documentId: string, scope: 
     return rows.filter(r => r.documents.includes(documentId) && (scope === 'all' || r.held));
 }
 
-/** Summed actual and target weight (unknown weights skipped), their gap, and the position count. */
+/** Summed weights (unknown skipped), their gap, summed market and book value, and the position count. */
 export function totalsFor(rows: PositionRow[]): PositionTotals {
     const actualPct = rows.reduce((s, r) => s + (r.actualPct ?? 0), 0);
     const targetPct = rows.reduce((s, r) => s + (r.targetPct ?? 0), 0);
-    return { actualPct, targetPct, gapPct: actualPct - targetPct, heldCount: rows.filter(r => r.held).length };
+    const marketValue = rows.reduce((s, r) => s + (r.marketValue ?? 0), 0);
+    const bookValue = rows.reduce((s, r) => s + (r.bookValue ?? 0), 0);
+    return { actualPct, targetPct, gapPct: actualPct - targetPct, marketValue, bookValue, heldCount: rows.filter(r => r.held).length };
 }
 
 /** A copy of ``rows`` ordered by ``get``; null and undefined always sort last. */

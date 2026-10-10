@@ -18,8 +18,7 @@ import { usePrivacy } from '../context/PrivacyContext';
 const NAV_ITEMS = [
     { name: 'Heatmap',          icon: Grid3X3,        path: '/' },
     { name: 'Portfolio Summary', icon: PieChart,       path: '/portfolio-summary' },
-    { name: 'Portfolio Table',   icon: TableProperties, path: '/portfolio-table' },
-    { name: 'Portfolio Advisor', icon: Search,          path: '/screener' },
+    { name: 'Portfolio',         icon: TableProperties, path: '/portfolio' },
     { name: 'Stock Analysis',    icon: BarChart3,       path: '/analysis' },
     { name: 'Daily Brief',        icon: Zap,             path: '/daily-brief' },
     { name: 'Trade Log',         icon: ScrollText,      path: '/trade-log' },

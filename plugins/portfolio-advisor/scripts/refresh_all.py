@@ -16,7 +16,7 @@ Steps run in order (each step feeds the next):
 With --publish (the closing step of every review workflow — /strategic-review,
 /daily, /weekly-review, target calibration, valuation refreshes) it also brings
 the web app's pages in line with what the session decided:
-  3. generate_review_json --yes  — today's review JSON (Portfolio Advisor page)
+  3. generate_review_json --yes  — today's review JSON (Portfolio page)
   4. daily_brief --skip-ta       — republish the brief (Daily Brief page)
   5. verify_refresh              — consistency check across all of the above
 

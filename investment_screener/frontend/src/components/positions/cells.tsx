@@ -15,6 +15,7 @@
  *     - TickerCell, NameCell, TextCell: identity and text cells
  *     - ActionCell: the stance (stanceOf) as a badge plus the recent-trade tag
  *     - MonoCell: a right-aligned number in the table's number style
+ *     - EarningsCell: the earnings date with a highlight when it is close
  *
  * Key Input Dependencies:
  *     - utils/riskReward (stanceOf), utils/actionColors, RecentTradeTag
@@ -56,4 +57,15 @@ export function ActionCell({ row, rec }: { row: PositionRow; rec?: Recommendatio
             <RecentTradeTag rec={rec} />
         </span>
     );
+}
+
+/** The earnings date; amber and pulsing within a week, yellow within three weeks. */
+export function EarningsCell({ date, days }: { date: string | null | undefined; days: number | null | undefined }) {
+    if (!date) return <span className="text-zinc-600">—</span>;
+    const near = days != null && days >= 0 && days <= 7;
+    const soon = days != null && days > 7 && days <= 21;
+    const suffix = days == null ? '' : days === 0 ? ' (today!)' : days > 0 ? ` (${days}d)` : ` (${Math.abs(days)}d ago)`;
+    const tone = near ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
+        : soon ? 'bg-yellow-500/10 text-yellow-300 border border-yellow-500/30' : 'text-zinc-400';
+    return <span className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[11px] font-medium ${tone}`}>{date}{suffix}</span>;
 }
