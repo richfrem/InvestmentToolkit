@@ -502,7 +502,6 @@ ALLOWED_MIGRATION_TOOLS = {
     "migrate_target_portfolio_to_sqlite.py",
     "migrate_wave4_to_sqlite.py",
     "migrate_account_policy_to_sqlite.py",
-    "remove_drift_threshold_fields.py",
 }
 VIOLATION_VERDICTS = ("READ_CONTENT", "STAT_ONLY", "WRITE", "VESTIGIAL", "UNUSED")
 TS_ROOTS = ("investment_screener/backend/src", "investment_screener/frontend/src", "tradingview-cdp")

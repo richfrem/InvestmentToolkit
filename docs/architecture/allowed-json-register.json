@@ -1,13 +1,6 @@
 {
-  "generated_at": "2026-07-18T23:17:17Z",
+  "generated_at": "2026-10-10T01:49:44Z",
   "allowed_files": [
-    {
-      "path_or_pattern": "skills-lock.json",
-      "classification": "ALLOWED_CONFIGURATION_JSON",
-      "git_tracked": false,
-      "producers": [],
-      "consumers": []
-    },
     {
       "path_or_pattern": "plugin-sources.json",
       "classification": "ALLOWED_CONFIGURATION_JSON",
@@ -21,26 +14,11 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "run_tests.py:18"
-      ]
-    },
-    {
-      "path_or_pattern": "context/events.jsonl",
-      "classification": "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/py_services/evolution_events.py:9",
-        "investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:108",
-        "investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:124",
-        "investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:148",
-        "investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:152",
-        "investment_screener/backend/tests/py_services/test_evolution_events_schema_round_trips_jsonl.py:175",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:34",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:40",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:47",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:50",
-        "investment_screener/backend/tests/py_services/test_alert_metadata_round_trips_jsonl.py:7"
+        "run_tests.py:18",
+        "plugins/portfolio-advisor/tests/test_recommendation_coherence_contract.py:4",
+        "plugins/portfolio-advisor/tests/test_recommendation_coherence_contract.py:27",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:33",
+        "plugins/questrade/scripts/scaffold_skill.py:36"
       ]
     },
     {
@@ -58,8 +36,11 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/prediction_ledger.py:58",
-        "investment_screener/backend/py_services/prediction_ledger.py:160"
+        "investment_screener/backend/py_services/prediction_ledger.py:67",
+        "investment_screener/backend/py_services/prediction_ledger.py:121",
+        "investment_screener/backend/py_services/prediction_ledger.py:261",
+        "investment_screener/backend/py_services/backtest_harness.py:592",
+        "investment_screener/backend/py_services/migrate_predictions_to_ledger.py:82"
       ]
     },
     {
@@ -77,7 +58,7 @@
       "consumers": [
         "run_tests.py:17",
         "run_investment_toolkit.py:16",
-        "investment_screener/backend/py_services/audit_json_usage.py:401"
+        "investment_screener/backend/py_services/audit_json_usage.py:432"
       ]
     },
     {
@@ -86,7 +67,7 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:125"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:128"
       ]
     },
     {
@@ -104,7 +85,7 @@
       "consumers": [
         "run_tests.py:17",
         "run_investment_toolkit.py:16",
-        "investment_screener/backend/py_services/audit_json_usage.py:401"
+        "investment_screener/backend/py_services/audit_json_usage.py:432"
       ]
     },
     {
@@ -120,7 +101,7 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:402"
+        "investment_screener/backend/py_services/audit_json_usage.py:433"
       ]
     },
     {
@@ -131,7 +112,7 @@
       "consumers": [
         "run_tests.py:17",
         "run_investment_toolkit.py:16",
-        "investment_screener/backend/py_services/audit_json_usage.py:401"
+        "investment_screener/backend/py_services/audit_json_usage.py:432"
       ]
     },
     {
@@ -149,7 +130,7 @@
       "consumers": [
         "run_tests.py:17",
         "run_investment_toolkit.py:16",
-        "investment_screener/backend/py_services/audit_json_usage.py:401"
+        "investment_screener/backend/py_services/audit_json_usage.py:432"
       ]
     },
     {
@@ -160,182 +141,7 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/data/predictions.jsonl",
-      "classification": "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL",
-      "git_tracked": true,
-      "producers": [
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:36",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:44",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:53",
-        "investment_screener/backend/tests/py_services/test_generate_track_record_report.py:48",
-        "investment_screener/backend/tests/py_services/test_backtest_prediction_ledger_correlation.py:51"
-      ],
-      "consumers": [
-        "investment_screener/backend/py_services/earnings_expectations.py:74",
-        "investment_screener/backend/py_services/earnings_expectations.py:307",
-        "investment_screener/backend/py_services/earnings_expectations.py:314",
-        "investment_screener/backend/py_services/grade_predictions.py:10",
-        "investment_screener/backend/py_services/grade_predictions.py:63",
-        "investment_screener/backend/py_services/audit_json_usage.py:364",
-        "investment_screener/backend/py_services/generate_track_record_report.py:8",
-        "investment_screener/backend/py_services/prediction_ledger.py:9",
-        "investment_screener/backend/py_services/prediction_ledger.py:56",
-        "investment_screener/backend/py_services/prediction_ledger.py:92",
-        "investment_screener/backend/py_services/backtest_harness.py:26",
-        "investment_screener/backend/py_services/backtest_harness.py:74",
-        "investment_screener/backend/py_services/backtest_harness.py:534",
-        "investment_screener/backend/py_services/harvest_predictions.py:10",
-        "investment_screener/backend/tests/py_services/test_earnings_expectation_claim_schema_round_trips_jsonl.py:5",
-        "investment_screener/backend/tests/py_services/test_prediction_ledger.py:28",
-        "investment_screener/backend/tests/py_services/test_prediction_ledger.py:35",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_logs_consensus_change.py:7",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_logs_consensus_change.py:72",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_logs_consensus_change.py:123",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_logs_consensus_change.py:194",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_logs_consensus_change.py:236",
-        "investment_screener/backend/tests/py_services/test_evolution_integration_with_e3_prediction_ledger.py:75",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_path_isolation.py:2",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_path_isolation.py:19",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_path_isolation.py:29",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_path_isolation.py:50",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_path_isolation.py:57",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_path_isolation.py:61",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:7",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:42",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:81",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:100",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:113",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:150",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:160",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:191",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:198",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:210",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_null_consensus_degrades_gracefully.py:214",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:3",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:8",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:33",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:71",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:124",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:154",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:202",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:208",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:214",
-        "investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_dedup_on_unchanged_consensus.py:255",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:113",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:42",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:48",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:126",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:135",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:142",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:151",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:168",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:176",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:236",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:260",
-        "investment_screener/backend/tests/py_services/test_generate_track_record_report.py:47",
-        "investment_screener/backend/tests/py_services/test_prediction_ledger_validate.py:12",
-        "investment_screener/backend/tests/py_services/test_grade_predictions.py:72",
-        "investment_screener/backend/tests/py_services/test_grade_predictions.py:88",
-        "investment_screener/backend/tests/py_services/test_backtest_prediction_ledger_correlation.py:50",
-        "investment_screener/backend/tests/py_services/test_backtest_prediction_ledger_correlation.py:84",
-        "investment_screener/backend/tests/py_services/test_earnings_expectation_claim_round_trips_ledger.py:36",
-        "investment_screener/backend/tests/py_services/test_earnings_expectation_claim_round_trips_ledger.py:179",
-        "investment_screener/backend/tests/py_services/test_link_alert_to_e3_claim.py:20"
-      ]
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/COHR.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/BW.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/ANET.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:29",
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:30"
-      ]
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/RGTI.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/CRCL.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/FOTO.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:149"
-      ]
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/KRMN.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/VRT.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/ASML.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
       "path_or_pattern": "investment_screener/backend/data/projections/PANW.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/CEG.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/AMD.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [
-        "investment_screener/backend/tests/py_services/test_comps_valuation.py:99"
-      ],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/LBRT.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
       "producers": [],
@@ -349,141 +155,11 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/data/projections/RDW.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/BITF.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
       "path_or_pattern": "investment_screener/backend/data/projections/NBIS.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/KRC.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/PUMP.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/RKLB.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/HUT.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/CRSP.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/INTC.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/OKLO.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/WYFI.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/CRWD.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/VST.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/QBTS.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/ASTS.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/POET.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/LITE.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/ETHA.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/MSFT.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:43",
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:67",
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:118"
-      ]
     },
     {
       "path_or_pattern": "investment_screener/backend/data/projections/CRWV.json",
@@ -493,37 +169,7 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/data/projections/WQTM.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/TSLA.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:93"
-      ]
-    },
-    {
       "path_or_pattern": "investment_screener/backend/data/projections/BE.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/LLY.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/DXYZ.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
       "producers": [],
@@ -544,34 +190,7 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/data/projections/CACI.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/AAPL.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:42",
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:66",
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:92",
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:117",
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:144"
-      ]
-    },
-    {
       "path_or_pattern": "investment_screener/backend/data/projections/APLD.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/SYM.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
       "producers": [],
@@ -587,17 +206,9 @@
       "consumers": [
         "investment_screener/backend/tests/py_services/test_migrate_research_report_pointers.py:25",
         "investment_screener/backend/tests/py_services/test_audit_json_usage.py:107",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:355",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:364",
-        "plugins/portfolio-advisor/tests/test_consolidate_research.py:30"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:345",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:354"
       ]
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/AMZN.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
     },
     {
       "path_or_pattern": "investment_screener/backend/data/projections/MU.json",
@@ -614,56 +225,7 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/data/projections/CELH.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/KOID.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/EQT.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/NKE.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/IONQ.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/SEI.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/HUMN.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/CRM.json",
+      "path_or_pattern": "investment_screener/backend/data/projections/AMAT.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
       "producers": [],
@@ -671,13 +233,6 @@
     },
     {
       "path_or_pattern": "investment_screener/backend/data/projections/IREN.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/CLSK.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
       "producers": [],
@@ -694,52 +249,6 @@
       "path_or_pattern": "investment_screener/backend/data/projections/GOOG.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
-      "producers": [
-        "investment_screener/backend/tests/py_services/test_update_price_levels.py:119"
-      ],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/CAKE.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/CIFR.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/DRAM.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/AVGO.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [
-        "investment_screener/backend/tests/py_services/test_comps_valuation.py:103"
-      ],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/TEM.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/NOW.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
       "producers": [],
       "consumers": []
     },
@@ -751,69 +260,21 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/data/projections/IBIT.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_verify_thesis_sync.py:145"
-      ]
-    },
-    {
       "path_or_pattern": "investment_screener/backend/data/projections/CORZ.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
-      "producers": [
-        "investment_screener/backend/tests/py_services/test_harvest_predictions.py:161"
-      ],
+      "producers": [],
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/data/projections/PSIX.json",
+      "path_or_pattern": "investment_screener/backend/data/projections/MP.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/data/projections/TEAM.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/TSEM.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/ORCL.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/NVDA.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [
-        "investment_screener/backend/tests/py_services/test_comps_valuation.py:95"
-      ],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/COIN.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/EQIX.json",
+      "path_or_pattern": "investment_screener/backend/data/projections/STM.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
       "producers": [],
@@ -827,21 +288,7 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/data/projections/ALAB.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
       "path_or_pattern": "investment_screener/backend/data/projections/CBRS.json",
-      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/data/projections/META.json",
       "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
       "git_tracked": true,
       "producers": [],
@@ -864,16 +311,6 @@
       ]
     },
     {
-      "path_or_pattern": "investment_screener/backend/tests/fixtures/target_portfolio.test.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "run_tests.py:219",
-        "investment_screener/backend/tests/py_services/test_portfolio_action_import.py:23"
-      ]
-    },
-    {
       "path_or_pattern": "investment_screener/backend/tests/fixtures/BROKEN_projection.test.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
@@ -881,59 +318,58 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/backend/tests/fixtures/portfolio_with_totals.test.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_portfolio_io.py:26",
-        "investment_screener/backend/tests/py_services/test_portfolio_io.py:56"
-      ]
-    },
-    {
-      "path_or_pattern": "investment_screener/backend/tests/fixtures/portfolio.test.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "run_tests.py:218",
-        "investment_screener/backend/tests/py_services/test_portfolio_io.py:27",
-        "investment_screener/backend/tests/py_services/test_portfolio_action_import.py:22"
-      ]
-    },
-    {
-      "path_or_pattern": "docs/superpowers/audits/json-discovery-audit.json",
+      "path_or_pattern": "docs/architecture/json-discovery-audit.json",
       "classification": "ALLOWED_GENERATED_CACHE_JSON",
       "git_tracked": true,
       "producers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:628",
+        "investment_screener/backend/py_services/audit_json_usage.py:659",
         "investment_screener/backend/tests/py_services/test_audit_json_usage.py:66",
         "investment_screener/backend/tests/py_services/test_audit_json_usage.py:83"
       ],
       "consumers": [
+        "investment_screener/backend/py_services/audit_json_usage.py:387",
+        "investment_screener/backend/py_services/build_consumer_inventory.py:5",
+        "investment_screener/backend/py_services/build_consumer_inventory.py:16",
+        "investment_screener/backend/py_services/build_consumer_inventory.py:23",
+        "investment_screener/backend/py_services/build_consumer_inventory.py:99",
+        "investment_screener/backend/py_services/build_consumer_inventory.py:153",
+        "investment_screener/backend/py_services/build_consumer_inventory.py:210",
+        "investment_screener/backend/tests/py_services/test_build_consumer_inventory.py:116",
+        "investment_screener/backend/tests/py_services/test_build_consumer_inventory.py:117",
         "investment_screener/backend/tests/py_services/test_audit_json_usage.py:33",
         "investment_screener/backend/tests/py_services/test_audit_json_usage.py:39",
         "investment_screener/backend/tests/py_services/test_audit_json_usage.py:63",
         "investment_screener/backend/tests/py_services/test_audit_json_usage.py:82",
         "investment_screener/backend/tests/py_services/test_audit_json_usage.py:94",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:205",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:242",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:259",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:326",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:339",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:344"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:115",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:161",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:206",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:208",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:224",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:243",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:245",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:260",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:262",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:278",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:316",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:329",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:334",
+        "plugins/toolkit-manager/scripts/audit_sqlite_usage.py:553"
       ]
     },
     {
-      "path_or_pattern": "docs/superpowers/audits/allowed-json-register.json",
+      "path_or_pattern": "docs/architecture/allowed-json-register.json",
       "classification": "ALLOWED_GENERATED_CACHE_JSON",
       "git_tracked": true,
       "producers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:645"
+        "investment_screener/backend/py_services/audit_json_usage.py:676"
       ],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:328",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:361"
+        "investment_screener/backend/py_services/audit_json_usage.py:388",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:318",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:351",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:373",
+        "plugins/toolkit-manager/scripts/audit_sqlite_usage.py:554"
       ]
     },
     {
@@ -942,9 +378,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:391",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:123",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:124"
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
       ]
     },
     {
@@ -953,9 +389,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:391",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:123",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:124"
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
       ]
     },
     {
@@ -964,9 +400,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:391",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:123",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:124"
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
       ]
     },
     {
@@ -975,9 +411,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:391",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:123",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:124"
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
       ]
     },
     {
@@ -986,9 +422,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:391",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:123",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:124"
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
       ]
     },
     {
@@ -997,9 +433,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:391",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:123",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:124"
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
       ]
     },
     {
@@ -1008,7 +444,7 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:134"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:137"
       ]
     },
     {
@@ -1031,7 +467,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1040,7 +477,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1049,7 +487,7 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:134"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:137"
       ]
     },
     {
@@ -1058,7 +496,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1074,7 +513,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1083,16 +523,38 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/portfolio-advisor/skills/thesis-challenge-bundler/evals/evals.json",
+      "path_or_pattern": "plugins/portfolio-advisor/skills/data-quality-audit/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/external-review/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/stock-intake/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1101,7 +563,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1110,16 +573,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
-      ]
-    },
-    {
-      "path_or_pattern": "plugins/portfolio-advisor/skills/daily-brief/evals/evals.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1128,7 +583,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1137,7 +593,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1146,7 +603,45 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/daily-loop/evals/playbook-evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/screener-integrity-audit/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/weekly-review/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/pre-trade-analysis/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1155,7 +650,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1164,7 +660,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1173,7 +670,17 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:134"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:137"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/portfolio-coverage-audit/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1182,7 +689,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1198,15 +706,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
-    },
-    {
-      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/weekly-review-agent.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
     },
     {
       "path_or_pattern": "plugins/portfolio-advisor/agents/evals/thesis-review-agent.json",
@@ -1230,28 +732,7 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/single-stock-advisor.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/data-quality-agent.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
       "path_or_pattern": "plugins/portfolio-advisor/agents/evals/red-team-agent.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/daily-loop-agent.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
@@ -1263,9 +744,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:391",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:123",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:124"
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
       ]
     },
     {
@@ -1273,7 +754,10 @@
       "classification": "ALLOWED_CONFIGURATION_JSON",
       "git_tracked": true,
       "producers": [],
-      "consumers": []
+      "consumers": [
+        "plugins/stock-valuation/scripts/validate_projection.py:131",
+        "plugins/stock-valuation/skills/update-stock-analysis/scripts/validate_projection.py:131"
+      ]
     },
     {
       "path_or_pattern": "plugins/stock-valuation/skills/valuation-math-validation/evals/evals.json",
@@ -1281,54 +765,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
-    },
-    {
-      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/evals/evals.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
-      ]
-    },
-    {
-      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/assets/templates/projection_template.json",
-      "classification": "ALLOWED_CONFIGURATION_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/references/examples/example_NVDA_placeholder.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/references/examples/example_NVDA_2026-05-02.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:135"
-      ]
-    },
-    {
-      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/references/examples/example_GOOG_2026-05-02.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
-    },
-    {
-      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/references/examples/example_PANW_2026-05-02.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
     },
     {
       "path_or_pattern": "plugins/stock-valuation/skills/forward-valuation-challenge/evals/evals.json",
@@ -1336,7 +775,28 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/update-stock-analysis/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/update-stock-analysis/assets/templates/projection_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "plugins/stock-valuation/scripts/validate_projection.py:131",
+        "plugins/stock-valuation/skills/update-stock-analysis/scripts/validate_projection.py:131"
       ]
     },
     {
@@ -1345,12 +805,23 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/stock-valuation/scripts/cache/SKHY.json",
-      "classification": "ALLOWED_GENERATED_CACHE_JSON",
+      "path_or_pattern": "plugins/stock-valuation/tests/fixtures/forward-valuation/BE_inputs.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "plugins/stock-valuation/tests/test_forward_recalculation.py:52",
+        "plugins/stock-valuation/tests/test_forward_recalculation.py:53"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/tests/fixtures/forward-valuation/MU_inputs.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": []
@@ -1361,9 +832,29 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:391",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:123",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:124"
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/toolkit-manager/skills/toolkit-onboarding/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/toolkit-manager/skills/sqlite-admin/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1372,15 +863,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
-    },
-    {
-      "path_or_pattern": "plugins/toolkit-manager/agents/evals/toolkit-onboarding-guide.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
     },
     {
       "path_or_pattern": "plugins/tradingview/.claude-plugin/plugin.json",
@@ -1388,18 +873,69 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/py_services/audit_json_usage.py:391",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:123",
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:124"
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/pine-inject/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-draw/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-thesis-overlay/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-get-orders/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-author-pine-script/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-chart-snapshot/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-alert-sync/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1408,34 +944,18 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/ta-red-team/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-place-order/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
-      ]
-    },
-    {
-      "path_or_pattern": "plugins/tradingview/skills/chart-snapshot/evals/evals.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
-      ]
-    },
-    {
-      "path_or_pattern": "plugins/tradingview/skills/modify-order/evals/evals.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1444,25 +964,28 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/cancel-order/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-alert-list/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/ta-snapshot/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-alert-reconcile/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1471,7 +994,8 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1480,16 +1004,18 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/ta-daily-sweep/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-pine-inject/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1498,34 +1024,58 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/alert-list/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-price-refresh/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/alert-sync/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-technical-analysis-expert/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/author-pine-script/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-ta-daily-sweep/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-ta-snapshot/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-modify-order/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1534,16 +1084,18 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/get-orders/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-onboarding/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1552,16 +1104,38 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
-      "path_or_pattern": "plugins/tradingview/skills/technical-analysis-expert/evals/evals.json",
+      "path_or_pattern": "plugins/tradingview/skills/tv-manage-indicators/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-ta-red-team/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-cancel-order/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
     },
     {
@@ -1570,33 +1144,9 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
-    },
-    {
-      "path_or_pattern": "plugins/tradingview/skills/price-refresh/evals/evals.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
-      ]
-    },
-    {
-      "path_or_pattern": "plugins/tradingview/skills/place-order/evals/evals.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
-      ]
-    },
-    {
-      "path_or_pattern": "plugins/tradingview/agents/evals/tradingview-onboarding.json",
-      "classification": "ALLOWED_TEST_FIXTURE_JSON",
-      "git_tracked": true,
-      "producers": [],
-      "consumers": []
     },
     {
       "path_or_pattern": "plugins/tradingview/agents/evals/ta-guide.json",
@@ -1604,7 +1154,99 @@
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:130"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:133"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/questrade/.claude-plugin/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/questrade/skills/questrade-activities/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/questrade/skills/questrade-get-positions/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/questrade/skills/questrade-get-balances/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/questrade/skills/questrade-sync-portfolio/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/questrade/skills/questrade-order-draft/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/questrade/skills/questrade-refresh-prices/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/questrade/skills/questrade-setup/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
+      ]
+    },
+    {
+      "path_or_pattern": "plugins/etf-analysis/.claude-plugin/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": [
+        "investment_screener/backend/py_services/audit_json_usage.py:422",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:126",
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:127"
       ]
     },
     {
@@ -1615,13 +1257,21 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "plugins/etf-analysis/skills/etf_analysis/evals/evals.json",
+      "path_or_pattern": "plugins/etf-analysis/skills/etf-analysis/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": [
-        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:129"
+        "investment_screener/backend/tests/py_services/test_audit_json_usage.py:132",
+        "plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35"
       ]
+    },
+    {
+      "path_or_pattern": "plugins/etf-analysis/skills/etf-analysis/assets/templates/etf_analysis_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
     }
   ]
 }
