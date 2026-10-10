@@ -18,6 +18,10 @@ import { X, BookOpen, Loader2 } from 'lucide-react';
 import { fetchInvestmentThesis } from '../services/api';
 import MarkdownContent from './MarkdownContent';
 import ThesisViewModal from './ThesisViewModal';
+import { MasterPositions } from './positions/MasterPositions';
+
+/** Where the server puts the live positions in the master thesis (routes/docs.ts). */
+const LIVE_POSITIONS_MARKER = '[[LIVE_POSITIONS]]';
 
 
 interface Props { onClose: () => void; }
@@ -57,7 +61,7 @@ export default function InvestmentThesisModal({ onClose }: Props) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="relative bg-slate-950 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+                className="relative bg-slate-950 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
@@ -85,7 +89,17 @@ export default function InvestmentThesisModal({ onClose }: Props) {
                         </div>
                     )}
                     {error && <div className="text-red-400 text-sm p-4 bg-red-500/10 rounded-lg">{error}</div>}
-                    {content && <MarkdownContent content={content} accentColor="indigo" onLinkClick={handleLinkClick} />}
+                    {content && (() => {
+                        const [before, ...rest] = content.split(LIVE_POSITIONS_MARKER);
+                        const after = rest.join(LIVE_POSITIONS_MARKER);
+                        return (
+                            <>
+                                <MarkdownContent content={before} accentColor="indigo" onLinkClick={handleLinkClick} />
+                                <MasterPositions />
+                                {after.trim() && <MarkdownContent content={after} accentColor="indigo" onLinkClick={handleLinkClick} />}
+                            </>
+                        );
+                    })()}
                 </div>
             </div>
 

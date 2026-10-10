@@ -53,10 +53,7 @@ Once all individual adjustments are confirmed or modified:
      --adjusts [approved-ticker-adjusts, e.g. BE=5.0] \
      --write
    ```
-3. **Rebuild Thesis Narrative & Tables**: Always run `--blueprint` on the targets script to keep `investment_thesis.md` in step with the target weights in `domain_model.sqlite`:
-   ```bash
-   python3 plugins/portfolio-advisor/scripts/update_targets.py --show --blueprint
-   ```
+3. **Thesis pages**: Nothing to regenerate: the positions tables on the thesis pages are live from `domain_model.sqlite`. Refresh the current-developments note of each page the change affects (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`).
 4. **Verifications**: Verify that all files remain in perfect synchronization:
    ```bash
    python3 investment_screener/backend/py_services/verify_thesis_sync.py
@@ -105,13 +102,13 @@ Once the trade list is approved, translate the trades into **copy-pasteable `/pl
 `investment_screener/backend/data/domain_model.sqlite` (read with `portfolio_io.load_thesis_holdings()`, edited with `update_targets.py` / `update_thesis.py`)
 
 - Targets must always sum to 100%. After any edit, run: `python3 plugins/portfolio-advisor/scripts/validate_weights.py --normalize --write`
-- After updating targets, regenerate the blueprint: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`
+- After updating targets there is nothing to regenerate: the thesis pages read the database live.
 - The web table and `investment_thesis.md` both read from this same database — they are automatically in sync.
 - All actions (INITIATE, TRIM, EXIT, etc.) are **derived by Python** from the gap between the stored positions (actual holdings) and the thesis targets, both in `domain_model.sqlite`.
 
 **After every target change, always:**
 1. Run `validate_weights.py --normalize --write`
-2. Run `generate_portfolio_blueprint.py --write`
+2. Refresh the affected thesis pages' current-developments notes with `thesis_currency.py`
 3. Run `verify_thesis_sync.py` to confirm zero alignment errors.
 4. Confirm the updated totals to the user.
 

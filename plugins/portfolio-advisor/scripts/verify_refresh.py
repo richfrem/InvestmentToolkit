@@ -4,7 +4,7 @@ verify_refresh.py — Post-target-change consistency checker.
 
 Checks that ALL data sources are in sync after a target edit:
   1. domain_model.sqlite    (ground truth: targets and rationale)
-  2. investment_thesis.md   (version, date, tables)
+  2. investment_thesis.md   (title; prose only, no frozen blueprint block)
   3. latest review JSON     (date, thesisName, no stale holdings)
   4. portfolio actions      (no false ACCUMULATE on DCF-SELL, no false signals)
 
@@ -145,35 +145,18 @@ title_match = re.search(r"^# Investment Thesis (v[\d.]+)", md_text, re.MULTILINE
 md_title = title_match.group(1) if title_match else "MISSING"
 ok(f"Thesis Title: {md_title}")
 
-# Last Updated date
-date_match = re.search(r"\*\*Last Updated\*\*\s*\|\s*(\S+)", md_text)
-md_date = date_match.group(1) if date_match else "MISSING"
-today = date.today().isoformat()
-if md_date == today:
-    ok(f"Last Updated is today: {md_date}")
+# The positions tables are live in the web app (shared table over domain_model.sqlite); the
+# document is prose only. A generated blueprint block left in the file would be a frozen copy.
+if "AUTO_UPDATE_START: portfolio_blueprint" in md_text:
+    warn("investment_thesis.md still holds a generated blueprint block: the web app replaces it with live tables, remove the block from the file")
 else:
-    warn(f"Last Updated is {md_date}, not today ({today}) — run --write to fix")
+    ok("investment_thesis.md is prose only (positions tables are live in the web app)")
 
-# Check stale table data for a sample of key tickers
+today = date.today().isoformat()
+
+# Weights used by the portfolio checks below (sourced from the database, never the document)
 current_data = compute_current_from_db()
 target_data  = {"holdings": {t: h.get("targetWeight", 0) for t, h in non_zero.items()}}
-
-stale = []
-for ticker, h in list(non_zero.items())[:8]:   # spot-check first 8
-    action = derive_action(ticker,
-                           current_data["holdings"].get(ticker, 0),
-                           target_data["holdings"].get(ticker, 0),
-                           db_path=str(DB_PATH))
-    # Look for the ticker in the md with a different action
-    pattern = rf"\|\s*\*\*{re.escape(ticker)}\*\*\s*\|[^|]*\|\s*[^|]*\|\s*[^|]*\|\s*[^|]*\|"
-    row = re.search(pattern, md_text)
-    if not row:
-        stale.append(f"{ticker}(missing from tables)")
-
-if stale:
-    warn(f"Tickers missing from thesis.md tables: {stale}")
-else:
-    ok("Spot-check: key tickers found in thesis.md tables")
 
 # ── 3. Latest review JSON ─────────────────────────────────────────────────────
 print("\n── 3. Latest review JSON ──────────────────────────────────────────────")

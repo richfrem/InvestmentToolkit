@@ -16,17 +16,17 @@ description: Updates target portfolio weights by pillar and holding in the canon
 ## Constraints
 - Target weights across all positions and cash must sum to exactly 100.00%.
 - Single holding cap is 15%; pillar concentration cap is 40%.
-- Always execute `update_targets.py` with `--write --blueprint` to synchronize `investment_thesis.md`.
+- Always execute `update_targets.py` with `--write`. The thesis pages are live from the database, so there is nothing to regenerate.
 - Complete the full post-update refresh chain after every target modification.
 
 ## Quick start
 ```bash
-python3 plugins/portfolio-advisor/scripts/update_targets.py --set NVDA=6.5 META=4.5 --write --blueprint
+python3 plugins/portfolio-advisor/scripts/update_targets.py --set NVDA=6.5 META=4.5 --write
 ```
 
 ## Workflow
 1. **Inspect Targets**: Load existing target allocations using `update_targets.py --show`.
-2. **Apply Changes**: Execute `update_targets.py --set TICKER=WEIGHT --write --blueprint` (or `--add` for new tickers).
+2. **Apply Changes**: Execute `update_targets.py --set TICKER=WEIGHT --write` (or `--add` for new tickers).
 3. **Re-Lock Holdings**: Re-apply fixed allocations for unchanged positions if proportional scaling caused drift.
 4. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session (regenerates the review JSON and runs `verify_refresh.py`).
 

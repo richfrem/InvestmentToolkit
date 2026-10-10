@@ -164,7 +164,7 @@ def generate(date_str: str, db_path: Path = DB_PATH) -> dict:
         "status":                 "PROPOSED",
         "approvedAt":             None,
         "appliedAt":              None,
-        "applyCommand":           "python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write",
+        "applyCommand":           "python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish",
         "summary": {
             "holdingsWithChanges": len(active),
             "holdingsUnchanged":   len(maintain),

@@ -8,7 +8,7 @@
   "status": "<PROPOSED | APPROVED | APPLIED>",
   "approvedAt": null,
   "appliedAt": null,
-  "applyCommand": "python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write",
+  "applyCommand": "python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish",
   "summary": {
     "holdingsWithChanges": 0,
     "holdingsUnchanged": 0,

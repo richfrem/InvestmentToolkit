@@ -10,8 +10,11 @@ Called after any event that changes portfolio state:
 
 Steps run in order (each step feeds the next):
   1. sync_portfolio_roles  — enforce role field consistency from actual shares
-  2. generate_portfolio_blueprint --write  — regenerate ALL auto-update blocks
-     in investment_thesis.md + every sub_strategy .md
+
+The thesis pages need no regeneration: their positions tables are live in the web app and
+their current-developments notes are written by thesis_currency.py (see
+references/thesis-page-currency.md). The old frozen blueprint and per-thesis position blocks
+(generate_portfolio_blueprint.py, generate_sub_strategy_blocks.py) are no longer run.
 
 With --publish (the closing step of every review workflow — /strategic-review,
 /daily, /weekly-review, target calibration, valuation refreshes) it also brings
@@ -24,7 +27,6 @@ Usage:
   python3 plugins/portfolio-advisor/scripts/refresh_all.py
   python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish
   python3 plugins/portfolio-advisor/scripts/refresh_all.py --skip-roles
-  python3 plugins/portfolio-advisor/scripts/refresh_all.py --skip-blueprint
 
 Layer: Plugin / portfolio-advisor / Orchestrator
 
@@ -47,8 +49,6 @@ if "py_services" in SCRIPTS.parts:
         SCRIPTS = plugin_scripts
 
 SYNC_ROLES  = SCRIPTS / "sync_portfolio_roles.py"
-BLUEPRINT   = SCRIPTS / "generate_portfolio_blueprint.py"
-SUB_BLOCKS  = SCRIPTS / "generate_sub_strategy_blocks.py"
 REVIEW_JSON = SCRIPTS / "generate_review_json.py"
 DAILY_BRIEF = SCRIPTS / "daily_brief.py"
 VERIFY      = SCRIPTS / "verify_refresh.py"
@@ -68,12 +68,11 @@ def _run(script: Path, extra_args: list[str] | None = None) -> int:
     return result.returncode
 
 
-def run_refresh(skip_roles: bool = False, skip_blueprint: bool = False, publish: bool = False) -> int:
+def run_refresh(skip_roles: bool = False, publish: bool = False) -> int:
     """Execute the full refresh pipeline. Returns 0 on success, non-zero on any failure.
 
     Args:
         skip_roles:     Skip sync_portfolio_roles step (use when roles were just written).
-        skip_blueprint: Skip blueprint generation (use for roles-only runs).
         publish:        Also regenerate the review JSON, republish the daily brief and
                         run verify_refresh — the closing step of a review session.
                         Off by default so the frequent callers (broker sync,
@@ -85,23 +84,10 @@ def run_refresh(skip_roles: bool = False, skip_blueprint: bool = False, publish:
     worst = 0
 
     if not skip_roles:
-        print("── Step 1/2: Syncing portfolio roles ─────────────────────────")
+        print("── Syncing portfolio roles ───────────────────────────────────")
         code = _run(SYNC_ROLES)
         if code != 0:
             print(f"⚠ sync_portfolio_roles exited {code}", file=sys.stderr)
-            worst = max(worst, code)
-
-    if not skip_blueprint:
-        print("── Step 2/3: Regenerating investment_thesis.md blueprint ─────")
-        code = _run(BLUEPRINT, ["--write"])
-        if code != 0:
-            print(f"⚠ generate_portfolio_blueprint exited {code}", file=sys.stderr)
-            worst = max(worst, code)
-
-        print("── Step 3/3: Regenerating sub-strategy current_positions ─────")
-        code = _run(SUB_BLOCKS)
-        if code != 0:
-            print(f"⚠ generate_sub_strategy_blocks exited {code}", file=sys.stderr)
             worst = max(worst, code)
 
     if publish:
@@ -113,7 +99,7 @@ def run_refresh(skip_roles: bool = False, skip_blueprint: bool = False, publish:
                 worst = max(worst, code)
 
     if worst == 0:
-        print("✓ refresh_all complete — all thesis pages and roles updated.")
+        print("✓ refresh_all complete — roles synced.")
     else:
         print(f"⚠ refresh_all finished with errors (exit={worst}).", file=sys.stderr)
     return worst
@@ -121,14 +107,13 @@ def run_refresh(skip_roles: bool = False, skip_blueprint: bool = False, publish:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Refresh all thesis pages and role fields after any portfolio event"
+        description="Sync role fields (and, with --publish, republish the review and brief) after any portfolio event"
     )
     parser.add_argument("--skip-roles",     action="store_true", help="Skip role sync step")
-    parser.add_argument("--skip-blueprint", action="store_true", help="Skip blueprint generation step")
     parser.add_argument("--publish", action="store_true",
                         help="Also regenerate the review JSON, republish the daily brief and run verify_refresh")
     args = parser.parse_args()
-    sys.exit(run_refresh(skip_roles=args.skip_roles, skip_blueprint=args.skip_blueprint, publish=args.publish))
+    sys.exit(run_refresh(skip_roles=args.skip_roles, publish=args.publish))
 
 
 if __name__ == "__main__":
