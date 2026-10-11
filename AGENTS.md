@@ -1,24 +1,14 @@
 # AGENTS.md
 
 ## Overview
-High-end investment analysis suite: React 19 dashboard (port 5173), Node.js/Express backend (port 3001), Python yfinance bridge, TradingView CDP automation.
+High-end investment analysis suite built around **TradingView CDP automation** (port 9222) for live prices, chart telemetry, TA sweeps, and broker execution monitoring, backed by a React 19 dashboard (port 5173) and Node.js/Express backend (port 3001). Broker integration via Questrade MCP is an optional augment for Questrade account holders. yfinance serves strictly as a background fundamentals data bridge and offline fallback.
 
 **Startup**: `python3 run_investment_toolkit.py` — creates venv, installs deps, launches frontend + backend + TradingView Desktop (CDP port 9222).
 
 ## Architecture
-```
-InvestmentToolkit/
-├── investment_screener/frontend/   ← React 19 + Vite + Tailwind CSS 4.0
-├── investment_screener/backend/    ← Node.js Express (port 3001)
-│   ├── src/services/              ← BrokerSyncService.ts
-│   └── data/projections/          ← per-ticker DCF + thesis JSON
-├── tradingview-cdp/               ← CDP engine (standalone, `npm ci` once)
-├── plugins/                        ← AI agent plugins
-└── .agents/                        ← Skills/agents for all AI tools
-```
+Complete repository structure, data flows, and subsystem architecture live in [`architecture.md`](architecture.md). ADRs and deep-dive specs live in [`docs/architecture/`](docs/architecture/).
 
-**npm commands** — always run from `investment_screener/` (workspace root). Never use `--prefix investment_screener` from within `investment_screener/` — doubles the path and fails.
-`npm run dev -w backend | frontend`, `npm run build -w backend | frontend`, `npm run lint -w frontend`.
+**npm commands** — run from `investment_screener/` (workspace root): `npm run dev -w backend | frontend`, `npm run build -w backend | frontend`, `npm run lint -w frontend`. (Never use `--prefix investment_screener` from inside `investment_screener/`).
 
 ## On-Demand Skills (Enable / Disable)
 Plugin skills, agents, rules and hooks are on demand. Look for them in `.agents/` first (`.agents/skills/<name>/SKILL.md`, `.agents/agents/`); read `SKILL.md` directly and don't copy assets into `.claude/`. Desired state lives in `.agents/ownership/<plugin>.json` (one JSON line per component with a `should_install` flag).
@@ -31,16 +21,11 @@ When the user asks to enable or disable a skill or plugin:
 
 Disabling removes files, so only the user's explicit request naming the skill or plugin authorizes it ("clean up skills" does not). Never toggle skills on your own initiative; suggest it and let the user decide.
 
-## Phase 0 Intake & Socratic Gate (Mandatory when the control plane is enabled)
-> **Control plane is opt-in:** everything in this section, rule 6 (`PRE-COMPLETION GATE` / Map Debt) and Day-1 step 0 apply only if `.agents/skills/work-intake/SKILL.md` exists. If it is absent, skip them (no `agent_control.py`, no `context/control_plane.db`, no task registration). Disable the Agentic OS skills in `.agents/ownership/agent-agentic-os.json` to cut context bloat.
-
-> Every engineering task, feature proposal, bugfix, or improvement MUST trigger `work-intake` first.
-- Register the task in `context/control_plane.db` via `python3 scripts/agent_control.py init`.
-- Enforce host-native Plan Mode (strictly read-only discovery).
-- Socratic Pacing: Interrogate ONE question per turn with structured options and explicit `[Recommended]` default.
-- Compile draft 4-Pillar Spec (`TASK_SPEC.md`) and implementation plan in state `DRAFT_PLAN`.
-- User Stage Gate: Ask user whether to run Multi-Agent Review (generate bundle in `temp/` via `context-bundler`) or proceed directly.
-- Obtain explicit human authorization ("Proceed", "Go", or "Execute") before creating a worktree or modifying code.
+## Task Planning & Discovery (Plan Mode)
+For complex tasks, multi-file refactors, or feature requests:
+- **Think Before Coding**: Run discovery in read-only Plan Mode first. Explicitly state assumptions, propose the minimal viable design, and list verification criteria.
+- **Human Approval**: Obtain explicit user authorization before creating worktrees or modifying code.
+- **Optional Control Plane**: If the optional `work-intake` skill is installed (`.agents/skills/work-intake/SKILL.md`), use `python3 scripts/agent_control.py init` to register structured tasks in `context/control_plane.db`. Otherwise, keep planning lean and direct.
 
 ## Behavioral Guidelines (Karpathy Principles)
 These guidelines bias toward caution over speed. For trivial tasks, use judgment.
@@ -71,18 +56,8 @@ These guidelines bias toward caution over speed. For trivial tasks, use judgment
 
 ---
 
-## Day-1 Agent Bootstrap Protocol (Fresh Clone Quickstart)
-The full, ordered setup lives in [`INIT_AGENTS.md`](INIT_AGENTS.md): prerequisites, `.env`, plugin install, `tradingview-cdp` dependencies, creating and verifying the SQLite databases, TradingView and optional Questrade, then `/toolkit-onboarding`. Read it and follow it in order; this file holds the rules, not the steps.
-
-## Core Agent Commands
-| Command | Purpose |
-|---------|---------|
-| `/toolkit-onboarding` | Master Portfolio Bootstrap Wizard: pre-flight check → plugin install → account/pillar setup → broker sync → DCF baseline |
-| `/daily` | The single daily skill (`daily-loop`; absorbed the former `daily-brief`). Full loop: sync → brief → triage → action cards → evolution log → verified receipts |
-| `/daily --scan` | Fast non-interactive morning brief — also "daily scan", "morning scan", `/daily-brief`, "what should I do today". Present the brief from `data/daily-briefs/YYYY-MM-DD.json` following `plugins/portfolio-advisor/references/daily-brief-methodology.md` |
-| `/weekly-review` | Weekend drift + Grok sweep |
-| Post-catalyst review | `/strategic-review` → `/calibrate-targets` → `/rebalance-portfolio` (the old `/run-advisor` command stub was retired in `eaa53976` in favor of these skills) |
-| `/tv-portfolio-sync` | Sync broker positions and executed trades (`tv_trades_import.py`) from TradingView into `domain_model.sqlite` (`fetch_broker_data.py --snapshot`, all accounts). Preview first with read-only `--positions` (shows only the account selected in the broker panel); never run `--snapshot` when TradingView returns 0 positions (broker panel logged out) |
+## Day-1 Agent Bootstrap & Core Commands
+The full, ordered setup and core command reference (`/toolkit-onboarding`, `/daily`, `/weekly-review`, `/strategic-review`, `/tv-portfolio-sync`) live in [`INIT_AGENTS.md`](INIT_AGENTS.md). Follow it in order on any fresh clone; this file (`AGENTS.md`) holds behavioral rules and invariants.
 
 ## TradingView Skills & CDP Engine
 - **Use the skills for TradingView work.** The `tv-*` skills (`.agents/skills/tv-*/SKILL.md`, e.g. `tv-portfolio-sync`, `tv-place-order`, `tv-ta-daily-sweep`, `tv-pine-inject`, `tv-get-orders`, `tv-alert-sync`) hold the documented workflow, constraints and verification steps. Read the matching `SKILL.md` and follow it; don't improvise a script run from memory.
@@ -92,32 +67,30 @@ The full, ordered setup lives in [`INIT_AGENTS.md`](INIT_AGENTS.md): prerequisit
 - **Commits need approval**: a `--snapshot` or trade import writes to `domain_model.sqlite`. Show the per-account diff and get the owner's go-ahead first.
 
 ## Non-Negotiable Rules
+Detailed policy documents and invariants are governed in [`.agent/rules/`](file:///.agent/rules/). Key invariants:
 
-1. **TDW (TDD & TDO)**: NO CODE DEVELOPMENT OR ORCHESTRATION EXECUTION WITHOUT A FAILING TEST OR SUCCESS CONTRACT FIRST. Mocking strictly prohibited on critical runtime paths. See [`.agent/rules/test-driven-development.md`](file:///.agent/rules/test-driven-development.md) before any work begins.
-2. **No Inline Python**: Never compute financial/analytical calculations inline. Always extract to versioned scripts in `investment_screener/backend/py_services/`.
-3. **Coding Conventions**: Follow [`.agent/rules/coding-conventions.md`](file:///.agent/rules/coding-conventions.md). Standard file headers (Purpose, Layer, Usage, Key Functions, Key Input Dependencies), Google-style docstrings, type hints, `snake_case`/`camelCase`, refactor at 50+ lines or 3+ nesting levels.
-4. **Dependency Management**: No manual `pip install`. Edit `requirements.in` → `pip-compile requirements.in -o requirements.txt`. See [`.agent/rules/dependency-management.md`](file:///.agent/rules/dependency-management.md).
-5. **Plugin Architecture**: Symlinks ONLY via `symlink_manager.py`. Never raw `ln -s`. No cross-plugin script execution. See [`.agent/rules/plugin-architecture-policy.md`](file:///.agent/rules/plugin-architecture-policy.md) and [`.agent/rules/symlink-cross-platform.md`](file:///.agent/rules/symlink-cross-platform.md).
-6. **Self-Evolution & Map Debt**: Classify failures/friction (Tiers 0/1/2/3), max 3 attempts. Active map debt audit must pass in `run_tests.py`. Always execute the `PRE-COMPLETION GATE` check block and log map debt before ending the session. See [`.agent/rules/self-evolution-policy.md`](file:///.agent/rules/self-evolution-policy.md).
-7. **Destructive & Skill Deletion Guards**: Deletions are strictly forbidden without approval. See [`.agent/rules/destructive-action-guard.md`](file:///.agent/rules/destructive-action-guard.md) and [`.agent/rules/skill-deletion-guard.md`](file:///.agent/rules/skill-deletion-guard.md).
-8. **Self-Healing**: Fix broken Bash/python3 snippets inline, re-run silently. Never advance with broken output visible.
-9. **Standing Decision is anchor**: Read `investment.standing_decision_type`/`standing_decision_reason` (domain_model.sqlite) before any recommendation. DCF never silently overrides — only material delta (>15% FV change) or new information justifies revisiting. Never flip BUY→SELL on <15% variance.
-10. **Post-trade update mandatory**: After ANY trade: sells → `lifecycle_status: "exit"`, `target_weight: 0`; buys → update `agent_rationale` (shares come from the broker sync into `account_investment`, never set manually). Dashboard reads `domain_model.sqlite` — stale entries = data integrity failure.
-11. **`ticker` key, not `symbol`**: All investment lookups use the `symbol` column (Python/SQL) or `ticker` key (API JSON responses) — never conflate the two across the Python/TS boundary.
-12. **Sync sweep templates**: When target weights/pillars/sub-strategies change, update "Core Portfolio Thesis Background" in both `daily_sweep.md.template` and `weekly_sweep.md.template`.
-13. **Refine templates on Grok ingest**: After each Grok response, improve prompt templates to guard against observed gaps (grouped tickers, lazy placeholders, TA errors).
-14. **Initialize missing private config**: copy `.env.example` to `.env` when missing, and record the year-to-date baseline (starting balance, start date, January 1 USD/CAD rate) with `investment_screener/backend/py_services/set_cash_flow_baseline.py` (it lives in `domain_model.sqlite`, not in a config file). The databases (`domain_model.sqlite`, `intelligence.sqlite`) are created by the launcher's migrator; never recreate the files retired in rule 30. Setup order: `INIT_AGENTS.md`.
-15. **Worktree-first is mandatory, not a judgment call**: Before any code/script/multi-file change, create a git worktree first — never decide unilaterally that a task is "small enough" to skip it and work directly on the main checkout. Only a single trivial doc-typo fix is exempt. See [`.agent/rules/git-operations.md`](file:///.agent/rules/git-operations.md) (installed from `agent-plugins-skills`), [`.agent/rules/local-git-operations-overrides.md`](file:///.agent/rules/local-git-operations-overrides.md) (this repository's own git rules; wins where they differ) and [`.agent/rules/worktree-subagent-leak-detection.md`](file:///.agent/rules/worktree-subagent-leak-detection.md).
-16. **Worktree lifecycle does not end at "PR created"**: full routine is (1) create worktree/feature branch → (2) implement, commit, push → (3) open PR, **do not merge it yourself unless explicitly told to** → (4) user reviews and merges the PR on GitHub → (5) **you then close the loop**: `git fetch origin`; sync local `main` to `origin/main` (merge or fast-forward — check for other in-progress work first, never force); verify the merged commit is actually an ancestor of `main` (`git merge-base --is-ancestor <branch-tip> main`); once confirmed, remove the now-merged worktree (`ExitWorktree action: "remove"`); delete the local **and remote** feature branch; confirm a clean `git worktree list`/`git branch --list`. **A user telling you "I merged the PR" is the trigger for step 5, not the end of the task** — treat post-merge repository hygiene as a mandatory completion step, not optional cleanup, and do not start next-phase work until it's done.
-17. **No Autonomous Trade Execution (TradingView ToS Compliance)**: In compliance with TradingView's Terms of Use prohibiting non-display automated trading and third-party execution APIs, AI agents are strictly forbidden from placing, modifying, or cancelling live broker orders autonomously. All agent outputs are advisory only; trade execution must remain 100% human-in-the-loop (HITL) executed manually by the user directly in the official broker / TradingView UI. See [`.agent/rules/local-trade-execution-policy.md`](file:///.agent/rules/local-trade-execution-policy.md).
-18. **Mandatory Cash Invariant for Portfolio Totals**: Every portfolio total calculation (in TypeScript API routes, Python services, and SQLite repositories) MUST strictly compute: `Total USD = sum(Held Equities Market Value) + sum(Account Cash USD)`. Never compute total portfolio value from stock market value alone without uninvested cash. Omitting cash causes severe valuation drift, percentage distortion, and false discrepancies against broker reports. Verify with `verify_portfolio_total.py`.
-19. **Adversarial Reasoning & News Confluence**: Challenge thesis assumptions before agreement; correlate news catalysts with price action. See [`.agent/rules/adversarial-reasoning-before-agreement-rule.md`](file:///.agent/rules/adversarial-reasoning-before-agreement-rule.md) and [`.agent/rules/local-news-technical-confluence.md`](file:///.agent/rules/local-news-technical-confluence.md).
-20. **TradingView Baseline & Broker MCP Independence**: TradingView CDP is the universal baseline for live pricing, TA sweeps, and visual analysis. Broker-specific MCP plugins (e.g. `plugins/questrade`) are strictly optional user-level augments for chat queries and HITL order drafting; core toolkit services, DB schemas, and dashboard routes must never depend on them. Refreshes (positions, executed trades) use TradingView by default; Questrade is offered only when `QUESTRADE_ENABLED=true` in `.env` (read via `py_services/broker_sources.py`), and then the owner is asked which source to use. See [`.agent/rules/local-broker-augment-policy.md`](file:///.agent/rules/local-broker-augment-policy.md).
-21. **Domain Database Location & Sync Ingestion**: The sole source of truth for portfolio holdings, accounts, cash balances, target weights, and thesis data is `investment_screener/backend/data/domain_model.sqlite`. When updating portfolio state from broker feeds (TradingView or Questrade MCP), always execute the canonical sync scripts (`fetch_broker_data.py --snapshot` or `questrade_sync.py --payload`) rather than executing ad-hoc raw SQL statements.
-22. **One implementation per concept — fix once, fixed everywhere**: Proper architecture over quick local code. Before writing any calculation, aggregation, formatter, label/period list, threshold/colour ladder, SQL query or UI helper, **search for an existing implementation** (`investment_screener/backend/py_services/`, `plugins/*/scripts/`, `investment_screener/backend/src/services/`, `investment_screener/frontend/src/utils/`) and reuse or extend it. When two surfaces show the same quantity (e.g. 1D/1W/1M/3M/YTD/1Y % change on the heatmap, Portfolio Table, Screener and Stock Analysis), they MUST call the same function and share the same definitions — never a second copy, never a bug fixed in only one copy. If you find duplicates, consolidating them into the canonical location is part of the task: Python in `plugins/<plugin>/scripts/` linked into `py_services/` via `symlink_manager.py`; TypeScript in `frontend/src/utils/` or `backend/src/services/`; with tests on the shared function and callers asserting they delegate to it. *Why:* on 2026-09-28 one review found two diverging period-change calculations (1W = 4 vs 5 trading days; missing history shown as 0.0%), three copies of the period list, three copies of the colour ladder, and one `MAX(average_cost)` aggregation silently mis-costing 27 tickers across six callers.
-23. **One table system, one SQLite row source**: Every screen that lists tickers (the Portfolio page, thesis pages, Daily Brief, reviews) renders through the shared positions module in `investment_screener/frontend/src/components/positions/`: the column registry, the cells, the row provider and `PositionsTable`, configured by a preset (row filter, default columns, footer). Never hand-write a ticker `<table>`, never keep a second `COLUMNS` list, never repeat a label, format or width: add or change a column once, in the registry. Rows come from the single server query over `domain_model.sqlite` (`GET /api/screener/all-holdings`, built by `buildPositionRows`), with stance from `stanceOf` and gain/upside from `fairValueGap`. Never show positions, weights, targets or actions from markdown, JSON, a generated text table or a client-side re-derivation; thesis markdown holds prose only. See rules 21 and 22. *Why:* on 2026-10-10 the Thesis Viewer showed a frozen markdown table (Shares 0 on every row, actions from the old weight-gap rule, a stale TV-sync snapshot) that disagreed with the Portfolio Table and Daily Brief, and the two main tables each carried their own copy of 25 identical columns and 18 state hooks.
-24. **Thesis pages stay current from the ledger, in SQLite**: Every news sweep records its triangulated findings in the intelligence ledger with `plugins/portfolio-advisor/scripts/record_news_sweep.py` (the prompt and response files under `temp/` are working copies, never the record). Each thesis page's "Current developments" note is one row in `domain_model.sqlite` (`thesis_document_currency`) written with `plugins/portfolio-advisor/scripts/thesis_currency.py`; it is replaced on each refresh and keeps no history. `daily-loop`, `news-sweep`, `weekly-review`, `strategic-review` and `thesis-review` each refresh the pages they affect, following `plugins/portfolio-advisor/references/thesis-page-currency.md`. Never write dated news, prices, weights or actions into thesis prose; the live table and the note carry them. *Why:* on 2026-10-10 the ledger held 2 `NEWS_SWEEP` events in total, sweep answers lived only in `temp/` files, and no skill touched the thesis pages, so they went stale (the Robotics page still quoted KOID at $42 when it traded at $35).
-25. **Installed rules are overwritten by the plugin sync; project rules are `local-*.md`**: Every file in `.agent/rules/` that does not start with `local-` is installed from a source plugin in `agent-plugins-skills` by the plugin sync (`plugin_installer.py`, run through `.agents/skills/plugin-syncer/scripts/sync_with_inventory.py`), and the sync rewrites it from the source. Never put toolkit-specific content in one of those files: it is silently replaced (or half-merged) on the next sync. Put it in a `local-*.md` rule, which no source plugin owns and the sync never touches, and state there which installed rule it overrides. A change that should apply to every consumer is made upstream in `agent-plugins-skills` and then synced, per `local-worktree-and-dual-repo-edit-protocol.md`. *Why:* on 2026-10-10 `git-operations.md` was rewritten four times by syncs (its `skills-lock.json` rule replaced by the generic one, which is wrong here because the file is gitignored), and the earlier "audit edits" to eleven other rules came from the same sync.
+1. **Test-Driven Work**: MUST have a failing test before writing production code. (details: [`.agent/rules/test-driven-development.md`](file:///.agent/rules/test-driven-development.md))
+2. **No Inline Python**: MUST extract all calculations to versioned scripts in `py_services/`. (details: [`.agent/rules/local-data-pipeline.md`](file:///.agent/rules/local-data-pipeline.md))
+3. **Coding Conventions**: MUST follow naming standards and file headers. (details: [`.agent/rules/coding-conventions.md`](file:///.agent/rules/coding-conventions.md))
+4. **Dependency Management**: MUST use `pip-compile`; manual `pip install` is PROHIBITED. (details: [`.agent/rules/dependency-management.md`](file:///.agent/rules/dependency-management.md))
+5. **Plugin Architecture**: MUST use `symlink_manager.py`; raw `ln -s` is PROHIBITED. (details: [`.agent/rules/plugin-architecture-policy.md`](file:///.agent/rules/plugin-architecture-policy.md))
+6. **Self-Evolution & Map Debt**: MUST run `PRE-COMPLETION GATE` and log map debt before ending turns. (details: [`.agent/rules/self-evolution-policy.md`](file:///.agent/rules/self-evolution-policy.md))
+7. **Destructive Action Guards**: File and skill deletions are strictly PROHIBITED without explicit user approval. (details: [`.agent/rules/destructive-action-guard.md`](file:///.agent/rules/destructive-action-guard.md))
+8. **Self-Healing**: MUST fix broken snippets inline and re-run silently; NEVER leave broken output visible.
+9. **Standing Decision is Anchor**: NEVER override standing decisions without material delta (>15% FV variance). (details: [`.agent/rules/local-standing-decision-policy.md`](file:///.agent/rules/local-standing-decision-policy.md))
+10. **Post-Trade Update**: MUST update `lifecycle_status` and `agent_rationale` after ANY trade; manual share setting is PROHIBITED. (details: [`.agent/rules/local-data-pipeline.md`](file:///.agent/rules/local-data-pipeline.md))
+11. **Ticker vs Symbol**: MUST use `symbol` for SQL/Python and `ticker` for API JSON payloads; NEVER conflate. (details: [`.agent/rules/local-data-pipeline.md`](file:///.agent/rules/local-data-pipeline.md))
+12. **Worktree-First Mandatory**: MUST create an isolated git worktree before any multi-file change. (details: [`.agent/rules/git-operations.md`](file:///.agent/rules/git-operations.md))
+13. **Worktree Hygiene**: PR merge triggers cleanup: MUST sync main, verify ancestry, and remove worktrees. (details: [`.agent/rules/worktree-lifecycle-management.md`](file:///.agent/rules/worktree-lifecycle-management.md))
+14. **No Autonomous Trade Execution**: Live broker order placement is strictly PROHIBITED; 100% HITL required. (details: [`.agent/rules/local-trade-execution-policy.md`](file:///.agent/rules/local-trade-execution-policy.md))
+15. **Mandatory Cash Invariant**: Portfolio total USD MUST strictly include held equities market value plus account cash. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
+16. **Adversarial Reasoning**: MUST challenge thesis premises and correlate news catalysts with price action. (details: [`.agent/rules/adversarial-reasoning-before-agreement-rule.md`](file:///.agent/rules/adversarial-reasoning-before-agreement-rule.md))
+17. **TradingView Baseline**: TradingView CDP is the universal baseline; broker plugins are optional augments. (details: [`.agent/rules/local-broker-augment-policy.md`](file:///.agent/rules/local-broker-augment-policy.md))
+18. **Domain Database Primary**: `domain_model.sqlite` is the sole source of truth; raw SQL updates PROHIBITED during sync. (details: [`.agent/rules/local-data-pipeline.md`](file:///.agent/rules/local-data-pipeline.md))
+19. **One Implementation Per Concept**: MUST consolidate duplicate calculations into canonical shared modules. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
+20. **One Table System**: ALL ticker views MUST render through shared `PositionsTable` from SQLite. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
+21. **Thesis Page Currency**: MUST record news sweeps in `intelligence.sqlite`; NEVER hardcode dated prices in prose. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
+22. **Installed Rules vs Local Rules**: Project-specific overrides MUST strictly live in `.agent/rules/local-*.md`. (details: [`.agent/rules/local-worktree-and-dual-repo-edit-protocol.md`](file:///.agent/rules/local-worktree-and-dual-repo-edit-protocol.md))
 
 ## Canonical Scripts
 | Script | Purpose |
@@ -143,90 +116,7 @@ Create a new canonical script + ADR in `docs/architecture/` whenever you'd compu
 ## SUB-agent usage
 Use the cheapest models possible where possible. If the job doesn't require spawning sub-agents don't do so.
 
-## Capital Sourcing
-All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.TO in the **same account** first (never cross-account). Shares to sell ≈ `ceil(N × price / 100)`. TFSA is primary (larger); RRSP mirrors at ~1/3 share count — separate trade log entries per account for both buy and PSU sell. TSX observes Canadian holidays — PSU-U.TO can't trade those days; defer or check for leftover USD cash.
-
 ## Known Pitfalls
+All 30 cataloged integration traps, TradingView CDP subtleties, and database edge cases are permanently documented in [`docs/architecture/known-pitfalls.md`](docs/architecture/known-pitfalls.md). Always consult this reference before writing TradingView automation scripts, SQLite queries, or price calculation logic.
 
-**1. `__dirname` in TS backend**: `dist/index.js` resolves to `backend/dist/`, not `backend/src/`. Use `path.resolve(__dirname, '../src/script.py')`.
 
-**2. Venv gaps**: New Python imports must be in `requirements.in`. Required pkgs: `keyring cryptography yfinance pandas fastapi uvicorn pydantic rich typer python-dotenv`. After edit: `venv/bin/pip-compile requirements.in -o requirements.txt`.
-
-**3. Backend restart required**: Production runs `node dist/index.js`. Changes → `npm run build -w backend` → restart. Frontend hot-reloads; backend does not.
-
-**4. (Retired)**: The legacy broker seed endpoint this pitfall described was removed when the standalone legacy broker REST integration was archived (2026-07-16). Number kept unused, not reassigned — other docs reference pitfalls by number (e.g. #7, #27).
-
-**5. `lastActualPS` nullable**: In `zod-schemas.ts` use `.nullable().transform(v => v ?? 0)`. Strict `z.number()` causes 400s for pre-revenue/mining stocks.
-
-**6. Projection `action` enum**: `aiThesis.action` carries `INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST`. DCF signal is in `analyticsLog.valuationAction`. Portfolio urgency in `analyticsLog.portfolioUrgency`. Not limited to BUY/HOLD/SELL.
-
-**7. TV CDP single-ticker**: `tv_call("quote", sym)` reads the **active chart** regardless of `sym`. Never use for batch prices (use yfinance). "TV Live" badge = port 9222 reachable, not the price source.
-
-**8. ETF dual-write**: `persist_etf_analysis.py` writes to `data/etf_analysis/` AND `data/projections/`. Both must exist for Dashboard + ETF view.
-
-**9. TV CDP `process.exit()`**: All Node.js CDP snippets must end with `.then(() => process.exit(0)).catch(() => process.exit(1))`. Without it, Python `subprocess.run()` never returns.
-
-**10. TV CDP Monaco**: Don't use CSS class selectors for Pine Editor/Monaco — TV class names change. Use `__reactFiber` key traversal to locate Monaco internals.
-
-**11. TV CDP engine location**: At `tradingview-cdp/` root (ADR-024). Import via `tv_client.py`: `from tv_client import TV_CLI, tv_call, TV_NODE_DIR`. Never hardcode path.
-
-**12. Pine inject — content not path**: `tv_pine_inject.py` passes `--content` to Node. Node's cwd is `tradingview-cdp/` — relative file paths from Node fail silently.
-
-**13. "Update on chart" = "Add to chart"**: When Pine Editor has a prior script loaded, button shows "Update on chart". Selector must match both: `/(?:add|update).*(?:to|on).*chart/i` on `button.textContent + button.title`.
-
-**14. Data Window tab**: Toggle `data-name="object_tree"`. Must switch to "Data window" tab (not "Object tree" default). Read via `[data-test-id-value-title]`. Commands: `chart openDataWindow`, `chart read`.
-
-**15. TV CDP CLI reference**: All via `node tradingview-cdp/cli.js`: `chart symbol/timeframe/addIndicator/removeIndicator/openDataWindow/read/saveLayout`, `pine inject --file / save / read`.
-
-**16. Temp files**: Use `InvestmentToolkit/temp/<artifact>`, not `/tmp/`. Create with `os.makedirs(TEMP_DIR, exist_ok=True)`.
-
-**17. Account dropdown click**: Standard `.click()` fails on TV React dropdowns. Dispatch `mousedown + mouseup + click` to both the option span and its `parentElement`.
-
-**18. PSU alias**: `PSU.U.TO` (broker format) = `PSU-U.TO` (canonical, hardcoded in `fetch_broker_data.py`). Never create two thesis entries.
-
-**19. `targetEntryPrice`**: Optional float, stored as a `TARGET_ENTRY`-kind row in `domain_model.sqlite`'s `price_level_tier` table. Set via `update_targets.py --set-entry TICKER=PRICE --write`. Never buy above this price.
-
-**20. Portfolio sync fallback**: (1) Express API POST sync-tv/apply → (2) `fetch_broker_data.py --snapshot` (CDP, works without backend). Run `--snapshot` directly when backend is down.
-
-**21. Fractional shares**: `place_order.py --shares` accepts float (e.g. `0.5`).
-
-**22. GTC orders**: CDP submits limit orders as **Day orders**. Change to "Good till cancelled" manually in TradingView after placing.
-
-**23. Pine Editor blocks `addIndicator`**: Pine Editor dialog overlays screen, blocking Indicators search. Use "Update on chart" button directly (mouse events, not `.click()`). Check `.editorBaseLayoutContainer-dialog-z_CXxRZA` visibility, not `aria-pressed`.
-
-**24. `addIndicator` (no Pine Editor)**: Uses `Input.dispatchMouseEvent` at Indicators button center (not `.click()` — opens timezone dropdown). Result rows: `div[class*="container-WeNdU0sq"]`; match: exact → first → contains.
-
-**25. Source code viewing**: Legend More menu → `"Source code…"` (unicode `…`). Or Indicators dialog search → source icon (more reliable). PA Toolkit Lite [UAlgo] is open source (CC BY-NC-SA 4.0), saved at `plugins/tradingview/assets/pinescript-indicators/community-reference/`.
-
-**26. Custom Pine library**: `plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine` (Multi-EMA 21/50/200 + volume bias, saved in TV as "AI TA Levels"). Lint before inject: `python3 .../pine_linter.py <file.pine>`.
-
-**27. Portfolio total validation & Exchange Rates**: Compute totals using the formula: `cash value all accounts + sum(portfolio holding price * shares)`. Never convert USD to CAD via external API calls; always infer the exchange rate directly from TradingView's native values (e.g. `totalEquityCADCombined / totalEquityUSDCombined`).
-**28. Worktree/subagent isolation**: Full rule + mandatory post-task check → `.agent/rules/worktree-subagent-leak-detection.md`.
-**29. Gitignored data files never sync via worktree**: `domain_model.sqlite`, `intelligence.sqlite`, `.env`, etc. are gitignored — each worktree has its own separate on-disk copy that git never syncs back to the main checkout. Any "real data migration write" (or its row-count verification) run inside a worktree only touches that worktree's copy. To check a storage change against your real data without touching it, run `plugins/toolkit-manager/scripts/app_smoke_test.py` from a worktree: it copies the real databases, upgrades the copies, starts the backend with none of the retired files present and calls every read route the app uses. Before treating a migration wave as complete, independently re-verify the real write landed in the **main checkout's** actual files/DB — do not trust a worktree-side verification alone.
-
-**30. `target-portfolio.json` and `portfolio.json` are both retired (Wave 7/8)**: `domain_model.sqlite` is the sole source of truth for portfolio holdings, thesis targets, pillars, price levels, and standing decisions. Neither is read or written by any tool; a guard test (`plugins/toolkit-manager/tests/test_no_retired_file_access.py`, wired into the T0 gate) fails on any new reader or writer, including document lines that describe them as current. Any copies still on disk are moved to `ARCHIVE/` only with the owner's per-file approval. Every remaining code dependency on a data file (JSON, JSONL, CSV, spreadsheet, or a data folder such as `research/`) is listed in `docs/architecture/file-dependency-register.json` with the step that removes it; `plugins/toolkit-manager/scripts/audit_file_dependencies.py --check` (T0 gate) fails on any new one, and `--strict` is the end state (nothing but tooling left). Never reintroduce a direct read/write of either — use `portfolio_io.load_portfolio_state()`/`load_thesis_holdings()`/`load_target_weights()` (Python) or `InvestmentRepository`/`ThesisService`/`PriceLevelRepository` (TS).
-
-## Key Files
-| File | Purpose |
-|------|---------|
-| `architecture.md` | Full system architecture, data flows, ADRs, glossary |
-| `run_investment_toolkit.py` | Unified startup |
-| `investment_screener/backend/data/domain_model.sqlite` | Investment/pillar/price-level/projection/trade/portfolio-policy tables — sole source of truth for portfolio + thesis data (gitignored, self-creating) |
-| `investment_screener/backend/data/intelligence.sqlite` | Research/TA-sweep/prediction event ledger, incl. former `ta-sweep-results.json` data (gitignored, self-creating) |
-| `plugins/tradingview/scripts/ta_sweep_batch.py` | TA sweep orchestrator |
-| `plugins/portfolio-advisor/references/daily-brief-methodology.md` | How to read and act on the daily brief: macro gate (incl. NEUTRAL ≥ +4, degraded data → RISK-OFF), binary event protocol, routing, escalation signals. Linked into the `daily-loop` skill |
-| `plugins/portfolio-advisor/scripts/run_daily.py` | `/daily` runner (receipts in `context/control_plane.db`; verify with `verify_daily_run.py --latest`) |
-| `.agents/` | All skills/agents (Claude, Gemini, Copilot) |
-| `docs/superpowers/status/wave6-program-closure-report.md` | Domain Data Model v3.2 migration program closure report (final state, KPI rollup, retained-JSON rationale) |
-
-## Tool Name Mapping (Gemini CLI / Antigravity)
-Skills in `.agents/skills/` use Claude Code tool names in their `SKILL.md` files. When executing skills via Gemini / Antigravity, translate tool references as follows:
-
-| Claude Code | Gemini CLI / Antigravity |
-|:------------|:-------------------------|
-| `Read`      | `view_file`              |
-| `Write`     | `write_to_file`          |
-| `Edit`      | `replace_file_content`   |
-| `Bash`      | `run_command`            |
-| `Glob`      | `find` / `ls` via shell  |
-| `Grep`      | `grep` via shell         |

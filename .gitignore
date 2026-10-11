@@ -51,6 +51,7 @@ temp/
 # Excluded via sparse-checkout or local-only
 .env
 .env.*
+context/user.md
 investment_screener/backend/data/portfolio_tv.json
 
 # Personal workspace — generated outputs, order screenshots, review artifacts
