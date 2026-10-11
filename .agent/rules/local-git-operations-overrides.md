@@ -53,12 +53,7 @@ git push origin --delete chore/feature-name
 
 ## End-of-Wave Closeout Playbook (mandatory sequence, do not improvise per-wave)
 
-**Reason:** 2026-07-22 — closing out Wave 3 of the Domain Data Model v3.2 migration required two
-separate PR rounds, two accidental direct-to-main commits (caught and corrected each time via
-reset+cherry-pick), and two rounds of manually-resolved merge conflicts in the same class of
-auto-generated files — all because this sequence was re-derived by hand under pressure instead of
-followed as a fixed checklist. Every step below is now the required order; skipping or reordering
-steps is what caused the friction.
+**The Iron Law:** Follow the exact closeout checklist below in order. Never improvise or reorder closeout steps, and never commit directly to main. Skipping or reordering steps causes merge conflicts and branch desynchronization.
 
 1. **Do the full final verification sweep BEFORE the first push, not after.** If a wave's own
    discipline includes a repo-wide grep/consumer-inventory check (see
