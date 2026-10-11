@@ -6,13 +6,13 @@ Welcome to **InvestmentToolkit**. This is the single setup guide for both human 
 
 - [Quickstart](#quickstart-one-prompt-bootstrap)
 - [Prerequisites](#prerequisites)
-- [Phase 0: Configuration (`.env`)](#phase-0-configuration-env)
-- [Phase 1: Agentic OS and plugins](#phase-1-interactive-agentic-os--dependency-alignment)
-- [Phase 2: Substrate health check](#phase-2-core-substrate-health-check)
-- [Phase 3: Runtime, TradingView and the databases](#phase-3-runtime-tradingview-and-the-databases)
+- [Step 1: Configuration (`.env`)](#step-1-configuration-env)
+- [Step 2: Plugins and Ecosystem](#step-2-plugins-and-ecosystem)
+- [Step 3: Core Substrate Health Check](#step-3-core-substrate-health-check)
+- [Step 4: Runtime, TradingView and Databases](#step-4-runtime-tradingview-and-databases)
 - [Optional: Questrade](#optional-questrade-pluginsquestrade)
-- [Phase 4: `/toolkit-onboarding`](#phase-4-launch-master-toolkit-onboarding-toolkit-onboarding)
-- [Phase 5: Routine maintenance](#phase-5-routine-maintenance--dual-repo-protocol)
+- [Step 5: Master Onboarding (`/toolkit-onboarding`)](#step-5-master-onboarding-toolkit-onboarding)
+- [Step 6: Maintenance & Worktree Protocol](#step-6-maintenance--worktree-protocol)
 
 ---
 
@@ -21,8 +21,19 @@ Welcome to **InvestmentToolkit**. This is the single setup guide for both human 
 If working with an AI assistant in chat, paste this directive:
 
 ```text
-Please read INIT_AGENTS.md and work through it in order: prerequisites, .env, plugin install (ask me which plugin contribution mode I prefer: fork-and-pr, local-patch-and-issue, or domain-override), the runtime and database setup in Phase 3, then run /toolkit-onboarding.
+Please read INIT_AGENTS.md and work through it in order: prerequisites, .env, plugin install (ask me which plugin contribution mode I prefer: fork-and-pr, local-patch-and-issue, or domain-override), the runtime and database setup in Step 4, then run /toolkit-onboarding.
 ```
+
+### Core Agent Commands Reference
+
+| Command | Purpose |
+| :--- | :--- |
+| `/toolkit-onboarding` | Master Portfolio Bootstrap Wizard: pre-flight check → plugin install → account/pillar setup → broker sync → DCF baseline |
+| `/daily` | The single daily skill (`daily-loop`). Full loop: sync → brief → triage → action cards → evolution log → verified receipts |
+| `/daily --scan` | Fast non-interactive morning brief ("daily scan", "what should I do today"). Reads `data/daily-briefs/YYYY-MM-DD.json` |
+| `/weekly-review` | Weekend drift + Grok research sweep |
+| Post-catalyst review | `/strategic-review` → `/calibrate-targets` → `/rebalance-portfolio` |
+| `/tv-portfolio-sync` | Sync broker positions and executed trades from TradingView into `domain_model.sqlite` (`fetch_broker_data.py --snapshot`) |
 
 ---
 
@@ -35,11 +46,11 @@ Please read INIT_AGENTS.md and work through it in order: prerequisites, .env, pl
 | `sqlite3` command line (optional) | inspecting databases by hand | The Python scripts do not need it. |
 | TradingView Desktop (macOS) | broker sync, live quotes, TA sweeps, alerts, Pine, order views | The launcher can start it with the debugging port. The Windows launch path in `tv_launch.py` is a placeholder, so on Windows start TradingView yourself with `--remote-debugging-port=9222`. A TradingView account is needed; Premium is recommended for real-time data. |
 | A broker connected inside TradingView's broker panel | loading holdings, cash and executed trades | No separate API credentials. See [what works without TradingView](#what-works-without-tradingview). |
-| Questrade account and its MCP server (optional) | an additional source for positions and trades | Not needed for anything else. See Phase 3, step 6. |
+| Questrade account and its MCP server (optional) | an additional source for positions and trades | Not needed for anything else. See Step 4, step 6. |
 
 ---
 
-## Phase 0: Configuration (`.env`)
+## Step 1: Configuration (`.env`)
 
 ```bash
 cp .env.example .env
@@ -53,7 +64,7 @@ The launcher only prints a note when `.env` is missing, so do this first. Defaul
 
 ---
 
-## Phase 1: Interactive Agentic OS & Dependency Alignment
+## Step 2: Plugins and Ecosystem
 
 InvestmentToolkit relies on shared ecosystem skills and plugins (from `agent-plugins-skills`) alongside domain-specific investment tools.
 
@@ -132,9 +143,9 @@ Questrade users also install `questrade@investment-toolkit-plugins`; see [Option
 
 ---
 
-## Phase 2: Core Substrate Health Check
+## Step 3: Core Substrate Health Check
 
-Confirm that the local agentic runtime substrate is operational. These commands use tools installed by Phase 1, so run Phase 1 first (`.agents/` does not exist on a fresh clone):
+Confirm that the local agentic runtime substrate is operational. These commands use tools installed by Step 2, so run Step 2 first (`.agents/` does not exist on a fresh clone):
 
 ```bash
 # 1. Installation probe verification
@@ -162,7 +173,7 @@ python3 .agents/skills/os-health-check/scripts/kernel.py emit_event --agent os-h
 
 ---
 
-## Phase 3: Runtime, TradingView and the databases
+## Step 4: Runtime, TradingView and Databases
 
 Work from the repository root. Order matters.
 
@@ -246,11 +257,11 @@ Questrade support is an optional add-on for people who have a Questrade account.
 
 - A Questrade account and an AI client that supports MCP servers (Claude Code, Codex CLI, Cursor or VS Code Copilot).
 - The Questrade mobile app on a trusted device, if you want to approve drafted orders.
-- Phases 0-3 above are done, so `domain_model.sqlite` exists and has a backup.
+- Steps 1–4 above are done, so `domain_model.sqlite` exists and has a backup.
 
 ### Setup
 
-1. **Install the plugin.** Claude Code: `/plugin install questrade@investment-toolkit-plugins` (the marketplace was added in Phase 1, step 4). Other clients: the plugin sync from Phase 1 deploys it with the others.
+1. **Install the plugin.** Claude Code: `/plugin install questrade@investment-toolkit-plugins` (the marketplace was added in Step 2, step 4). Other clients: the plugin sync from Step 2 deploys it with the others.
 2. **Run `/questrade-setup`.** It adds the server (Claude Code: `claude mcp add questrade --url https://mcp.questrade.com/v1/brokerage/mcp`; Codex CLI: `codex mcp add questrade --url ...`; Cursor and VS Code: add a server entry with that URL).
 3. **Sign in.** You must complete the browser sign-in yourself; an agent cannot. If the page afterwards shows a connection error, paste the full address-bar URL back to the agent. No token is stored in the repository.
 4. **Verify.** The agent calls `List Accounts`; it should return your account IDs. The sign-in lasts one session, so every Questrade skill re-checks it and sends you back to `/questrade-setup` when it has expired.
@@ -261,20 +272,20 @@ Questrade support is an optional add-on for people who have a Questrade account.
    ```
 
    It should list `questrade` as available with `tradingview` still the default. From now on a position or trade refresh asks which source to use.
-6. **First load.** Back up the database (Phase 3, step 4), then run `/questrade-sync-portfolio`. It stages `temp/questrade_sync_payload.json`, previews with `--dry-run`, and writes only after you approve. It imports executed trades in the same run (only executed trades; open, cancelled and rejected orders are skipped), then runs the invariant check.
+6. **First load.** Back up the database (Step 4, step 4), then run `/questrade-sync-portfolio`. It stages `temp/questrade_sync_payload.json`, previews with `--dry-run`, and writes only after you approve. It imports executed trades in the same run (only executed trades; open, cancelled and rejected orders are skipped), then runs the invariant check.
 
 ### Rules to keep
 
 - **Orders are always your decision.** Questrade skills draft; you approve on your phone. No agent places an order on its own (`AGENTS.md` rule 17).
 - **One source of truth.** Questrade data goes into the same `domain_model.sqlite` tables through the sync scripts (`questrade_sync.py`, `questrade_trades_import.py`); never write holdings with ad-hoc SQL.
-- **Questrade-only users** still need TradingView for charts, TA sweeps and alerts; see the table in Phase 3.
+- **Questrade-only users** still need TradingView for charts, TA sweeps and alerts; see the table in Step 4.
 - **Turning it off:** set `QUESTRADE_ENABLED=false`. Nothing else changes.
 
 ---
 
-## Phase 4: Launch Master Toolkit Onboarding (`/toolkit-onboarding`)
+## Step 5: Master Onboarding (`/toolkit-onboarding`)
 
-Once Phases 0-3 are done, trigger the portfolio-side coordinator:
+Once Steps 1–4 are done, trigger the portfolio-side coordinator:
 
 ```text
 /toolkit-onboarding
@@ -284,7 +295,7 @@ It does not install anything itself. It checks the runtime, backs up the databas
 
 ---
 
-## Phase 5: Routine Maintenance & Dual-Repo Protocol
+## Step 6: Maintenance & Worktree Protocol
 
 When editing code across repositories:
 - **Strict Worktree Discipline**: Always work in a dedicated git worktree (`.agent/rules/local-worktree-and-dual-repo-edit-protocol.md`).
