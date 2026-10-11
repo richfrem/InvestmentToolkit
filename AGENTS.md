@@ -69,31 +69,28 @@ The full, ordered setup and core command reference (`/toolkit-onboarding`, `/dai
 ## Non-Negotiable Rules
 Detailed policy documents and invariants are governed in [`.agent/rules/`](file:///.agent/rules/). Key invariants:
 
-1. **TDW (TDD & TDO)**: Strict test-first development. No runtime mocking on critical paths. See [`.agent/rules/test-driven-development.md`](file:///.agent/rules/test-driven-development.md).
-2. **No Inline Python**: Never compute analytical or financial math inline. Always extract to versioned scripts in `investment_screener/backend/py_services/`.
-3. **Coding Conventions**: Follow [`.agent/rules/coding-conventions.md`](file:///.agent/rules/coding-conventions.md) (standard headers, docstrings, type hints).
-4. **Dependency Management**: No manual `pip install`; edit `requirements.in` → `pip-compile`. See [`.agent/rules/dependency-management.md`](file:///.agent/rules/dependency-management.md).
-5. **Plugin Architecture**: Symlinks only via `symlink_manager.py`. No cross-plugin script execution. See [`.agent/rules/plugin-architecture-policy.md`](file:///.agent/rules/plugin-architecture-policy.md).
-6. **Self-Evolution & Map Debt**: Active map debt audit must pass in `run_tests.py`. Always run the `PRE-COMPLETION GATE` and log map debt before turn end. See [`.agent/rules/self-evolution-policy.md`](file:///.agent/rules/self-evolution-policy.md).
-7. **Destructive Action Guards**: Deletions strictly forbidden without approval. See [`.agent/rules/destructive-action-guard.md`](file:///.agent/rules/destructive-action-guard.md) and [`.agent/rules/skill-deletion-guard.md`](file:///.agent/rules/skill-deletion-guard.md).
-8. **Self-Healing**: Fix broken scripts/snippets inline; re-run silently. Never leave broken command output visible.
-9. **Standing Decision is Anchor**: Read `standing_decision_type` in SQLite before recommending action changes. Never flip BUY→SELL on <15% variance.
-10. **Post-Trade Update Mandatory**: After ANY trade: sells → `lifecycle_status: "exit"`, `target_weight: 0`; buys → update `agent_rationale`. Never set shares manually.
-11. **`ticker` Key, Not `symbol`**: Use `symbol` column for SQL/Python and `ticker` key for API JSON payloads — never conflate.
-12. **Sync Sweep Templates**: Update "Core Portfolio Thesis Background" in daily/weekly sweep templates when target weights change.
-13. **Refine Templates on Grok Ingest**: Guard prompt templates against observed gaps after each Grok response.
-14. **Initialize Missing Config**: Copy `.env.example` to `.env` if missing; record YTD baseline with `set_cash_flow_baseline.py`. Never recreate legacy JSON files.
-15. **Worktree-First Mandatory**: Create a dedicated git worktree before any multi-file change. See [`.agent/rules/git-operations.md`](file:///.agent/rules/git-operations.md), [`.agent/rules/local-git-operations-overrides.md`](file:///.agent/rules/local-git-operations-overrides.md), and [`.agent/rules/worktree-lifecycle-management.md`](file:///.agent/rules/worktree-lifecycle-management.md).
-16. **Worktree Lifecycle Completion**: PR merge triggers cleanup: sync local main, verify ancestry, remove worktree, and delete local/remote branch.
-17. **No Autonomous Trade Execution (HITL Only)**: TradingView ToS compliance. All orders are strictly advisory; trade execution is 100% human-in-the-loop. See [`.agent/rules/local-trade-execution-policy.md`](file:///.agent/rules/local-trade-execution-policy.md).
-18. **Mandatory Cash Invariant for Portfolio Totals**: Total USD = `sum(Held Equities Market Value) + sum(Account Cash USD)`. Never omit uninvested cash.
-19. **Adversarial Reasoning & News Confluence**: Challenge thesis assumptions and correlate news catalysts with price action. See [`.agent/rules/adversarial-reasoning-before-agreement-rule.md`](file:///.agent/rules/adversarial-reasoning-before-agreement-rule.md) and [`.agent/rules/local-news-technical-confluence.md`](file:///.agent/rules/local-news-technical-confluence.md).
-20. **TradingView Baseline & Broker MCP Independence**: TradingView CDP is the universal baseline. Broker plugins (Questrade MCP) are optional user augments. See [`.agent/rules/local-broker-augment-policy.md`](file:///.agent/rules/local-broker-augment-policy.md).
-21. **Domain Database Location & Sync Ingestion**: `investment_screener/backend/data/domain_model.sqlite` is the sole source of truth. Always use canonical sync scripts (`fetch_broker_data.py --snapshot` or `questrade_sync.py --payload`).
-22. **One Implementation Per Concept**: Proper architecture over duplicate code. Consolidate formulas, calculations, and UI helpers into canonical shared modules.
-23. **One Table System, One SQLite Row Source**: All ticker screens render through `PositionsTable` (`investment_screener/frontend/src/components/positions/`) fed by `/api/screener/all-holdings`. Never hand-write ticker tables or freeze static markdown tables.
-24. **Thesis Pages Stay Current From SQLite Ledger**: Sweep findings record into `intelligence.sqlite`; thesis notes update in `thesis_document_currency`. Never write dated volatile prices into markdown.
-25. **Installed Rules vs Local Rules**: Installed rules from `agent-plugins-skills` overwrite during sync; project-specific overrides must strictly live in [`.agent/rules/local-*.md`](file:///.agent/rules/). See [`.agent/rules/local-worktree-and-dual-repo-edit-protocol.md`](file:///.agent/rules/local-worktree-and-dual-repo-edit-protocol.md).
+1. **Test-Driven Work**: MUST have a failing test before writing production code. (details: [`.agent/rules/test-driven-development.md`](file:///.agent/rules/test-driven-development.md))
+2. **No Inline Python**: MUST extract all calculations to versioned scripts in `py_services/`. (details: [`.agent/rules/local-data-pipeline.md`](file:///.agent/rules/local-data-pipeline.md))
+3. **Coding Conventions**: MUST follow naming standards and file headers. (details: [`.agent/rules/coding-conventions.md`](file:///.agent/rules/coding-conventions.md))
+4. **Dependency Management**: MUST use `pip-compile`; manual `pip install` is PROHIBITED. (details: [`.agent/rules/dependency-management.md`](file:///.agent/rules/dependency-management.md))
+5. **Plugin Architecture**: MUST use `symlink_manager.py`; raw `ln -s` is PROHIBITED. (details: [`.agent/rules/plugin-architecture-policy.md`](file:///.agent/rules/plugin-architecture-policy.md))
+6. **Self-Evolution & Map Debt**: MUST run `PRE-COMPLETION GATE` and log map debt before ending turns. (details: [`.agent/rules/self-evolution-policy.md`](file:///.agent/rules/self-evolution-policy.md))
+7. **Destructive Action Guards**: File and skill deletions are strictly PROHIBITED without explicit user approval. (details: [`.agent/rules/destructive-action-guard.md`](file:///.agent/rules/destructive-action-guard.md))
+8. **Self-Healing**: MUST fix broken snippets inline and re-run silently; NEVER leave broken output visible.
+9. **Standing Decision is Anchor**: NEVER override standing decisions without material delta (>15% FV variance). (details: [`.agent/rules/local-standing-decision-policy.md`](file:///.agent/rules/local-standing-decision-policy.md))
+10. **Post-Trade Update**: MUST update `lifecycle_status` and `agent_rationale` after ANY trade; manual share setting is PROHIBITED. (details: [`.agent/rules/local-data-pipeline.md`](file:///.agent/rules/local-data-pipeline.md))
+11. **Ticker vs Symbol**: MUST use `symbol` for SQL/Python and `ticker` for API JSON payloads; NEVER conflate. (details: [`.agent/rules/local-data-pipeline.md`](file:///.agent/rules/local-data-pipeline.md))
+12. **Worktree-First Mandatory**: MUST create an isolated git worktree before any multi-file change. (details: [`.agent/rules/git-operations.md`](file:///.agent/rules/git-operations.md))
+13. **Worktree Hygiene**: PR merge triggers cleanup: MUST sync main, verify ancestry, and remove worktrees. (details: [`.agent/rules/worktree-lifecycle-management.md`](file:///.agent/rules/worktree-lifecycle-management.md))
+14. **No Autonomous Trade Execution**: Live broker order placement is strictly PROHIBITED; 100% HITL required. (details: [`.agent/rules/local-trade-execution-policy.md`](file:///.agent/rules/local-trade-execution-policy.md))
+15. **Mandatory Cash Invariant**: Portfolio total USD MUST strictly include held equities market value plus account cash. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
+16. **Adversarial Reasoning**: MUST challenge thesis premises and correlate news catalysts with price action. (details: [`.agent/rules/adversarial-reasoning-before-agreement-rule.md`](file:///.agent/rules/adversarial-reasoning-before-agreement-rule.md))
+17. **TradingView Baseline**: TradingView CDP is the universal baseline; broker plugins are optional augments. (details: [`.agent/rules/local-broker-augment-policy.md`](file:///.agent/rules/local-broker-augment-policy.md))
+18. **Domain Database Primary**: `domain_model.sqlite` is the sole source of truth; raw SQL updates PROHIBITED during sync. (details: [`.agent/rules/local-data-pipeline.md`](file:///.agent/rules/local-data-pipeline.md))
+19. **One Implementation Per Concept**: MUST consolidate duplicate calculations into canonical shared modules. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
+20. **One Table System**: ALL ticker views MUST render through shared `PositionsTable` from SQLite. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
+21. **Thesis Page Currency**: MUST record news sweeps in `intelligence.sqlite`; NEVER hardcode dated prices in prose. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
+22. **Installed Rules vs Local Rules**: Project-specific overrides MUST strictly live in `.agent/rules/local-*.md`. (details: [`.agent/rules/local-worktree-and-dual-repo-edit-protocol.md`](file:///.agent/rules/local-worktree-and-dual-repo-edit-protocol.md))
 
 ## Canonical Scripts
 | Script | Purpose |
@@ -118,9 +115,6 @@ Create a new canonical script + ADR in `docs/architecture/` whenever you'd compu
 
 ## SUB-agent usage
 Use the cheapest models possible where possible. If the job doesn't require spawning sub-agents don't do so.
-
-## Capital Sourcing
-All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.TO in the **same account** first (never cross-account). Shares to sell ≈ `ceil(N × price / 100)`. TFSA is primary (larger); RRSP mirrors at ~1/3 share count — separate trade log entries per account for both buy and PSU sell. TSX observes Canadian holidays — PSU-U.TO can't trade those days; defer or check for leftover USD cash.
 
 ## Known Pitfalls
 All 30 cataloged integration traps, TradingView CDP subtleties, and database edge cases are permanently documented in [`docs/architecture/known-pitfalls.md`](docs/architecture/known-pitfalls.md). Always consult this reference before writing TradingView automation scripts, SQLite queries, or price calculation logic.
