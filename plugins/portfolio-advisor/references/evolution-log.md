@@ -8,6 +8,24 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-12 — News sweep added to the daily loop; loop keeps executing on step failures
+
+**Trigger:** A `/daily` run stopped after the price refresh failed and asked the owner how to proceed, and never offered the Grok news-sweep prompt. The owner had to ask for the trade-log refresh and the Grok prompt by hand. The daily-loop skill had no news-sweep step; the prompt generator lived only in `news-sweep`.
+
+**Root cause:** `news-sweep` was a separate command that nothing in `daily-loop` called, so a daily run could finish without it. The skill also did not say what to do when a step fails, so the agent paused at the first failure.
+
+**Actions Taken:**
+1. `daily-loop/SKILL.md` gains a News Sweep step after the Morning Brief: generate the prompt with `generate_news_prompt.py`, owner runs it in Grok, then fact-check gate, CONFLUENCE/PARTIAL/CONFLICT labels and `record_news_sweep.py`. Later steps renumbered; `verify_refresh.py` added to Verification.
+2. Two constraints added: the news sweep is never skipped silently, and a failed step (for example the price refresh) is reported, affected cards are marked stale and the loop continues.
+3. `evals.json` gains EVAL-016 (news sweep runs after the brief) and EVAL-017 (loop continues after a failed price refresh).
+
+**Open:**
+- `tv_price_refresh.py` exited 1 with every symbol stale: TradingView's batch quote fetch returned price 0 while the US market was open, and `tv_quote.py` returned the price of the symbol on the chart instead of the symbol asked for. Not yet investigated or fixed.
+- The `tv-portfolio-sync` snapshot persists immediately, so the skill's "show the holdings diff and wait for confirmation" step does not happen.
+- The tv-portfolio-sync skill points at `plugins/tradingview/scripts/` for its scripts while a copy of the layout also exists under the skill's own `scripts/`; the daily-loop agent path in the owner's notes (`agents/daily-loop-agent.md`) does not exist.
+
+---
+
 ## 2026-10-04 — One closing refresh for strategic, daily and weekly reviews; targets re-based to holdings
 
 **Trigger:** After a strategic review, the Daily Brief and Portfolio Advisor pages still showed the old picture: a 3-day-old brief with blank momentum cards, GEV as EXIT, four INITIATE names, and none of the review's trims. User direction (2026-10-04): use existing code, and have `/strategic-review`, `/daily` and `/weekly-review` all run the same code at the end.
