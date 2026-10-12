@@ -165,5 +165,25 @@
     "expected_not_trigger": [],
     "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
     "should_trigger": true
+  },
+  {
+    "id": "EVAL-016",
+    "type": "positive",
+    "category": "workflow",
+    "prompt": "/daily",
+    "expected_trigger": "daily_loop",
+    "expected_not_trigger": [],
+    "pass_condition": "After the morning brief the agent generates the news-sweep prompt (generate_news_prompt.py), asks the owner to run it in Grok, gates and records the findings (record_news_sweep.py) before triage, and does not skip the news sweep silently",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-017",
+    "type": "positive",
+    "category": "workflow",
+    "prompt": "/daily (price refresh exits 1 with all symbols stale)",
+    "expected_trigger": "daily_loop",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent reports the stale symbols, marks cards as priced on stale data and continues through brief, news sweep and triage without stopping to ask the owner how to proceed",
+    "should_trigger": true
   }
 ]
