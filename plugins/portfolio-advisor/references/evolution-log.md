@@ -8,6 +8,20 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-12 — Safe version parsing in persist_valuation and stanceOf awareness in verify_refresh
+
+**Trigger:** Running `persist_valuation.py` failed with `TypeError: can only concatenate str (not "int") to str` when encountering legacy version strings like `'v1.01'`. Subsequent `verify_refresh.py` flagged `GOOG(ACCUMULATE)` for `NO_CHANGE` positions despite an active, confirmed standing decision of `MAINTAIN`.
+
+**Root cause:**
+1. `persist_valuation.py` assumed `latest_pv["version"]` was strictly an integer and attempted `+ 1` arithmetic directly on strings.
+2. `verify_refresh.py` compared raw valuation `derive_action(ticker)` rather than checking `rec["decision_check"]["effective"]` (the canonical `stanceOf`), which honours confirmed standing decisions set by the owner within 30 days.
+
+**Actions Taken:**
+1. In `plugins/stock-valuation/scripts/persist_valuation.py`, safely stripped leading `'v'` and parsed integer increments with fallback.
+2. In `plugins/portfolio-advisor/scripts/verify_refresh.py`, checked `decision_check.effective` before flagging `NO_CHANGE` violations, aligning with the one-stance invariant (`stanceOf`).
+
+---
+
 ## 2026-10-12 — News sweep added to the daily loop; loop keeps executing on step failures
 
 **Trigger:** A `/daily` run stopped after the price refresh failed and asked the owner how to proceed, and never offered the Grok news-sweep prompt. The owner had to ask for the trade-log refresh and the Grok prompt by hand. The daily-loop skill had no news-sweep step; the prompt generator lived only in `news-sweep`.

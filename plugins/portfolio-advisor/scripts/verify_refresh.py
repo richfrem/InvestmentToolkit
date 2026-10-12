@@ -32,6 +32,7 @@ SA_DCF_CONFLICTS = {"CORZ", "LITE", "BE", "INTC", "IONQ", "QBTS", "OKLO", "CEG",
 
 sys.path.insert(0, str(Path(__file__).parent))
 from portfolio_action import derive_action
+from recommendation import recommend_all
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
@@ -205,15 +206,19 @@ print("\n── 4. Portfolio actions ──────────────�
 false_accumulate = []
 false_initiate   = []
 no_change_broken = []
+_recs = recommend_all(str(DB_PATH))
 
 for ticker, h in holdings_map.items():
     actual = current_data["holdings"].get(ticker, 0)
     target = target_data["holdings"].get(ticker, 0)
     action = derive_action(ticker, actual, target, db_path=str(DB_PATH))
 
-    # No-change positions must be MAINTAIN
-    if ticker in NO_CHANGE and action != "MAINTAIN":
-        no_change_broken.append(f"{ticker}({action})")
+    # No-change positions must be MAINTAIN (respecting confirmed standing decisions / effective stance)
+    rec = _recs.get(ticker)
+    effective_action = rec.get("decision_check", {}).get("effective") if rec else None
+    check_action = effective_action or action
+    if ticker in NO_CHANGE and check_action != "MAINTAIN":
+        no_change_broken.append(f"{ticker}({check_action})")
 
     # Check for false ACCUMULATE: target > actual AND DCF is SELL-rated (< -15% upside)
     if action == "ACCUMULATE":
