@@ -122,9 +122,15 @@ def attach_discount_rate_audit(payload: dict, audit: dict) -> None:
 
 
 def _persist_projection(conn: "Connection", symbol: str, proj: dict, payload: dict, now_iso: str) -> int:
-    """Save projection metadata and delegate notes/scenarios inside the caller transaction."""
     latest_pv = get_latest_projection(conn, symbol)
-    new_version = (latest_pv["version"] + 1) if latest_pv else 1
+    if latest_pv and latest_pv.get("version") is not None:
+        try:
+            cur_v = int(str(latest_pv["version"]).lstrip("v").split(".")[0])
+        except (ValueError, TypeError):
+            cur_v = 1
+        new_version = cur_v + 1
+    else:
+        new_version = 1
 
     fair_value = proj.get("fair_value", proj.get("weightedFairValue"))
     action = proj.get("action") or "HOLD"
