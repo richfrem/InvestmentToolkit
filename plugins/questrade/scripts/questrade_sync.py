@@ -162,8 +162,9 @@ def persist_questrade_data_to_db(
     #    silently overwrote itself down to just the last account processed).
     aggregate_total_usd = 0.0
     aggregate_total_cad = 0.0
-    for source_id, bal in balances.items():
+    for source_id, raw_bal in balances.items():
         acc_id = canonical_id_by_source_id.get(source_id, source_id)
+        bal = raw_bal.get("balances") if isinstance(raw_bal.get("balances"), dict) else raw_bal
         cash_leaf = bal.get("cash") or {}
         cash_usd = _parse_money(cash_leaf.get("usd"))
         if cash_usd != 0.0:
@@ -223,7 +224,9 @@ def persist_questrade_data_to_db(
             )
             written += 1
 
-        cash_leaf = (balances.get(source_id) or {}).get("cash") or {}
+        raw_bal = balances.get(source_id) or {}
+        bal = raw_bal.get("balances") if isinstance(raw_bal.get("balances"), dict) else raw_bal
+        cash_leaf = bal.get("cash") or {}
         if _parse_money(cash_leaf.get("usd")) != 0.0:
             synced_symbols.add("CASH_USD")
         delete_stale_account_investments(conn, acc_id, keep_investment_ids=synced_symbols)
