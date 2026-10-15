@@ -53,7 +53,7 @@ def ensure_receipt_index(con: sqlite3.Connection) -> None:
     """Ensure daily gate names (DAILY_RUN_<run_id>_STEP_<n> / _TERMINAL) are unique.
 
     Partial index: verification_receipts in context/control_plane.db is shared with
-    the work-intake control plane, which legitimately repeats gate names
+    the os-control-intake control plane, which legitimately repeats gate names
     (test_suite, human_gate_proof, ...). A global UNIQUE(gate_name) index cannot be
     created on that table, which made every /daily run fail at Step 0 (2026-09-29).
     """

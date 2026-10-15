@@ -25,7 +25,7 @@ Disabling removes files, so only the user's explicit request naming the skill or
 For complex tasks, multi-file refactors, or feature requests:
 - **Think Before Coding**: Run discovery in read-only Plan Mode first. Explicitly state assumptions, propose the minimal viable design, and list verification criteria.
 - **Human Approval**: Obtain explicit user authorization before creating worktrees or modifying code.
-- **Optional Control Plane**: If the optional `work-intake` skill is installed (`.agents/skills/work-intake/SKILL.md`), use `python3 scripts/agent_control.py init` to register structured tasks in `context/control_plane.db`. Otherwise, keep planning lean and direct.
+- **Optional Control Plane**: If the optional `os-control-intake` skill is installed (`.agents/skills/os-control-intake/SKILL.md`), use `python3 scripts/agent_control.py init` to register structured tasks in `context/control_plane.db`. Otherwise, keep planning lean and direct.
 
 ## Behavioral Guidelines (Karpathy Principles)
 These guidelines bias toward caution over speed. For trivial tasks, use judgment.
