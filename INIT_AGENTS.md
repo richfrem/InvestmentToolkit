@@ -158,7 +158,7 @@ test -f .git/hooks/pre-commit-evolution-guard && echo "✅ Evolution guard activ
 test -f .github/workflows/verify-evolution-integrity.yml && echo "✅ CI integrity gate active" || echo "❌ Missing CI gate"
 
 # 3. Cryptographic signing identity readiness (read-only)
-python3 .agents/skills/os-health-check/scripts/setup_ciba_identity.py --check
+python3 .agents/skills/os-control-health/scripts/setup_ciba_identity.py --check
 
 # 4. Symlink integrity
 python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
@@ -168,7 +168,7 @@ python3 run_tests.py --t0-only
 python3 run_tests.py --unit
 
 # 6. Run full OS health check loop
-python3 .agents/skills/os-health-check/scripts/kernel.py emit_event --agent os-health-check --type intent --action scan_metrics
+python3 .agents/skills/os-control-health/scripts/kernel.py emit_event --agent os-control-health --type intent --action scan_metrics
 ```
 
 ---

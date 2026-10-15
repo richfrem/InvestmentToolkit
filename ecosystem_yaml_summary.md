@@ -3,185 +3,125 @@
 ## PLUGINS
 - **etf-analysis**
 - **portfolio-advisor**
+- **questrade**
 - **stock-valuation**
 - **toolkit-manager**
 - **tradingview**
 
 ## SKILLS
-- **13f-analyze**: 13f_analyze | >
-- **13f-tracker**: 13f_tracker | >
-- **adr-management**: adr-management | >
-- **agent-swarm**: agent-swarm | "(Industry standard: Parallel Agent) Primary Use Case: Work that can be partitioned into independent sub-tasks running concurrently across multiple ag...
-- **alert-sync**: tv-alert-sync | >
-- **analyze-plugin**: analyze-plugin | >
-- **antigravity-project-setup**: antigravity-project-setup | >-
-- **audit-plugin-l5**: audit-plugin-l5 | Triggers the L5 Red Team Sub-Agent to rigorously audit a plugin against the 39-point L4 pattern matrix.
+- **13f-analyze**: 13f-analyze | Surgical 13F analysis skill. Cross-references the latest SA LP 13F filing diff against the thesis holdings in domain_model.sqlite to produce gated INI...
+- **13f-tracker**: 13f-tracker | Polls SEC EDGAR for 13F-HR institutional filings from target funds, downloads and parses holdings into structured JSON, and generates quarter-over-qua...
+- **adr-management**: adr-management | Scaffolds, lists, searches, and manages Architecture Decision Records (ADRs) to record permanent institutional memory.
+- **adversarial-review**: adversarial-review | Prepares a comprehensive adversarial review bundle of the investment thesis, DCF projections, target weights, and daily loop recommendations for exter...
+- **agy-cli-agent**: agy-cli-agent | Dispatches authorized tasks through Antigravity (agy) to Gemini and other agy-hosted models. Use for agy execution, Gemini tasks, or an agy sub-agent.
+- **audit-agents-md**: audit-agents-md | Audits root instruction files (AGENTS.md, CLAUDE.md) for size budgets, timelessness, progressive disclosure, and inline invariants. Use when reviewing...
 - **audit-plugin**: audit-plugin | >
-- **author-pine-script**: tv-author-pine | >
-- **brainstorming**: brainstorming | "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user inten...
-- **business-requirements-capture**: business-requirements-capture | >
-- **business-workflow-doc**: business-workflow-doc | >
-- **calibrate-targets**: calibrate_targets | >
-- **cancel-order**: cancel-order | >
-- **chart-snapshot**: tv-chart-snapshot | >
-- **claude-cli-agent**: claude-cli-agent | >
-- **claude-project-setup**: claude-project-setup | >-
-- **coding-conventions-agent**: coding-conventions-agent | >
-- **compile-apm-package**: compile-apm-package | >-
-- **context-bundler**: context-bundler | Interactively creates technical bundles of code, design, and documentation for external review or context sharing. It conducts a brief discovery phase...
-- **convert-plugin-to-apm**: convert-plugin-to-apm | >-
-- **copilot-cli-agent**: copilot-cli-agent | >
-- **create-agentic-workflow**: create-agentic-workflow | Scaffold a GitHub agentic workflow from an existing skill
-- **create-apm-package**: create-apm-package | >-
-- **create-azure-agent**: create-azure-agent | Deploy a skill as an Azure AI Foundry hosted agent
-- **create-command**: create-command | >
-- **create-docker-skill**: create-docker-skill | Scaffold an agent skill with Docker runtime support
-- **create-github-action**: create-github-action | Scaffold a deterministic GitHub Actions CI/CD workflow
-- **create-hook**: create-hook | Design and scaffold an event-driven Claude Code hook
-- **create-mcp-integration**: create-mcp-integration | Add an MCP server integration to a plugin
-- **create-plugin**: create-plugin | Scaffold a complete Claude Code plugin from scratch
+- **audit-rule**: audit-rule | >
+- **audit-skill**: audit-skill | Audits and aligns individual skills or a repository skill inventory against authoring standards. Provides deterministic structural checks and optional...
+- **audit-sub-agent**: audit-sub-agent | >
+- **calibrate-targets**: calibrate-targets | Interactive target-weight calibration session. Evaluates each holding sequentially, presenting current, target, and recommended weights with rigorous ...
+- **claude-cli-agent**: claude-cli-agent | Dispatches bounded tasks and persona-based analysis through Claude CLI. Use for authorized Claude reviews, audits, or work requiring a fresh model con...
+- **codex-cli-agent**: codex-cli-agent | Dispatches bounded coding tasks and analysis through the Codex CLI. Use for authorized Codex execution, code reviews, or tasks needing a fresh OpenAI ...
+- **coding-conventions-agent**: coding-conventions-agent | Enforces codebase coding conventions, file headers, type hints, Google docstrings, and naming standards across languages.
+- **context-bundler**: context-bundler | Interactively creates targeted code and documentation bundles (Markdown or ZIP) for review and sub-agent task delegation.
+- **copilot-cli-agent**: copilot-cli-agent | Dispatches bounded tasks and persona-based analysis through GitHub Copilot CLI. Use for authorized task delegation, security audits, code reviews, or ...
+- **create-agents-md**: create-agents-md | Scaffolds a lean, progressive-disclosure AGENTS.md root instruction file and a thin CLAUDE.md bridge. Use when setting up, migrating, or standardizing...
+- **create-hook**: create-hook | >
+- **create-rule**: create-rule | >
 - **create-skill**: create-skill | >
-- **create-stateful-skill**: create-stateful-skill | Scaffold an advanced stateful agent skill with L4 patterns
-- **create-sub-agent**: create-sub-agent | Design and scaffold a Claude Code sub-agent
+- **daily-loop**: daily-loop | The single master daily command. Provides fast non-interactive morning briefs or guides the interactive daily portfolio loop through freshness, brief,...
+- **data-quality-audit**: data-quality-audit | Runs data integrity audits across domain_model.sqlite and intelligence.sqlite, checking price staleness, missing DCF projections, unlinked accounts, a...
 - **dependency-management**: dependency-management | >
-- **discovery-planning**: discovery-planning | >
-- **dispatching-parallel-agents**: dispatching-parallel-agents | Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies
-- **dual-loop**: dual-loop | "(Industry standard: Sequential Agent / Agent as a Tool) Primary Use Case: Delegating a well-defined task to a worker agent, verifying its execution, ...
-- **ecosystem-authoritative-sources**: ecosystem-authoritative-sources | Provides information about how to create, structure, install, and audit Agent Skills, Plugins, Antigravity Workflows, and Sub-agents. Trigger this whe...
-- **ecosystem-standards**: ecosystem-standards | Provides active execution protocols to rigorously audit how code, directory structures, and agent actions comply with the authoritative ecosystem spec...
-- **etf_analysis**: etf_analysis | >
-- **eval-autoresearch-fit**: eval-autoresearch-fit | >
-- **executing-plans**: executing-plans | Use when you have a written implementation plan to execute in a separate session with review checkpoints
-- **exploration-handoff**: exploration-handoff | >
-- **exploration-optimizer**: exploration-optimizer | Evaluates and improves the exploration-cycle skills, prompts, routing, and artifact quality using baseline-first, one-hypothesis iteration loops with ...
-- **exploration-session-brief**: exploration-session-brief | >
-- **exploration-workflow**: exploration-workflow | >
-- **finishing-a-development-branch**: finishing-a-development-branch | Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by prese...
-- **fix-plugin-paths**: fix-plugin-paths | >
-- **forward-valuation-challenge**: forward_valuation_challenge | >
-- **gemini-cli-agent**: gemini-cli-agent | >
-- **get-orders**: get-orders | >
-- **install-apm-package**: install-apm-package | >-
-- **l5-red-team-auditor**: l5-red-team-auditor | >
-- **learning-loop**: learning-loop | "(Industry standard: Loop Agent / Single Agent) Primary Use Case: Self-contained research, content generation, and exploration where no inner delegati...
-- **link-checker-agent**: link-checker-agent | >
+- **etf-analysis**: etf-analysis | Performs autonomous ETF and fund analysis across closed-end funds (NAV premium, private stakes), thematic ETFs (holdings alignment, expense drag), and...
+- **external-review**: external-review | Prepares a standalone adversarial review bundle of the investment thesis, DCF projections, and proposed weights for external LLM evaluation.
+- **forward-valuation-challenge**: forward-valuation-challenge | Challenge and stress-test AI-generated investment thesis valuations that are overly anchored on historical financials. Tests forward estimates, contra...
+- **github-issue-agent**: github-issue-agent | >
+- **github-issue-backlog-agent**: github-issue-backlog-agent | >
+- **github-issue-pr-lifecycle-agent**: github-issue-pr-lifecycle-agent | >
+- **github-issue-prioritizer**: github-issue-prioritizer | >
+- **github-issue-worktree-agent**: github-issue-worktree-agent | >
+- **graph-execution**: graph-execution | Executes complex workflows using deterministic graph-state machines, explicit transition guards, transactional worktrees, and receipt gates.
+- **graph-planner**: graph-planner | Interactively interviews the user to architect, topologically validate, and compile token-budgeted execution graphs (DAGs) with explicit parallel/sequ...
 - **manage-marketplace**: manage-marketplace | >
-- **mine-plugins**: mine-plugins | >
-- **mine-skill**: mine-skill | >
-- **modify-order**: modify-order | >
-- **optimize-agent-instructions**: optimize-agent-instructions | >
-- **optimize-context**: optimize-context | >-
-- **orchestrator**: orchestrator | "(Industry standard: Routing Agent / Orchestrator Pattern) Primary Use Case: Analyzing an ambiguous trigger and routing it to one of the specific spec...
-- **os-architect**: os-architect | >
-- **os-clean-locks**: os-clean-locks | >
-- **os-environment-probe**: os-environment-probe | >
-- **os-eval-backport**: os-eval-backport | >
-- **os-eval-lab-setup**: os-eval-lab-setup | >
-- **os-eval-runner**: os-eval-runner | >
-- **os-evolution-planner**: os-evolution-planner | >
-- **os-evolution-verifier**: os-evolution-verifier | >
-- **os-experiment-log**: os-experiment-log | >
-- **os-guide**: os-guide | >
-- **os-improvement-loop**: os-improvement-loop | >
-- **os-improvement-report**: os-improvement-report | >
-- **os-init**: os-init | >
-- **os-memory-manager**: os-memory-manager | >
-- **path-reference-auditor**: path-reference-auditor | >
-- **pine-inject**: tv-pine-inject | >
-- **place-order**: place_order | >
+- **news-sweep**: news-sweep | Generates multi-agent news sweep prompts, gates cross-model findings (Grok, Claude, ChatGPT, Gemini) against DCF and technical levels, and applies app...
+- **norberts-gambit**: norberts-gambit | Guides the user through Norbert's Gambit to convert cash between CAD and USD inside a brokerage account using DLR.TO/DLR.U ETF pairs without bank FX s...
+- **os-control-health**: os-control-health | >
+- **os-control-init**: os-control-init | >
+- **os-control-mode**: os-control-mode | >
+- **os-control-worktree**: os-control-worktree | >
 - **plugin-installer**: plugin-installer | >-
 - **plugin-remover**: plugin-remover | Interactively select and uninstall agent plugins and skills from the local .agents/ environment.
-- **plugin-syncer**: plugin-syncer | >
-- **portfolio-health**: portfolio_health | "Quick portfolio health check: drift monitor, pillar conviction audit, and thesis formula score. For full adversarial thesis challenge with formula im...
-- **price-refresh**: tv_price_refresh | >
-- **prototype-builder**: prototype-builder | >
-- **rebalance-portfolio**: rebalance_portfolio | >
-- **receiving-code-review**: receiving-code-review | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires ...
-- **red-team-bundler**: red-team-bundler | Interactively prepares a targeted Red Team Review package. It conducts a brief discovery interview to determine the threat model, generates a strict s...
-- **red-team-review**: red-team-review | "(Industry standard: Review and Critique Pattern) Primary Use Case: Iterative generation paired with adversarial review, continuing until an 'Approved...
-- **requesting-code-review**: requesting-code-review | Use when completing tasks, implementing major features, or before merging to verify work meets requirements
-- **run-screener**: run_screener | >
-- **self-audit**: self-audit | >
-- **self-evolution**: self-evolution | >
-- **stock-research**: stock_research | >
-- **stock_valuation**: stock_valuation | >
-- **strategic-review**: strategic_review | >
-- **subagent-driven-development**: subagent-driven-development | Use when executing implementation plans with independent tasks in the current session
-- **subagent-driven-prototyping**: subagent-driven-prototyping | >
+- **plugin-syncer**: plugin-syncer | >-
+- **portfolio-coverage-audit**: portfolio-coverage-audit | Audits analysis coverage across all portfolio holdings and watchlist tickers, identifying unanalyzed tickers and missing DCF or technical models.
+- **portfolio-health**: portfolio-health | Quick portfolio health check monitoring drift, pillar conviction, and thesis formula score. Surfaces allocation imbalances and valuation conflicts.
+- **pre-trade-analysis**: pre-trade-analysis | Conducts comprehensive pre-trade analysis synthesizing earnings transcripts, guidance direction, contracted backlogs, chart structure, and tranche siz...
+- **project-setup**: project-setup | Configures agent runtimes for a project and establishes a reusable, non-secret provider capability profile. Use for project setup, agent configuration...
+- **questrade-activities**: questrade-activities | Retrieve and display account cash flow ledger events (dividends, interest, deposits, withdrawals, trades) via Questrade MCP. Trigger on /questrade-act...
+- **questrade-get-balances**: questrade-get-balances | Direct skill wrapper for Questrade MCP tools to retrieve and display account balances and CAD/USD cash splits. Trigger on /questrade-get-balances or "...
+- **questrade-get-positions**: questrade-get-positions | Direct skill wrapper for Questrade MCP tools to retrieve and display open security positions. Trigger on /questrade-get-positions or "check questrade ...
+- **questrade-order-draft**: questrade-order-draft | Draft an equity or options order in Questrade via MCP and request Human-in-the-Loop (HITL) mobile push approval. Trigger on /questrade-order-draft or ...
+- **questrade-refresh-prices**: questrade-refresh-prices | Refreshes live market prices into domain_model.sqlite via Questrade get_quotes for current holdings or full watchlist. Trigger on /questrade-refresh-p...
+- **questrade-setup**: questrade-setup | Diagnose and guide setup of the Questrade Brokerage MCP connection across Claude Code, Cursor, VS Code Copilot, and Codex CLI. Trigger on /questrade-s...
+- **questrade-sync-portfolio**: questrade-sync-portfolio | Directly syncs Questrade account balances, holdings, cash splits and recently executed trades into domain_model.sqlite. Trigger on /questrade-sync-por...
+- **rebalance-portfolio**: rebalance-portfolio | Generates valuation-adjusted trade recommendations to rebalance the portfolio toward thesis target weights, prioritizing BUY-rated underweights and tr...
+- **run-screener**: run-screener | Launch the Investment Screener suite (backend + frontend). Trigger when user says "run the screener", "start the app", "launch investment toolkit", "s...
+- **screener-integrity-audit**: screener-integrity-audit | Pre-flight audit verifying all 6 core portfolio and table invariants across Investment Screener, Portfolio Table, and Intelligence Feed dashboards.
+- **select-loop-strategy**: select-loop-strategy | Interactive pattern selector that diagnoses task characteristics, compiles a decision record, and hands off to the appropriate pattern planner. Trigge...
+- **set-thesis-breakers**: set-thesis-breakers | Interactive session to define a holding's thesis breakers, proposing 2-3 candidate conditions classified as auto-evaluated or manual for user confirma...
+- **sqlite-admin**: sqlite-admin | Back up, restore, export and rebuild the toolkit's SQLite databases (domain_model.sqlite portfolio data, intelligence.sqlite research ledger). Use whe...
+- **stock-intake**: stock-intake | Autonomous end-to-end stock intake wizard pulling live financials, technical levels, running scenario DCF models, and registering tickers into strateg...
+- **stock-research**: stock-research | Perform a qualitative deep-dive research sweep on a stock covering earnings call highlights, competitive shifts, guidance updates, and analyst revisio...
+- **strategic-review**: strategic-review | >-
 - **symlink-manager**: symlink-manager | >
-- **synthesize-learnings**: synthesize-learnings | >
-- **systematic-debugging**: systematic-debugging | Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
-- **ta-red-team**: tv-ta-red-team | >
-- **ta-snapshot**: tv-ta-snapshot | >
-- **task-agent**: task-agent | >
-- **technical-analysis-expert**: tv-ta-deep | >
-- **test-driven-development**: test-driven-development | Use when implementing any feature or bugfix, before writing implementation code
-- **thesis-challenge-bundler**: thesis_challenge_bundler | >
-- **todo-check**: todo-check | >
-- **triple-loop-learning**: triple-loop-learning | "(Industry standard: Meta-Learning System / Automated Autoresearch) Primary Use Case: Continuous, self-improving orchestration of an agentic system ov...
-- **tv-add-indicator**: tv-add-indicator | >
-- **tv-change-symbol**: tv-change-symbol | >
-- **tv-change-type**: tv-change-type | >
-- **tv-chart-setup**: tv-chart-setup | >
-- **tv-portfolio-sync**: tv-portfolio-sync | >
-- **tv-save-indicator**: tv-save-indicator | >
-- **tv_pine_advisor**: tv_pine_advisor | Generate, inject, and read a custom Pine Script v5 indicator on the active TradingView chart to produce a technical analysis advisory for a given tick...
-- **update-ecosystem-index**: update-ecosystem-index | Automatically updates the plugin/skill/agent counts in README.md based on the current plugins/ directory.
-- **update-portfolio-targets**: update-portfolio-targets | >
-- **user-story-capture**: user-story-capture | >
-- **using-git-worktrees**: using-git-worktrees | Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace ex...
-- **using-superpowers**: using-superpowers | Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying ...
-- **valuation-math-validation**: valuation_math_validation | >
-- **verification-before-completion**: verification-before-completion | Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming...
-- **vibe-behavioral-test-capture**: vibe-behavioral-test-capture | Builds an executable safety net of characterization tests by integrating browser flow recording, API payload snapshotting, DOM state captures, network...
-- **vibe-browser-audit**: vibe-browser-audit | A visual & functional crawler operation utilizing Chrome DevTools Protocol (CDP) or Playwright/Puppeteer to audit prototype UI/UX and behavior.
-- **vibe-domain-extractor**: vibe-domain-extractor | Extracts pure, framework-free, IO-free domain models and deterministic business rules from a rapid prototype with strict preservation vs replacement c...
-- **vibe-reengineer**: vibe-reengineer | Top-level orchestration skill coordinating the entire 7-step surgical vibe-to-enterprise reengineering pipeline with automated safety and economic opt...
-- **vibe-slice-migrator**: vibe-slice-migrator | Progressively migrates legacy prototype routes and features to a clean architecture layer slice-by-slice, verifying them against characterization test...
-- **vibe-spec-packager**: vibe-spec-packager | A package builder skill that compiles specs/ documents into standard spec-kits and scaffolds the clean target codebase sandbox.
-- **vibe-to-speckit-superpowers**: vibe-to-speckit-superpowers | >
-- **vibe-togaf-architect**: vibe-togaf-architect | A system architecture scaffolder designed to synthesize visual discoveries and interactive Q&A responses into comprehensive C4 and TOGAF specs.
-- **visual-companion**: visual-companion | >
-- **writing-plans**: writing-plans | Use when you have a spec or requirements for a multi-step task, before touching code
-- **writing-skills**: writing-skills | Use when creating new skills, editing existing skills, or verifying skills work before deployment
-- **news-sweep**: news_sweep | >
+- **thesis-review**: thesis-review | Interactive entry point for pitching a new investment thesis or challenging an existing one, delegating analysis to the thesis-review-agent.
+- **toolkit-onboarding**: toolkit-onboarding | Master onboarding coordinator and holistic portfolio bootstrap wizard for InvestmentToolkit. Guides new users through runtime checks, accounts & strat...
+- **tv-add-indicator**: tv-add-indicator | Add a built-in TradingView indicator or personal Pine Script to the active chart via CDP. Trigger on /tv-add-indicator or 'add indicator [NAME]'.
+- **tv-alert-list**: tv-alert-list | Fetches, analyzes, and lists active TradingView price alerts, saving the snapshot to the backend data folder for offline caching. Trigger on /tv-alert...
+- **tv-alert-reconcile**: tv-alert-reconcile | Reconciles active TradingView price alerts against SQLite target levels and flags missing or drifted alerts. Trigger on /tv-alert-reconcile or 'reconc...
+- **tv-alert-sync**: tv-alert-sync | Creates TradingView price alerts at DCF bear/base/bull scenario targets for portfolio holdings. Trigger on /tv-alert-sync or 'sync tradingview alerts'...
+- **tv-author-pine-script**: tv-author-pine-script | Master workflow for authoring, researching, and linting custom Pine Script v6 indicators. Trigger on /tv-author-pine-script or 'author pine script'.
+- **tv-cancel-order**: tv-cancel-order | Cancel a Working or Inactive order in TradingView via CDP and mark it cancelled in the Trade Log. Trigger on /tv-cancel-order or 'cancel order [ID]'.
+- **tv-change-symbol**: tv-change-symbol | Change the active TradingView chart symbol via CDP. Trigger on /tv-change-symbol or 'switch chart to [TICKER]'.
+- **tv-change-type**: tv-change-type | Change the active TradingView chart type (candlestick, Heikin Ashi, line, area, Renko). Trigger on /tv-change-type or 'change chart type to [TYPE]'.
+- **tv-chart-setup**: tv-chart-setup | Complete agent workspace setup: switch to agent-layout, change symbol, and set timeframe in one shot. Trigger on /tv-chart-setup or 'setup chart for [...
+- **tv-chart-snapshot**: tv-chart-snapshot | Captures a chart screenshot for a ticker in TradingView Desktop and saves it to PortfolioAnalysis/screenshots/. Trigger on /tv-snapshot [TICKER] or 'c...
+- **tv-draw**: tv-draw | Draws and annotates horizontal level lines, entry/exit price zones, and text tags directly onto the active TradingView chart. Trigger on /tv-draw or '...
+- **tv-get-orders**: tv-get-orders | Read Working and Inactive orders from TradingView broker panel via CDP. Trigger on /tv-get-orders or 'show open orders'.
+- **tv-manage-indicators**: tv-manage-indicators | Unified manager for controlling and querying indicators loaded on the active TradingView chart. Trigger on /tv-indicators or 'list indicators'.
+- **tv-manage-watchlists**: tv-manage-watchlists | Synchronizes portfolio holdings and researched tickers to TradingView watchlists. Trigger on /tv-manage-watchlists or 'sync watchlists'.
+- **tv-modify-order**: tv-modify-order | Modify the limit price or quantity of a Working order in TradingView via CDP. Trigger on /tv-modify-order or 'modify order [UUID]'.
+- **tv-onboarding**: tv-onboarding | Setup and diagnostic guide for TradingView Desktop and remote debugging port 9222. Trigger on /tv-onboarding or 'connect tradingview'.
+- **tv-pine-inject**: tv-pine-inject | Injects custom Pine Script v6 indicators directly into TradingView Pine Editor via CDP with auto-compilation error checking. Trigger on /tv-pine-injec...
+- **tv-place-order**: tv-place-order | Place buy or sell orders via TradingView connected broker panel using CDP with mandatory HITL approval. Trigger on /place-order or 'buy [N] shares of ...
+- **tv-portfolio-sync**: tv-portfolio-sync | Syncs broker holdings and cash from TradingView broker panel into SQLite domain model via CDP. Trigger on /tv-portfolio-sync or 'sync portfolio from T...
+- **tv-price-refresh**: tv-price-refresh | Pulls real-time prices for portfolio positions from TradingView Desktop only; a ticker TradingView cannot quote is reported, never priced from another...
+- **tv-save-indicator**: tv-save-indicator | Saves current Pine Script in editor to TradingView personal script library. Trigger on /tv-save-indicator or 'save pine script to library'.
+- **tv-setup**: tv-setup | Diagnoses and guides setup of TradingView CDP dependency and debugging port. Trigger on /tv-setup or 'diagnose tradingview connection'.
+- **tv-ta-daily-sweep**: tv-ta-daily-sweep | Batch daily Technical Analysis sweep across all portfolio holdings. Trigger on /tv-ta-daily-sweep or 'run ta sweep'.
+- **tv-ta-red-team**: tv-ta-red-team | Adversarial red-team reviewer for Technical Analysis theses. Trigger on /tv-ta-red-team or 'red team ta thesis'.
+- **tv-ta-snapshot**: tv-ta-snapshot | Captures chart screenshot and performs visual technical analysis for a single ticker. Trigger on /tv-ta [TICKER] or 'ta snapshot [TICKER]'.
+- **tv-technical-analysis-expert**: tv-technical-analysis-expert | Senior technical analyst workflow: sets up indicator view, reads Data Window, and synthesizes institutional price levels. Trigger on /tv-ta-expert or ...
+- **tv-thesis-overlay**: tv-thesis-overlay | Generates a dynamic Pine Script indicator containing Fair Value, Target Entry, Breaker, and DCF Bear/Base/Bull scenario levels from SQLite and injects...
+- **update-cli-models**: update-cli-models | Updates CLI model catalogs, capability tiers and cheapest-model references from official sources. Use when asked to refresh model IDs, availability or...
+- **update-portfolio-targets**: update-portfolio-targets | Updates target portfolio weights by pillar and holding in the canonical thesis JSON file, validating 100% sum and running the refresh chain.
+- **update-stock-analysis**: update-stock-analysis | Perform autonomous stock valuation for a ticker you already hold or track. Produces a 5-year scenario valuation persisted to SQLite domain model, upda...
+- **valuation-math-validation**: valuation-math-validation | Detect and prevent computational bugs in the DCF and scenario valuation engine that produce nonsensical target prices. Enforces unit normalization, mo...
+- **weekly-review**: weekly-review | Runs weekend drift audits, calculates week-over-week performance moves across holdings, and coordinates multi-agent research sweeps (Grok, Claude, Cha...
+- **ytd-return**: ytd-return | Calculates Simple and Time-Weighted YTD returns, adjusting for cash flows (deposits/withdrawals) to measure true investment performance.
 
 ## AGENTS
-- **agent-agentic-os-agentic-os-setup.md**: agentic-os-setup | >
-- **agent-agentic-os-improvement-intake-agent.md**: improvement-intake-agent | >
-- **agent-agentic-os-os-architect-agent.md**: os-architect | >
-- **agent-agentic-os-os-architect-tester-agent.md**: os-architect-tester | >
-- **agent-agentic-os-os-health-check.md**: os-health-check | >
-- **agent-loops-orchestrator.md**: None | 
-- **agent-scaffolders-ecosystem-index-agent.agent.md**: ecosystem-index-agent | Repository hygiene agent that maintains the Plugin Ecosystem index in README.md.
-- **claude-cli-architect-review.md**: architect-review | "Assesses system design, modularity, and overall complexity."
-- **claude-cli-refactor-expert.md**: refactor-expert | "Specializes in optimizing Python code for readability and performance."
-- **claude-cli-security-auditor.md**: security-auditor | "Specializes in finding security vulnerabilities and exploits."
-- **coding-conventions-coding-conventions-agent.md**: None | 
-- **copilot-cli-architect-review.md**: architect-review | "Assesses system design, modularity, and overall complexity."
-- **copilot-cli-refactor-expert.md**: refactor-expert | "Specializes in optimizing Python code for readability and performance."
-- **copilot-cli-security-auditor.md**: security-auditor | "Specializes in finding security vulnerabilities and exploits."
-- **exploration-cycle-plugin-business-rule-audit-agent.md**: business-rule-audit-agent | >
-- **exploration-cycle-plugin-certification-verifier.md**: certification-verifier | >
-- **exploration-cycle-plugin-discovery-planning-agent.md**: discovery-planning | >
-- **exploration-cycle-plugin-domain-purity-auditor.md**: domain-purity-auditor | >
-- **exploration-cycle-plugin-exploration-cycle-orchestrator-agent.md**: exploration-cycle-orchestrator | >
-- **exploration-cycle-plugin-handoff-preparer-agent.md**: handoff-preparer-agent | |
-- **exploration-cycle-plugin-intake-agent.md**: intake-agent | >
-- **exploration-cycle-plugin-planning-doc-agent.md**: planning-doc-agent | >
-- **exploration-cycle-plugin-problem-framing-agent.md**: problem-framing-agent | |
-- **exploration-cycle-plugin-prototype-builder-agent.md**: prototype-builder | >
-- **exploration-cycle-plugin-prototype-companion-agent.md**: prototype-companion-agent | |
-- **exploration-cycle-plugin-requirements-doc-agent.md**: requirements-doc-agent | >
-- **exploration-cycle-plugin-requirements-scribe-agent.md**: requirements-scribe-agent | |
-- **exploration-cycle-plugin-runtime-observer-agent.md**: runtime-observer | >
-- **exploration-cycle-plugin-semantic-drift-auditor.md**: semantic-drift-auditor | >
-- **exploration-cycle-plugin-vibe-orchestrator-agent.md**: vibe-orchestrator | |
-- **gemini-cli-architect-review.md**: architect-review | "Assesses system design, modularity, and overall complexity."
-- **gemini-cli-refactor-expert.md**: refactor-expert | "Specializes in optimizing Python code for readability and performance."
-- **gemini-cli-security-auditor.md**: security-auditor | "Specializes in finding security vulnerabilities and exploits."
-- **link-checker-link-checker-agent.md**: None | 
+- **agent-agentic-os-os-control-setup-agent.md**: os-control-setup-agent | >
+- **agent-agentic-os-os-lab-agent.md**: os-lab-agent | >
+- **agent-orchestration-orchestrator.md**: orchestrator | >
+- **cli-agents-architect-review.md**: architect-review | >
+- **cli-agents-debate-synthesizer.md**: debate-synthesizer | >
+- **cli-agents-pr-reviewer.md**: pr-reviewer | >
+- **cli-agents-red-team-reviewer.md**: red-team-reviewer | >
+- **cli-agents-security-auditor.md**: security-auditor | >
+- **cli-agents-tdd-contract-reviewer.md**: tdd-contract-reviewer | >
+- **dev-utils-coding-conventions-agent.md**: coding-conventions-agent | Enforces codebase coding conventions, file headers, type hints, Google docstrings, and naming standards across languages.
 - **portfolio-advisor-portfolio-advisor-orchestrator.md**: portfolio-advisor-orchestrator | Interactive sub-agent that guides the user through the full Portfolio Advisor workflow (Ingest -> Calibrate -> Review -> Rebalance -> Execution).
-- **toolkit-manager-toolkit-onboarding-guide.md**: toolkit-onboarding-guide | |
+- **portfolio-advisor-red-team-agent.md**: red-team-agent | >
+- **portfolio-advisor-risk-officer-agent.md**: risk-officer-agent | >
+- **portfolio-advisor-thesis-review-agent.md**: thesis-review-agent | >
 - **tradingview-ta-guide.md**: ta-guide | |
-- **tradingview-tradingview-onboarding.md**: tradingview-onboarding | |

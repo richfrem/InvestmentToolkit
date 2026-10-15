@@ -116,7 +116,7 @@ InvestmentToolkit/                         ← repo root
 │  React 19 Frontend    │       │  Agentic OS Substrate & Plugins (.agents/)        │
 │  Vite · port 5173     │       │  Upstream: richfrem/agent-plugins-skills          │
 └───────────┬───────────┘       │  • Control Plane: context/control_plane.db        │
-            │                   │  • Substrate: os-init, os-health-check, hooks     │
+            │                   │  • Substrate: os-control-init, -health, hooks     │
             │                   │  • Domain Plugins: portfolio-advisor, tradingview,│
             │                   │    stock-valuation, toolkit-manager, questrade    │
             │                   └─────────────────────────┬─────────────────────────┘
@@ -218,7 +218,7 @@ InvestmentToolkit/                         ← repo root
 
 ### 3.5. AI Agent Plugin & Substrate Layer
 **Location:** `plugins/` (canonical domain plugins), `.agents/` (multi-tool ecosystem skill store), `context/` (control plane & configuration).  
-**Ecosystem Upstream Dependency:** [`richfrem/agent-plugins-skills`](https://github.com/richfrem/agent-plugins-skills) — provides the core **Agentic OS substrate** (`agent-agentic-os` plugin: `os-init`, `os-health-check`, `interview-spec`) and shared developer skills.  
+**Ecosystem Upstream Dependency:** [`richfrem/agent-plugins-skills`](https://github.com/richfrem/agent-plugins-skills) — provides the core **Agentic OS substrate** (`agent-agentic-os` plugin: `os-control-init`, `os-control-health`, `os-control-intake`) and shared developer skills.  
 **Convention:** Each plugin has `skills/`, `agents/`, `scripts/`, `tests/`, `references/`.
 
 #### Domain Plugins (Local to InvestmentToolkit)
@@ -233,8 +233,8 @@ InvestmentToolkit/                         ← repo root
 
 #### Agentic OS Substrate (`agent-agentic-os` via upstream repo)
 - **Control Plane (`context/control_plane.db`)**: SQLite task lifecycle and session state tracking (`scripts/agent_control.py`).
-- **Interactive Initialization (`os-init`)**: `init_agentic_os.py` bootstraps hooks, evolution guards, and aligns the plugin maintenance policy (`context/plugin-config.json`).
-- **Substrate Health Check (`os-health-check`)**: Deterministically audits control plane integrity, symlinks, and backup file hygiene.
+- **Interactive Initialization (`os-control-init`)**: `init_agentic_os.py` bootstraps hooks, evolution guards, and aligns the plugin maintenance policy (`context/plugin-config.json`).
+- **Substrate Health Check (`os-control-health`)**: Deterministically audits control plane integrity, symlinks, and backup file hygiene.
 - **Phase 0 Intake Gate (`interview-spec`)**: Mandatory Socratic interview and 4-Pillar Specification generation (`TASK_SPEC.md`) before implementation.
 
 ---
