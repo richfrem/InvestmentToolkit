@@ -467,3 +467,36 @@ def test_the_retired_standing_decisions_json_path_is_gone():
 
     assert not hasattr(br, "STANDING_DECISIONS_PATH")
     assert not (REPO_ROOT / "plugins/portfolio-advisor/references/standing-decisions.json").exists()
+
+
+class TestWeightBaseline:
+    """Each card shows today's weight as the baseline and the change the target implies."""
+
+    def test_card_carries_current_target_delta_and_target_age(self):
+        meta = {"MU": {"targetSetAt": "2026-07-25T00:00:00+00:00", "staleReason": "target set 83 days ago"}}
+        recs = build_recommendations(
+            scores=[_score("MU", -3, "TRIM", actual_weight=7.9, target_weight=2.9, weight_gap=-5.0)],
+            standing={}, earnings=[], macro=RISK_ON, total_equity=30000.0, target_meta=meta,
+        )
+        assert recs[0]["weight"] == {"currentPct": 7.9, "targetPct": 2.9, "deltaPp": -5.0,
+                                     "targetSetAt": "2026-07-25T00:00:00+00:00",
+                                     "staleReason": "target set 83 days ago"}
+
+    def test_card_without_target_meta_still_shows_weights(self):
+        recs = build_recommendations(
+            scores=[_score("BE", -5, "TRIM", actual_weight=5.9, target_weight=4.1, weight_gap=-1.8)],
+            standing={}, earnings=[], macro=RISK_ON, total_equity=30000.0,
+        )
+        assert recs[0]["weight"]["deltaPp"] == -1.8 and recs[0]["weight"]["staleReason"] is None
+
+    def test_target_reviews_lists_only_held_stale_targets_largest_change_first(self):
+        from brief_recommendations import target_reviews
+        scores = [
+            _score("MU", -3, "TRIM", actual_weight=7.9, target_weight=2.9),
+            _score("BE", -5, "TRIM", actual_weight=5.9, target_weight=4.1),
+            _score("TSM", 2, "ACCUMULATE", actual_weight=4.2, target_weight=4.0),
+            _score("TEAM", 3, "INITIATE", actual_weight=0.0, target_weight=1.0),
+        ]
+        stale = {"staleReason": "target set 83 days ago", "targetSetAt": None}
+        meta = {"MU": stale, "BE": stale, "TEAM": stale, "TSM": {"staleReason": None, "targetSetAt": None}}
+        assert [r["ticker"] for r in target_reviews(scores, meta)] == ["MU", "BE"]

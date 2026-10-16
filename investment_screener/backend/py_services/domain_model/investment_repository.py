@@ -49,11 +49,16 @@ _UPDATABLE_FIELDS = {
     "pillar_id", "sub_strategy_id", "thesis_for_inclusion",
     "agent_rationale", "is_watchlisted", "watchlist_added_at",
     "thesis_breaker_status", "sector", "industry", "last_deep_analysis_at",
+    "target_set_at",
 }
 
 
 def update_investment_fields(conn: sqlite3.Connection, investment_id: str, **fields) -> None:
     """Update any subset of the named investment columns, leaving the rest untouched.
+
+    A ``target_weight`` that differs from the stored value also stamps
+    ``target_set_at`` (unless the caller passes it), so every target writer records
+    when the target was last set; rewriting an unchanged target leaves it alone.
 
     Raises ValueError on an unrecognized field name -- fail loud rather than
     silently no-op, since a silently-dropped standing_decision_* update would
@@ -64,7 +69,14 @@ def update_investment_fields(conn: sqlite3.Connection, investment_id: str, **fie
         raise ValueError(f"Unknown investment field(s): {sorted(unknown)}")
     if not fields:
         return
-    fields = {**fields, "updated_at": datetime.now(timezone.utc).isoformat()}
+    now = datetime.now(timezone.utc).isoformat()
+    if "target_weight" in fields and "target_set_at" not in fields:
+        row = conn.execute(
+            "SELECT target_weight FROM investment WHERE investment_id = ?;", (investment_id,)
+        ).fetchone()
+        if row is not None and (row[0] or 0) != (fields["target_weight"] or 0):
+            fields = {**fields, "target_set_at": now}
+    fields = {**fields, "updated_at": now}
     set_clause = ", ".join(f"{key} = ?" for key in fields)
     params = list(fields.values()) + [investment_id]
     conn.execute(

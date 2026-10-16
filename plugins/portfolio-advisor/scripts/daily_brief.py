@@ -431,7 +431,8 @@ def run(
     from risk_engine import compute_risk_snapshot
     from earnings_calendar import get_earnings_calendar
     from compute_conviction_scores import compute_all
-    from brief_recommendations import build_recommendations, load_standing_decisions
+    from brief_recommendations import (build_recommendations, load_standing_decisions,
+                                       load_target_meta, target_reviews)
     from overnight_gaps import get_overnight_gaps
     from thesis_breakers import compute_breaker_state
     from alert_manager import sync_alert_state
@@ -589,12 +590,14 @@ def run(
     # Live broker total — sourced from domain_model.sqlite (Wave 3 cutover,
     # ADR-030). Never computed from shares × price here.
     total_equity = _load_total_equity()
+    target_meta = load_target_meta()
     recommendations = build_recommendations(
         scores=scores_raw,
         standing=load_standing_decisions(),
         earnings=earnings_raw,
         macro=asdict(macro),
         total_equity=total_equity,
+        target_meta=target_meta,
     )
 
     # ── 6a. Emit rebalance events for recommended actions (G4 — non-blocking) ─
@@ -625,6 +628,8 @@ def run(
         "ta_skip_reason": ta_skip_reason,
         "conviction_scores": scores_raw,
         "recommendations": recommendations,
+        # Held targets that are old or predate the latest valuation: keep, reset or change.
+        "target_reviews": target_reviews(scores_raw, target_meta),
         "total_equity": total_equity,
         "score_deltas": deltas,
         "pillar_health": pillars,

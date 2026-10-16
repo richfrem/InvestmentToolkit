@@ -8,6 +8,13 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-16 — Targets re-baseline on trades; stale targets reviewed, not overwritten
+
+- **Friction:** target weights went stale whenever the owner traded. KOID kept a 3.14% ACCUMULATE target after it was sold, MU sat at a 2.9% target while held at 7.9%, and CASH_USD kept 12.8% with all cash deployed. All four news-sweep models flagged targets that contradicted the weights. A one-off reset to current weights (2026-07-25) went stale again within weeks.
+- **Decision:** the owner proposed resetting every target to the current weight daily. That was rejected because it lets price moves raise winners' targets on their own, erases any sizing decision not traded the same day, and makes the baseline noise. Chosen instead: (1) a fill newer than `investment.target_set_at` resets that target to the post-trade weight (0% when sold out); untraded targets stay as set and the CASH_USD target absorbs the difference, so nothing invents drift; (2) targets older than 30 days, or older than the latest valuation, become owner review cards (keep, reset or change); (3) every card shows current % → target % and the gap.
+- **Change:** migration 0009 (`investment.target_set_at`, stamped by `update_investment_fields` when a target value changes), `target_rebaseline.py`, `rebaseline_targets.py` (daily-loop Step 0), and a `weight` block plus `target_reviews` in the brief. A position whose price the latest refresh missed is skipped, not reset.
+- **Tests:** `test_target_rebaseline.py` (9) and `TestWeightBaseline` (3). The full suite passes except 3 failures that also fail on `main`.
+
 ## 2026-10-12 — Safe version parsing in persist_valuation and stanceOf awareness in verify_refresh
 
 **Trigger:** Running `persist_valuation.py` failed with `TypeError: can only concatenate str (not "int") to str` when encountering legacy version strings like `'v1.01'`. Subsequent `verify_refresh.py` flagged `GOOG(ACCUMULATE)` for `NO_CHANGE` positions despite an active, confirmed standing decision of `MAINTAIN`.
