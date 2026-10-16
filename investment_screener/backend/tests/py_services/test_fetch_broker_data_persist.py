@@ -199,3 +199,51 @@ def test_emit_snapshot_json_prints_single_json_line_to_stdout(capsys):
     stdout_lines = [ln for ln in captured.out.splitlines() if ln.strip()]
     assert len(stdout_lines) == 1
     assert json.loads(stdout_lines[0]) == SNAPSHOT
+
+
+def _snapshot(account, positions, cash_usd=0.0, error=None):
+    snap = {"accountType": account, "balances": {"cashUSD": cash_usd}, "positions": positions}
+    if error:
+        snap["error"] = error
+    return {"snapshots": [snap]}
+
+
+def test_persist_snapshot_to_db_removes_fully_sold_position(tmp_path):
+    """A position the account no longer reports was fully sold: its row is removed."""
+    db_path = str(tmp_path / "test.sqlite")
+    fetch_broker_data._persist_snapshot_to_db(_snapshot("TFSA", [
+        {"symbol": "MSFT", "quantity": 4, "avgFillPrice": 410.0},
+        {"symbol": "KOID", "quantity": 30, "avgFillPrice": 34.0},
+    ]), db_path=db_path)
+    fetch_broker_data._persist_snapshot_to_db(_snapshot("TFSA", [
+        {"symbol": "MSFT", "quantity": 4, "avgFillPrice": 410.0},
+        {"symbol": "KOID", "quantity": 0, "avgFillPrice": 30.0},
+    ]), db_path=db_path)
+
+    conn = initialize_db(db_path)
+    held = {r["investment_id"] for r in list_account_investments(conn, account_id="TFSA")}
+    assert held == {"MSFT"}
+
+
+def test_persist_snapshot_to_db_keeps_rows_of_failed_account_read(tmp_path):
+    """An account whose read failed reports nothing reliable: keep its stored rows."""
+    db_path = str(tmp_path / "test.sqlite")
+    fetch_broker_data._persist_snapshot_to_db(_snapshot("RRSP", [
+        {"symbol": "MSFT", "quantity": 2, "avgFillPrice": 410.0},
+    ]), db_path=db_path)
+    fetch_broker_data._persist_snapshot_to_db(_snapshot("RRSP", [], error="switch failed"), db_path=db_path)
+
+    conn = initialize_db(db_path)
+    held = {r["investment_id"] for r in list_account_investments(conn, account_id="RRSP")}
+    assert held == {"MSFT"}
+
+
+def test_persist_snapshot_to_db_keeps_cash_row_when_cash_usd_is_zero(tmp_path):
+    """A CAD-only account reports cashUSD 0; its CASH_USD row is not treated as sold."""
+    db_path = str(tmp_path / "test.sqlite")
+    fetch_broker_data._persist_snapshot_to_db(_snapshot("CASH", [], cash_usd=126.5), db_path=db_path)
+    fetch_broker_data._persist_snapshot_to_db(_snapshot("CASH", [], cash_usd=0), db_path=db_path)
+
+    conn = initialize_db(db_path)
+    rows = {r["investment_id"]: r for r in list_account_investments(conn, account_id="CASH")}
+    assert rows["CASH_USD"]["quantity"] == 126.5
