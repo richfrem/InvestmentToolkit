@@ -8,6 +8,12 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-16 — News-sweep prompt asks models how to improve it
+
+- **Friction:** the sweep prompt only changed when the owner noticed a gap. The models already flag stale facts ("Prompt corrections") but were never asked what would make the prompt itself better.
+- **Change:** the daily and weekly templates now ask each model for at most 3 "Prompt improvements" (quote, replacement, one-line reason). The news-sweep skill gains a step: merge the suggestions across models, show the owner the top 3, apply only approved edits and log each one here.
+- **Test:** `test_sweep_templates.py::test_asks_models_to_suggest_prompt_improvements` (both templates).
+
 ## 2026-10-12 — Safe version parsing in persist_valuation and stanceOf awareness in verify_refresh
 
 **Trigger:** Running `persist_valuation.py` failed with `TypeError: can only concatenate str (not "int") to str` when encountering legacy version strings like `'v1.01'`. Subsequent `verify_refresh.py` flagged `GOOG(ACCUMULATE)` for `NO_CHANGE` positions despite an active, confirmed standing decision of `MAINTAIN`.

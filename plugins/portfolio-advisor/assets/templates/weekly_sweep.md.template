@@ -35,6 +35,7 @@ Please review all material news, earnings, SEC filings, and macro developments f
 - **MACRO BENCHMARK FIGURES:** Quote the US 10-year Treasury yield and VIX with the specific date/time of your reading.
 - **SMART MONEY CONTEXT (SA LP LIQUIDATION):** Situational Awareness LP (SA LP, Aschenbrenner's fund) was reported (Reuters, CNBC, Bloomberg) to have sold most of its public stock holdings to Citadel on or about 2026-07-30; reports differ on whether all public holdings were sold, and the fund keeps other assets including private investments. Therefore, do **not** cite pre-liquidation (e.g. 2026-06-30) 13F filings as current positions; only report dated post-liquidation facts.
 - **CHALLENGE OUR BASELINE ANCHORS:** Below is our current portfolio baseline data (prices, 1W moves, target weights). If any figure conflicts with your live sources, explicitly list it under "Prompt Corrections / Anchor Discrepancies" at the end of your response.
+- **IMPROVE THIS PROMPT:** After the corrections list, add a "Prompt improvements" list with at most 3 concrete changes to this prompt that would have made your answer more accurate or more useful (a missing question, an ambiguous instruction, a section to drop). For each, quote the text to change, give the replacement, and say in one sentence why. Write "None" if you have no suggestion.
 
 ---
 
