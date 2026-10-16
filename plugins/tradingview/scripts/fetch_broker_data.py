@@ -474,7 +474,11 @@ def _persist_snapshot_to_db(
     """
     from domain_model.db_client import initialize_db
     from domain_model.account_repository import upsert_account
-    from domain_model.account_investment_repository import upsert_account_investment
+    from domain_model.account_investment_repository import (
+        delete_stale_account_investments,
+        list_account_investments,
+        upsert_account_investment,
+    )
     from domain_model.investment_repository import resolve_investment
     from domain_model.exchange_rate_repository import upsert_exchange_rate
     from domain_model.broker_reported_total_repository import upsert_broker_reported_total
@@ -497,6 +501,7 @@ def _persist_snapshot_to_db(
                 average_cost=1.0, book_value=cash_usd, currency="USD", last_synced_at=now,
             )
 
+        synced_ids: set[str] = set()
         for pos in snap.get("positions", []):
             quantity = float(pos.get("quantity") or 0)
             if quantity <= 0:
@@ -511,7 +516,16 @@ def _persist_snapshot_to_db(
                 average_cost=pos.get("avgFillPrice"), book_value=None,
                 currency="USD", last_synced_at=now,
             )
+            synced_ids.add(investment_id)
             written += 1
+
+        # A successful read is the account's complete holding set: remove positions
+        # it no longer reports (fully sold). Cash rows are left alone -- TV reports a
+        # CAD-only account's cash as cashUSD 0, so its CASH_USD row is not absent.
+        if not snap.get("error"):
+            existing = list_account_investments(conn, account_id=account_id)
+            keep_ids = synced_ids | {r["investment_id"] for r in existing if r["investment_id"].startswith("CASH_")}
+            delete_stale_account_investments(conn, account_id, keep_investment_ids=keep_ids)
 
     # Wave 3 Task 8: store the single broker-reported FX fact (USD->CAD),
     # inferred from the SAME native TV totals helpers.ts::getLiveUsdCadRate() uses.
