@@ -1,7 +1,7 @@
 {
     "name": "questrade",
     "version": "1.0.0",
-    "description": "Questrade Brokerage MCP integration — native AI agent connection for real-time account balances (CAD/USD), open positions, cash flow ledger (dividends, deposits), and Human-in-the-Loop (HITL) order drafting with mobile push approval.",
+    "description": "Questrade Brokerage MCP integration — native AI agent connection for real-time account balances (CAD/USD), open positions, cash flow ledger (dividends, deposits), Human-in-the-Loop (HITL) order drafting with mobile push approval, guided deposits (Interac e-Transfer) and CAD/USD conversion (Norbert's gambit).",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -13,6 +13,8 @@
         "mcp",
         "portfolio-sync",
         "orders",
-        "hitl"
+        "hitl",
+        "deposits",
+        "currency-conversion"
     ]
 }
