@@ -1,7 +1,7 @@
 ---
 name: questrade-deposit-funds
 plugin: questrade
-description: Guides the owner through depositing money into a Questrade account (TFSA, RRSP or Cash), with Interac e-Transfer as the usual method, records the deposit as a contribution, and converts CAD to USD with Questrade Exchange (1.5% fee in the rate) or Norbert's gambit. Trigger on /questrade-deposit-funds, "add money to my TFSA", "deposit to questrade" or "fund my account".
+description: Guides the owner through depositing money into a Questrade account (TFSA, RRSP or Cash), including Interac e-Transfer, records the deposit as a contribution, and converts CAD to USD with Questrade Exchange (1.5% fee in the rate) or Norbert's gambit. Trigger on /questrade-deposit-funds, "add money to my TFSA", "deposit to questrade" or "fund my account".
 allowed-tools: Bash, Read
 ---
 
