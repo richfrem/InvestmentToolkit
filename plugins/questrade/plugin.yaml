@@ -1,6 +1,6 @@
 name: questrade
 version: 1.0.0
-description: "Questrade Brokerage MCP integration — native AI agent connection for real-time account balances, positions, cash flow ledger, and HITL order drafting with mobile push approval."
+description: "Questrade Brokerage MCP integration — native AI agent connection for real-time account balances, positions, cash flow ledger, HITL order drafting with mobile push approval, guided deposits and CAD/USD conversion (Norbert's gambit)."
 author:
   name: "Richard Fremmerlid"
 kind: standalone
