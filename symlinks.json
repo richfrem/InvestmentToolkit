@@ -1040,10 +1040,16 @@
       "description": "Hub-and-spoke symlink for strategic review prompt in strategic-review"
     },
     {
-      "src": "plugins/portfolio-advisor/references/questrade.md",
-      "dst": "plugins/portfolio-advisor/skills/norberts-gambit/references/questrade.md",
+      "src": "plugins/questrade/references/norberts-gambit-questrade.md",
+      "dst": "plugins/questrade/skills/norberts-gambit/references/questrade.md",
       "strategy": "symlink",
       "description": "Hub-and-spoke symlink for questrade submission steps in norberts-gambit"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-deposit-funds/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for questrade tool schemas in questrade-deposit-funds"
     },
     {
       "src": "plugins/portfolio-advisor/references/news-sweep-model-assessment.md",

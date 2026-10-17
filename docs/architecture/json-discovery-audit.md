@@ -93,7 +93,7 @@
 | `plugins/portfolio-advisor/skills/set-thesis-breakers/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/skills/adversarial-review/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/skills/calibrate-targets/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `plugins/portfolio-advisor/skills/norberts-gambit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `plugins/questrade/skills/norberts-gambit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/skills/daily-loop/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/skills/daily-loop/evals/playbook-evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/skills/screener-integrity-audit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
@@ -1145,7 +1145,7 @@ No `.json`/`.jsonl` files currently exist under `temp/` (which is gitignored scr
 - investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
 - plugins/stock-valuation/tests/test_ai_forward_skill_contract.py:35
 
-### plugins/portfolio-advisor/skills/norberts-gambit/evals/evals.json
+### plugins/questrade/skills/norberts-gambit/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
