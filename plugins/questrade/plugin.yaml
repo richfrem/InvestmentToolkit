@@ -15,3 +15,6 @@ skills:
   - questrade-activities
   - questrade-order-draft
   - questrade-sync-portfolio
+  - questrade-refresh-prices
+  - questrade-deposit-funds
+  - norberts-gambit
