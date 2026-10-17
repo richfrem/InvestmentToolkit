@@ -77,6 +77,56 @@ def load_standing_decisions(db_path: str | None = None) -> dict[str, Any]:
             if r.get("standing_decision")}
 
 
+def load_target_meta(db_path: str | None = None) -> dict[str, dict[str, Any]]:
+    """When each target was set and why it needs review (target_rebaseline.load_target_meta).
+
+    Degrades to {} when the database is unavailable, so the brief still builds.
+    """
+    from domain_model.db_client import initialize_db
+    from target_rebaseline import load_target_meta as _load
+    from thesis_breakers import DB_PATH
+
+    try:
+        conn = initialize_db(db_path or str(DB_PATH))
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"  Target dates unavailable: {exc}", file=sys.stderr)
+        return {}
+    try:
+        return _load(conn)
+    finally:
+        conn.close()
+
+
+def _weight_view(s: dict[str, Any], meta: dict[str, Any] | None) -> dict[str, Any]:
+    """Today's weight as the baseline: current %, target %, the change the target implies."""
+    current = round(s.get("actual_weight") or 0.0, 2)
+    target = s.get("target_weight")
+    return {
+        "currentPct": current,
+        "targetPct": round(target, 2) if target is not None else None,
+        "deltaPp": round(target - current, 2) if target is not None else None,
+        "targetSetAt": (meta or {}).get("targetSetAt"),
+        "staleReason": (meta or {}).get("staleReason"),
+    }
+
+
+def target_reviews(scores: list[dict[str, Any]],
+                   target_meta: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    """Held positions whose target needs the owner's review, largest implied change first.
+
+    The owner keeps it, resets it to the current weight, or sets a new value
+    (update_targets.py); nothing here changes a target.
+    """
+    out = []
+    for s in scores:
+        if (s.get("actual_weight") or 0) <= 0:
+            continue
+        view = _weight_view(s, target_meta.get(s["ticker"]))
+        if view["staleReason"]:
+            out.append({"ticker": s["ticker"], **view})
+    return sorted(out, key=lambda r: (-abs(r["deltaPp"] or 0), r["ticker"]))
+
+
 def _signal_summary(s: dict[str, Any]) -> str:
     """One-line component summary used inside every rationale.
 
@@ -187,6 +237,7 @@ def build_recommendations(
     earnings: list[dict[str, Any]],
     macro: dict[str, Any],
     total_equity: float,
+    target_meta: dict[str, dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Build ranked recommendation cards from the day's signals.
 
@@ -197,6 +248,8 @@ def build_recommendations(
         macro: Macro regime dict (regime/score/degraded).
         total_equity: Live broker total equity USD (totals.totalUSD — never
             computed from shares × price).
+        target_meta: {ticker: {targetSetAt, staleReason}} from load_target_meta(), shown on
+            each card's ``weight`` block (today's weight as the baseline).
 
     Returns:
         Recommendation cards in today's priority order: ready to act, needs your
@@ -242,6 +295,7 @@ def build_recommendations(
             "recentTrades": recent,
             "proposedTrade": None,
             "actionable": False,
+            "weight": _weight_view(s, (target_meta or {}).get(s["ticker"])),
         }
 
         if band in ("EXIT", "TRIM"):
@@ -391,6 +445,9 @@ def align_current_brief(brief: dict[str, Any], db_path: str | None = None) -> di
         scores.append(score)
     standing = {t: r["standing_decision"] for t, r in records.items() if r.get("standing_decision")}
     state = load_portfolio_state(db_path=db_path)
+    meta = load_target_meta(db_path)
     return {**brief, "conviction_scores": scores,
             "recommendations": build_recommendations(scores, standing, brief.get("earnings_flags", []),
-                                                       brief.get("macro_regime", {}), state["total_usd"])}
+                                                       brief.get("macro_regime", {}), state["total_usd"],
+                                                       target_meta=meta),
+            "target_reviews": target_reviews(scores, meta)}

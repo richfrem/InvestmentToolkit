@@ -8,6 +8,13 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-16 — Targets re-baseline on trades; stale targets reviewed, not overwritten
+
+- **Friction:** target weights went stale whenever the owner traded: a sold position kept its target, a position that kept being bought stayed at an old target, and the cash target ignored redeployed cash. News-sweep models flagged targets that contradicted the weights. A one-off reset to current weights went stale again within weeks.
+- **Decision:** a daily reset of every target to the current weight was considered and rejected because it lets price moves raise winners' targets on their own, erases any sizing decision not traded the same day, and makes the baseline noise. Chosen instead: (1) a fill newer than `investment.target_set_at` resets that target to the post-trade weight (0% when sold out); untraded targets stay as set and the CASH_USD target absorbs the difference, so nothing invents drift; (2) targets older than 30 days, or older than the latest valuation, become owner review cards (keep, reset or change); (3) every card shows current % → target % and the gap.
+- **Change:** migration 0009 (`investment.target_set_at`, stamped by `update_investment_fields` when a target value changes), `target_rebaseline.py`, `rebaseline_targets.py` (daily-loop Step 0), and a `weight` block plus `target_reviews` in the brief. A position whose price the latest refresh missed is skipped, not reset.
+- **Tests:** `test_target_rebaseline.py` (9) and `TestWeightBaseline` (3). The full suite passes except 3 failures that also fail on `main`.
+
 ## 2026-10-16 — News-sweep prompt asks models how to improve it
 
 - **Friction:** the sweep prompt only changed when the owner noticed a gap. The models already flag stale facts ("Prompt corrections") but were never asked what would make the prompt itself better.
