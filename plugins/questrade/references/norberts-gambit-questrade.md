@@ -26,8 +26,8 @@ steps regardless of direction, just swap which symbol you're converting from/to.
 
 - **Total: up to 5 business days**, including 1-2 days for share settlement before the
   journal request can even be submitted.
-- **Observed:** the owner's July 2026 USD→CAD conversion (~$3,000) took the **full 5 business
-  days** end to end. Plan on about one calendar week, not the low end.
+- **In practice** a conversion can take the **full 5 business days** end to end. Plan on about
+  one calendar week, not the low end.
 - Don't submit the journal request the same day you buy — it will need to wait for
   settlement regardless.
 

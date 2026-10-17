@@ -24,7 +24,7 @@ description: Guides the user through Norbert's Gambit to convert cash between CA
   | CAD | USD | DLR.TO | DLR.U | DLR.U for USD |
   | USD | CAD | DLR.U | DLR.TO | DLR.TO for CAD |
 - Await full trade settlement (1-2 business days) before submitting the journal request.
-- **Size and timing check first**: the whole conversion takes up to 5 business days (the owner's July 2026 conversion took all 5, so plan on a calendar week) and the journal costs $9.95 unless Questrade Plus. On about $3,000 it saves only about $30–45 over Questrade's own conversion (about a 1.5–2% spread), so recommend it mainly for larger amounts or money that won't be deployed for a week anyway.
+- **Size and timing check first**: the whole conversion takes up to 5 business days (in practice it can take all 5, so plan on a calendar week) and the journal costs $9.95 unless Questrade Plus. On about $3,000 it saves only about $30–45 over Questrade's own conversion (about a 1.5–2% spread), so recommend it mainly for larger amounts or money that won't be deployed for a week anyway.
 
 ## Common failures
 - **Buying the wrong unit first:** with CAD, buying DLR.U needs USD you don't have. Buy DLR.TO.
