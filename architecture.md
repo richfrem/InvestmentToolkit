@@ -229,7 +229,7 @@ InvestmentToolkit/                         ← repo root
 | `tradingview` | `/tv-place-order`, `/tv-ta-daily-sweep`, `/tv-portfolio-sync`, `/tv-pine-inject` | `ta_sweep_batch.py`, `place_order.py`, `tv_launch.py` |
 | `etf-analysis` | `/etf_analysis` | `persist_etf_analysis.py` |
 | `toolkit-manager` | `/toolkit-onboarding`, `/todo-check` | `symlink_manager.py`, `plugin_add.py` |
-| `questrade` | `/questrade-sync-portfolio`, `/questrade-activities`, `/questrade-order-draft` | `questrade_sync.py` |
+| `questrade` | `/questrade-sync-portfolio`, `/questrade-activities`, `/questrade-order-draft`, `/questrade-deposit-funds`, `/norberts-gambit` | `questrade_sync.py`, `questrade_trades_import.py` |
 
 #### Agentic OS Substrate (`agent-agentic-os` via upstream repo)
 - **Control Plane (`context/control_plane.db`)**: SQLite task lifecycle and session state tracking (`scripts/agent_control.py`).

@@ -14,7 +14,7 @@
         },
         {
             "name": "portfolio-advisor",
-            "description": "Investment portfolio advisor suite. Flagship /daily interactive loop. Skills: /stock-intake, /portfolio-coverage-audit, /weekly-review, /data-quality-audit, /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /news-sweep, /adversarial-review, /bundle-thesis-review, /13f-tracker, /13f-analyze, /norberts-gambit, /ytd-return, /set-thesis-breakers. Agents: portfolio-advisor-orchestrator, red-team-agent, risk-officer-agent.",
+            "description": "Investment portfolio advisor suite. Flagship /daily interactive loop. Skills: /stock-intake, /portfolio-coverage-audit, /weekly-review, /data-quality-audit, /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /news-sweep, /adversarial-review, /bundle-thesis-review, /13f-tracker, /13f-analyze, /ytd-return, /set-thesis-breakers. Agents: portfolio-advisor-orchestrator, red-team-agent, risk-officer-agent.",
             "source": "./plugins/portfolio-advisor",
             "strict": true
         },
@@ -38,7 +38,7 @@
         },
         {
             "name": "questrade",
-            "description": "Questrade Brokerage Model Context Protocol (MCP) integration. Skills: /questrade-setup (interactive OAuth setup), /questrade-sync (multi-account balance and holdings sync into SQLite), /questrade-order-draft (Human-in-the-Loop draft orders with phone push approval), /questrade-activities (dividend and cash flow ledger).",
+            "description": "Questrade Brokerage Model Context Protocol (MCP) integration. Skills: /questrade-setup (interactive OAuth setup), /questrade-get-balances, /questrade-get-positions, /questrade-sync-portfolio (multi-account balances, holdings and executed trades into SQLite), /questrade-refresh-prices, /questrade-order-draft (Human-in-the-Loop draft orders with phone push approval), /questrade-activities (dividend and cash flow ledger), /questrade-deposit-funds (Interac e-Transfer deposits recorded as contributions), /norberts-gambit (CAD/USD conversion via DLR.TO/DLR.U journaling).",
             "source": "./plugins/questrade",
             "strict": true
         }

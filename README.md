@@ -100,7 +100,7 @@ An adversarial suite that acts as a hedge fund auditor. It challenges your bull 
 
 * **Daily command**: `/daily` — one interactive loop: portfolio sync → morning brief (macro + TA + DCF + earnings) → ranked triage cards → trade execution → self-evolution log.
 * **Intake & Audit**: `/stock-intake` (automated 5-in-1 discovery & intake), `/portfolio-coverage-audit` (audit analysis gaps across watchlist), `/data-quality-audit` (database integrity checks).
-* **Research & Rebalancing**: `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/news-sweep`, `/weekly-review`, `/bundle-thesis-review`, `/13f-tracker`, `/13f-analyze`, `/norberts-gambit`, `/ytd-return`, `/run-advisor` (post-catalyst orchestrator).
+* **Research & Rebalancing**: `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/news-sweep`, `/weekly-review`, `/bundle-thesis-review`, `/13f-tracker`, `/13f-analyze`, `/ytd-return`, `/run-advisor` (post-catalyst orchestrator).
 
 ### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
 
@@ -127,6 +127,13 @@ Orchestrator for managing server startup and onboarding.
 
 * **Skills**: `/start-screener`, `/toolkit-onboarding`
 
+
+
+### 6. Questrade (`plugins/questrade`, optional)
+
+Questrade brokerage connection through the Questrade MCP server: an optional second source for positions and trades (TradingView stays the default), plus deposits and currency conversion in your Questrade accounts.
+
+* **Skills**: `/questrade-setup` (sign-in and enable), `/questrade-get-balances`, `/questrade-get-positions`, `/questrade-sync-portfolio` (balances, holdings and executed trades into SQLite), `/questrade-refresh-prices`, `/questrade-activities` (dividends, deposits, cash-flow ledger), `/questrade-order-draft` (orders approved on your phone), `/questrade-deposit-funds` (Interac e-Transfer deposits, recorded as contributions), `/norberts-gambit` (CAD/USD conversion via DLR.TO/DLR.U)
 
 ---
 
