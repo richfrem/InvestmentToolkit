@@ -8,6 +8,7 @@ description: Guides the user through Norbert's Gambit to convert cash between CA
 
 ## Contents
 - [Constraints](#constraints)
+- [Common failures](#common-failures)
 - [Quick start](#quick-start)
 - [Workflow](#workflow)
 - [Verification](#verification)
@@ -16,9 +17,22 @@ description: Guides the user through Norbert's Gambit to convert cash between CA
 ## Constraints
 - Journaling shares is a manual brokerage request; no autonomous order execution.
 - Ensure the brokerage currency settlement preference is set to "Currency of transaction" prior to execution.
-- Trade direction dictates starting ETF: USD->CAD buys DLR.U; CAD->USD buys DLR.TO.
+- Trade direction dictates the starting ETF. Buy the unit in the currency you already hold:
+
+  | You hold | You want | Buy | Journal to | Sell |
+  |---|---|---|---|---|
+  | CAD | USD | DLR.TO | DLR.U | DLR.U for USD |
+  | USD | CAD | DLR.U | DLR.TO | DLR.TO for CAD |
 - Await full trade settlement (1-2 business days) before submitting the journal request.
-- **Size and timing check first**: the whole conversion takes up to 5 business days (about a week) and the journal costs $9.95 unless Questrade Plus. On about $3,000 it saves only about $30–45 over Questrade's own conversion (about a 1.5–2% spread), so recommend it mainly for larger amounts or money that won't be deployed for a week anyway.
+- **Size and timing check first**: the whole conversion takes up to 5 business days (the owner's July 2026 conversion took all 5, so plan on a calendar week) and the journal costs $9.95 unless Questrade Plus. On about $3,000 it saves only about $30–45 over Questrade's own conversion (about a 1.5–2% spread), so recommend it mainly for larger amounts or money that won't be deployed for a week anyway.
+
+## Common failures
+- **Buying the wrong unit first:** with CAD, buying DLR.U needs USD you don't have. Buy DLR.TO.
+- **Journaling before settlement:** submit the journal request only after the purchase settles (1–2 business days).
+- **Auto-conversion on settlement:** without "Currency of transaction", Questrade converts and charges the spread anyway.
+- **No cash for the fee:** the $9.95 is deducted after processing; leave it in the account.
+- **Canadian holidays:** DLR.TO trades on the TSX, which is closed on Canadian holidays even when US markets are open.
+- **Timing a market entry around it:** a week out of the market can move a position more than the spread saved; offer Questrade's conversion when the owner wants to buy this week.
 
 ## Quick start
 ```text
