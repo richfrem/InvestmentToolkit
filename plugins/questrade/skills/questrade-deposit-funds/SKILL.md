@@ -38,7 +38,7 @@ Questrade portal: **Move money → Deposit → Interac e-Transfer** (`myportal.q
    | Bill payment | None | 1–2 days | CAD | No maximum |
    | Pre-authorized deposit | None | 3–7 days | CAD & USD | Up to $100K |
    | Visa Debit card | None | Instant | CAD | $3K–10K |
-   | **Interac e-Transfer** (owner's usual) | None (the bank may charge) | Up to 30 minutes | CAD | Usually $3,000; up to $10,000 if the bank allows |
+   | **Interac e-Transfer** | None (the bank may charge) | Up to 30 minutes | CAD | Usually $3,000; up to $10,000 if the bank allows |
    | Wire transfer | None | 1–2 days | CAD & USD | No maximum |
    | Transfer between Questrade accounts | None | 1–2 days | CAD & USD | No maximum |
 
@@ -57,9 +57,9 @@ Questrade portal: **Move money → Deposit → Interac e-Transfer** (`myportal.q
 
 3. **Approve it from the bank:**
    9. Open the Interac email ("…has requested $X (CAD) from you"). It opens Interac's **Request For Money** page. Run the phishing check from the Constraints, then under **Select Your Financial Institution** pick the bank. Alternatively, approve the request inside the bank's own app or website.
-   10. **Accept the request** in the bank. The owner's usual path: open the Interac email on the phone, which launches the bank app (TD), accept the request, pick the TD account to pay from, then **review** (amount, payee Questrade) and **confirm**.
+   10. **Accept the request** in the bank: opening the Interac email on a phone usually launches the bank's app. Accept the request, pick the account to pay from, then **review** (amount, payee Questrade) and **confirm**.
 
-4. **Confirm it landed.** Questrade quotes up to 30 minutes, but the owner's deposit on 2026-10-17 arrived instantly. In the portal, **Move money → Deposit history → Interac e-Transfer** shows the deposit with status **COMPLETE** (its **See details** popup reads "Deposit complete — your money is now available"). From the agent side, with the Questrade MCP signed in (`questrade-setup`), call `Get Balances` for the account and check the CAD cash rose by the deposit. The deposit appears under `Get Account Activities` with `transactionTypes=["Deposits"]`.
+4. **Confirm it landed.** Questrade quotes up to 30 minutes; deposits often arrive within moments. In the portal, **Move money → Deposit history → Interac e-Transfer** shows the deposit with status **COMPLETE** (its **See details** popup reads "Deposit complete — your money is now available"). From the agent side, with the Questrade MCP signed in (`questrade-setup`), call `Get Balances` for the account and check the CAD cash rose by the deposit. The deposit appears under `Get Account Activities` with `transactionTypes=["Deposits"]`.
 
 5. **Record the contribution:**
    ```bash
@@ -75,7 +75,7 @@ Questrade portal: **Move money → Deposit → Interac e-Transfer** (`myportal.q
    - **Norbert's gambit** (`norberts-gambit` skill): about $13–15 on $3,000 ($9.95 journal fee unless Questrade Plus, plus a few dollars of DLR spread), but the owner's July 2026 conversion took the full 5 business days.
    - **Decision rule:** the ~$30 saving on $3,000 is small next to a week out of the market, so when the owner wants to buy within the week, use Exchange. Norbert's gambit pays off on larger amounts or money that will sit for a week anyway.
 
-8. **Exchange steps** (owner's walkthrough, 2026-10-17):
+8. **Exchange steps** (portal as of October 2026):
    1. Log in to Questrade.
    2. Open **Move money**.
    3. Choose **Exchange** ("Exchange between CAD and USD in self-directed margin and registered accounts").
