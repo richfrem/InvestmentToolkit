@@ -1,7 +1,7 @@
 ---
 name: questrade-deposit-funds
 plugin: questrade
-description: Guides the owner through depositing money into a Questrade account (TFSA, RRSP or Cash), with Interac e-Transfer as the usual method, then records the deposit as a contribution and routes the CAD to USD conversion. Trigger on /questrade-deposit-funds, "add money to my TFSA", "deposit to questrade" or "fund my account".
+description: Guides the owner through depositing money into a Questrade account (TFSA, RRSP or Cash), with Interac e-Transfer as the usual method, records the deposit as a contribution, and converts CAD to USD with Questrade Exchange (1.5% fee in the rate) or Norbert's gambit. Trigger on /questrade-deposit-funds, "add money to my TFSA", "deposit to questrade" or "fund my account".
 allowed-tools: Bash, Read
 ---
 
@@ -38,7 +38,7 @@ Questrade portal: **Move money → Deposit → Interac e-Transfer** (`myportal.q
    | Bill payment | None | 1–2 days | CAD | No maximum |
    | Pre-authorized deposit | None | 3–7 days | CAD & USD | Up to $100K |
    | Visa Debit card | None | Instant | CAD | $3K–10K |
-   | **Interac e-Transfer** (owner's usual) | None (the bank may charge) | Up to 30 minutes | CAD | Usually $3,000; up to $10,000 if the bank allows |
+   | **Interac e-Transfer** | None (the bank may charge) | Up to 30 minutes | CAD | Usually $3,000; up to $10,000 if the bank allows |
    | Wire transfer | None | 1–2 days | CAD & USD | No maximum |
    | Transfer between Questrade accounts | None | 1–2 days | CAD & USD | No maximum |
 
@@ -57,9 +57,9 @@ Questrade portal: **Move money → Deposit → Interac e-Transfer** (`myportal.q
 
 3. **Approve it from the bank:**
    9. Open the Interac email ("…has requested $X (CAD) from you"). It opens Interac's **Request For Money** page. Run the phishing check from the Constraints, then under **Select Your Financial Institution** pick the bank. Alternatively, approve the request inside the bank's own app or website.
-   10. **Accept the request** in the bank. The owner's usual path: open the Interac email on the phone, which launches the bank app (TD), accept the request, pick the TD account to pay from, then **review** (amount, payee Questrade) and **confirm**.
+   10. **Accept the request** in the bank: opening the Interac email on a phone usually launches the bank's app. Accept the request, pick the account to pay from, then **review** (amount, payee Questrade) and **confirm**.
 
-4. **Confirm it landed.** Questrade quotes up to 30 minutes, but the owner's deposit on 2026-10-17 arrived instantly. In the portal, **Move money → Deposit history → Interac e-Transfer** shows the deposit with status **COMPLETE** (its **See details** popup reads "Deposit complete — your money is now available"). From the agent side, with the Questrade MCP signed in (`questrade-setup`), call `Get Balances` for the account and check the CAD cash rose by the deposit. The deposit appears under `Get Account Activities` with `transactionTypes=["Deposits"]`.
+4. **Confirm it landed.** Questrade quotes up to 30 minutes; deposits often arrive within moments. In the portal, **Move money → Deposit history → Interac e-Transfer** shows the deposit with status **COMPLETE** (its **See details** popup reads "Deposit complete — your money is now available"). From the agent side, with the Questrade MCP signed in (`questrade-setup`), call `Get Balances` for the account and check the CAD cash rose by the deposit. The deposit appears under `Get Account Activities` with `transactionTypes=["Deposits"]`.
 
 5. **Record the contribution:**
    ```bash
@@ -71,9 +71,21 @@ Questrade portal: **Move money → Deposit → Interac e-Transfer** (`myportal.q
 6. **Sync the portfolio** with `/tv-portfolio-sync` (or `questrade-sync-portfolio`) so cash and totals include the deposit.
 
 7. **Convert to USD if it will buy USD-listed stocks.** Compare the options with the owner:
-   - **Questrade conversion:** immediate, costs the FX spread (about 1.5–2%).
-   - **Norbert's gambit** (`norberts-gambit` skill): costs about $10 (the journal fee unless Questrade Plus) plus a few dollars of spread, but takes up to 5 business days.
-   - **Break-even:** Norbert's gambit saves only about $30–45 on $3,000, so it pays off mainly on larger amounts or when the money won't be deployed for a week anyway.
+   - **Questrade Exchange:** a flat **1.5% fee built into the exchange rate**, stated on Questrade's Exchange page. The CAD sold drops by exactly the amount entered, and the fee shows up as fewer USD; there is no separate deduction, so no extra CAD buffer is needed. On $3,000 CAD that's $45.
+   - **Norbert's gambit** (`norberts-gambit` skill): about $13–15 on $3,000 ($9.95 journal fee unless Questrade Plus, plus a few dollars of DLR spread), but the owner's July 2026 conversion took the full 5 business days.
+   - **Decision rule:** the ~$30 saving on $3,000 is small next to a week out of the market, so when the owner wants to buy within the week, use Exchange. Norbert's gambit pays off on larger amounts or money that will sit for a week anyway.
+
+8. **Exchange steps** (portal as of October 2026):
+   1. Log in to Questrade.
+   2. Open **Move money**.
+   3. Choose **Exchange** ("Exchange between CAD and USD in self-directed margin and registered accounts").
+   4. Pick the account (e.g. Individual TFSA), **Transaction: Exchange CAD to USD**, and **Action: Specify the amount of CAD to sell**. Alternatively, "Buy USD" sets the USD amount instead.
+   5. Enter the **Amount** and click **Submit**.
+   6. Check the **Review and confirm** popup (account, transaction, action, amount), then click **Confirm**. No rate is shown; it's set when Questrade processes the request.
+   7. Questrade shows **"We're processing your fund exchange"** with a reference number (don't record it). The request can be reviewed or cancelled under **Move money history → Exchange** until it's processed.
+
+   - **Processing time:** requests before **2:30 p.m. ET** on a business day are processed the same day; later ones are best-effort. A weekend request waits for the next business day, so plan a Monday buy around it and confirm the USD with `Get Balances` before placing an order.
+   - **Registered accounts:** to exchange or hold USD, currency settlement must be "Currency of transaction" or "USD" (Management → Account management → Currency settlement → Change).
 
 ## Verification
 
