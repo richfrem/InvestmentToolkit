@@ -15436,7 +15436,7 @@
       "migration_status": "n/a"
     },
     {
-      "path": "plugins/portfolio-advisor/skills/norberts-gambit/evals/evals.json",
+      "path": "plugins/questrade/skills/norberts-gambit/evals/evals.json",
       "extension": ".json",
       "size_bytes": 2730,
       "line_count": 52,
@@ -93274,7 +93274,7 @@
       "line": 166,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "| `plugins/portfolio-advisor/skills/norberts-gambit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |"
+      "line_text": "| `plugins/questrade/skills/norberts-gambit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |"
     },
     {
       "referencing_file": "docs/architecture/json-discovery-audit.md",
@@ -94786,7 +94786,7 @@
       "line": 2404,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "### plugins/portfolio-advisor/skills/norberts-gambit/evals/evals.json"
+      "line_text": "### plugins/questrade/skills/norberts-gambit/evals/evals.json"
     },
     {
       "referencing_file": "docs/architecture/json-discovery-audit.md",
@@ -96466,7 +96466,7 @@
       "line": 139,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "| `plugins/portfolio-advisor/skills/norberts-gambit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | (none detected) | investment_screener/backend/tests/py_services/test_audit_json_usage.py:129 | |"
+      "line_text": "| `plugins/questrade/skills/norberts-gambit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | (none detected) | investment_screener/backend/tests/py_services/test_audit_json_usage.py:129 | |"
     },
     {
       "referencing_file": "docs/architecture/allowed-json-register.md",

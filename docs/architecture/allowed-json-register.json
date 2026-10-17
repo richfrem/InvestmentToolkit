@@ -588,7 +588,7 @@
       ]
     },
     {
-      "path_or_pattern": "plugins/portfolio-advisor/skills/norberts-gambit/evals/evals.json",
+      "path_or_pattern": "plugins/questrade/skills/norberts-gambit/evals/evals.json",
       "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],

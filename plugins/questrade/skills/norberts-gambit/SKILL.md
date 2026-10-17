@@ -1,6 +1,6 @@
 ---
 name: norberts-gambit
-plugin: portfolio-advisor
+plugin: questrade
 description: Guides the user through Norbert's Gambit to convert cash between CAD and USD inside a brokerage account using DLR.TO/DLR.U ETF pairs without bank FX spreads.
 ---
 
@@ -18,11 +18,12 @@ description: Guides the user through Norbert's Gambit to convert cash between CA
 - Ensure the brokerage currency settlement preference is set to "Currency of transaction" prior to execution.
 - Trade direction dictates starting ETF: USD->CAD buys DLR.U; CAD->USD buys DLR.TO.
 - Await full trade settlement (1-2 business days) before submitting the journal request.
+- **Size and timing check first**: the whole conversion takes up to 5 business days (about a week) and the journal costs $9.95 unless Questrade Plus. On about $3,000 it saves only about $30–45 over Questrade's own conversion (about a 1.5–2% spread), so recommend it mainly for larger amounts or money that won't be deployed for a week anyway.
 
 ## Quick start
-```bash
-# Review current cash balances before initiating conversion
-python3 plugins/questrade/scripts/questrade_sync.py --balances-only
+```text
+# Review current cash balances before initiating conversion (Questrade MCP, signed in via questrade-setup)
+Get Balances(accountId=<id from List Accounts>)  -> balances.cash.cad / balances.cash.usd
 ```
 
 ## Workflow
@@ -33,9 +34,9 @@ python3 plugins/questrade/scripts/questrade_sync.py --balances-only
 5. **Sell & Settle**: Sell journaled shares in target currency to finalize conversion.
 
 ## Verification
-```bash
-python3 plugins/questrade/scripts/questrade_sync.py --balances-only
-```
+- `Get Balances` for the account shows the source-currency cash down and the target-currency cash up by about the converted amount (less the journal fee).
+- Run `/tv-portfolio-sync` afterwards: DLR.TO/DLR.U are transient conversion vehicles, so they should appear and then disappear, not become a position with a target.
 
 ## References
 - [Questrade Submission Steps](references/questrade.md) - Step-by-step journal submission instructions, fees, and settlement settings for Questrade.
+- [Questrade Deposit Funds](../questrade-deposit-funds/SKILL.md) - Getting the CAD into the account first.

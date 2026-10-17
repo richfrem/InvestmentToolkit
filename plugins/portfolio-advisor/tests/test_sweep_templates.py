@@ -59,3 +59,9 @@ def test_the_fund_is_named_correctly_and_not_called_fully_liquidated():
     assert "most" in section.lower()
     assert "entire" not in section.lower()
     assert "do **not** cite pre-liquidation" in section
+
+
+@BOTH
+def test_asks_models_to_suggest_prompt_improvements(text):
+    assert "Prompt improvements" in text
+    assert "at most 3" in text
