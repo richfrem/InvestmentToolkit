@@ -58,3 +58,53 @@ def test_context_says_whether_recent_trades_already_follow_the_action(action, tr
     assert context["status"] == status
     assert fragment in context["note"]
     assert "2026-10-0" in context["note"]
+
+
+# ── A call may not reverse what the owner just did (flip_hold_note) ─────────────────────────
+from datetime import date as _date  # noqa: E402
+
+from recent_trades import FLIP_HOLD_DAYS, flip_hold_note  # noqa: E402
+
+_TODAY = _date(2026, 10, 17)
+_BUY = [{"action": "buy", "shares": 3, "trade_date": "2026-10-12T15:00:00-04:00"}]
+_SELL = [{"action": "sell", "shares": 43, "trade_date": "2026-10-15T11:02:08-04:00"}]
+
+
+def test_trim_or_exit_is_held_back_after_a_recent_buy():
+    for action in ("TRIM", "EXIT"):
+        out = flip_hold_note(action, _BUY, _TODAY)
+        assert out["held"] is True and "Bought on 2026-10-12" in out["note"]
+
+
+def test_accumulate_or_initiate_is_held_back_after_a_recent_sale():
+    for action in ("ACCUMULATE", "INITIATE"):
+        out = flip_hold_note(action, _SELL, _TODAY)
+        assert out["held"] is True and "Sold on 2026-10-15" in out["note"]
+
+
+def test_calls_that_follow_the_trade_are_untouched():
+    assert flip_hold_note("ACCUMULATE", _BUY, _TODAY) is None
+    assert flip_hold_note("TRIM", _SELL, _TODAY) is None
+    assert flip_hold_note("MAINTAIN", _BUY, _TODAY) is None
+
+
+def test_hold_expires_after_the_window():
+    old = [{"action": "buy", "shares": 1, "trade_date": "2026-09-01"}]
+    assert (_TODAY - _date(2026, 9, 1)).days > FLIP_HOLD_DAYS
+    assert flip_hold_note("TRIM", old, _TODAY) is None
+
+
+def test_new_facts_lift_the_hold_and_say_so():
+    breaker = flip_hold_note("EXIT", _BUY, _TODAY, breaker_triggered=True)
+    assert breaker["held"] is False and "thesis breaker triggered" in breaker["note"]
+    reval = flip_hold_note("TRIM", _BUY, _TODAY, new_evidence_date="2026-10-16T09:00:00+00:00")
+    assert reval["held"] is False and "2026-10-16" in reval["note"]
+
+
+def test_valuation_dated_before_the_trade_does_not_lift_the_hold():
+    out = flip_hold_note("TRIM", _BUY, _TODAY, new_evidence_date="2026-10-08T19:35:43+00:00")
+    assert out["held"] is True
+
+
+def test_breaker_does_not_lift_a_hold_on_buying_back_after_a_sale():
+    assert flip_hold_note("INITIATE", _SELL, _TODAY, breaker_triggered=True)["held"] is True

@@ -74,6 +74,32 @@ def _missed_price_symbols(conn: sqlite3.Connection, symbols: set[str], held: set
     return {sym for sym in symbols if not fetched.get(sym) or fetched[sym] < cutoff}
 
 
+def fills_since_target(conn: sqlite3.Connection, now: datetime | None = None,
+                       side: str | None = None) -> set[str]:
+    """Symbols with a filled trade newer than their target_set_at (or, for a target with no
+    recorded date, inside the last UNSTAMPED_WINDOW_DAYS). ``side`` limits to "buy" or "sell".
+
+    The one answer to "has the owner traded this since the target was set?", shared by the
+    re-baseline, the role sync and the news-sweep prompt so none of them can call a position
+    the owner just bought an exit.
+    """
+    now = now or datetime.now(timezone.utc)
+    window_start = now - timedelta(days=UNSTAMPED_WINDOW_DAYS)
+    set_at = {sym: _parse(ts) for sym, ts in conn.execute(
+        "SELECT symbol, target_set_at FROM investment").fetchall() if sym}
+    out: set[str] = set()
+    for sym, action, trade_date in conn.execute(
+        "SELECT i.symbol, lower(t.action), t.trade_date FROM trade_log_entry t "
+        "JOIN investment i ON i.investment_id = t.investment_id WHERE lower(t.status) = 'filled'"
+    ).fetchall():
+        if sym not in set_at or (side and action != side):
+            continue
+        filled_at = _parse(trade_date)
+        if filled_at and filled_at > (set_at[sym] or window_start):
+            out.add(sym)
+    return out
+
+
 def plan_rebaseline(conn: sqlite3.Connection, now: datetime | None = None) -> dict[str, Any]:
     """Work out which targets the latest fills reset, without writing anything.
 
@@ -95,18 +121,7 @@ def plan_rebaseline(conn: sqlite3.Connection, now: datetime | None = None) -> di
     investments = {sym: inv for sym, inv in every.items() if not sym.startswith(CASH_PREFIX)}
     cash = every.get(CASH_SYMBOL)
 
-    window_start = now - timedelta(days=UNSTAMPED_WINDOW_DAYS)
-    traded: set[str] = set()
-    for sym, trade_date in conn.execute(
-        "SELECT i.symbol, t.trade_date FROM trade_log_entry t "
-        "JOIN investment i ON i.investment_id = t.investment_id WHERE lower(t.status) = 'filled'"
-    ).fetchall():
-        inv = investments.get(sym)
-        filled_at = _parse(trade_date)
-        if inv is None or filled_at is None:
-            continue
-        if filled_at > (inv["set_at"] or window_start):
-            traded.add(sym)
+    traded = fills_since_target(conn, now) & set(investments)
 
     held = {sym for sym, qty in state["shares"].items() if qty > 0}
     missed = _missed_price_symbols(conn, traded & held, held)

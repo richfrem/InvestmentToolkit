@@ -46,8 +46,8 @@ from datetime import date
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from recent_trades import summarize_recent_trades, trade_context, window_start  # noqa: E402
-from risk_reward import SCENARIO_NAMES, assess_risk_reward, debt_view, evidence_date, reduce_view, valuation_support  # noqa: E402
+from recent_trades import flip_hold_note, summarize_recent_trades, trade_context, window_start  # noqa: E402
+from risk_reward import SCENARIO_NAMES, _forward_check, assess_risk_reward, debt_view, evidence_date, reduce_view, valuation_support  # noqa: E402
 from standing_decision_check import check_standing_decision  # noqa: E402
 
 ACT_THRESHOLD_PCT = 15.0
@@ -127,6 +127,23 @@ def _valuation_inputs(conn: Any, inv_id: str, prices: dict[str, float], symbol: 
     return entry, fv, price, "investment_price" if current_price else "projection_snapshot", upside
 
 
+def _reverified_evidence_date(entry: dict | None) -> str | None:
+    """Evidence date of the saved valuation when its forward review passed (not flagged), else None.
+
+    Older projections store analytics_log_json as a list or leave it empty; those count as not
+    re-verified, so they can never lift the no-flip hold.
+    """
+    if not entry:
+        return None
+    try:
+        log = json.loads(entry.get("analytics_log_json") or "{}")
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(log, dict) or not _forward_check(log)[0]:
+        return None
+    return evidence_date(entry.get("saved_at"), entry.get("analyzed_at"), log)
+
+
 def _risk_reward_fields(conn: Any, entry: dict | None, rec: dict, price: float | None,
                         fair_value: float | None, weight: float, target: float | None) -> dict[str, Any]:
     """Build the scenario, reward:risk and support fields from the selected projection."""
@@ -151,8 +168,12 @@ def _recent_trades_by_symbol(conn: Any, today: date) -> dict[str, list[dict]]:
     """Filled trades inside the recent window, grouped by symbol (one query)."""
     from domain_model.trade_log_entry_repository import list_filled_trades_since
 
+    from recent_trades import FLIP_HOLD_DAYS
+    from datetime import timedelta
+    # Fetch enough history for the flip-hold rule; summarize_recent_trades applies its own window.
+    since = min(window_start(today), (today - timedelta(days=FLIP_HOLD_DAYS)).isoformat())
     grouped: dict[str, list[dict]] = {}
-    for row in list_filled_trades_since(conn, window_start(today)):
+    for row in list_filled_trades_since(conn, since):
         grouped.setdefault(row["symbol"], []).append(row)
     return grouped
 
@@ -182,6 +203,15 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
             held = (state["shares"].get(symbol) or 0) > 0
             exit_signal = symbol in triggered or bool(entry and entry.get("action") == "EXIT")
             rec = recommend(held, upside, exit_signal)
+            # A call may not reverse what the owner just did: no TRIM/EXIT within 30 days of a buy
+            # (unless a thesis breaker triggered), no ACCUMULATE/INITIATE within 30 days of a sale.
+            reverified = _reverified_evidence_date(entry)
+            flip = flip_hold_note(rec["action"], trades.get(symbol, []), today, symbol in triggered, reverified)
+            if flip and flip["held"]:
+                rec.update(action="MAINTAIN" if held else "WATCHLIST",
+                           reason=f"{flip['note']}; valuation alone says {rec['valuation']}")
+            if flip:
+                rec["flip_check"] = flip
             if standing_type or standing_reason:
                 rec["reason"] += f"; standing decision {standing_type or 'USER'}: {standing_reason or 'review before trading'}"
             rec.update(ticker=symbol, held=held, exit_signal=exit_signal,

@@ -89,3 +89,54 @@ def test_load_actual_shares_reads_the_database_it_is_given(tmp_path):
     conn.close()
 
     assert sync_portfolio_roles.load_actual_shares(db) == {"AAPL": 40.0}
+
+
+def _seed_buy(db_path, symbol, trade_date):
+    from domain_model.account_repository import upsert_account
+    from domain_model.trade_log_entry_repository import upsert_trade_log_entry
+    conn = initialize_db(str(db_path))
+    upsert_account(conn, "TFSA", "TFSA", "TFSA")
+    upsert_trade_log_entry(conn, {"entry_id": f"{symbol}-{trade_date}", "investment_id": symbol, "account_id": "TFSA",
+                                  "action": "buy", "shares": 3, "price": 224.7, "trade_date": trade_date,
+                                  "status": "filled", "source": "test"})
+    conn.close()
+
+
+def _role(db_path, symbol):
+    conn = initialize_db(str(db_path))
+    row = conn.execute("SELECT lifecycle_status FROM investment WHERE symbol = ?;", (symbol,)).fetchone()
+    conn.close()
+    return row[0]
+
+
+def test_position_bought_after_a_zero_target_is_never_labelled_exit(tmp_path, monkeypatch):
+    """The NVDA case: an initiate target of 0%, then the owner buys. The stale 0% must not become 'exit'."""
+    from datetime import date, timedelta
+    db_path = tmp_path / "test.sqlite"
+    _seed(db_path, "NVDA", target_weight=0.0, lifecycle_status="initiate")
+    _seed_buy(db_path, "NVDA", (date.today() - timedelta(days=5)).isoformat())
+    monkeypatch.setattr(sync_portfolio_roles, "load_actual_shares", lambda db_path: {"NVDA": 4.0})
+
+    sync_portfolio_roles.sync_roles(dry_run=False, db_path=db_path)
+    assert _role(db_path, "NVDA") == "accumulate"
+
+
+def test_existing_exit_label_is_corrected_after_a_buy(tmp_path, monkeypatch):
+    from datetime import date, timedelta
+    db_path = tmp_path / "test.sqlite"
+    _seed(db_path, "NVDA", target_weight=0.0, lifecycle_status="exit")
+    _seed_buy(db_path, "NVDA", (date.today() - timedelta(days=5)).isoformat())
+    monkeypatch.setattr(sync_portfolio_roles, "load_actual_shares", lambda db_path: {"NVDA": 4.0})
+
+    sync_portfolio_roles.sync_roles(dry_run=False, db_path=db_path)
+    assert _role(db_path, "NVDA") == "accumulate"
+
+
+def test_held_zero_target_without_a_buy_since_is_still_exit(tmp_path, monkeypatch):
+    """An owner-set 0% target with no later buy keeps meaning exit."""
+    db_path = tmp_path / "test.sqlite"
+    _seed(db_path, "OLD", target_weight=0.0, lifecycle_status="watchlist")
+    monkeypatch.setattr(sync_portfolio_roles, "load_actual_shares", lambda db_path: {"OLD": 2.0})
+
+    sync_portfolio_roles.sync_roles(dry_run=False, db_path=db_path)
+    assert _role(db_path, "OLD") == "exit"

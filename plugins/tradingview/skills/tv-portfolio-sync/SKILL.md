@@ -41,8 +41,11 @@ python3 plugins/tradingview/scripts/fetch_broker_data.py --snapshot
 6. Import executed trades from TradingView's order history (all accounts), previewing first:
    `python3 plugins/tradingview/scripts/tv_trades_import.py --dry-run`, then without `--dry-run`.
    Trades already recorded (including from Questrade) are skipped; report any warnings or rejections as printed.
-7. Run invariant audit: `verify_portfolio_invariants.py`.
-8. Closing refresh: run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
+7. Re-baseline targets the new fills superseded, then re-sync roles, so a position just bought is never left on a stale 0% target labelled exit:
+   `python3 plugins/portfolio-advisor/scripts/rebaseline_targets.py --write`, then `python3 plugins/portfolio-advisor/scripts/sync_portfolio_roles.py`.
+   Report any position skipped because its price was missed; refresh that price and re-run.
+8. Run invariant audit: `verify_portfolio_invariants.py`.
+9. Closing refresh: run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 

@@ -37,11 +37,12 @@ def _first_action_word(text: str) -> str:
     return words[0] if words else ""
 
 
-def determine_role(holding: dict, actual_shares: float) -> str:
+def determine_role(holding: dict, actual_shares: float, bought_since_target: bool = False) -> str:
     """Determine the correct action-role for a holding.
 
     ``holding`` is a raw ``investment`` table row (dict) as returned by
-    ``list_investments()``.
+    ``list_investments()``. ``bought_since_target`` is True when the owner bought after the
+    target was last set: a 0% target is then stale (the buy supersedes it), not an exit.
     """
     target_weight = float(holding.get("target_weight") or 0)
     thesis = (holding.get("thesis_for_inclusion") or "").upper()
@@ -57,9 +58,10 @@ def determine_role(holding: dict, actual_shares: float) -> str:
             return "avoid"
         return "watchlist"
 
-    # Held position
+    # Held position. A 0% target means exit only if the owner hasn't bought since it was set;
+    # after a buy it is stale and target_rebaseline resets it to the post-trade weight.
     if target_weight == 0:
-        return "exit"
+        return "accumulate" if bought_since_target else "exit"
 
     # SA_LP_EXIT_OVERRIDE means "don't add, trim toward target" — not a full exit
     if standing_type == "SA_LP_EXIT_OVERRIDE":
@@ -89,6 +91,8 @@ def sync_roles(dry_run: bool = False, db_path: Path = DB_PATH) -> None:
 
     conn = initialize_db(str(db_path))
     try:
+        from target_rebaseline import fills_since_target
+        bought = fills_since_target(conn, side="buy")
         investments = list_investments(conn)
         # Only tickers with a real (possibly zeroed) target_weight were ever
         # thesis holdings — matches load_thesis_holdings()'s own filter.
@@ -105,14 +109,15 @@ def sync_roles(dry_run: bool = False, db_path: Path = DB_PATH) -> None:
             ticker_canonical = normalize_ticker(ticker)
             actual_shares = actual.get(ticker_canonical, actual.get(ticker, 0))
             old_role = inv.get("lifecycle_status") or ""
-            new_role = determine_role(inv, actual_shares)
+            new_role = determine_role(inv, actual_shares, ticker_canonical in bought or ticker in bought)
 
             if actual_shares == 0 and old_role not in VALID_NOT_HELD:
                 violations.append(f"  {ticker:<10} shares=0  role={old_role!r:15} → {new_role!r}")
                 if not dry_run:
                     update_investment_fields(conn, inv["investment_id"], lifecycle_status=new_role)
                 changed += 1
-            elif actual_shares > 0 and old_role not in VALID_HELD:
+            elif actual_shares > 0 and (old_role not in VALID_HELD
+                                        or (old_role == "exit" and new_role != "exit")):
                 violations.append(f"  {ticker:<10} shares={actual_shares:<6.1f} role={old_role!r:15} → {new_role!r}")
                 if not dry_run:
                     update_investment_fields(conn, inv["investment_id"], lifecycle_status=new_role)
