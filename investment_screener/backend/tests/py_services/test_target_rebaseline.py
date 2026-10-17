@@ -66,15 +66,15 @@ def test_fill_resets_traded_target_and_scales_the_rest_down_only_when_needed(tmp
 def test_sold_position_target_goes_to_zero_and_cash_target_absorbs_it(tmp_path):
     set_at = "2026-10-01T00:00:00+00:00"
     conn = _portfolio(tmp_path, {"AAA": (100, 1.0)},
-                      {"KOID": (3.14, set_at), "AAA": (84.06, set_at), "CASH_USD": (12.8, set_at)})
-    _fill(conn, "KOID", "2026-10-15T11:02:08-04:00", action="sell")
+                      {"OLD": (5.0, set_at), "AAA": (85.0, set_at), "CASH_USD": (10.0, set_at)})
+    _fill(conn, "OLD", "2026-10-15T11:02:08-04:00", action="sell")
 
     plan = plan_rebaseline(conn, now=NOW)
     ch = _changes(plan)
-    assert ch["KOID"]["new"] == 0.0 and ch["KOID"]["reason"] == "sold to zero"
-    # The untraded target is left exactly as set; cash takes the freed 3.14%.
+    assert ch["OLD"]["new"] == 0.0 and ch["OLD"]["reason"] == "sold to zero"
+    # The untraded target is left exactly as set; cash takes the freed 5%.
     assert "AAA" not in ch
-    assert ch["CASH_USD"]["new"] == 15.94
+    assert ch["CASH_USD"]["new"] == 15.0
     assert plan["total_after"] == 100.0
 
 

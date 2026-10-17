@@ -2,9 +2,9 @@
 target_rebaseline.py - Keep target weights current: re-baseline on trades, flag stale targets.
 
 Purpose:
-    A target weight goes stale when the owner trades without changing it: a sold position kept
-    its target (KOID, 2026-10-15) and a position the owner kept buying stayed at an old target
-    (MU at 2.9% while held at 7.9%). A trade is the owner's freshest sizing decision, so a fill
+    A target weight goes stale when the owner trades without changing it: a sold position keeps
+    its target and a position the owner keeps buying stays at an old target. A trade is the
+    owner's freshest sizing decision, so a fill
     newer than the target's ``target_set_at`` resets that target to the post-trade weight; a
     position sold to zero gets 0%. Untraded targets stay as set and the CASH_USD target absorbs
     the difference so targets still sum to 100% (TARGET_WEIGHT_INVARIANT); only when that would
