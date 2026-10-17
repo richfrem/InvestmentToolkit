@@ -44,6 +44,7 @@ Please review SEC filings, earnings releases, financial news, X posts, and analy
 - **EVIDENCE STANDARD:** For every claim that could change a trade, give a **source link and its date**. Label each item **FRESH** (published in the last 14 days) or **BACKGROUND** (older context). State plainly what you **could not verify** — never fill a gap with a plausible-sounding figure, and never say a claim was "corroborated" unless you actually retrieved the source.
 - **MACRO FIGURES:** Quote the US 10-year yield and VIX with the **date and time of the reading**, not a range from memory.
 - **CHALLENGE THIS PROMPT:** The figures and anchor text in this prompt (prices, share counts, last-quarter results, weights) can be stale or wrong. If any conflicts with your sources, say so explicitly in a "Prompt corrections" list at the end of Part {{QUESTIONS_PART}} and use your sourced figure. Also flag any held position you think is missing from the tables.
+- **IMPROVE THIS PROMPT:** After the corrections list, add a "Prompt improvements" list with at most 3 concrete changes to this prompt that would have made your answer more accurate or more useful (a missing question, an ambiguous instruction, a section to drop). For each, quote the text to change, give the replacement, and say in one sentence why. Write "None" if you have no suggestion.
 
 
 Return your response in **{{NUM_PARTS}} parts**:
