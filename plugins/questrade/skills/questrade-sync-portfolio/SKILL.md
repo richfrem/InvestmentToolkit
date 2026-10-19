@@ -57,7 +57,8 @@ Use `--dry-run` to preview changes without committing to SQLite.
    python3 plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py --payload temp/questrade_trades_payload.json --json
    ```
    - Exit code 2 means some trades were rejected: report each reason; do not edit values to force them through. An "unknown symbol" rejection is usually a broker-only symbol (cash fund, currency conversion): leave it out unless the owner asks for it.
-5. **Trigger Refresh & Invariant Check**:
+5. **Re-baseline Targets and Roles**: run `python3 plugins/portfolio-advisor/scripts/rebaseline_targets.py --write`, then `python3 plugins/portfolio-advisor/scripts/sync_portfolio_roles.py`, so a position just bought is never left on a stale 0% target labelled exit. Report any position skipped because its price was missed.
+6. **Trigger Refresh & Invariant Check**:
    - Run `python3 investment_screener/backend/py_services/verify_portfolio_invariants.py`.
    - Remove temporary JSON payload and display sync summary.
    - Closing refresh: run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.

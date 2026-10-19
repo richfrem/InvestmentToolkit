@@ -207,6 +207,13 @@ def build_prompt(date_str: str) -> str:
     target_data = {"holdings": {h["ticker"]: h["targetWeight"] for h in holdings_list}}
     exclusions = get_dynamic_exclusions()
 
+    from target_rebaseline import fills_since_target
+    _conn = initialize_db(str(DB_PATH))
+    try:
+        bought_since_target = fills_since_target(_conn, side="buy")
+    finally:
+        _conn.close()
+
     # Classify holdings into groups
     active_held   = []   # have actual position AND target > 0
     initiate_list = []   # target > 0, actual = 0
@@ -245,6 +252,11 @@ def build_prompt(date_str: str) -> str:
 
         if not actual and not target:
             watchlist.append(row)
+        elif target == 0 and actual > 0 and ticker in bought_since_target:
+            # Bought after the 0% target was set: the target is stale, not an exit call.
+            row["target"] = row["actual"]
+            row["targetPending"] = True
+            active_held.append(row)
         elif target == 0 and actual > 0:
             exit_list.append(row)
         elif actual == 0 and target > 0:
@@ -283,7 +295,9 @@ For **every INITIATE target** below, provide 3–5 sentences: recent momentum, v
         dcf_label = _dcf_label(r["dcf"])
         gap = round(r["target"] - r["actual"], 1)
         sizing = "Near target"
-        if gap > 1.0:
+        if r.get("targetPending"):
+            sizing = "Recently bought — target pending re-baseline"
+        elif gap > 1.0:
             sizing = f"Under by {gap:.1f}pp — room to add"
         elif gap < -1.0:
             sizing = f"Over by {abs(gap):.1f}pp — trim candidate"

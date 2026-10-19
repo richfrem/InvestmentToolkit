@@ -25,6 +25,22 @@ lists `questrade` (the owner set `QUESTRADE_ENABLED=true`) ask which source to u
 this refresh. Never present a TRIM or ACCUMULATE while the latest executed trade in the
 Trade Log is older than the owner's last known trade.
 
+### Never reverse what the owner just did
+
+A recommendation the owner acted on stands for 30 days. `recommendation.py` enforces it
+(`recent_trades.flip_hold_note`, field `flip_check`): within 30 days of a buy it will not say
+TRIM or EXIT, and within 30 days of a sale it will not say ACCUMULATE or INITIATE. Only
+compelling new facts lift the hold: a TRIGGERED thesis breaker (after a buy), or a
+re-verified valuation (not flagged `NEEDS_REVALUATION`) whose evidence is dated after the
+trade. When a reversal is allowed, say which fact allowed it and its date.
+
+Apply the same rule to every label you relay, not only the canonical record. Before
+presenting EXIT, TRIM or INITIATE for a ticker from any source (a news-sweep prompt, a model
+response, a role, a target, a brief), check the Trade Log. A label that contradicts a trade
+in the last 30 days is stale data: fix the data (`rebaseline_targets.py --write`, then
+`sync_portfolio_roles.py`) and say so. Never present it to the owner as a signal or as a
+"decide between EXIT and BUY" question.
+
 ## 2. Read the canonical record
 
 `python3 plugins/portfolio-advisor/scripts/recommendation.py --all` is the only source

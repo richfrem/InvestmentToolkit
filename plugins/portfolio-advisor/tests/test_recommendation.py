@@ -63,3 +63,15 @@ class TestTargetsPlayNoPart(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_reverified_evidence_date_handles_legacy_and_flagged_logs():
+    """Legacy list-shaped or flagged analytics logs never count as new facts."""
+    from recommendation import _reverified_evidence_date
+    assert _reverified_evidence_date(None) is None
+    assert _reverified_evidence_date({"analytics_log_json": "[]", "saved_at": "2026-10-16"}) is None
+    assert _reverified_evidence_date({"analytics_log_json": "not json", "saved_at": "2026-10-16"}) is None
+    flagged = '{"valuationModel": {"readiness": "NEEDS_REVALUATION", "method": "annual_fcff"}}'
+    assert _reverified_evidence_date({"analytics_log_json": flagged, "saved_at": "2026-10-16"}) is None
+    ok = '{"valuationModel": {"method": "annual_fcff", "readiness": "READY"}, "outlookAudit": {"reviewReadiness": "READY"}}'
+    assert _reverified_evidence_date({"analytics_log_json": ok, "saved_at": "2026-10-16T09:00:00+00:00"}).startswith("2026-10-16")

@@ -8,6 +8,12 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-17 — A call can't reverse what the owner just did
+
+- **Failure:** a position bought on an INITIATE call was shown as EXIT days later. Its target was still 0% after the buy; `sync_portfolio_roles.py` labelled any held position with a 0% target `exit` (and never revisited an `exit` label); the news-sweep prompt listed it under "EXIT positions"; the agent relayed the label as a conflict instead of checking the Trade Log.
+- **Change:** one shared helper, `target_rebaseline.fills_since_target()`, says whether the owner traded since a target was set. The role sync labels a held 0% target `accumulate` when there is a buy since, and corrects existing `exit` labels. The news prompt never lists such a position as EXIT. `recommendation.py` applies `recent_trades.flip_hold_note`: no TRIM/EXIT within 30 days of a buy, no ACCUMULATE/INITIATE within 30 days of a sale, unless new facts arrive (a triggered thesis breaker, or a re-verified valuation dated after the trade), and the reason is recorded in `flip_check`. Both sync skills now re-baseline targets and re-sync roles after importing trades. `recommendation-coherence.md` requires checking the Trade Log before relaying any EXIT/TRIM/INITIATE label.
+- **Tests:** role-sync cases for a buy after a 0% target and for correcting an existing `exit` label (both fail on the previous code); `flip_hold_note` cases for both directions, window expiry, and each new-facts exception.
+
 ## 2026-10-16 — Targets re-baseline on trades; stale targets reviewed, not overwritten
 
 - **Friction:** target weights went stale whenever the owner traded: a sold position kept its target, a position that kept being bought stayed at an old target, and the cash target ignored redeployed cash. News-sweep models flagged targets that contradicted the weights. A one-off reset to current weights went stale again within weeks.

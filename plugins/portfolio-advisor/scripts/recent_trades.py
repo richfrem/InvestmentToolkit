@@ -12,6 +12,7 @@ Usage:
     from recent_trades import summarize_recent_trades, trade_context
 Key Functions:
     summarize_recent_trades(trades, today)   shares sold and bought inside the window, newest fill
+    flip_hold_note(action, trades, today)  a reversal of a recent trade held back, or None
     trade_context(action, summary)           ACTED / OPPOSED / RECENT / NONE with a plain note
 Key Input Dependencies:
     Filled trade_log_entry rows (trade_log_entry_repository.list_filled_trades_since)
@@ -23,6 +24,9 @@ from datetime import date, timedelta
 from typing import Any
 
 RECENT_TRADE_DAYS = 14
+# After the owner trades, a call may not reverse that trade for this long (buy -> no TRIM/EXIT,
+# sell -> no ACCUMULATE/INITIATE). Only a TRIGGERED thesis breaker can override after a buy.
+FLIP_HOLD_DAYS = 30
 SELL_ACTIONS = ("TRIM", "EXIT")
 BUY_ACTIONS = ("ACCUMULATE", "INITIATE")
 
@@ -72,6 +76,43 @@ def _shares_text(verb: str, shares: float, summary: dict) -> str:
     """'Sold 3 shares, last on 2026-10-06' with tidy number formatting."""
     amount = f"{shares:g}"
     return f"{verb} {amount} share{'' if shares == 1 else 's'} in the last {summary['window_days']} days, last on {summary['last']['date']}"
+
+
+def flip_hold_note(action: str | None, trades: list[dict], today: date,
+                   breaker_triggered: bool = False, new_evidence_date: str | None = None) -> dict | None:
+    """Whether a call that reverses the owner's recent trade is held back or allowed, and why.
+
+    Within FLIP_HOLD_DAYS of a trade, a call may not flip against it: after a buy, no TRIM/EXIT;
+    after a sell, no ACCUMULATE/INITIATE. Valuation drift or a stale target alone never reverses a
+    decision the owner just acted on. Only compelling new facts lift the hold: a TRIGGERED thesis
+    breaker (after a buy), or a re-verified valuation whose evidence is dated after the trade.
+
+    Returns:
+        None when the call doesn't reverse a recent trade; otherwise
+        {"held": True, "note": why it is held back} or {"held": False, "note": what allowed it}.
+    """
+    if action in SELL_ACTIONS:
+        side, verb, flip = "buy", "Bought", "a buy"
+    elif action in BUY_ACTIONS:
+        side, verb, flip = "sell", "Sold", "a sale"
+    else:
+        return None
+    start = (today - timedelta(days=FLIP_HOLD_DAYS)).isoformat()
+    days_traded = [day for row in trades if str(row.get("action") or "").lower() == side
+                   and (day := _trade_day(row)) and start <= day <= today.isoformat()]
+    if not days_traded:
+        return None
+    last = max(days_traded)
+    ago = (today - date.fromisoformat(last)).days
+    if action in SELL_ACTIONS and breaker_triggered:
+        return {"held": False, "note": f"{verb} on {last}, but a thesis breaker triggered: {action} allowed"}
+    evidence = str(new_evidence_date or "")[:10]
+    if evidence and evidence > last:
+        return {"held": False, "note": (f"{verb} on {last}; reversal to {action} allowed by a re-verified "
+                                        f"valuation dated {evidence}, after the trade")}
+    return {"held": True, "note": (f"{verb} on {last} ({ago} days ago): {action} is held back for "
+                                   f"{FLIP_HOLD_DAYS} days after {flip} unless new facts arrive (a triggered "
+                                   f"thesis breaker or a re-verified valuation dated after the trade)")}
 
 
 def trade_context(action: str | None, summary: dict) -> dict[str, str]:
