@@ -127,6 +127,43 @@ def _valuation_inputs(conn: Any, inv_id: str, prices: dict[str, float], symbol: 
     return entry, fv, price, "investment_price" if current_price else "projection_snapshot", upside
 
 
+REVALUE_BEFORE_ACTING_DAYS = 30  # risk_reward.REFRESH_BEFORE_ACTING_DAYS; one threshold for both
+
+
+def apply_review_gate(rec: dict[str, Any], held: bool, review_state: str | None, review_reason: str | None,
+                      evidence_age_days: int | None, breaker_triggered: bool) -> dict[str, Any]:
+    """Withhold buy/trim calls the current analysis doesn't support. Mutates and returns ``rec``.
+
+    1. A name still NEEDS_ANALYSIS this cycle gets no call (review_cycle.py).
+    2. A valuation older than REVALUE_BEFORE_ACTING_DAYS can't drive INITIATE, ACCUMULATE, TRIM or
+       EXIT; a TRIGGERED thesis breaker still drives EXIT.
+    The withheld stance is MAINTAIN when held, WATCHLIST otherwise; the reason says why.
+    """
+    actionable = ("INITIATE", "ACCUMULATE", "TRIM", "EXIT")
+    quiet = "MAINTAIN" if held else "WATCHLIST"
+    if review_state == "NEEDS_ANALYSIS":
+        rec.update(action=quiet, reason=f"Needs analysis this cycle ({review_reason or 'not yet reviewed'}); "
+                                        f"valuation alone says {rec.get('valuation')}")
+        rec["review_gate"] = {"withheld": True, "why": "NEEDS_ANALYSIS", "detail": review_reason}
+        return rec
+    stale = evidence_age_days is not None and evidence_age_days > REVALUE_BEFORE_ACTING_DAYS
+    if stale and rec.get("action") in actionable and not (rec.get("action") == "EXIT" and breaker_triggered):
+        rec["review_gate"] = {"withheld": True, "why": "STALE_VALUATION", "detail": f"valuation {evidence_age_days} days old",
+                              "withheld_action": rec["action"]}
+        rec.update(action=quiet, reason=f"Valuation {evidence_age_days} days old: re-value before acting "
+                                        f"(it alone says {rec['action']})")
+    return rec
+
+
+def _log_dict(entry: dict) -> dict:
+    """The projection's analytics log as a dict ({} for empty, malformed or legacy list logs)."""
+    try:
+        log = json.loads(entry.get("analytics_log_json") or "{}")
+    except (TypeError, ValueError):
+        return {}
+    return log if isinstance(log, dict) else {}
+
+
 def _reverified_evidence_date(entry: dict | None) -> str | None:
     """Evidence date of the saved valuation when its forward review passed (not flagged), else None.
 
@@ -195,9 +232,9 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
     try:
         today = date.today()
         trades = _recent_trades_by_symbol(conn, today)
-        for inv_id, symbol, standing_type, standing_reason, standing_source in conn.execute(
+        for inv_id, symbol, standing_type, standing_reason, standing_source, review_state, review_reason in conn.execute(
             "SELECT investment_id, symbol, standing_decision_type, standing_decision_reason, "
-            "standing_decision_source FROM investment;"
+            "standing_decision_source, review_state, review_reason FROM investment;"
         ).fetchall():
             entry, fv, price, price_source, upside = _valuation_inputs(conn, inv_id, state["prices"], symbol)
             held = (state["shares"].get(symbol) or 0) > 0
@@ -212,6 +249,11 @@ def recommend_all(db_path: str | None = None) -> dict[str, dict[str, Any]]:
                            reason=f"{flip['note']}; valuation alone says {rec['valuation']}")
             if flip:
                 rec["flip_check"] = flip
+            # Calls must reflect this cycle's analysis: no call while NEEDS_ANALYSIS, none from a stale valuation.
+            ev = evidence_date(entry.get("saved_at"), entry.get("analyzed_at"),
+                               _log_dict(entry)) if entry else None
+            ev_age = (today - date.fromisoformat(str(ev)[:10])).days if ev else None
+            apply_review_gate(rec, held, review_state, review_reason, ev_age, symbol in triggered)
             if standing_type or standing_reason:
                 rec["reason"] += f"; standing decision {standing_type or 'USER'}: {standing_reason or 'review before trading'}"
             rec.update(ticker=symbol, held=held, exit_signal=exit_signal,

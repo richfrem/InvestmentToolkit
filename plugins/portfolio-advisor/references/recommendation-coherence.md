@@ -8,6 +8,7 @@ today's priority, and states its condition against real chart levels.
 
 ## Contents
 
+- [Review gate: start and finish every cycle](#0-review-gate-start-and-finish-every-cycle)
 - [Refresh reality first](#1-refresh-reality-first)
 - [Read the canonical record](#2-read-the-canonical-record)
 - [Reconcile standing decisions](#3-reconcile-standing-decisions)
@@ -15,6 +16,25 @@ today's priority, and states its condition against real chart levels.
 - [State conditions against the chart](#5-state-conditions-against-the-chart)
 - [After the owner acts](#6-after-the-owner-acts)
 - [Refresh stale analysis before acting](#7-refresh-stale-analysis-before-acting)
+
+## 0. Review gate: start and finish every cycle
+
+Every daily loop, weekly review, strategic review, rebalance or analysis session follows
+`.agent/rules/local-recommendation-coherence.md`:
+
+1. **Start**: after the position sync and price refresh, run `python3 plugins/portfolio-advisor/scripts/review_gate.py begin`. Every holding and
+   watchlist name resets to `NEEDS_ANALYSIS` (a newly onboarded ticker starts there too), and a
+   deterministic triage clears only names with nothing new. The rest form the queue, holdings first.
+2. **Work the whole queue**:
+   - **HARD** (no valuation, earnings since the valuation, price moved more than 20% since the last
+     review, a TRIGGERED thesis breaker): re-value with `/update-stock-analysis`, then
+     `python3 plugins/portfolio-advisor/scripts/review_gate.py mark --ticker T --reason "..."`.
+   - **AGE** (valuation older than 30 days) or **CHECK** (last earnings date unavailable): mark with a
+     written reason after looking; the name still gets no buy/trim call until it is re-valued.
+3. **Present calls only from `recommendation.py --all`.** It withholds INITIATE, ACCUMULATE, TRIM
+   and EXIT (except a breaker EXIT) for `NEEDS_ANALYSIS` names and stale valuations.
+4. **Finish**: `python3 plugins/portfolio-advisor/scripts/review_gate.py verify` must exit 0. While any name is `NEEDS_ANALYSIS`, the session isn't done.
+   Then run `refresh_all.py --publish` and confirm the app shows the stances you presented.
 
 ## 1. Refresh reality first
 

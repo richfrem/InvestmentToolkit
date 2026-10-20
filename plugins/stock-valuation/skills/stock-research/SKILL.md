@@ -55,6 +55,8 @@ Trigger with `/research-stock {TICKER}` or natural language when material events
 5. **Re-Valuation Decision Gate**:
    Present summary card with recommendation (`RE_EVALUATE`, `MAINTAIN_CURRENT`, or `WATCHLIST_ALERT`), existing/proposed method, rate basis and evidence dates, operating changes, sensitivity needs and unresolved gaps. Show old-method versus new-method comparisons for a proposed migration. Chain into `/update-stock-analysis` only within explicit session authorization; otherwise await confirmation.
 
+6. **Review Gate**: if the research leads to a saved valuation, run `python3 plugins/portfolio-advisor/scripts/review_gate.py mark --ticker {TICKER} --reason "..."`; research alone that isn't saved is labelled draft and produces no call ([procedure](references/recommendation-coherence.md) section 0).
+
 ## Verification
 
 - Check the rate/method cases in `evals/evals.json`; evidence deficiencies do not justify inventing inputs or flipping the canonical recommendation. The valuation workflow saves rates and assumptions once to SQLite for all app views.

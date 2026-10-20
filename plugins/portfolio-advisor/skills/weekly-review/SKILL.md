@@ -28,13 +28,15 @@ python3 plugins/portfolio-advisor/scripts/weekly_review.py --prompt-output temp/
 ```
 
 ## Workflow
-1. **Drift Audit**: Evaluate week-over-week price changes and allocation drift across all active holdings and watchlists. First refresh positions and executed trades with `/tv-portfolio-sync` so the week's fills are in the Trade Log. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade.
-2. **Compile Prompt**: Generate model-agnostic research prompt containing baseline anchor data (prices, 1W moves, target weights).
-3. **Multi-Model Dispatch**: Ingest responses from multiple frontier models leveraging their distinct strengths.
-4. **Fact-Check Gate**: Validate macro yield, VIX, and quoted prices against live market data before accepting findings.
-5. **Calibrate & Apply**: Review triangulated findings and apply catalyst adjustments via `apply_catalyst.py` or target weights via `update_targets.py`.
-6. **Record Findings & Refresh Every Thesis Page**: Record the triangulated findings with `record_news_sweep.py --write`, then work through `thesis_currency.py stale --max-age-days 7`: rewrite each listed page's note from its `context` and `put` it, or `touch` it when nothing material changed (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`).
-7. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
+1. **Start the Review Cycle**: `python3 plugins/portfolio-advisor/scripts/review_gate.py begin`; the weekly review clears the whole queue (holdings and watchlist).
+2. **Drift Audit**: Evaluate week-over-week price changes and allocation drift across all active holdings and watchlists. First refresh positions and executed trades with `/tv-portfolio-sync` so the week's fills are in the Trade Log. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade.
+3. **Compile Prompt**: Generate model-agnostic research prompt containing baseline anchor data (prices, 1W moves, target weights).
+4. **Multi-Model Dispatch**: Ingest responses from multiple frontier models leveraging their distinct strengths.
+5. **Fact-Check Gate**: Validate macro yield, VIX, and quoted prices against live market data before accepting findings.
+6. **Calibrate & Apply**: Review triangulated findings and apply catalyst adjustments via `apply_catalyst.py` or target weights via `update_targets.py`.
+7. **Record Findings & Refresh Every Thesis Page**: Record the triangulated findings with `record_news_sweep.py --write`, then work through `thesis_currency.py stale --max-age-days 7`: rewrite each listed page's note from its `context` and `put` it, or `touch` it when nothing material changed (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`).
+8. **Review Gate**: `python3 plugins/portfolio-advisor/scripts/review_gate.py verify` must exit 0 before the review ends.
+9. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Multi-Agent Protocol
 Leverage complementary agent capabilities across the weekly research sweep:

@@ -74,7 +74,7 @@ Detailed policy documents and invariants are governed in [`.agent/rules/`](file:
 3. **Coding Conventions**: MUST follow naming standards and file headers. (details: [`.agent/rules/coding-conventions.md`](file:///.agent/rules/coding-conventions.md))
 4. **Dependency Management**: MUST use `pip-compile`; manual `pip install` is PROHIBITED. (details: [`.agent/rules/dependency-management.md`](file:///.agent/rules/dependency-management.md))
 5. **Plugin Architecture**: MUST use `symlink_manager.py`; raw `ln -s` is PROHIBITED. (details: [`.agent/rules/plugin-architecture-policy.md`](file:///.agent/rules/plugin-architecture-policy.md))
-6. **Self-Evolution & Map Debt**: MUST run `PRE-COMPLETION GATE` and log map debt before ending turns. (details: [`.agent/rules/self-evolution-policy.md`](file:///.agent/rules/self-evolution-policy.md))
+6. **Evolution Log**: MUST record each fixed friction or failure in `plugins/<plugin>/references/evolution-log.md` (the commit hook enforces it for logic files).
 7. **Destructive Action Guards**: File and skill deletions are strictly PROHIBITED without explicit user approval. (details: [`.agent/rules/destructive-action-guard.md`](file:///.agent/rules/destructive-action-guard.md))
 8. **Self-Healing**: MUST fix broken snippets inline and re-run silently; NEVER leave broken output visible.
 9. **Standing Decision is Anchor**: NEVER override standing decisions without material delta (>15% FV variance). (details: [`.agent/rules/local-standing-decision-policy.md`](file:///.agent/rules/local-standing-decision-policy.md))
@@ -91,6 +91,7 @@ Detailed policy documents and invariants are governed in [`.agent/rules/`](file:
 20. **One Table System**: ALL ticker views MUST render through shared `PositionsTable` from SQLite. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
 21. **Thesis Page Currency**: MUST record news sweeps in `intelligence.sqlite`; NEVER hardcode dated prices in prose. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
 22. **Installed Rules vs Local Rules**: Project-specific overrides MUST strictly live in `.agent/rules/local-*.md`. (details: [`.agent/rules/local-worktree-and-dual-repo-edit-protocol.md`](file:///.agent/rules/local-worktree-and-dual-repo-edit-protocol.md))
+23. **Recommendation Coherence**: Calls MUST come from `recommendation.py --all` and reflect analysis saved this cycle; every daily loop, weekly review or analysis session MUST start with `review_gate.py begin` and NEVER end while `review_gate.py verify` exits 1. (details: [`.agent/rules/local-recommendation-coherence.md`](file:///.agent/rules/local-recommendation-coherence.md))
 
 ## Canonical Scripts
 | Script | Purpose |
@@ -100,16 +101,10 @@ Detailed policy documents and invariants are governed in [`.agent/rules/`](file:
 | `plugins/stock-valuation/.../validate_projection.py` | Schema validation |
 | `plugins/stock-valuation/scripts/price_changes.py` (`period_changes`) | The only 1D/1W/1M/3M/YTD/1Y/5Y % change calculation (heatmap, tables, Stock Analysis) |
 
-Create a new canonical script + ADR in `docs/architecture/` whenever you'd compute the same formula twice (see rule 22).
+Create a new canonical script + ADR in `docs/architecture/` whenever you'd compute the same formula twice (see rule 19).
 
 ## Test Locations
-| Area | Path |
-|------|------|
-| Python py_services | `investment_screener/backend/tests/py_services/` |
-| Express routes | `investment_screener/backend/tests/api/` |
-| TV CDP | `plugins/tradingview/tests/tv_test_harness.py` |
-| Plugin scripts | `plugins/<plugin>/tests/` |
-| React | `investment_screener/frontend/tests/` |
+Python: `investment_screener/backend/tests/py_services/`; Express: `investment_screener/backend/tests/api/`; TV CDP: `plugins/tradingview/tests/tv_test_harness.py`; plugin scripts: `plugins/<plugin>/tests/`; React: `investment_screener/frontend/tests/`.
 
 **Frontend type check:** run `npx tsc -b` in `investment_screener/frontend` (what `npm run build` runs). `tsc -p .` checks nothing: the root `tsconfig.json` has `"files": []` and only references `tsconfig.app.json` / `tsconfig.node.json`. Under `verbatimModuleSyntax`, import types with `import type`.
 

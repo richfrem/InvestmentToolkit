@@ -20,6 +20,12 @@ from domain_model.projection_repository import add_projection_scenario, save_pro
 from domain_model.trade_log_entry_repository import upsert_trade_log_entry
 from recommendation import recommend_all
 
+def _reviewed_and_current(conn):
+    """Fixture names are reviewed this cycle (review_cycle gate)."""
+    conn.execute("UPDATE investment SET review_state = 'REVIEWED'")
+    conn.commit()
+
+
 
 def seed_domain(tmp_path):
     """Seed opposite target and valuation signals, plus an unheld buy."""
@@ -33,6 +39,7 @@ def seed_domain(tmp_path):
         upsert_account_investment(conn, "tfsa", inv, shares, None, None, "USD", "2026-10-04T00:00:00Z")
         save_projection_version(conn, inv, version=1, saved_at="2026-10-04T00:00:00Z",
                                 fair_value=fv, action="MAINTAIN", source="AI_AGENT", snapshot_json='{"price":100}')
+    _reviewed_and_current(conn)
     conn.close()
     return db
 
