@@ -13,6 +13,7 @@ regressions. This is the memory that makes the loop smarter over time.
 - **Failure:** the >20% price-move trigger compared today's price with `review_price`, which is empty until a name's first review. On the first cycle no name could trip it, so names down 20–33% since their saved valuation were queued as age-only and could have been cleared with a written reason.
 - **Change:** `review_cycle.valuation_price()` reads the price recorded with the preferred saved valuation (`snapshot_json` `currentPrice`/`price`); `triggers()` falls back to it when there is no `review_price`, labelled "since the saved valuation". Applies in both `triage` and `mark`.
 - **Tests:** `test_first_review_measures_price_move_from_the_saved_valuation` (fails on the previous code).
+- **Also:** `verify_refresh.py` checked its hard-coded no-change lock list even for a ticker no longer held (a fully sold position, now watchlist-only, failed every closing refresh). The lock now applies only while the position is held, and the sold ticker is out of the list.
 - **Also:** removed the `engineering-lifecycle-policy` and `github-issue-logging-policy` rules and the deprecated `graph-planning-superpowers-policy` bridge that pointed to the first; `plugin-retention.json` stops retaining the deleted rules.
 
 ## 2026-10-20 — Every followed name is reviewed each cycle; no call from stale analysis
