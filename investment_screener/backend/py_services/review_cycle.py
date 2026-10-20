@@ -117,13 +117,14 @@ def triggers(item: dict[str, Any], evidence: str | None, today: date, breaker: b
             out.append(("HARD", f"earnings reported {_day(item['last_earnings_at'])} after the valuation ({ev})"))
         if age > STALE_DAYS:
             out.append(("AGE", f"valuation is {age} days old"))
-    base, since = item.get("review_price"), "the last review"
-    if not base:
-        base, since = item.get("valuation_price"), "the saved valuation"
-    if base and item.get("price"):
-        move = (item["price"] / base - 1) * 100
-        if abs(move) > PRICE_MOVE_PCT:
-            out.append(("HARD", f"price moved {move:+.0f}% since {since}"))
+    # Both baselines count: an automatic clear records today's price as review_price, so a move
+    # since the saved valuation must still trip the trigger (the valuation is what the call rests on).
+    for base, since in ((item.get("review_price"), "the last review"), (item.get("valuation_price"), "the saved valuation")):
+        if base and item.get("price"):
+            move = (item["price"] / base - 1) * 100
+            if abs(move) > PRICE_MOVE_PCT:
+                out.append(("HARD", f"price moved {move:+.0f}% since {since}"))
+                break
     if breaker:
         out.append(("HARD", "a thesis breaker is TRIGGERED"))
     return out
