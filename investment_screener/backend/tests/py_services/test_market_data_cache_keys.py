@@ -39,7 +39,7 @@ def _fake_fundamentals_ticker():
 
 
 def test_get_estimates_and_get_fundamentals_do_not_collide_for_same_ticker(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
 
     with patch("market_data.yf.Ticker", return_value=_fake_estimates_ticker()):
         estimates_result = get_estimates("PLTR")
@@ -62,7 +62,7 @@ def test_get_estimates_and_get_fundamentals_do_not_collide_for_same_ticker(tmp_p
 
 
 def test_calling_get_fundamentals_after_get_estimates_does_not_clobber_estimates_cache(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
 
     with patch("market_data.yf.Ticker", return_value=_fake_estimates_ticker()):
         get_estimates("NVDA")
@@ -85,15 +85,17 @@ def test_estimates_cache_ttl_is_24h_not_default_1h(tmp_path, monkeypatch):
     than before. A cached entry aged 2 hours (past the wrong 1h default, well
     within the correct 24h TTL) must still be served from cache.
     """
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
 
     with patch("market_data.yf.Ticker", return_value=_fake_estimates_ticker()):
         get_estimates("PLTR")
 
-    cache_path = tmp_path / "estimates_PLTR.json"
-    assert cache_path.exists(), "expected get_estimates to write under the 'estimates' data class"
-    two_hours_ago = time.time() - (2 * 3600)
-    os.utime(cache_path, (two_hours_ago, two_hours_ago))
+    import sqlite3
+    db = sqlite3.connect(tmp_path / "cache.sqlite")
+    assert db.execute("SELECT 1 FROM fetch_cache WHERE data_class = 'estimates' AND cache_key = 'PLTR'").fetchone(), \
+        "expected get_estimates to write under the 'estimates' data class"
+    db.execute("UPDATE fetch_cache SET fetched_at = ? WHERE data_class = 'estimates'", (time.time() - 2 * 3600,))
+    db.commit(); db.close()
 
     with patch("market_data.yf.Ticker") as mock_ticker:
         result = get_estimates("PLTR")

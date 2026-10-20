@@ -10,7 +10,7 @@ from market_data import get_quote  # noqa: E402
 
 
 def test_get_quote_returns_source_tagged_price(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_ticker = MagicMock()
     fake_ticker.fast_info = {"lastPrice": 205.5}
     with patch("market_data.yf.Ticker", return_value=fake_ticker):
@@ -21,7 +21,7 @@ def test_get_quote_returns_source_tagged_price(tmp_path, monkeypatch):
 
 
 def test_get_quote_uses_cache_within_15_minutes(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_ticker = MagicMock()
     fake_ticker.fast_info = {"lastPrice": 205.5}
     with patch("market_data.yf.Ticker", return_value=fake_ticker) as mock_ticker:
@@ -33,7 +33,7 @@ def test_get_quote_uses_cache_within_15_minutes(tmp_path, monkeypatch):
 
 
 def test_get_quote_skips_bad_ticker_without_crashing_batch(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     good_ticker = MagicMock()
     good_ticker.fast_info = {"lastPrice": 100.0}
     bad_ticker = MagicMock()

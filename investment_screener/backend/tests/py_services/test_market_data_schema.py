@@ -15,7 +15,7 @@ SCHEMA = json.loads((REPO_ROOT / "schemas/market_data_response.schema.json").rea
 
 
 def test_get_fundamentals_output_matches_schema(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     edgar_facts = {
         "revenue": {"value": 391035000000.0, "asOf": "2025-11-01"},
         "netIncome": {"value": 93736000000.0, "asOf": "2025-11-01"},

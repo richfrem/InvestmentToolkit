@@ -12,7 +12,7 @@ from market_data import get_estimates  # noqa: E402
 
 
 def test_get_estimates_returns_y1_and_y2_revenue(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_ticker = MagicMock()
     fake_ticker.revenue_estimate = pd.DataFrame(
         {"avg": [7716355790.0, 11197459210.0]}, index=["0y", "+1y"]
@@ -26,7 +26,7 @@ def test_get_estimates_returns_y1_and_y2_revenue(tmp_path, monkeypatch):
 
 
 def test_get_estimates_returns_none_fields_when_data_missing(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_ticker = MagicMock()
     fake_ticker.revenue_estimate = pd.DataFrame()
     with patch("market_data.yf.Ticker", return_value=fake_ticker):
@@ -37,7 +37,7 @@ def test_get_estimates_returns_none_fields_when_data_missing(tmp_path, monkeypat
 
 
 def test_get_estimates_uses_cache_within_ttl(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_ticker = MagicMock()
     fake_ticker.revenue_estimate = pd.DataFrame(
         {"avg": [7716355790.0, 11197459210.0]}, index=["0y", "+1y"]
@@ -55,7 +55,7 @@ def test_get_estimates_handles_nan_avg_value_without_crashing(tmp_path, monkeypa
     """A populated row whose 'avg' is NaN (real-world yfinance gap, not a missing
     row) must degrade to None for that field, not raise and not become 0.0.
     """
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_ticker = MagicMock()
     fake_ticker.revenue_estimate = pd.DataFrame(
         {"avg": [float("nan"), 11197459210.0]}, index=["0y", "+1y"]
@@ -71,7 +71,7 @@ def test_get_estimates_handles_missing_avg_column_without_crashing(tmp_path, mon
     """A DataFrame that has rows but not the expected 'avg' column (schema drift
     from yfinance) must not raise a KeyError.
     """
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_ticker = MagicMock()
     fake_ticker.revenue_estimate = pd.DataFrame(
         {"low": [1.0, 2.0], "high": [3.0, 4.0]}, index=["0y", "+1y"]
@@ -87,7 +87,7 @@ def test_get_estimates_handles_none_dataframe_without_crashing(tmp_path, monkeyp
     """yfinance can return None instead of an empty DataFrame for tickers with no
     analyst coverage at all. Must not raise AttributeError on .empty/.index.
     """
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_ticker = MagicMock()
     fake_ticker.revenue_estimate = None
     with patch("market_data.yf.Ticker", return_value=fake_ticker):
@@ -102,7 +102,7 @@ def test_get_estimates_handles_property_raising_without_crashing(tmp_path, monke
     internal parsing failure, etc.), get_estimates must degrade to None fields
     rather than propagate the exception and kill the caller.
     """
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_ticker = MagicMock()
     type(fake_ticker).revenue_estimate = property(
         lambda self: (_ for _ in ()).throw(RuntimeError("yfinance boom"))

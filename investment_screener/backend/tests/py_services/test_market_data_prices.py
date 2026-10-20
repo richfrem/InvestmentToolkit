@@ -43,7 +43,7 @@ def _fake_yf_download_misaligned_calendar():
 
 
 def test_get_prices_returns_source_tagged_ohlcv(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     with patch("market_data.yf.download", return_value=_fake_yf_download()):
         result = get_prices(["AAPL"], period="5d")
 
@@ -53,7 +53,7 @@ def test_get_prices_returns_source_tagged_ohlcv(tmp_path, monkeypatch):
 
 
 def test_get_prices_uses_cache_on_second_call(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     with patch("market_data.yf.download", return_value=_fake_yf_download()) as mock_dl:
         get_prices(["AAPL"], period="5d")
         result = get_prices(["AAPL"], period="5d")
@@ -68,7 +68,7 @@ def test_get_prices_skips_nan_rows_on_misaligned_trading_calendar(tmp_path, monk
     real NaN row for PSU-U.TO on that date. get_prices() must not crash on
     int(NaN)/float(NaN) and must not zero-fill — it should simply omit that
     row for PSU-U.TO while keeping AAPL's full history."""
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     with patch("market_data.yf.download", return_value=_fake_yf_download_misaligned_calendar()):
         result = get_prices(["AAPL", "PSU-U.TO"], period="5d")
 
