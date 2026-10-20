@@ -23,7 +23,7 @@ Triggers (why a name needs analysis):
         The recommendation still withholds buy/trim calls until it is re-valued.
 
 Layer: Backend / Python Services (domain model consumers).
-Key Functions: in_scope, start, triggers, triage, mark, verify, status
+Key Functions: in_scope, start, valuation_price, triggers, triage, mark, verify, status
 Key Input Dependencies: investment, account_investment, investment_price, projection_version.
 Key Output Dependencies: investment.review_state / reviewed_at / review_price / review_reason /
     last_earnings_at.
@@ -86,6 +86,19 @@ def valuation_evidence(conn: sqlite3.Connection, investment_id: str) -> tuple[st
     return (analyzed_at if rebased and analyzed_at else saved_at), saved_at
 
 
+def valuation_price(conn: sqlite3.Connection, investment_id: str) -> float | None:
+    """Price recorded with the preferred saved valuation, or None."""
+    row = conn.execute(
+        "SELECT COALESCE(json_extract(snapshot_json, '$.currentPrice'), json_extract(snapshot_json, '$.price')) "
+        "FROM projection_version WHERE investment_id = ? "
+        "ORDER BY CASE WHEN source = 'AI_AGENT' THEN 0 ELSE 1 END, saved_at DESC LIMIT 1", (investment_id,)
+    ).fetchone()
+    try:
+        return float(row[0]) if row and row[0] else None
+    except (TypeError, ValueError):
+        return None
+
+
 def triggers(item: dict[str, Any], evidence: str | None, today: date, breaker: bool,
              earnings_unknown: bool = False) -> list[tuple[str, str]]:
     """[(kind, reason)] where kind is HARD, AGE or CHECK; empty when nothing calls for a fresh look.
@@ -104,10 +117,13 @@ def triggers(item: dict[str, Any], evidence: str | None, today: date, breaker: b
             out.append(("HARD", f"earnings reported {_day(item['last_earnings_at'])} after the valuation ({ev})"))
         if age > STALE_DAYS:
             out.append(("AGE", f"valuation is {age} days old"))
-    if item.get("review_price") and item.get("price"):
-        move = (item["price"] / item["review_price"] - 1) * 100
+    base, since = item.get("review_price"), "the last review"
+    if not base:
+        base, since = item.get("valuation_price"), "the saved valuation"
+    if base and item.get("price"):
+        move = (item["price"] / base - 1) * 100
         if abs(move) > PRICE_MOVE_PCT:
-            out.append(("HARD", f"price moved {move:+.0f}% since the last review"))
+            out.append(("HARD", f"price moved {move:+.0f}% since {since}"))
     if breaker:
         out.append(("HARD", "a thesis breaker is TRIGGERED"))
     return out
@@ -142,6 +158,7 @@ def triage(conn: sqlite3.Connection, today: date | None = None,
                 update_investment_fields(conn, n["investment_id"], last_earnings_at=le)
                 n["last_earnings_at"] = le
         evidence, _ = valuation_evidence(conn, n["investment_id"])
+        n["valuation_price"] = valuation_price(conn, n["investment_id"])
         found = triggers(n, evidence, today, n["symbol"] in breakers, earnings_unknown)
         if not found:
             update_investment_fields(conn, n["investment_id"], review_state=REVIEWED, reviewed_at=now,
@@ -164,6 +181,7 @@ def mark(conn: sqlite3.Connection, symbol: str, reason: str, today: date | None 
     if len((reason or "").strip()) < MIN_REASON_CHARS:
         return {"ok": False, "symbol": symbol, "error": f"reason must be at least {MIN_REASON_CHARS} characters"}
     evidence, saved_at = valuation_evidence(conn, item["investment_id"])
+    item["valuation_price"] = valuation_price(conn, item["investment_id"])
     saved_today = _day(saved_at) == today.isoformat()
     hard = [r for k, r in triggers(item, evidence, today, symbol in set(breakers)) if k == "HARD"]
     if hard and not saved_today:

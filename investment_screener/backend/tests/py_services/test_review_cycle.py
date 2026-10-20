@@ -98,6 +98,21 @@ def test_price_move_since_last_review_is_a_hard_trigger(tmp_path):
     assert queue[0]["symbol"] == "MOVE" and queue[0]["hard"] and "price moved +30%" in queue[0]["reasons"][0]
 
 
+def test_first_review_measures_price_move_from_the_saved_valuation(tmp_path):
+    """Before any review_price exists, a large move since the valuation is still a hard trigger."""
+    conn = _db(tmp_path)
+    inv = _name(conn, "DROP", price=70.0, valued_on="2026-10-08")
+    _name(conn, "FLAT", price=101.0, valued_on="2026-10-08")
+    conn.execute("UPDATE projection_version SET snapshot_json = '{\"currentPrice\": 100}'"); conn.commit()
+    rc.start(conn)
+    queue = {q["symbol"]: q for q in rc.triage(conn, TODAY)}
+    assert queue["DROP"]["hard"] is True
+    assert "since the saved valuation" in queue["DROP"]["reasons"][0]
+    assert "FLAT" not in queue
+    assert rc.mark(conn, "DROP", "Looked at it; nothing new beyond the price drop", TODAY)["ok"] is False
+    assert get_investment(conn, inv)["review_state"] == rc.NEEDS_ANALYSIS
+
+
 def test_breaker_is_a_hard_trigger_and_queue_puts_holdings_first(tmp_path):
     conn = _db(tmp_path)
     _name(conn, "WATCH", held=False, watch=True)

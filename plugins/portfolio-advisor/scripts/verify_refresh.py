@@ -23,8 +23,8 @@ THESIS_MD   = REPO_ROOT / "investment_screener/backend/data/theses/investment_th
 REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
-# Positions user locked to "no change" — must stay at MAINTAIN
-NO_CHANGE = {"GOOG", "KOID"}
+# Positions user locked to "no change" — must stay at MAINTAIN while held
+NO_CHANGE = {"GOOG"}
 
 # Known SA LP conviction plays where DCF disagrees — warn, don't fail
 # These are intentional: SA LP holds large positions; user has not explicitly resolved the conflict
@@ -217,7 +217,7 @@ for ticker, h in holdings_map.items():
     rec = _recs.get(ticker)
     effective_action = rec.get("decision_check", {}).get("effective") if rec else None
     check_action = effective_action or action
-    if ticker in NO_CHANGE and check_action != "MAINTAIN":
+    if ticker in NO_CHANGE and actual > 0 and check_action != "MAINTAIN":
         no_change_broken.append(f"{ticker}({check_action})")
 
     # Check for false ACCUMULATE: target > actual AND DCF is SELL-rated (< -15% upside)
