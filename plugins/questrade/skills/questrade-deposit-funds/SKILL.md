@@ -70,10 +70,17 @@ Questrade portal: **Move money → Deposit → Interac e-Transfer** (`myportal.q
 
 6. **Sync the portfolio** with `/tv-portfolio-sync` (or `questrade-sync-portfolio`) so cash and totals include the deposit.
 
-7. **Convert to USD if it will buy USD-listed stocks.** Compare the options with the owner:
-   - **Questrade Exchange:** a flat **1.5% fee built into the exchange rate**, stated on Questrade's Exchange page. The CAD sold drops by exactly the amount entered, and the fee shows up as fewer USD; there is no separate deduction, so no extra CAD buffer is needed. On $3,000 CAD that's $45.
-   - **Norbert's gambit** (`norberts-gambit` skill): about $13–15 on $3,000 ($9.95 journal fee unless Questrade Plus, plus a few dollars of DLR spread), but the owner's July 2026 conversion took the full 5 business days.
-   - **Decision rule:** the ~$30 saving on $3,000 is small next to a week out of the market, so when the owner wants to buy within the week, use Exchange. Norbert's gambit pays off on larger amounts or money that will sit for a week anyway.
+7. **Convert to USD if it will buy USD-listed stocks.** Three routes; pick by **when the owner needs to buy**, not only by fee:
+
+   | Route | Cost on $3,000 CAD | When the USD is usable | Use when |
+   |---|---|---|---|
+   | **Buy the US stock directly with CAD cash** (Questrade converts at execution) | Questrade's FX conversion at trade time; confirm the current rate/fee in Questrade's FX disclosure before relying on it | **Immediately**: the order executes now | The owner wants to act on a move **today** |
+   | **Exchange request** (Move money → Exchange) | 1.5% built into the rate (stated by Questrade): $45 | **Not immediate.** A queued request processed by Questrade staff, not an instant conversion: New → Approved → executed. A request made on a weekend may still not have posted by the end of the next trading day. | Conversion can be done **at least one business day before** the buy |
+   | **Norbert's gambit** (`norberts-gambit` skill) | ~$13–15 ($9.95 journal fee unless Questrade Plus, plus DLR spread) | Up to 5 business days; plan on a calendar week | Larger amounts, or money that won't be deployed for a week |
+
+   - **Never combine routes for the same money.** Don't buy US stocks with CAD while an Exchange request for that CAD is pending: the trade converts it and the queued request then converts again or fails. Cancel the request first (Move money history → Exchange, while it is still cancellable).
+   - **"Approved" is not "posted".** Confirm USD cash with `Get Balances` before placing a USD order; don't plan a trade at the open around a conversion submitted the weekend before.
+   - **Avoid the problem:** keep a small USD cash buffer in the account (or in a USD money-market fund) so a dip can be bought immediately, or deposit USD directly by pre-authorized deposit or wire.
 
 8. **Exchange steps** (portal as of October 2026):
    1. Log in to Questrade.
@@ -84,7 +91,7 @@ Questrade portal: **Move money → Deposit → Interac e-Transfer** (`myportal.q
    6. Check the **Review and confirm** popup (account, transaction, action, amount), then click **Confirm**. No rate is shown; it's set when Questrade processes the request.
    7. Questrade shows **"We're processing your fund exchange"** with a reference number (don't record it). The request can be reviewed or cancelled under **Move money history → Exchange** until it's processed.
 
-   - **Processing time:** requests before **2:30 p.m. ET** on a business day are processed the same day; later ones are best-effort. A weekend request waits for the next business day, so plan a Monday buy around it and confirm the USD with `Get Balances` before placing an order.
+   - **Processing time:** Questrade says requests before **2:30 p.m. ET** on a business day should be processed the same day and later ones are best-effort. In practice a weekend request moved to Approved early on the next trading day and still had not posted by that day's close. Treat the Exchange as a next-business-day route at best, and confirm the USD with `Get Balances` before placing an order.
    - **Registered accounts:** to exchange or hold USD, currency settlement must be "Currency of transaction" or "USD" (Management → Account management → Currency settlement → Change).
 
 ## Verification
