@@ -17,6 +17,9 @@ The user expects a highly interactive, proactive, and conversational experience 
 
 Your goal is to walk the user through these five phases in order.
 
+### Phase 0: Review Gate
+Run `python3 plugins/portfolio-advisor/scripts/review_gate.py begin` and work its queue first (procedure: `plugins/portfolio-advisor/references/recommendation-coherence.md` section 0). Take every recommendation from `recommendation.py --all`, which withholds calls for unreviewed names and stale valuations; end the session only when `python3 plugins/portfolio-advisor/scripts/review_gate.py verify` exits 0.
+
 ### Phase 1: Catalyst Ingestion & Interactive Q&A (The Spark)
 1. **Trigger**: This phase begins after a new filing `/13f-analyze` or news sweep `/news-sweep` is performed.
 2. **Analysis Ingestion**: Look at the generated recommendations (INITIATE, ACCUMULATE, TRIM, EXIT, HOLD).

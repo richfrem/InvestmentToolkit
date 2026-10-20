@@ -22,6 +22,16 @@ from domain_model.account_investment_repository import upsert_account_investment
 import scan_opportunities  # noqa: E402
 
 
+from datetime import date as _date, timedelta as _timedelta  # noqa: E402
+_RECENT_SAVED_AT = (_date.today() - _timedelta(days=3)).isoformat() + "T00:00:00Z"
+
+def _reviewed_and_current(conn):
+    """Fixture names are reviewed this cycle (review_cycle gate)."""
+    conn.execute("UPDATE investment SET review_state = 'REVIEWED'")
+    conn.commit()
+
+
+
 class TestLoadPortfolioReadsSqlite:
     """load_portfolio() reads domain_model.sqlite."""
 
@@ -100,7 +110,7 @@ def test_load_projection_returns_none_when_no_ai_agent_row(tmp_path):
     try:
         investment_id = resolve_investment(conn, "DXYZ", asset_class="ETF")
         save_projection_version(
-            conn, investment_id, version=1, saved_at="2026-07-01T00:00:00Z",
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
             fair_value=40.0, action="INITIATE", source="ETF_ANALYSIS",
         )
     finally:
@@ -115,7 +125,7 @@ def test_load_projection_returns_latest_ai_agent_fields(tmp_path):
     try:
         investment_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
         save_projection_version(
-            conn, investment_id, version=1, saved_at="2026-06-01T00:00:00Z",
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
             fair_value=300.0, action="ACCUMULATE", source="AI_AGENT",
             snapshot_json='{"price": 250.0}',
         )
@@ -135,11 +145,12 @@ def test_scan_initiate_finds_unowned_buy_rated_ticker(tmp_path, monkeypatch):
     try:
         investment_id = resolve_investment(conn, "AMD", asset_class="EQUITY")
         save_projection_version(
-            conn, investment_id, version=1, saved_at="2026-06-01T00:00:00Z",
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
             fair_value=200.0, action="BUY", source="AI_AGENT",
             snapshot_json='{"price": 150.0}',
         )
     finally:
+        _reviewed_and_current(conn)
         conn.close()
 
     monkeypatch.setattr(scan_opportunities, "DB_PATH", db_path)
@@ -158,7 +169,7 @@ def test_scan_initiate_excludes_held_tickers(tmp_path, monkeypatch):
     try:
         investment_id = resolve_investment(conn, "AMD", asset_class="EQUITY")
         save_projection_version(
-            conn, investment_id, version=1, saved_at="2026-06-01T00:00:00Z",
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
             fair_value=200.0, action="BUY", source="AI_AGENT",
             snapshot_json='{"price": 150.0}',
         )

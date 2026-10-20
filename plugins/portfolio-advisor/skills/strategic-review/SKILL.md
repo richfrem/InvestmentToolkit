@@ -38,6 +38,9 @@ python3 plugins/portfolio-advisor/scripts/generate_review.py
 ```
 
 ## Workflow
+### Phase 0: Review Gate
+- Run `python3 plugins/portfolio-advisor/scripts/review_gate.py begin` and work its queue before scanning (procedure: [Keeping recommendations coherent](references/recommendation-coherence.md) section 0). Every signal below comes from `recommendation.py --all`, which withholds calls for unreviewed names and stale valuations.
+
 ### Phase 1: Multi-Source Opportunity Scan
 Run `scan_opportunities.py` to ingest cross-asset evidence from SQLite and DCF models into ranked tables:
 - **🚨 EXIT Queue**: Canonical EXIT signals, ranked by locked capital; show standing-decision conditions.
@@ -63,6 +66,7 @@ Present a structured, interactive menu of prioritized next steps:
 ### Phase 4: Downstream Calibration & Rebalancing Handoff
 - **Target Calibration**: If adjusting weights, seamlessly transition into `/calibrate-targets` with 100% normalization.
 - **Rebalancing Execution**: If generating orders, invoke `rebalancer.py --pretty` (`/rebalance-portfolio`), apply `risk_officer.py`, and draft account-level orders with PSU-U.TO funding.
+- **Review Gate**: `python3 plugins/portfolio-advisor/scripts/review_gate.py verify` must exit 0 before the review ends.
 - **Persist Dossier**: Scaffold `PortfolioAnalysis/strategic-reviews/YYYY-MM-DD-PortfolioAnalysisRecommendations.md` with `generate_review.py` and fill in every pending section, including the Priority Action List.
 - **Refresh Thesis Pages**: Refresh every thesis page's current-developments note with `thesis_currency.py` (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`). If the review changed a thesis's conviction, structure or sizing, also update that page's own prose so it agrees.
 - **Closing Refresh**: Always finish with `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.

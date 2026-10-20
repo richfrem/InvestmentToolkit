@@ -29,6 +29,16 @@ from domain_model.projection_repository import save_projection_version  # noqa: 
 import generate_portfolio_blueprint as gpb  # noqa: E402
 
 
+from datetime import date as _date, timedelta as _timedelta  # noqa: E402
+_RECENT_SAVED_AT = (_date.today() - _timedelta(days=3)).isoformat() + "T00:00:00Z"
+
+def _reviewed_and_current(conn):
+    """Fixture names are reviewed this cycle (review_cycle gate)."""
+    conn.execute("UPDATE investment SET review_state = 'REVIEWED'")
+    conn.commit()
+
+
+
 def test_build_thesis_map_reads_from_sqlite_not_json(tmp_path):
     """build_thesis_map must source targetPct/role/thesisNote/subStrategyId
     from investment columns."""
@@ -75,11 +85,11 @@ def test_get_latest_ai_projection_prefers_ai_agent_source(tmp_path):
     try:
         investment_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
         save_projection_version(
-            conn, investment_id, version=1, saved_at="2026-06-01T00:00:00Z",
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
             fair_value=300.0, action="ACCUMULATE", source="AI_AGENT",
         )
         save_projection_version(
-            conn, investment_id, version=2, saved_at="2026-07-01T00:00:00Z",
+            conn, investment_id, version=2, saved_at=_RECENT_SAVED_AT,
             fair_value=310.0, action="TRIM", source="USER",
         )
     finally:
@@ -98,7 +108,7 @@ def test_get_latest_ai_projection_falls_back_to_any_source(tmp_path):
     try:
         investment_id = resolve_investment(conn, "DXYZ", asset_class="ETF")
         save_projection_version(
-            conn, investment_id, version=1, saved_at="2026-07-01T00:00:00Z",
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
             fair_value=40.0, action="INITIATE", source="ETF_ANALYSIS",
         )
     finally:
@@ -119,7 +129,7 @@ def test_get_latest_ai_agent_projection_strict_no_fallback(tmp_path):
     try:
         investment_id = resolve_investment(conn, "DXYZ", asset_class="ETF")
         save_projection_version(
-            conn, investment_id, version=1, saved_at="2026-07-01T00:00:00Z",
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
             fair_value=40.0, action="INITIATE", source="ETF_ANALYSIS",
         )
     finally:
@@ -140,7 +150,7 @@ def test_get_latest_ai_agent_projection_returns_latest_by_saved_at(tmp_path):
             fair_value=180.0, action="MAINTAIN", source="AI_AGENT",
         )
         save_projection_version(
-            conn, investment_id, version=1, saved_at="2026-07-01T00:00:00Z",
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
             fair_value=200.0, action="BUY", source="AI_AGENT",
         )
     finally:
@@ -160,10 +170,11 @@ def test_get_ai_signal_no_real_io(tmp_path, monkeypatch):
     try:
         investment_id = resolve_investment(conn, "MSFT", asset_class="EQUITY")
         save_projection_version(
-            conn, investment_id, version=1, saved_at="2026-06-01T00:00:00Z",
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
             fair_value=500.0, action="ACCUMULATE", source="AI_AGENT", snapshot_json='{"price":300}',
         )
     finally:
+        _reviewed_and_current(conn)
         conn.close()
 
     monkeypatch.setattr(gpb, "DOMAIN_DB", db_path)

@@ -54,6 +54,15 @@ def normalize_ticker(ticker: str) -> str:
     return TICKER_ALIASES.get(ticker, ticker)
 
 
+# Funds held as cash parking (money-market / high-interest savings): no valuation, no review.
+CASH_EQUIVALENT_FUNDS = frozenset({"PSU-U.TO"})
+
+
+def is_cash_equivalent(ticker: str) -> bool:
+    """True for cash rows and cash-parking funds (after alias normalisation)."""
+    return is_cash(ticker) or normalize_ticker(ticker) in CASH_EQUIVALENT_FUNDS
+
+
 def is_cash(ticker: str) -> bool:
     """Return True if the ticker represents a cash/liquidity position."""
     return ticker in CASH_SYMBOLS or ticker.endswith("_CASH") or ticker.startswith("USD_CASH_")

@@ -24,6 +24,16 @@ from rebalancer import compute_rebalance_plan  # noqa: E402
 import portfolio_io  # noqa: E402
 
 
+from datetime import date as _date, timedelta as _timedelta  # noqa: E402
+_RECENT_SAVED_AT = (_date.today() - _timedelta(days=3)).isoformat() + "T00:00:00Z"
+
+def _reviewed_and_current(conn):
+    """Fixture names are reviewed this cycle (review_cycle gate)."""
+    conn.execute("UPDATE investment SET review_state = 'REVIEWED'")
+    conn.commit()
+
+
+
 def test_compute_bands_in_band_when_drift_within_band():
     # target 5.5%, band = max(5.5*0.20, 1.5) = 1.5pp; current 4.5% -> drift -1.0pp, in band
     bands = compute_bands({"NBIS": 4.5}, {"NBIS": 5.5}, DEFAULT_BAND_CONFIG)
@@ -95,6 +105,7 @@ def _seed_positions(
             conn, account_id, inv_id, quantity=qty, average_cost=price,
             book_value=qty * price, currency="USD", last_synced_at=last_synced_at,
         )
+    _reviewed_and_current(conn)
     conn.close()
 
 
@@ -114,10 +125,11 @@ def _write_projection(tmp_path: Path, ticker: str, action: str) -> Path:
     conn = initialize_db(str(db_path))
     investment_id = resolve_investment(conn, ticker)
     save_projection_version(
-        conn, investment_id, version=1, saved_at="2026-07-01T00:00:00Z",
+        conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
         action=action, source="AI_AGENT", fair_value=40.0 if action in ("BUY", "ACCUMULATE") else 10.0,
         snapshot_json='{"price":20}',
     )
+    _reviewed_and_current(conn)
     conn.close()
     return db_path
 
@@ -229,6 +241,7 @@ def _seed_account_positions_db(
                 conn, account_id, cash_id, quantity=amount, average_cost=1.0,
                 book_value=amount, currency="USD", last_synced_at=last_synced_at,
             )
+    _reviewed_and_current(conn)
     conn.close()
 
 
@@ -571,6 +584,7 @@ def _write_full_fixture(tmp_path):
     update_investment_fields(conn, resolve_investment(conn, "CRWD"), target_weight=4.0, pillar_id="cyber")
     update_investment_fields(conn, resolve_investment(conn, "NBIS"), target_weight=5.5, pillar_id="ai_infra")
     update_investment_fields(conn, resolve_investment(conn, "PSU-U.TO"), target_weight=90.5, pillar_id="cash")
+    _reviewed_and_current(conn)
     conn.close()
 
     # The account policy comes from portfolio_policy.

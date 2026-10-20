@@ -24,6 +24,16 @@ from domain_model.investment_price_repository import upsert_investment_price  # 
 from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
 
 
+from datetime import date as _date, timedelta as _timedelta  # noqa: E402
+_RECENT_SAVED_AT = (_date.today() - _timedelta(days=3)).isoformat() + "T00:00:00Z"
+
+def _reviewed_and_current(conn):
+    """Fixture names are reviewed this cycle (review_cycle gate)."""
+    conn.execute("UPDATE investment SET review_state = 'REVIEWED'")
+    conn.commit()
+
+
+
 def _seed_db(db_path: Path) -> None:
     conn = initialize_db(str(db_path))
     try:
@@ -32,6 +42,7 @@ def _seed_db(db_path: Path) -> None:
         update_investment_fields(conn, aapl_id, target_weight=60)
         update_investment_fields(conn, msft_id, target_weight=40)
     finally:
+        _reviewed_and_current(conn)
         conn.close()
 
 
@@ -85,11 +96,12 @@ def test_portfolio_action_ignores_target_weight_and_reads_valuation_from_sqlite(
             )
             upsert_investment_price(conn, investment_id, 1.0, "USD", "2026-01-01T00:00:00Z")
             save_projection_version(
-                conn, investment_id, version=1, saved_at="2026-07-01T00:00:00Z",
+                conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
                 fair_value=fair_value, action="MAINTAIN", source="AI_AGENT",
                 snapshot_json='{"price": 1.0}',
             )
     finally:
+        _reviewed_and_current(conn)
         conn.close()
 
     r = _run(CANONICAL_PATH, db_path)

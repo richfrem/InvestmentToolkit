@@ -49,7 +49,7 @@ _UPDATABLE_FIELDS = {
     "pillar_id", "sub_strategy_id", "thesis_for_inclusion",
     "agent_rationale", "is_watchlisted", "watchlist_added_at",
     "thesis_breaker_status", "sector", "industry", "last_deep_analysis_at",
-    "target_set_at",
+    "target_set_at", "review_state", "reviewed_at", "review_price", "review_reason", "last_earnings_at",
 }
 
 

@@ -13,6 +13,7 @@ description: Interactive target-weight calibration session. Evaluates each holdi
 - [Verification](#verification)
 
 ## Constraints
+- **Targets follow saved analysis**: calibrate only from valuations and decisions saved this cycle; `python3 plugins/portfolio-advisor/scripts/review_gate.py verify` must exit 0 before persisting (procedure: `plugins/portfolio-advisor/references/recommendation-coherence.md` section 0).
 - Act as an opinionated calibrator; challenge contradictions against DCF signals or concentration limits.
 - The human investor retains final authority; record explicit overrides and proceed.
 - Total portfolio target weights must sum to exactly 100.00% (+-0.05% tolerance).
@@ -29,7 +30,8 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py --show
 3. **Sequential Review**: For each holding, present current %, target %, DCF upside, and rationale. Solicit user agreement or adjusted target.
 4. **Rebalance Sum**: If calibrated weights do not sum to 100.00%, offer proportional normalization or specific adjustments.
 5. **Persist**: Write finalized targets via `update_targets.py --write` (the thesis pages are live from the database).
-6. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
+6. **Review Gate**: `python3 plugins/portfolio-advisor/scripts/review_gate.py verify` must exit 0.
+7. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 ```bash

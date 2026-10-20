@@ -75,3 +75,26 @@ def test_reverified_evidence_date_handles_legacy_and_flagged_logs():
     assert _reverified_evidence_date({"analytics_log_json": flagged, "saved_at": "2026-10-16"}) is None
     ok = '{"valuationModel": {"method": "annual_fcff", "readiness": "READY"}, "outlookAudit": {"reviewReadiness": "READY"}}'
     assert _reverified_evidence_date({"analytics_log_json": ok, "saved_at": "2026-10-16T09:00:00+00:00"}).startswith("2026-10-16")
+
+
+def test_review_gate_withholds_calls_until_the_name_is_analysed():
+    from recommendation import apply_review_gate
+    held = apply_review_gate({"action": "ACCUMULATE", "valuation": "BUY", "reason": "x"}, True, "NEEDS_ANALYSIS", "valuation is 47 days old", 47, False)
+    assert held["action"] == "MAINTAIN" and "Needs analysis" in held["reason"]
+    watch = apply_review_gate({"action": "INITIATE", "valuation": "BUY", "reason": "x"}, False, "NEEDS_ANALYSIS", None, 5, False)
+    assert watch["action"] == "WATCHLIST"
+
+
+def test_review_gate_stale_valuation_cannot_drive_buy_or_trim():
+    from recommendation import apply_review_gate
+    for action in ("INITIATE", "ACCUMULATE", "TRIM", "EXIT"):
+        rec = apply_review_gate({"action": action, "valuation": "BUY", "reason": "x"}, True, "REVIEWED", "ok", 47, False)
+        assert rec["action"] == "MAINTAIN" and rec["review_gate"]["withheld_action"] == action
+    fresh = apply_review_gate({"action": "ACCUMULATE", "valuation": "BUY", "reason": "x"}, True, "REVIEWED", "ok", 5, False)
+    assert fresh["action"] == "ACCUMULATE" and "review_gate" not in fresh
+
+
+def test_review_gate_breaker_exit_survives_a_stale_valuation():
+    from recommendation import apply_review_gate
+    rec = apply_review_gate({"action": "EXIT", "valuation": "SELL", "reason": "breaker"}, True, "REVIEWED", "ok", 60, True)
+    assert rec["action"] == "EXIT"

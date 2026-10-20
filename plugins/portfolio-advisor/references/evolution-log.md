@@ -8,6 +8,12 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-20 — Every followed name is reviewed each cycle; no call from stale analysis
+
+- **Failure:** the agent recommended buys from calculations that never reached the record while the app showed calls from 47-to-76-day-old valuations; it said "no more adds" on a name whose standing decision still produced ACCUMULATE; re-valuations shown in chat were not saved.
+- **Change:** migration 0010 adds `investment.review_state` (default `NEEDS_ANALYSIS`, also for new tickers), `reviewed_at`, `review_price`, `review_reason`, `last_earnings_at`. `review_cycle.py` / `review_gate.py`: `begin` resets holdings and watchlist and triages deterministically (HARD: no valuation, earnings since the valuation, >20% price move since review, triggered breaker; AGE: valuation >30 days), `mark` records a review (HARD needs a valuation saved today), `verify` exits 1 while anything is NEEDS_ANALYSIS. `recommendation.apply_review_gate` withholds INITIATE/ACCUMULATE/TRIM/EXIT for NEEDS_ANALYSIS names and stale valuations (breaker EXIT excepted); the brief, conviction scores and app all read that record. New rule `local-recommendation-coherence.md`, AGENTS.md invariant 23; daily-loop, weekly-review, update-stock-analysis and stock-intake start or end with the gate. AGENTS.md invariant 6 now points to the evolution log instead of the upstream self-evolution policy.
+- **Tests:** `test_review_cycle.py` (7) and three `apply_review_gate` tests; fixtures in five suites now describe reviewed names with relative dates.
+
 ## 2026-10-17 — A call can't reverse what the owner just did
 
 - **Failure:** a position bought on an INITIATE call was shown as EXIT days later. Its target was still 0% after the buy; `sync_portfolio_roles.py` labelled any held position with a 0% target `exit` (and never revisited an `exit` label); the news-sweep prompt listed it under "EXIT positions"; the agent relayed the label as a conflict instead of checking the Trade Log.

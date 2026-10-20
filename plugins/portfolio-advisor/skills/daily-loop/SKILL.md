@@ -30,7 +30,8 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 ```
 
 ## Workflow
-1. **Readiness (Step 0)**: Verify backend API health, `domain_model.sqlite` sync timestamps, and TradingView CDP connectivity. Refresh positions and executed trades with `/tv-portfolio-sync` so recommendations reflect recent fills. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade for this refresh. Then refresh prices, because the brief, weights and totals read `investment_price`, not the sync:
+1. **Readiness (Step 0)**: After the sync and price refresh, start the review cycle with `python3 plugins/portfolio-advisor/scripts/review_gate.py begin`: every holding and watchlist name resets to NEEDS_ANALYSIS, triage clears names with nothing new, and the rest form today's queue (holdings first). Work the whole queue this session (`/update-stock-analysis` for HARD triggers, `review_gate.py mark` with a written reason for age-only ones); see `.agent/rules/local-recommendation-coherence.md`.
+   Also: Verify backend API health, `domain_model.sqlite` sync timestamps, and TradingView CDP connectivity. Refresh positions and executed trades with `/tv-portfolio-sync` so recommendations reflect recent fills. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask the owner whether to use TradingView (default) or Questrade for this refresh. Then refresh prices, because the brief, weights and totals read `investment_price`, not the sync:
    ```bash
    python3 plugins/tradingview/scripts/tv_price_refresh.py
    ```
@@ -47,7 +48,8 @@ python3 plugins/portfolio-advisor/scripts/run_daily.py --scan
 5. **Action Cards (Step 4)**: Present each card from today's weight: `weight.currentPct` → `weight.targetPct` (`deltaPp`), and the models' suggested change from that baseline. Then walk the brief's `target_reviews` one at a time (held targets that are old or predate the latest valuation): the owner keeps the target, resets it to the current weight, or sets a new value with `update_targets.py --set`. Never change a target without that answer. Then formulate actionable trade proposals with tranche sizing and PSU-U.TO capital sourcing. For any of the five highest-priority cards marked `refreshFirst` (stale valuation), run `/update-stock-analysis TICKER` first, walk the owner through the new fair value and scenarios, and record the decision they reach with `set_standing_decision.py` before proposing a trade.
 6. **Evolution & Summary (Steps 5-6)**: Log operational friction, record execution receipts, and display final session status.
 7. **Refresh Thesis Pages**: Run `python3 plugins/portfolio-advisor/scripts/thesis_currency.py stale`; for each page listed with new events, read its `context`, write the short current-developments note and `put` it (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`). Pages with no new events are left alone.
-8. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
+8. **Review Gate**: `python3 plugins/portfolio-advisor/scripts/review_gate.py verify` must exit 0; the loop is not finished while any name is NEEDS_ANALYSIS. Present calls only from `recommendation.py --all`.
+9. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 

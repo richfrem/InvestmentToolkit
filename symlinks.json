@@ -1260,6 +1260,18 @@
       "dst": "plugins/toolkit-manager/skills/toolkit-onboarding/scripts/db_backup.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
     }
   ]
 }
