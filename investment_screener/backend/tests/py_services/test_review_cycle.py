@@ -113,6 +113,19 @@ def test_first_review_measures_price_move_from_the_saved_valuation(tmp_path):
     assert get_investment(conn, inv)["review_state"] == rc.NEEDS_ANALYSIS
 
 
+def test_auto_clear_does_not_hide_a_move_since_the_valuation(tmp_path):
+    """An automatic clear sets review_price to today's price; a later >20% gap from the
+    valuation price is still a hard trigger."""
+    conn = _db(tmp_path)
+    inv = _name(conn, "SLIDE", price=70.0, valued_on="2026-10-08")
+    conn.execute("UPDATE projection_version SET snapshot_json = '{\"currentPrice\": 100}'"); conn.commit()
+    update_investment_fields(conn, inv, review_price=71.0)
+    rc.start(conn)
+    queue = {q["symbol"]: q for q in rc.triage(conn, TODAY)}
+    assert queue["SLIDE"]["hard"] is True
+    assert "since the saved valuation" in queue["SLIDE"]["reasons"][-1]
+
+
 def test_breaker_is_a_hard_trigger_and_queue_puts_holdings_first(tmp_path):
     conn = _db(tmp_path)
     _name(conn, "WATCH", held=False, watch=True)

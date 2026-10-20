@@ -8,6 +8,12 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-20 — An automatic clear can't hide a move since the valuation
+
+- **Failure:** the price-move trigger used `review_price` when present and fell back to the valuation price only when it was empty. An automatic clear writes today's price into `review_price`, so a name already 26–31% below its saved valuation was cleared again as "no new facts" and kept its buy call.
+- **Change:** `triggers()` checks both baselines (last review and saved valuation); a move of more than 20% from either is HARD. Marking with a reason can't clear it; only a valuation saved today can.
+- **Tests:** `test_auto_clear_does_not_hide_a_move_since_the_valuation` (fails on the previous code).
+
 ## 2026-10-20 — First review cycle measures price moves from the saved valuation
 
 - **Failure:** the >20% price-move trigger compared today's price with `review_price`, which is empty until a name's first review. On the first cycle no name could trip it, so names down 20–33% since their saved valuation were queued as age-only and could have been cleared with a written reason.
