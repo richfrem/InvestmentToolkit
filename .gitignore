@@ -106,6 +106,8 @@ kitty-specs/**/tasks/*.md
 investment_screener/backend/py_services/cache/
 investment_screener/backend/data/cache/
 plugins/stock-valuation/scripts/cache/
+# Legacy JSON fetch caches (now SQLite fetch_cache); guard against a symlinked script writing one in a skill folder
+plugins/*/skills/*/scripts/cache/
 
 # Machine-local skill install state, rewritten by the plugin manager on every sync
 skills-lock.json

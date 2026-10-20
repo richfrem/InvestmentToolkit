@@ -16,7 +16,7 @@ def _fixture():
 
 
 def test_get_company_facts_extracts_revenue_with_filing_date(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_response = MagicMock()
     fake_response.status_code = 200
     fake_response.json.return_value = _fixture()
@@ -29,7 +29,7 @@ def test_get_company_facts_extracts_revenue_with_filing_date(tmp_path, monkeypat
 
 
 def test_get_company_facts_sends_required_user_agent_header(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_response = MagicMock()
     fake_response.status_code = 200
     fake_response.json.return_value = _fixture()
@@ -41,7 +41,7 @@ def test_get_company_facts_sends_required_user_agent_header(tmp_path, monkeypatc
 
 
 def test_get_company_facts_returns_empty_dict_on_404(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_response = MagicMock()
     fake_response.status_code = 404
     with patch("edgar_facts.requests.get", return_value=fake_response):
@@ -52,7 +52,7 @@ def test_get_company_facts_returns_empty_dict_on_404(tmp_path, monkeypatch):
 
 def test_get_company_facts_skips_malformed_val_field(tmp_path, monkeypatch):
     """Test that malformed val fields (missing or non-numeric) are skipped, not crashed."""
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fixture = _fixture()
 
     # Corrupt NetIncomeLoss to have a missing 'val' field in the latest record
@@ -75,7 +75,7 @@ def test_get_company_facts_skips_malformed_val_field(tmp_path, monkeypatch):
 
 def test_get_company_facts_skips_non_numeric_val_field(tmp_path, monkeypatch):
     """Test that non-numeric val fields are skipped gracefully."""
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fixture = _fixture()
 
     # Corrupt OperatingIncomeLoss to have a non-numeric 'val'
@@ -105,7 +105,7 @@ def test_get_company_facts_asof_reflects_latest_10q_filing_not_10k(tmp_path, mon
     asOf even though the number itself is last year's annual total (this is
     what makes check_staleness() correctly read 'not stale' for an actively
     reporting filer)."""
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fixture = _fixture()
     revenues_usd = fixture["facts"]["us-gaap"]["Revenues"]["units"]["USD"]
     ten_k_filed = revenues_usd[0]["filed"]
@@ -134,7 +134,7 @@ def test_get_company_facts_asof_reflects_latest_10q_filing_not_10k(tmp_path, mon
 def test_get_company_facts_asof_ignores_older_10q_than_10k(tmp_path, monkeypatch):
     """A 10-Q filed BEFORE the latest 10-K must not override the 10-K's own
     filed date — asOf is always the MOST RECENT filing among 10-K/10-Q."""
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fixture = _fixture()
     revenues_usd = fixture["facts"]["us-gaap"]["Revenues"]["units"]["USD"]
     ten_k_filed = revenues_usd[0]["filed"]
@@ -168,7 +168,7 @@ def test_get_company_facts_falls_back_to_alternate_revenue_tag_when_revenues_tag
     of Revenues. When the Revenues tag is entirely absent, get_company_facts()
     must still extract revenue via the fallback tag rather than silently
     omitting it."""
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fixture = _fixture()
     revenues_usd = fixture["facts"]["us-gaap"].pop("Revenues")
     fixture["facts"]["us-gaap"]["RevenueFromContractWithCustomerExcludingAssessedTax"] = revenues_usd
@@ -186,7 +186,7 @@ def test_get_company_facts_falls_back_to_alternate_revenue_tag_when_revenues_tag
 def test_get_company_facts_prefers_revenues_tag_when_both_present(tmp_path, monkeypatch):
     """When both tags are present, the primary 'Revenues' tag wins over the
     fallback tag — fallback is only for when the primary is absent/unusable."""
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fixture = _fixture()
     fixture["facts"]["us-gaap"]["RevenueFromContractWithCustomerExcludingAssessedTax"] = {
         "units": {
@@ -216,7 +216,7 @@ def test_get_company_facts_prefers_revenues_tag_when_both_present(tmp_path, monk
 
 
 def test_get_company_facts_second_call_served_from_cache_no_network(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_response = MagicMock()
     fake_response.status_code = 200
     fake_response.json.return_value = _fixture()
@@ -230,7 +230,7 @@ def test_get_company_facts_second_call_served_from_cache_no_network(tmp_path, mo
 
 
 def test_get_company_facts_different_ciks_each_hit_network(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_response = MagicMock()
     fake_response.status_code = 200
     fake_response.json.return_value = _fixture()
@@ -270,7 +270,7 @@ def test_throttled_get_does_not_sleep_when_enough_time_has_elapsed(monkeypatch):
 
 def test_throttled_get_not_invoked_on_cache_hit(tmp_path, monkeypatch):
     """Only actual network calls are throttled — a cache hit must never sleep."""
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("cache.DB_PATH", tmp_path / "cache.sqlite")
     fake_response = MagicMock()
     fake_response.status_code = 200
     fake_response.json.return_value = _fixture()

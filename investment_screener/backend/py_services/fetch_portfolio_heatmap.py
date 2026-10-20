@@ -16,7 +16,7 @@ Usage Examples:
 Key Functions (Index):
     - _NpEncoder()
     - default()
-    - _cache_path()
+    - get_cached_info() / save_info_to_cache() (via cache.py, SQLite)
     - get_cached_info()
     - save_info_to_cache()
     - _fetch_one()
@@ -112,34 +112,23 @@ except Exception:
     pass
 
 # --- Caching Configuration ---
-CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
-CACHE_DURATION = 900  # 15 minutes
-
-
-
-def _cache_path(ticker: str) -> str:
-    safe = "".join(c for c in ticker if c.isalnum() or c in ("-", "."))
-    return os.path.join(CACHE_DIR, f"{safe}_info.json")
+CACHE_DURATION = 900  # 15 minutes (cache.CACHE_TTL_SECONDS["info"])
 
 
 def get_cached_info(ticker: str):
-    path = _cache_path(ticker)
-    if not os.path.exists(path):
-        return None
+    """Cached yfinance info for ticker if fresh (cache.py, SQLite), else None."""
     try:
-        if time.time() - os.path.getmtime(path) > CACHE_DURATION:
-            return None
-        with open(path) as f:
-            return json.load(f)
+        from cache import cache_get
+        return cache_get(ticker, "info")
     except Exception:
         return None
 
 
 def save_info_to_cache(ticker: str, data: dict) -> None:
+    """Save yfinance info to the shared SQLite cache (numpy values normalised first)."""
     try:
-        os.makedirs(CACHE_DIR, exist_ok=True)
-        with open(_cache_path(ticker), "w") as f:
-            json.dump(data, f)
+        from cache import cache_set
+        cache_set(ticker, "info", json.loads(json.dumps(data, cls=_NpEncoder)))
     except Exception:
         pass
 

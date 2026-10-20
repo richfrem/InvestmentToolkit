@@ -1,36 +1,33 @@
 #!/usr/bin/env python3
 """
-cache.py - Python utility script.
+cache.py - The one TTL cache for raw market-data fetches, stored in SQLite.
 
 Purpose:
-    Shared TTL-based JSON file cache for market_data.py. One cache entry per
-    (key, data_class) pair. Callers pass --no-cache upstream to bypass reads
-    (still writes, so a subsequent call is warm).
+    Shared TTL cache: one entry per (key, data_class) in domain_model.sqlite's ``fetch_cache``
+    table (fetch_cache_repository.py), never JSON files. Used by market_data.py, edgar_facts.py,
+    fetch_financials.py and fetch_portfolio_heatmap.py. Callers pass --no-cache upstream to bypass
+    reads (still writes, so a subsequent call is warm).
 
 Layer:
     Backend / Python Services
 
-Usage Examples:
-    TBD
-
 Key Functions (Index):
-    - _cache_path()
     - cache_get()
     - cache_set()
 
 Key Input Dependencies:
-    None
-
-Key Output Dependencies:
-    None
+    domain_model.sqlite (fetch_cache table, migration 0011)
 """
-import json
-import os
+import sys
 import time
 from pathlib import Path
 from typing import Optional
 
-CACHE_DIR = Path(os.path.dirname(os.path.abspath(__file__))) / ".." / "data" / "cache"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.fetch_cache_repository import get_cached, put_cached  # noqa: E402
+
+DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
 
 CACHE_TTL_SECONDS = {
     "quote": 900,          # 15 min
@@ -38,59 +35,39 @@ CACHE_TTL_SECONDS = {
     "fundamentals": 86400,  # 24h
     "estimates": 86400,     # 24h — matches the TTL estimates rode on before it got its own cache key
     "edgar": 604800,        # 7d
+    "financials": 3600,     # 1h  (fetch_financials.py)
+    "info": 900,            # 15 min (fetch_portfolio_heatmap.py)
 }
 
 
-# Construct a cache file path from key and data class
-def _cache_path(key: str, data_class: str) -> Path:
-    """Construct a cache file path from key and data class.
-
-    Args:
-        key: Cache key, sanitized to alphanumeric + '-' + '.'.
-        data_class: Data class name (e.g., 'quote', 'ohlcv').
-
-    Returns:
-        Path object pointing to the cache file.
-    """
-    safe_key = "".join(c for c in key if c.isalnum() or c in ("-", "."))
-    return CACHE_DIR / f"{data_class}_{safe_key}.json"
+def _key(key: str) -> str:
+    return "".join(c for c in key if c.isalnum() or c in ("-", "."))
 
 
 # Retrieve a value from cache if it exists and hasn't expired
 def cache_get(key: str, data_class: str) -> Optional[dict]:
-    """Retrieve a value from cache if it exists and hasn't expired.
-
-    Args:
-        key: Cache key.
-        data_class: Data class name to look up TTL.
-
-    Returns:
-        Cached dict if found and not expired; None otherwise.
-    """
-    path = _cache_path(key, data_class)
-    if not path.exists():
-        return None
-    ttl = CACHE_TTL_SECONDS.get(data_class, 3600)
-    age = time.time() - os.path.getmtime(path)
-    if age > ttl:
+    """Return the cached value for (key, data_class) if present and younger than its TTL, else None."""
+    try:
+        conn = initialize_db(str(DB_PATH))
+    except Exception:
         return None
     try:
-        with open(path) as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
+        hit = get_cached(conn, data_class, _key(key))
+    finally:
+        conn.close()
+    if hit is None:
         return None
+    payload, fetched_at = hit
+    if time.time() - fetched_at > CACHE_TTL_SECONDS.get(data_class, 3600):
+        return None
+    return payload
 
 
 # Store a value in the cache
 def cache_set(key: str, data_class: str, value: dict) -> None:
-    """Store a value in the cache.
-
-    Args:
-        key: Cache key.
-        data_class: Data class name.
-        value: Dict to cache.
-    """
-    path = _cache_path(key, data_class)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(value, f)
+    """Store a value for (key, data_class), replacing any previous entry."""
+    conn = initialize_db(str(DB_PATH))
+    try:
+        put_cached(conn, data_class, _key(key), value, time.time())
+    finally:
+        conn.close()

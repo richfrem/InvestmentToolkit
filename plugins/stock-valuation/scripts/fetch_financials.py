@@ -44,7 +44,8 @@ import numpy as np
 from price_changes import PERIODS, period_changes
 
 # --- Caching Configuration ---
-CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+# Cache lives in SQLite (cache.py -> fetch_cache), never in JSON files next to the script.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "investment_screener", "backend", "py_services"))
 CACHE_DURATION = 3600  # 1 hour in seconds
 
 # --- Custom Encoder for Numpy Types (Global) ---
@@ -74,53 +75,21 @@ class NpEncoder(json.JSONEncoder):
 
 # Retrieve cached data if valid
 def get_cached_data(ticker: str) -> Optional[dict[str, Any]]:
-    """Retrieves cached financial data from the local filesystem cache if the TTL has not expired.
-
-    Args:
-        ticker: The stock ticker symbol.
-
-    Returns:
-        The cached dict data if valid and present, otherwise None.
-    """
-    if not os.path.exists(CACHE_DIR):
-        return None
-    
-    # Simple sanitization for filename
-    safe_ticker = "".join([c for c in ticker if c.isalnum() or c in ('-','.')])
-    cache_file = os.path.join(CACHE_DIR, f"{safe_ticker}.json")
-    
-    if not os.path.exists(cache_file):
-        return None
-        
+    """Cached financial data for ticker if younger than CACHE_DURATION (cache.py, SQLite), else None."""
     try:
-        # Check expiration
-        if time.time() - os.path.getmtime(cache_file) > CACHE_DURATION:
-            return None
-            
-        with open(cache_file, 'r') as f:
-            return json.load(f)
+        from cache import cache_get
+        return cache_get(ticker, "financials")
     except Exception:
         return None
 
 # Save data to cache
 def save_to_cache(ticker: str, data: dict[str, Any]) -> None:
-    """Saves compiled financial data to local cache file.
-
-    Args:
-        ticker: The stock ticker symbol.
-        data: Compiled metrics dictionary to cache.
-    """
+    """Save compiled financial data to the shared SQLite cache (numpy values normalised first)."""
     try:
-        if not os.path.exists(CACHE_DIR):
-            os.makedirs(CACHE_DIR)
-            
-        safe_ticker = "".join([c for c in ticker if c.isalnum() or c in ('-','.')])
-        cache_file = os.path.join(CACHE_DIR, f"{safe_ticker}.json")
-        
-        with open(cache_file, 'w') as f:
-            json.dump(data, f, cls=NpEncoder)
-    except Exception as e:
-        # Silently fail on cache write errors to avoid breaking the main output flow
+        from cache import cache_set
+        cache_set(ticker, "financials", json.loads(json.dumps(data, cls=NpEncoder)))
+    except Exception:
+        # A cache write failure must not break the main output flow
         pass
 
 # Clean floats/nans for valid JSON serialization
