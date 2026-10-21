@@ -53,6 +53,28 @@ def test_daily_actions_ignore_score_and_targets(tmp_path):
     assert {s.ticker: s.dcf_action for s in scores} == {t: r["valuation"] for t, r in records.items()}
 
 
+def test_brief_cards_show_the_canonical_stance(tmp_path):
+    """Daily-brief cards built from conviction scores carry the reconciled stance: a standing
+    decision that says hold or wait governs the card, as it does in recommend_all()."""
+    from datetime import date
+    from brief_recommendations import build_recommendations
+    from compute_conviction_scores import compute_all
+    from dataclasses import asdict
+    db = seed_domain(tmp_path)
+    conn = initialize_db(str(db))
+    for ticker, kind in (("SHAZ", "HOLD_NO_ADD"), ("INTC", "WAIT_FOR_EARNINGS")):
+        update_investment_fields(conn, resolve_investment(conn, ticker), standing_decision_type=kind,
+                                 standing_decision_reason="test", standing_decision_source=f"user {date.today()}")
+    conn.close()
+    records = recommend_all(str(db))
+    scores = [asdict(s) for s in compute_all(db_path=str(tmp_path / "missing-intelligence.sqlite"), domain_db_path=str(db))]
+    cards = build_recommendations(scores, {}, [], {"regime": "NEUTRAL"}, 10000)
+    stance = {t: (r.get("decision_check") or {}).get("effective") or r["action"] for t, r in records.items()}
+    assert stance["SHAZ"] == "MAINTAIN" and stance["INTC"] == "WATCHLIST"
+    assert {c["ticker"]: c["recommendation"] for c in cards} == {t: stance[t] for t in (c["ticker"] for c in cards)}
+    assert all(c["proposedTrade"] is None for c in cards if c["ticker"] in ("SHAZ", "INTC"))
+
+
 def test_relabel_cli_delegates_without_target_override(tmp_path):
     db = seed_domain(tmp_path)
     recs = tmp_path / "recs.json"
@@ -78,8 +100,8 @@ def test_records_cli_via_bridge_symlink(tmp_path):
 def test_web_recommendation_surfaces_share_one_snapshot():
     """Caller contract: these current-action surfaces use the shared API snapshot."""
     files = ["components/AIThesisSummary.tsx", "components/AIAnalysisModal.tsx",
-             "components/ValuationModeler.tsx", "components/ScreenerTable.tsx",
-             "components/PortfolioTable.tsx", "components/TechnicalAnalysisSummaryCard.tsx",
+             "components/ValuationModeler.tsx", "components/positions/PositionsTable.tsx",
+             "pages/PortfolioPage.tsx", "components/TechnicalAnalysisSummaryCard.tsx",
              "components/LatestReviewModal.tsx", "pages/Dashboard.tsx", "pages/DailyBriefPage.tsx"]
     for file in files:
         text = (ROOT / "investment_screener/frontend/src" / file).read_text()

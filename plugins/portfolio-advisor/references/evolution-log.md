@@ -8,6 +8,12 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-20 — Saved brief cards carry the reconciled stance
+
+- **Failure:** `daily_brief.py` built cards from conviction scores that held only the raw canonical action; `build_recommendations()` uses the reconciled stance only when a score carries `decision_check`, so 15 of 18 saved cards showed the valuation action (INITIATE/ACCUMULATE) where the standing decision said wait or hold, and the "Ready to act" order and proposed trades followed the wrong stance.
+- **Change:** `ConvictionScore` carries `decision_check`, `recent_trades`, `price` and `support` from the same `recommend_all()` record it already reads, so saved cards, the terminal brief and the web page show one stance.
+- **Tests:** `test_brief_cards_show_the_canonical_stance` (fails on the previous code). The web-surface contract test listed two deleted pages; it now lists the shared positions table and Portfolio page. The order-gate tests only failed in worktrees without `tradingview-cdp/node_modules`; with it linked, all suites pass (2007 passed, 0 failed).
+
 ## 2026-10-20 — An automatic clear can't hide a move since the valuation
 
 - **Failure:** the price-move trigger used `review_price` when present and fell back to the valuation price only when it was empty. An automatic clear writes today's price into `review_price`, so a name already 26–31% below its saved valuation was cleared again as "no new facts" and kept its buy call.

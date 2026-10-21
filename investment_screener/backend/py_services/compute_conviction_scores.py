@@ -96,6 +96,12 @@ class ConvictionScore:
     weight_gap: float | None    # positive = underweight vs target
     flags: list[str]
     ta_staleness_days: int | None
+    # From the canonical record, so brief cards show the reconciled stance (standing decision,
+    # review gate, recent trades) rather than the raw valuation action.
+    decision_check: dict | None = None
+    recent_trades: dict | None = None
+    price: float | None = None
+    support: dict | None = None
 
 
 # ── DCF scoring ────────────────────────────────────────────────────────────────
@@ -461,6 +467,10 @@ def compute_all(db_path: str | None = None, domain_db_path: str | None = None) -
             weight_gap=gap,
             flags=flags,
             ta_staleness_days=stale_days,
+            decision_check=rec.get("decision_check"),
+            recent_trades=rec.get("recent_trades"),
+            price=rec.get("price"),
+            support=rec.get("support"),
         ))
 
     return sorted(scores, key=lambda s: s.total, reverse=True)
