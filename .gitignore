@@ -147,6 +147,7 @@ investment_screener/backend/data/tv_cdp_errors.jsonl
 investment_screener/backend/data/alerts_state.jsonl
 investment_screener/backend/data/theses/
 
+.antigravitycli
 
 # Daily brief snapshots (personal — generated daily, not for version control)
 investment_screener/backend/data/daily-briefs/
