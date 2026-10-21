@@ -39,6 +39,20 @@ def derive_action(ticker: str, current_pct: float, target_pct: float | None = No
     return rec["action"] if rec else "UNAVAILABLE"
 
 
+def derive_stance(ticker: str, db_path: str | None = None) -> str:
+    """Return the stance shown to the owner for ``ticker``: the canonical action, or the hold/wait
+    stance when a standing decision, recent trade or review gate holds it back
+    (``decision_check.effective``, the same value the web app shows via stanceOf).
+
+    Use this for any text the owner reads (news prompts, reviews, blueprints); use
+    ``derive_action`` only where the raw valuation action itself is the subject.
+    """
+    rec = _records(db_path).get(ticker)
+    if not rec:
+        return "UNAVAILABLE"
+    return (rec.get("decision_check") or {}).get("effective") or rec["action"]
+
+
 def _load_target_weights(db_path) -> dict:
     """Load per-symbol target weights from ``investment.target_weight`` 
 

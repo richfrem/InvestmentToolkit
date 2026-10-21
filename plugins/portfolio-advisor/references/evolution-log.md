@@ -8,6 +8,12 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-21 — Generated text shows the stance, not the raw valuation action
+
+- **Failure:** the daily news prompt listed names the owner holds back with a standing decision (hold, no adds) as ACCUMULATE, so outside models were asked about buy calls the app does not show. `portfolio_action.derive_action()` returns the raw valuation action, and four generators of owner-facing text used it.
+- **Change:** `portfolio_action.derive_stance()` returns `decision_check.effective` (what the app shows via stanceOf). `generate_news_prompt.py`, `generate_review_json.py`, `generate_sub_strategy_blocks.py` and `generate_portfolio_blueprint.py` use it.
+- **Tests:** `test_owner_facing_text_uses_the_stance` (raw action vs stance, and no generator calls `derive_action`).
+
 ## 2026-10-20 — Saved brief cards carry the reconciled stance
 
 - **Failure:** `daily_brief.py` built cards from conviction scores that held only the raw canonical action; `build_recommendations()` uses the reconciled stance only when a score carries `decision_check`, so 15 of 18 saved cards showed the valuation action (INITIATE/ACCUMULATE) where the standing decision said wait or hold, and the "Ready to act" order and proposed trades followed the wrong stance.
