@@ -21,7 +21,7 @@ from pathlib import Path
 REPO_ROOT   = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from portfolio_io import load_portfolio_state, load_thesis_holdings, compute_weights, replace_block, ROLE_LABEL  # noqa: E402
-from portfolio_action import derive_action, ACTION_EMOJI  # noqa: E402
+from portfolio_action import derive_stance, ACTION_EMOJI  # noqa: E402
 
 DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 SUB_DIR = REPO_ROOT / "investment_screener/backend/data/theses/sub_strategies"
@@ -92,7 +92,7 @@ def build_current_positions_block(
             act    = weights.get(t, 0)
             tgt    = float(h.get("targetWeight") or 0)
             role   = h.get("role", "")
-            action = derive_action(t, act, tgt, db_path=str(db_path))
+            action = derive_stance(t, db_path=str(db_path))
             emoji  = ACTION_EMOJI.get(action, "")
             entry  = _entry_str(h)
             lines.append(

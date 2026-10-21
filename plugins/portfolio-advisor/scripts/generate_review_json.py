@@ -37,7 +37,7 @@ REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
-from portfolio_action import derive_action
+from portfolio_action import derive_stance
 from portfolio_io import load_portfolio_state, compute_weights, load_target_weights  # noqa: E402
 
 
@@ -101,7 +101,7 @@ def generate(date_str: str, db_path: Path = DB_PATH) -> dict:
     for ticker, h in holdings_map.items():
         actual  = current_data["holdings"].get(ticker, 0)
         target  = target_data.get(ticker, 0)
-        action  = derive_action(ticker, actual, target, db_path=str(db_path))
+        action  = derive_stance(ticker, db_path=str(db_path))
         delta   = round(target - actual, 4)
 
         # Skip tickers with no position and no target (nothing to review)

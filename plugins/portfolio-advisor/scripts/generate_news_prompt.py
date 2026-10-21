@@ -35,7 +35,7 @@ DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 ETF_ANALYSIS_DIR = REPO_ROOT / "investment_screener/backend/data/etf_analysis"
 
 sys.path.insert(0, str(Path(__file__).parent))
-from portfolio_action import derive_action
+from portfolio_action import derive_stance
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
@@ -225,7 +225,7 @@ def build_prompt(date_str: str) -> str:
             continue
         actual  = current_data["holdings"].get(ticker, 0)
         target  = target_data["holdings"].get(ticker, 0)
-        action  = derive_action(ticker, actual, target, db_path=str(DB_PATH))
+        action  = derive_stance(ticker, db_path=str(DB_PATH))
         dcf     = load_dcf(ticker)
         role    = h.get("role", "watchlist")
         pillar  = h.get("pillarId", "")

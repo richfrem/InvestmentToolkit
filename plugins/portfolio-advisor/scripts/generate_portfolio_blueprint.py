@@ -76,7 +76,7 @@ SUB_STRATEGY_NAMES = {
     "untracked":           "Untracked / Thesis Pending",
 }
 
-from portfolio_action import derive_action, ACTION_EMOJI, _load_target_weights
+from portfolio_action import derive_stance, ACTION_EMOJI, _load_target_weights
 from recommendation import recommend_all
 
 
@@ -273,7 +273,7 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float, db_
             th         = thesis_map.get(ticker, {})
             actual_pct = current_data["holdings"].get(ticker, 0.0) or 0.0
             target_pct = target_data["holdings"].get(ticker, 0.0) or 0.0
-            action     = derive_action(ticker, actual_pct, target_pct, db_path=str(DOMAIN_DB))
+            action     = derive_stance(ticker, db_path=str(DOMAIN_DB))
             emoji      = ACTION_EMOJI.get(action, "")
             note       = th.get("thesisNote") or a.get("name", ticker)
             actual_str = f"{actual_pct:.2f}%" if actual_pct else "—"
@@ -366,7 +366,7 @@ def update_section_tables(content: str, current_data: dict, target_data: dict) -
         t = ticker.strip("* ")
         actual  = current_data["holdings"].get(t, 0) or 0
         target  = target_data["holdings"].get(t, 0)  or 0
-        action  = derive_action(t, actual, target, db_path=str(DOMAIN_DB))
+        action  = derive_stance(t, db_path=str(DOMAIN_DB))
         emoji   = ACTION_EMOJI.get(action, "")
         act_str = f"{actual:.2f}%" if actual else "—"
         tgt_str = f"{target:.2f}%" if target else "—"
@@ -426,7 +426,7 @@ def update_section_tables(content: str, current_data: dict, target_data: dict) -
             t = ticker_raw.strip("* ")
             actual  = current_data["holdings"].get(t, 0) or 0
             target  = target_data["holdings"].get(t, 0)  or 0
-            action  = derive_action(t, actual, target, db_path=str(DOMAIN_DB))
+            action  = derive_stance(t, db_path=str(DOMAIN_DB))
             emoji   = ACTION_EMOJI.get(action, "")
             act_str = f"{actual:.2f}%" if actual else "—"
             tgt_str = f"{target:.2f}%" if target else "—"

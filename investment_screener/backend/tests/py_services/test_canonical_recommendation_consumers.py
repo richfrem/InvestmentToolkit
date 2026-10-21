@@ -75,6 +75,24 @@ def test_brief_cards_show_the_canonical_stance(tmp_path):
     assert all(c["proposedTrade"] is None for c in cards if c["ticker"] in ("SHAZ", "INTC"))
 
 
+def test_owner_facing_text_uses_the_stance(tmp_path):
+    """News prompts, reviews and blueprints show the stance the app shows (decision_check.effective),
+    not the raw valuation action, so a held-back name never reads as a buy."""
+    from datetime import date
+    sys.path.insert(0, str(ROOT / "plugins/portfolio-advisor/scripts"))
+    from portfolio_action import derive_action, derive_stance
+    db = seed_domain(tmp_path)
+    conn = initialize_db(str(db))
+    update_investment_fields(conn, resolve_investment(conn, "SHAZ"), standing_decision_type="HOLD_NO_ADD",
+                             standing_decision_reason="test", standing_decision_source=f"user {date.today()}")
+    conn.close()
+    assert derive_action("SHAZ", 0, db_path=str(db)) == "ACCUMULATE"
+    assert derive_stance("SHAZ", db_path=str(db)) == "MAINTAIN"
+    for name in ("generate_news_prompt", "generate_review_json", "generate_sub_strategy_blocks", "generate_portfolio_blueprint"):
+        text = (ROOT / "plugins/portfolio-advisor/scripts" / f"{name}.py").read_text()
+        assert "derive_stance" in text and "derive_action(" not in text, f"{name} must show the stance"
+
+
 def test_relabel_cli_delegates_without_target_override(tmp_path):
     db = seed_domain(tmp_path)
     recs = tmp_path / "recs.json"
