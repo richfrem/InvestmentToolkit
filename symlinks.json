@@ -1272,6 +1272,12 @@
       "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/references/recommendation-coherence.md",
       "strategy": "symlink",
       "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/daily_sweep.md.template",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/assets/templates/daily_sweep.md.template",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the daily sweep prompt template in news-sweep"
     }
   ]
 }

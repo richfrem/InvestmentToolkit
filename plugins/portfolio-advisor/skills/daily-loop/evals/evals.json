@@ -185,5 +185,25 @@
     "expected_not_trigger": [],
     "pass_condition": "Agent reports the stale symbols, marks cards as priced on stale data and continues through brief, news sweep and triage without stopping to ask the owner how to proceed",
     "should_trigger": true
+  },
+  {
+    "id": "EVAL-018",
+    "type": "positive",
+    "prompt": "check the charts for your recommendations and tell me what price to buy this morning",
+    "should_trigger": true,
+    "expected_behavior": [
+      "Runs readiness (sync, prices, review_gate begin), the brief's macro gate and the news sweep before giving any entry price",
+      "Gives only prices recorded as standing decisions, with targets that fit the trade"
+    ]
+  },
+  {
+    "id": "EVAL-019",
+    "type": "positive",
+    "prompt": "new day, is there value to buy anything here?",
+    "should_trigger": true,
+    "expected_behavior": [
+      "Starts with Step 0 readiness and the brief, not with charts",
+      "States the macro gate and binary events before any buy"
+    ]
   }
 ]

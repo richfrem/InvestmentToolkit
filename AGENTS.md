@@ -92,6 +92,7 @@ Detailed policy documents and invariants are governed in [`.agent/rules/`](file:
 21. **Thesis Page Currency**: MUST record news sweeps in `intelligence.sqlite`; NEVER hardcode dated prices in prose. (details: [`.agent/rules/local-architecture-invariants.md`](file:///.agent/rules/local-architecture-invariants.md))
 22. **Installed Rules vs Local Rules**: Project-specific overrides MUST strictly live in `.agent/rules/local-*.md`. (details: [`.agent/rules/local-worktree-and-dual-repo-edit-protocol.md`](file:///.agent/rules/local-worktree-and-dual-repo-edit-protocol.md))
 23. **Recommendation Coherence**: Calls MUST come from `recommendation.py --all` and reflect analysis saved this cycle; every daily loop, weekly review or analysis session MUST start with `review_gate.py begin` and NEVER end while `review_gate.py verify` exits 1. (details: [`.agent/rules/local-recommendation-coherence.md`](file:///.agent/rules/local-recommendation-coherence.md))
+24. **Daily Order Before Advice**: On a new trading day, MUST run the daily loop's readiness, brief and news sweep before giving any buy or sell price, and MUST record every price or plan given before presenting it. (details: [`.agent/rules/local-recommendation-coherence.md`](file:///.agent/rules/local-recommendation-coherence.md))
 
 ## Canonical Scripts
 | Script | Purpose |
