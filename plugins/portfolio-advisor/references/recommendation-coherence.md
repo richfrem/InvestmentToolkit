@@ -144,6 +144,13 @@ The Daily Brief evaluates two kinds of condition in code
   ("200 EMA ($48.60)") and the card says it is the recorded level. Read the live EMA from
   the chart in this session and update the reason when it has moved.
 
+**Stored price levels are the levels.** `update_price_levels.py --source combined` writes numbered
+buy tiers (below the price, at or below base fair value), trims (base to bull fair value) and a stop
+from the latest valuation and the chart (Fibonacci retracements, high-volume shelves, 50/200-day EMAs)
+to `price_level_tier`. The Stock Analysis page reads them and TradingView draws them (the
+`ai-ta-levels` inputs are filled from the same rows), so quote only these; refresh them when a
+valuation is saved and in each daily or weekly cycle.
+
 Write new decisions so they can be checked: put the price in the type, or the EMA period
 in the type and its current dollar level in the reason. For anything else (trim tiers,
 resistance), read the chart or the price levels yourself. If technical data is older than

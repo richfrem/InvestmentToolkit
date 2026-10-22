@@ -412,6 +412,13 @@ def inject_pine_script(script_name: str, chart_symbol: str) -> bool:
         return False
 
     script_content = full_path.read_text()
+    if script_name == "ai-ta-levels":
+        # The chart draws the stored levels the Stock Analysis page shows (pine_level_inputs.py).
+        from pine_level_inputs import fill_level_inputs
+        try:
+            script_content = fill_level_inputs(script_content, chart_symbol)
+        except Exception as e:  # inject the indicator without action lines rather than not at all
+            print(f"inject_pine_script: stored levels unavailable for {chart_symbol}: {e}", file=sys.stderr)
     if not _switch_chart_and_inject(chart_symbol, script_content):
         print(
             f"inject_pine_script: injection failed for '{script_name}' on {chart_symbol}",

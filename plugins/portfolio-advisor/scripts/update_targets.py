@@ -114,7 +114,8 @@ def save(data: dict) -> None:
 
 def _save_entry_prices(holdings: list[dict]) -> None:
     from domain_model.db_client import initialize_db
-    from domain_model.price_level_repository import replace_price_levels, get_price_levels
+    from domain_model.price_level_repository import (replace_price_levels, get_price_levels,
+                                                       tier_row_to_dict, stop_row_to_dict)
 
     conn = initialize_db(str(DB_PATH))
     try:
@@ -128,8 +129,9 @@ def _save_entry_prices(holdings: list[dict]) -> None:
                 (existing.get("price_level_set") or {}).get("last_updated"),
                 (existing.get("price_level_set") or {}).get("last_updated_by"),
                 (existing.get("price_level_set") or {}).get("note"),
-                existing.get("buy_tiers") or [], existing.get("sell_tiers") or [],
-                existing.get("stop_loss"), h["targetEntryPrice"],
+                [tier_row_to_dict(t) for t in existing.get("buy_tiers") or []],
+                [tier_row_to_dict(t) for t in existing.get("sell_tiers") or []],
+                stop_row_to_dict(existing.get("stop_loss")), h["targetEntryPrice"],
             )
     finally:
         conn.close()
