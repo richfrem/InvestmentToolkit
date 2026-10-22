@@ -307,43 +307,41 @@ def _inject_pine_signals_step(
     recommendations: list[dict[str, Any]],
     yesterday: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
-    """Auto-inject 'ai-ta-levels' onto each ticker with a new actionable
-    recommendation today (Task 5B-8).
+    """Draw the stored price levels on the chart for each ticker with a new actionable
+    recommendation today.
 
-    Real production side effect: physically switches the live
-    TradingView chart to each qualifying ticker in turn and injects the
-    ai-ta-levels Pine script via pine_script_manager.inject_pine_script().
-    Chosen deliberately (user decision, 2026-07-13) over an
-    advisory-only or opt-in-flag alternative.
+    Real production side effect: switches the live TradingView chart to each qualifying
+    ticker in turn and sets the AI TA Levels indicator's inputs to that ticker's stored
+    levels (pine_level_inputs.draw_levels), the same rows the Stock Analysis page shows.
+    It no longer writes Pine code into the editor: that path overwrote whichever script
+    the active Pine tab held.
 
-    Graceful error handling: inject_pine_script() itself never raises
-    and already logs its own failure reason; this function additionally
-    logs a one-line warning per failed ticker and — critically — keeps
-    processing the remaining tickers rather than stopping early. Never
-    raises.
+    Never raises: a failed ticker is logged and the rest continue.
 
     Args:
         recommendations: Today's recommendation cards.
         yesterday: Prior day's brief snapshot, or None.
 
     Returns:
-        List of {"ticker": str, "injected": bool} results, one per
-        qualifying ticker (empty list if nothing new today).
+        List of {"ticker": str, "injected": bool} results (``injected`` = levels drawn),
+        one per qualifying ticker (empty list if nothing new today).
     """
     tickers = _new_actionable_tickers(recommendations, yesterday)
     if not tickers:
         return []
 
     sys.path.insert(0, str(PY_SERVICES))
-    from pine_script_manager import inject_pine_script
+    import pine_level_inputs
 
     results = []
     for ticker in tickers:
-        ok = inject_pine_script("ai-ta-levels", ticker)
+        try:
+            drawn = pine_level_inputs.draw_levels(ticker)
+        except Exception as e:  # never stop the brief for a chart side effect
+            drawn = {"success": False, "error": f"{type(e).__name__}: {e}"}
+        ok = bool(drawn.get("success"))
         if not ok:
-            print(f"  Pine injection skipped for {ticker} (validation or "
-                  f"injection failure — see inject_pine_script's own log)",
-                  file=sys.stderr)
+            print(f"  Chart levels not drawn for {ticker}: {drawn.get('error') or drawn}", file=sys.stderr)
         results.append({"ticker": ticker, "injected": ok})
     return results
 

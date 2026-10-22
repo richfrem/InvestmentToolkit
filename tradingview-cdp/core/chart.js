@@ -891,3 +891,42 @@ export async function listIndicators(client) {
     return { success: false, error: e.message };
   }
 }
+
+/**
+ * Set an indicator's inputs on the active chart through the TradingView chart API.
+ *
+ * Finds the first study whose name contains `nameFragment`, maps each input title in
+ * `valuesByTitle` to its input id and applies them with setInputValues. Used to draw stored
+ * price levels without touching the Pine Editor.
+ *
+ * @param {object} client - CDP client instance
+ * @param {string} nameFragment - Part of the indicator's name, e.g. "AI TA Levels"
+ * @param {Object<string, number>} valuesByTitle - Input title -> value
+ * @returns {Promise<object>} {success, study, set: [titles], missing: [titles]} or {success:false, error}
+ */
+export async function setStudyInputs(client, nameFragment, valuesByTitle) {
+  try {
+    const result = await client.Runtime.evaluate({
+      expression: `(function() {
+        var c = window.TradingViewApi.activeChart();
+        var frag = ${JSON.stringify(nameFragment)}, wanted = ${JSON.stringify(valuesByTitle)};
+        var hit = c.getAllStudies().find(function(s) { return (s.name || '').indexOf(frag) !== -1; });
+        if (!hit) return JSON.stringify({ success: false, error: 'Indicator containing "' + frag + '" is not on the chart', studies: c.getAllStudies().map(function(s) { return s.name; }) });
+        var study = c.getStudyById(hit.id);
+        var info = study.getInputsInfo();
+        var byTitle = {};
+        info.forEach(function(i) { byTitle[(i.name || i.title || i.localizedName || '').trim()] = i.id; });
+        var updates = [], set = [], missing = [];
+        Object.keys(wanted).forEach(function(t) {
+          if (byTitle[t] !== undefined) { updates.push({ id: byTitle[t], value: wanted[t] }); set.push(t); } else { missing.push(t); }
+        });
+        if (updates.length) study.setInputValues(updates);
+        return JSON.stringify({ success: missing.length === 0, study: hit.name, set: set, missing: missing });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    return JSON.parse(result.result.value);
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}

@@ -20,7 +20,7 @@ Generates a dynamic Pine Script indicator containing Fair Value, Target Entry, B
 
 - Dynamic compilation: Generates indicator dynamically from latest SQLite projection rows.
 - Single active overlay: Removes prior 'AI Thesis' indicator before injecting fresh levels.
-- Same levels as the page: buy/trim tiers and stop come from `price_level_tier`. To refresh and redraw them use `python3 plugins/portfolio-advisor/scripts/update_price_levels.py --ticker T --source combined --write --draw`; the `ai-ta-levels` indicator's action inputs are filled from those rows, and an unset level draws nothing.
+- Same levels as the page: buy/trim tiers and stop come from `price_level_tier`. To refresh and redraw them use `python3 plugins/portfolio-advisor/scripts/update_price_levels.py --ticker T --source combined --write --draw`; `--draw` sets the inputs of the saved **AI TA Levels** script on the chart (add it once from Indicators -> My scripts; it stays across symbols) through the chart API, without touching the Pine Editor; an unstored level is set to 0 and draws nothing. The source lives in `assets/pinescript-indicators/ai-ta-levels.pine` (versions under `versions/ai-ta-levels/`); edit it there and re-save the script in TradingView.
 - Lint gate: Must pass `pine_linter.py` before injection.
 
 ## Quick start

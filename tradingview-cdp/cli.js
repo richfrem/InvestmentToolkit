@@ -272,6 +272,19 @@ register('chart', {
         return chart.removeIndicator(client, name);
       },
     }],
+    ['setInputs', {
+      description: 'Set an indicator\'s inputs by title — e.g. chart setInputs --name "AI TA Levels" --values \'{"🟢 Buy Tier 1": 187.45}\'',
+      options: {
+        name: { type: 'string', short: 'n', description: 'Part of the indicator name on the chart' },
+        values: { type: 'string', short: 'v', description: 'JSON object of input title -> value' },
+      },
+      handler: async (opts) => {
+        if (!opts.name || !opts.values) throw new Error('Both --name and --values are required');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.setStudyInputs(client, opts.name, JSON.parse(opts.values));
+      },
+    }],
     ['indicators', {
       description: 'List indicators currently loaded on the chart',
       handler: async () => {

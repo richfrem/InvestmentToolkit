@@ -124,3 +124,29 @@ def test_unlabelled_tiers_get_no_number_zero(tmp_path):
     levels = get_price_levels(conn, inv)
     conn.close()
     assert levels["buy_tiers"][0]["tier_number"] == 1
+
+
+def test_tiny_fair_values_fall_back_to_dcf_levels_without_dividing_by_zero():
+    """RGTI-style scenarios (bear and base $0, bull $0.67) must not crash the combined build."""
+    chart = chart_levels.compute_chart_levels(_bars())
+    levels = derive_tiers_combined(bear_fv=0.0, base_fv=0.0, bull_fv=0.67, chart=chart,
+                                   current_price=11.6, source_date="2026-10-22")
+    active = [t for t in levels["buyTiers"] + levels["sellTiers"] if t["status"] == "active"]
+    assert levels["sellTiers"] and all(t["price"] > 0 for t in active)
+
+
+def test_draw_sets_every_level_input_by_its_title(tmp_path, monkeypatch):
+    """--draw sets the chart indicator's inputs from storage (0 for unstored levels), by input title."""
+    import pine_level_inputs, pine_script_manager
+    db = _seed(tmp_path)
+    derive_and_write("VRT", source="combined", db_path=db, chart=chart_levels.compute_chart_levels(_bars()))
+    calls = []
+    monkeypatch.setattr(pine_script_manager, "tv_call", lambda *a: calls.append(a) or {"success": True, "study": "AI TA Levels v2"})
+    out = pine_level_inputs.draw_levels("VRT", db)
+    assert out["success"] and calls[0] == ("chart", "symbol", "VRT")
+    import json as _json
+    sent = _json.loads(calls[1][-1])
+    titles = pine_level_inputs.input_titles()
+    assert set(sent) == set(titles.values()) and len(titles) == 8
+    stored = pine_level_inputs.level_inputs("VRT", db)
+    assert sent[titles["target_buy1"]] == round(stored["target_buy1"], 2)

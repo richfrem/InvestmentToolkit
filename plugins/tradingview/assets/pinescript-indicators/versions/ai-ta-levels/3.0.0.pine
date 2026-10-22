@@ -1,0 +1,160 @@
+//@version=6
+// AI TA Levels v6 — Institutional Multi-EMA + All Action Tiers + Session Levels + Data Window
+// Purpose: Renders 21/50/200 EMA institutional trend curves, session levels (PDH/PDL),
+// stored action levels (DCF Fair Value, Trim Tier 2, Trim Tier 1, Buy Tier 1, Buy Tier 2, Stop Loss),
+// and silent Data Window exports for AI CDP consumption.
+//
+// Layer: Codify / TradingView Pine Script Suite
+indicator("AI TA Levels v6", shorttitle="AI-TA", overlay=true)
+
+// ── Inputs: EMA Stack ────────────────────────────────────────────────────────
+ema_fast   = input.int(21,   "Fast EMA",    minval=1,   group="EMA Stack")
+ema_mid    = input.int(50,   "Mid EMA",     minval=1,   group="EMA Stack")
+ema_slow   = input.int(200,  "Slow EMA",    minval=1,   group="EMA Stack")
+
+// ── Inputs: Session Levels ───────────────────────────────────────────────────
+show_pd_levels = input.bool(true,  "Show Previous Day High / Low", group="Session Levels")
+
+// ── Inputs: Action Execution Tiers ───────────────────────────────────────────
+show_custom    = input.bool(true,  "Show Action Target Lines",     group="Action Tiers")
+target_fair    = input.float(0.0,  "💎 DCF Fair Value",    minval=0.0, group="Action Tiers", tooltip="0.0 draws nothing")
+target_trim2   = input.float(0.0,  "🟠 Trim Tier 2",     minval=0.0, group="Action Tiers")
+target_trim1   = input.float(0.0,  "🟡 Trim Tier 1",     minval=0.0, group="Action Tiers")
+target_buy1    = input.float(0.0,  "🟢 Buy Tier 1",        minval=0.0, group="Action Tiers")
+target_buy     = input.float(0.0,  "💎 Buy Tier 2", minval=0.0, group="Action Tiers")
+target_buy3    = input.float(0.0,  "🔵 Buy Tier 3",        minval=0.0, group="Action Tiers")
+target_trim3   = input.float(0.0,  "🟣 Trim Tier 3",     minval=0.0, group="Action Tiers")
+target_stop    = input.float(0.0,  "🛑 Stop Loss / Breaker", minval=0.0, group="Action Tiers")
+
+// ── Inputs: Telemetry ────────────────────────────────────────────────────────
+vol_len    = input.int(20,   "Volume MA",   minval=1,   group="Volume Bias")
+adx_len    = input.int(14,   "ADX Length",  minval=1,   group="Trend Strength")
+atr_len    = input.int(14,   "ATR Length",  minval=1,   group="Volatility")
+st_factor  = input.float(3.0,"Trailing ATR Factor", step=0.5, group="Trailing Stop")
+rsi_len    = input.int(14,   "RSI Length",  minval=1,   group="RSI")
+
+// ── EMA Calculations ────────────────────────────────────────────────────────
+e_fast = ta.ema(close, ema_fast)
+e_mid  = ta.ema(close, ema_mid)
+e_slow = ta.ema(close, ema_slow)
+
+// ── Dynamic Level Calculation ───────────────────────────────────────────────
+// Action levels come only from the inputs, which the injector fills from the stored price levels
+// (domain_model.sqlite price_level_tier, the same rows the Stock Analysis page shows). An input left
+// at 0.0 draws nothing: no level is ever made up from the current price.
+is_plausible(lvl) => lvl > 0 and lvl >= (close * 0.2) and lvl <= (close * 5.0)
+
+valid_fair  = is_plausible(target_fair)  ? target_fair  : na
+valid_trim2 = is_plausible(target_trim2) ? target_trim2 : na
+valid_trim1 = is_plausible(target_trim1) ? target_trim1 : na
+valid_buy1  = is_plausible(target_buy1)  ? target_buy1  : na
+valid_buy   = is_plausible(target_buy)   ? target_buy   : na
+valid_stop  = is_plausible(target_stop)  ? target_stop  : na
+valid_buy3  = is_plausible(target_buy3)  ? target_buy3  : na
+valid_trim3 = is_plausible(target_trim3) ? target_trim3 : na
+
+// ── Volume Bias % ────────────────────────────────────────────────────────────
+bull_vol = close > open ? volume : 0.0
+bear_vol = close <= open ? volume : 0.0
+bull_ma  = ta.sma(bull_vol, vol_len)
+bear_ma  = ta.sma(bear_vol, vol_len)
+bias_pct = (bull_ma - bear_ma) / (bull_ma + bear_ma + 0.001) * 100
+
+// ── ADX & ATR Math ───────────────────────────────────────────────────────────
+[di_plus, di_minus, adx_val] = ta.dmi(adx_len, adx_len)
+atr_val = ta.atr(atr_len)
+[st_val, st_dir] = ta.supertrend(st_factor, 10)
+rsi_val = ta.rsi(close, rsi_len)
+rsi_ma  = ta.sma(rsi_val, 14)
+
+// ── Previous Day High / Low ──────────────────────────────────────────────────
+[prev_day_high, prev_day_low] = request.security(syminfo.tickerid, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on)
+
+// ── Historical Overlay Plots (EMA Stack & Daily High/Low Only) ───────────────
+plot(e_fast, "EMA 21",  color=color.new(color.yellow, 10), linewidth=1)
+plot(e_mid,  "EMA 50",  color=color.new(color.blue, 10),   linewidth=2)
+plot(e_slow, "EMA 200", color=color.new(color.white, 10),  linewidth=2)
+
+// Previous Day High / Low Lines (Step line)
+plot(show_pd_levels ? prev_day_high : na, "Prev Day High", color=color.new(color.green, 50), linewidth=1, style=plot.style_stepline)
+plot(show_pd_levels ? prev_day_low  : na, "Prev Day Low",  color=color.new(color.red, 50),   linewidth=1, style=plot.style_stepline)
+
+// ── Clean Straight Horizontal Target Lines & Right-Aligned Badges ────────────
+var line line_fair  = na
+var line line_trim2 = na
+var line line_trim1 = na
+var line line_buy1  = na
+var line line_buy   = na
+var line line_stop  = na
+var line line_buy3  = na
+var line line_trim3 = na
+
+var label lbl_fair  = na
+var label lbl_trim2 = na
+var label lbl_trim1 = na
+var label lbl_buy1  = na
+var label lbl_buy   = na
+var label lbl_stop  = na
+var label lbl_buy3  = na
+var label lbl_trim3 = na
+
+if show_custom and barstate.islast
+    line.delete(line_fair)
+    line.delete(line_trim2)
+    line.delete(line_trim1)
+    line.delete(line_buy1)
+    line.delete(line_buy)
+    line.delete(line_stop)
+    line.delete(line_buy3)
+    line.delete(line_trim3)
+
+    label.delete(lbl_fair)
+    label.delete(lbl_trim2)
+    label.delete(lbl_trim1)
+    label.delete(lbl_buy1)
+    label.delete(lbl_buy)
+    label.delete(lbl_stop)
+    label.delete(lbl_buy3)
+    label.delete(lbl_trim3)
+
+    if not na(valid_fair)
+        line_fair := line.new(bar_index - 80, valid_fair, bar_index + 12, valid_fair, extend=extend.both, color=color.purple, width=2, style=line.style_solid)
+        lbl_fair  := label.new(bar_index + 12, valid_fair, "💎 DCF Fair Value: $" + str.tostring(valid_fair, "#.##"), color=color.new(color.purple, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+    if not na(valid_trim2)
+        line_trim2 := line.new(bar_index - 80, valid_trim2, bar_index + 12, valid_trim2, extend=extend.both, color=color.orange, width=1, style=line.style_dashed)
+        lbl_trim2  := label.new(bar_index + 12, valid_trim2, "🟠 Trim Tier 2: $" + str.tostring(valid_trim2, "#.##"), color=color.new(color.orange, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+    if not na(valid_trim1)
+        line_trim1 := line.new(bar_index - 80, valid_trim1, bar_index + 12, valid_trim1, extend=extend.both, color=color.yellow, width=1, style=line.style_dashed)
+        lbl_trim1  := label.new(bar_index + 12, valid_trim1, "🟡 Trim Tier 1: $" + str.tostring(valid_trim1, "#.##"), color=color.new(#d4af37, 10), textcolor=color.black, style=label.style_label_left, size=size.small)
+
+    if not na(valid_buy1)
+        line_buy1 := line.new(bar_index - 80, valid_buy1, bar_index + 12, valid_buy1, extend=extend.both, color=color.lime, width=1, style=line.style_solid)
+        lbl_buy1  := label.new(bar_index + 12, valid_buy1, "🟢 Buy Tier 1: $" + str.tostring(valid_buy1, "#.##"), color=color.new(color.green, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+    if not na(valid_buy)
+        line_buy  := line.new(bar_index - 80, valid_buy, bar_index + 12, valid_buy, extend=extend.both, color=color.aqua, width=2, style=line.style_solid)
+        lbl_buy   := label.new(bar_index + 12, valid_buy, "💎 Buy Tier 2: $" + str.tostring(valid_buy, "#.##"), color=color.new(color.teal, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+    if not na(valid_buy3)
+        line_buy3 := line.new(bar_index - 80, valid_buy3, bar_index + 12, valid_buy3, extend=extend.both, color=color.blue, width=1, style=line.style_solid)
+        lbl_buy3  := label.new(bar_index + 12, valid_buy3, "🔵 Buy Tier 3: $" + str.tostring(valid_buy3, "#.##"), color=color.new(color.blue, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+    if not na(valid_trim3)
+        line_trim3 := line.new(bar_index - 80, valid_trim3, bar_index + 12, valid_trim3, extend=extend.both, color=color.fuchsia, width=1, style=line.style_dashed)
+        lbl_trim3  := label.new(bar_index + 12, valid_trim3, "🟣 Trim Tier 3: $" + str.tostring(valid_trim3, "#.##"), color=color.new(color.fuchsia, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+    if not na(valid_stop)
+        line_stop := line.new(bar_index - 80, valid_stop, bar_index + 12, valid_stop, extend=extend.both, color=color.red, width=2, style=line.style_dashed)
+        lbl_stop  := label.new(bar_index + 12, valid_stop, "🛑 Stop Loss: $" + str.tostring(valid_stop, "#.##"), color=color.new(color.maroon, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
+
+// ── Silent Data Window Exports (AI CDP Telemetry) ────────────────────────────
+plot(rsi_val,  "RSI",            display=display.data_window, color=color.new(color.purple, 0))
+plot(rsi_ma,   "RSI-based MA",   display=display.data_window, color=color.new(color.yellow, 0))
+plot(bias_pct, "Vol Bias %",     display=display.data_window, color=color.new(color.aqua, 0))
+plot(adx_val,  "ADX",            display=display.data_window, color=color.new(color.purple, 0))
+plot(atr_val,  "ATR",            display=display.data_window, color=color.new(color.silver, 0))
+plot(st_val,   "Trailing Stop",  display=display.data_window, color=color.new(color.teal, 0))
+plot(di_plus,  "DI+",            display=display.data_window, color=color.new(color.lime, 0))
+plot(di_minus, "DI-",            display=display.data_window, color=color.new(color.red, 0))
