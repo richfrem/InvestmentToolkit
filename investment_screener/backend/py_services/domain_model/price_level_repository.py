@@ -88,6 +88,32 @@ def replace_price_levels(
     return price_level_set_id
 
 
+def tier_row_to_dict(row: dict) -> dict:
+    """Map a ``price_level_tier`` row (snake_case) to the tier dict that
+    ``replace_price_levels`` and callers use (camelCase, ``tier`` not ``tier_number``).
+    Every rewrite of stored tiers goes through this, so numbering and fields survive."""
+    return {
+        'tier': row.get('tier_number'),
+        'price': row.get('price'),
+        'action': row.get('action'),
+        'trimPct': row.get('trim_pct'),
+        'orderType': row.get('order_type'),
+        'basis': row.get('basis'),
+        'source': row.get('source'),
+        'sourceDate': row.get('source_date'),
+        'condition': row.get('condition'),
+        'status': row.get('status'),
+    }
+
+
+def stop_row_to_dict(row: dict | None) -> dict | None:
+    """Map a STOP_LOSS row back to the stop dict ``replace_price_levels`` takes."""
+    if not row:
+        return None
+    return {'price': row.get('price'), 'basis': row.get('basis'), 'source': row.get('source'),
+            'sourceDate': row.get('source_date'), 'type': row.get('condition'), 'status': row.get('status')}
+
+
 def get_price_levels(conn: sqlite3.Connection, investment_id: str) -> dict | None:
     conn.row_factory = sqlite3.Row
     set_row = conn.execute(

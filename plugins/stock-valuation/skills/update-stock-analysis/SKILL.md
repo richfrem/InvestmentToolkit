@@ -58,14 +58,16 @@ python3 plugins/stock-valuation/scripts/fetch_financials.py {TICKER} > temp/eval
    ```
 6. **Compile Research Report**:
    Write the Markdown deep dive, then publish with `persist_research.py --file REPORT.md --db /ABSOLUTE/MAIN_CHECKOUT/investment_screener/backend/data/intelligence.sqlite`. Dated reports are served from the ledger, so a file alone is insufficient. Read back with `query_ledger_research.py --get {TICKER}_{YYYY-MM-DD}.md`.
-7. **Mark Reviewed**: `python3 plugins/portfolio-advisor/scripts/review_gate.py mark --ticker {TICKER} --reason "Re-valued today: <one-line conclusion>"` (accepted because a valuation was saved today). The new valuation, not chat analysis, is what the app shows.
-8. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
+7. **Price Levels (page and chart)**: `python3 plugins/portfolio-advisor/scripts/update_price_levels.py --ticker {TICKER} --source combined --write --draw` writes numbered buy/trim tiers and the stop from this valuation and today's chart (Fibonacci, volume shelves, 50/200-day EMAs) and redraws them on TradingView, so page and chart match. Quote levels only from these tiers.
+8. **Mark Reviewed**: `python3 plugins/portfolio-advisor/scripts/review_gate.py mark --ticker {TICKER} --reason "Re-valued today: <one-line conclusion>"` (accepted because a valuation was saved today). The new valuation, not chat analysis, is what the app shows.
+9. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
 ## Verification
 
 - Verify saved `analyticsLog.valuationModel.discountRateAudit`, method, selected rate, scenario prices and canonical action through the main database/API. App views read the persisted results; they must not recalculate rate assumptions. Python rates are decimals; API `globalSettings.discountRate` is a percentage.
 - For AI-exposed names, verify the forward-evidence cases in `evals/evals.json`; record source dates, modeled changes and unresolved gaps before relying on a valuation signal.
 - Confirm `validate_projection.py` passes with zero schema errors.
+- Confirm the page's price-level tiers are numbered 1..n, match the levels on the TradingView chart, and none is a buy above base fair value.
 - Confirm SQLite record insertion:
   ```bash
   python3 investment_screener/backend/py_services/portfolio_io.py --ticker {TICKER} --json

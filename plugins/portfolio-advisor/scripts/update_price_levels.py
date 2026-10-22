@@ -15,6 +15,15 @@ Derivation formulas (source=dcf):
   sellTier[3].price = round(bull_fv * 1.20, 2)   # exit 100% at 20% above bull
   stopLoss.price    = round(bear_fv * 0.95, 2)   # thesis breaker
 
+Combined levels (source=combined, the default for skills): the DCF tiers above plus chart
+levels from chart_levels.py (Fibonacci retracements of the last major advance, high-volume
+shelves, 50/200-day EMAs). Buy tiers are levels below the current price and at or below DCF
+base fair value (a buy above fair value would contradict the valuation); sell tiers are DCF
+fair values (base first, bull last) with the nearest chart resistance between them. Levels within 2% merge into one
+tier whose basis names every source. Tiers are numbered 1..n from the nearest. When the
+bear-derived stop is suppressed, the stop sits 7% below the deepest active buy tier.
+TradingView draws these stored levels (pine_level_inputs.py), so page and chart agree.
+
 Sanity guard: buyTier[2] and stopLoss (bear-derived) are written with
 status='suppressed' when more than 50% below the stored current price
 (investment_price), e.g. a $3.44 stop on a $26 stock. Never clamped.
@@ -24,14 +33,18 @@ Usage:
   python3 update_price_levels.py --ticker GOOG --source dcf --dry-run
   python3 update_price_levels.py --all --source dcf --dry-run
   python3 update_price_levels.py --all --write --db /path/to/domain_model.sqlite
+  python3 update_price_levels.py --ticker VRT --source combined --write --draw
+  python3 update_price_levels.py --followed --source combined --write
 
 Key Functions (Index):
   - derive_tiers_from_dcf(): the tier formulas
+  - derive_tiers_combined(): DCF tiers merged with chart support and resistance
   - compute_proximity_flags(): flags for a price against stored levels
   - load_latest_projection(): the latest AI_AGENT projection scenarios
   - compute_price_level_snapshot_from_db(): next tiers and flags from SQLite
   - derive_and_write(): one ticker
   - derive_and_write_all(): every thesis holding; reports updated, skipped and failed
+  - derive_and_write_followed(): every holding and watchlist name with a valuation
 
 Key Input Dependencies:
   - investment_screener/backend/data/domain_model.sqlite (projections, prices, thesis holdings)
@@ -52,7 +65,7 @@ sys.path.insert(0, str(REPO_ROOT / 'investment_screener/backend/py_services'))
 from domain_model.db_client import initialize_db
 from domain_model.projection_repository import get_latest_projection_by_source, get_projection_scenarios
 from domain_model.investment_repository import resolve_investment
-from domain_model.price_level_repository import replace_price_levels, get_price_levels
+from domain_model.price_level_repository import replace_price_levels, get_price_levels, tier_row_to_dict
 from domain_model.investment_price_repository import get_investment_price
 from portfolio_io import load_thesis_holdings
 
@@ -94,6 +107,85 @@ def derive_tiers_from_dcf(
     levels = _derive_raw_tiers(bear_fv, base_fv, bull_fv, source_date, note)
     _suppress_if_far_below(levels['buyTiers'][1], current_price)
     _suppress_if_far_below(levels['stopLoss'], current_price)
+    return levels
+
+
+MERGE_PCT = 0.02           # chart and valuation levels this close together are one tier
+MAX_BUY_TIERS = 3
+MAX_SELL_TIERS = 3        # sell tiers drawn; the DCF bull fair value is always the last one
+MAX_CHART_TRIMS = 1       # chart resistance trims between base and bull fair value
+CHART_STOP_BELOW = 0.07    # stop below the deepest buy tier when the bear stop is suppressed
+
+
+def _merge_levels(cands: list[tuple[float, str, str]], descending: bool) -> list[tuple[float, str, str]]:
+    """Merge (price, basis, source) levels within MERGE_PCT; the first kept price wins."""
+    out: list[list] = []
+    for price, basis, source in sorted(cands, key=lambda c: -c[0] if descending else c[0]):
+        if out and abs(price - out[-1][0]) / out[-1][0] <= MERGE_PCT:
+            out[-1][1] += f"; also {basis[0].lower()}{basis[1:]} (${price:.2f})"
+            if source not in out[-1][2].split("+"):
+                out[-1][2] += f"+{source}"
+            continue
+        out.append([round(price, 2), basis, source])
+    return [tuple(x) for x in out]
+
+
+def derive_tiers_combined(
+    bear_fv: float,
+    base_fv: float,
+    bull_fv: float,
+    chart: dict | None,
+    current_price: float | None,
+    source_date: str,
+    note: str = '',
+) -> dict:
+    """DCF tiers merged with chart support and resistance, numbered from the nearest.
+
+    Buy tiers: active DCF buy tiers and chart supports below the current price, capped at
+    DCF base fair value. Sell tiers: DCF fair-value tiers plus chart resistance at or above
+    base fair value. Without a chart or a current price this is derive_tiers_from_dcf().
+    """
+    levels = derive_tiers_from_dcf(bear_fv, base_fv, bull_fv, source_date, note, current_price=current_price)
+    if not chart or not current_price:
+        return levels
+    import chart_levels
+
+    floor = current_price * (1 - MAX_BEAR_LEVEL_DISTANCE)
+    dcf_buys = [t for t in levels['buyTiers'] if t['status'] == 'active' and t['price'] < current_price]
+    cands = [(t['price'], f"DCF {t['basis'][0].lower()}{t['basis'][1:]}" if not t['basis'].startswith('DCF') else t['basis'], 'dcf')
+             for t in dcf_buys]
+    cands += [(p, b, 'ta') for p, b in chart_levels.supports_below(chart, current_price) if floor <= p <= base_fv]
+    buys = []
+    for i, (price, basis, source) in enumerate(_merge_levels(cands, descending=True)[:MAX_BUY_TIERS], 1):
+        buys.append({'tier': i, 'price': price, 'action': 'accumulate', 'trimPct': None, 'orderType': 'limit',
+                     'basis': basis, 'source': source, 'sourceDate': source_date, 'condition': None, 'status': 'active'})
+    for t in levels['buyTiers']:
+        if t['status'] == 'suppressed':
+            buys.append({**t, 'tier': len(buys) + 1})
+
+    trims = {round(t['price'], 2): t for t in levels['sellTiers']}
+    cands = [(t['price'], t['basis'] if t['basis'].startswith('DCF') else f"DCF: {t['basis']}", 'dcf') for t in levels['sellTiers']]
+    chart_trims = [(p, b, 'ta') for p, b in chart_levels.resistances_above(chart, current_price) if base_fv < p < bull_fv]
+    cands += chart_trims[:MAX_CHART_TRIMS]
+    merged = _merge_levels(cands, descending=False)
+    bull_price = round(bull_fv, 2)
+    bull = next(m for m in merged if m[0] == bull_price)
+    merged = [m for m in merged if m[0] < bull_price][:MAX_SELL_TIERS - 1] + [bull]
+    sells = []
+    for i, (price, basis, source) in enumerate(merged, 1):
+        dcf = trims.get(price)
+        sells.append({'tier': i, 'price': price, 'action': dcf['action'] if dcf else 'trim',
+                      'trimPct': dcf['trimPct'] if dcf else None, 'orderType': 'limit', 'basis': basis,
+                      'source': source, 'sourceDate': source_date, 'condition': None, 'status': 'active'})
+
+    stop = levels['stopLoss']
+    active_buys = [b for b in buys if b['status'] == 'active']
+    if stop['status'] == 'suppressed' and active_buys:
+        deepest = active_buys[-1]['price']
+        stop = {'price': round(deepest * (1 - CHART_STOP_BELOW), 2),
+                'basis': f"Chart: {CHART_STOP_BELOW * 100:.0f}% below the deepest buy tier (${deepest:.2f}); a close here breaks the support ladder",
+                'source': 'ta', 'sourceDate': source_date, 'type': 'support_break', 'status': 'active'}
+    levels.update(buyTiers=buys, sellTiers=sells, stopLoss=stop, lastUpdatedBy='combined')
     return levels
 
 
@@ -249,22 +341,7 @@ def load_latest_projection(ticker: str, db_path: Path | None = None) -> dict | N
     finally:
         conn.close()
 
-def _tier_row_to_dict(row: dict) -> dict:
-    """Maps a `price_level_tier` SQL row (snake_case columns) back to the
-    JSON tier shape `compute_proximity_flags`/callers expect (camelCase,
-    `tier` instead of `tier_number`)."""
-    return {
-        'tier': row.get('tier_number'),
-        'price': row.get('price'),
-        'action': row.get('action'),
-        'trimPct': row.get('trim_pct'),
-        'orderType': row.get('order_type'),
-        'basis': row.get('basis'),
-        'source': row.get('source'),
-        'sourceDate': row.get('source_date'),
-        'condition': row.get('condition'),
-        'status': row.get('status'),
-    }
+_tier_row_to_dict = tier_row_to_dict  # shared mapping in price_level_repository
 
 
 def compute_price_level_snapshot_from_db(conn, investment_id: str) -> dict | None:
@@ -317,9 +394,12 @@ def derive_and_write(
     source: str = 'dcf',
     note: str = '',
     dry_run: bool = False,
-    db_path: Path | None = None
+    db_path: Path | None = None,
+    chart: dict | None = None,
 ) -> dict:
     """Derive price levels for a ticker and store them in domain_model.sqlite (unless dry_run).
+
+    source='combined' merges chart levels (computed from daily bars unless `chart` is given).
 
     Raises:
         ValueError: No AI_AGENT projection, or one without bear/base/bull scenario prices.
@@ -341,7 +421,13 @@ def derive_and_write(
     
     today = datetime.now().strftime('%Y-%m-%d')
     current_price = _load_current_price(ticker, db_path)
-    price_levels = derive_tiers_from_dcf(bear_fv, base_fv, bull_fv, today, note, current_price=current_price)
+    if source == 'combined':
+        if chart is None:
+            import chart_levels
+            chart = chart_levels.compute_chart_levels(chart_levels.fetch_daily_bars([ticker]).get(ticker))
+        price_levels = derive_tiers_combined(bear_fv, base_fv, bull_fv, chart, current_price, today, note)
+    else:
+        price_levels = derive_tiers_from_dcf(bear_fv, base_fv, bull_fv, today, note, current_price=current_price)
     for level in [*price_levels['buyTiers'], price_levels['stopLoss']]:
         if level.get('status') == 'suppressed':
             print(f"WARNING: {ticker} {level['basis']}", file=sys.stderr)
@@ -419,11 +505,45 @@ def derive_and_write_all(source: str = 'dcf', dry_run: bool = False, db_path: Pa
             out["failed"].append({"ticker": ticker, "reason": f"{type(e).__name__}: {e}"})
     return out
 
+def derive_and_write_followed(source: str = 'combined', dry_run: bool = False, db_path: Path | None = None) -> dict:
+    """Derive levels for every holding and watchlist name (review_cycle.in_scope) with a valuation.
+
+    Daily bars for all names come from one batch download. Returns the same
+    {"updated", "skipped", "failed"} shape as derive_and_write_all.
+    """
+    import review_cycle
+    import chart_levels
+
+    dbp = db_path or DB_PATH
+    conn = initialize_db(str(dbp))
+    try:
+        tickers = sorted(n["symbol"] for n in review_cycle.in_scope(conn))
+    finally:
+        conn.close()
+    charts = {}
+    if source == 'combined':
+        bars = chart_levels.fetch_daily_bars(tickers)
+        charts = {t: chart_levels.compute_chart_levels(b) for t, b in bars.items()}
+    out: dict = {"updated": [], "skipped": [], "failed": []}
+    for ticker in tickers:
+        try:
+            out["updated"].append(derive_and_write(ticker, source=source, dry_run=dry_run, db_path=dbp,
+                                                   chart=charts.get(ticker)))
+        except ValueError as e:
+            out["skipped"].append({"ticker": ticker, "reason": str(e)})
+        except Exception as e:  # one bad ticker must not stop the batch, but it is reported
+            out["failed"].append({"ticker": ticker, "reason": f"{type(e).__name__}: {e}"})
+    return out
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Update structured price levels from DCF.")
     parser.add_argument('--ticker', type=str, help="Specific ticker to update")
     parser.add_argument('--all', action='store_true', help="Update every thesis holding in domain_model.sqlite")
-    parser.add_argument('--source', type=str, default='dcf', choices=['dcf', 'ta', 'news', 'earnings', '13f', 'manual'])
+    parser.add_argument('--followed', action='store_true', help="Update every holding and watchlist name that has a valuation")
+    parser.add_argument('--source', type=str, default='dcf', choices=['dcf', 'combined', 'ta', 'news', 'earnings', '13f', 'manual'],
+                        help="combined = DCF tiers merged with chart support/resistance (what the skills use)")
+    parser.add_argument('--draw', action='store_true', help="With --ticker and --write: redraw the stored levels on the TradingView chart")
     parser.add_argument('--note', type=str, default='', help="Optional note to persist with price levels")
     parser.add_argument('--write', action='store_true', help="Persist updates to domain_model.sqlite (default is dry-run)")
     parser.add_argument('--dry-run', action='store_true', help="Dry run only")
@@ -437,12 +557,17 @@ if __name__ == '__main__':
         try:
             res = derive_and_write(args.ticker, source=args.source, note=args.note, dry_run=is_dry, db_path=db)
             print(json.dumps(res, indent=2))
+            if args.draw and not is_dry:
+                from pine_script_manager import inject_pine_script
+                drawn = inject_pine_script("ai-ta-levels", args.ticker.upper())
+                print(f"TradingView levels {'drawn' if drawn else 'NOT drawn (see stderr)'} for {args.ticker.upper()}")
         except Exception as e:
             print(f"Error: {e}")
             sys.exit(1)
-    elif args.all:
+    elif args.all or args.followed:
         try:
-            out = derive_and_write_all(source=args.source, dry_run=is_dry, db_path=db)
+            out = (derive_and_write_followed(source=args.source, dry_run=is_dry, db_path=db) if args.followed
+                   else derive_and_write_all(source=args.source, dry_run=is_dry, db_path=db))
         except ValueError as e:
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)

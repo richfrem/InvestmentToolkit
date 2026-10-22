@@ -31,14 +31,15 @@ python3 plugins/portfolio-advisor/scripts/weekly_review.py --prompt-output temp/
 ## Workflow
 1. **Refresh Reality**, in this order: positions and the week's trades with `/tv-portfolio-sync` (only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask whether to use TradingView (default) or Questrade); then prices with `python3 plugins/tradingview/scripts/tv_price_refresh.py`, filling any `stale` symbols with the questrade-refresh-prices skill when Questrade is enabled, or reporting them.
 2. **Start the Review Cycle**: `python3 plugins/portfolio-advisor/scripts/review_gate.py begin`, after step 1 so triage measures today's prices; the weekly review clears the whole queue (holdings and watchlist).
-3. **Drift Audit**: Evaluate week-over-week price changes and allocation drift across all active holdings and watchlists.
-4. **Compile Prompt**: Generate the model-agnostic research prompt with baseline anchors (prices, 1W moves, target weights, and each name's stance from `recommendation.py --all`).
-5. **Multi-Model Dispatch**: The owner pastes the prompt into each model and pastes the responses back in chat; save each to `temp/news-sweep-responses/<model>/weekly-<mon><dd>-<yyyy>.md`.
-6. **Fact-Check Gate**: Validate macro yield, VIX, and quoted prices against live market data before accepting findings.
-7. **Calibrate & Apply**: Review triangulated findings. Catalyst adjustments (`apply_catalyst.py`) and target weights (`update_targets.py`) change only with the owner's answer, one decision at a time; a buy or trim proposal states the weight it produces and the target that fits it.
-8. **Record Findings & Refresh Every Thesis Page**: Record the triangulated findings with `record_news_sweep.py --write`, then work through `thesis_currency.py stale --max-age-days 7`: rewrite each listed page's note from its `context` and `put` it, or `touch` it when nothing material changed (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`).
-9. **Review Gate**: `python3 plugins/portfolio-advisor/scripts/review_gate.py verify` must exit 0 before the review ends.
-10. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish`, then confirm the app shows the stances you presented.
+3. **Price Levels**: `python3 plugins/portfolio-advisor/scripts/update_price_levels.py --followed --source combined --write` so every holding and watchlist name has numbered buy/trim tiers from its latest valuation and this week's chart; the page and TradingView show the same tiers.
+4. **Drift Audit**: Evaluate week-over-week price changes and allocation drift across all active holdings and watchlists.
+5. **Compile Prompt**: Generate the model-agnostic research prompt with baseline anchors (prices, 1W moves, target weights, and each name's stance from `recommendation.py --all`).
+6. **Multi-Model Dispatch**: The owner pastes the prompt into each model and pastes the responses back in chat; save each to `temp/news-sweep-responses/<model>/weekly-<mon><dd>-<yyyy>.md`.
+7. **Fact-Check Gate**: Validate macro yield, VIX, and quoted prices against live market data before accepting findings.
+8. **Calibrate & Apply**: Review triangulated findings. Catalyst adjustments (`apply_catalyst.py`) and target weights (`update_targets.py`) change only with the owner's answer, one decision at a time; a buy or trim proposal states the weight it produces and the target that fits it.
+9. **Record Findings & Refresh Every Thesis Page**: Record the triangulated findings with `record_news_sweep.py --write`, then work through `thesis_currency.py stale --max-age-days 7`: rewrite each listed page's note from its `context` and `put` it, or `touch` it when nothing material changed (protocol: `plugins/portfolio-advisor/references/thesis-page-currency.md`).
+10. **Review Gate**: `python3 plugins/portfolio-advisor/scripts/review_gate.py verify` must exit 0 before the review ends.
+11. **Closing Refresh**: Run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish`, then confirm the app shows the stances you presented.
 
 ## Multi-Agent Protocol
 Leverage complementary agent capabilities across the weekly research sweep:
