@@ -107,6 +107,10 @@ def derive_tiers_from_dcf(
     levels = _derive_raw_tiers(bear_fv, base_fv, bull_fv, source_date, note)
     _suppress_if_far_below(levels['buyTiers'][1], current_price)
     _suppress_if_far_below(levels['stopLoss'], current_price)
+    for level in [*levels['buyTiers'], *levels['sellTiers'], levels['stopLoss']]:
+        if not level['price'] or level['price'] <= 0:   # a $0 scenario gives no level to act on
+            level['status'] = 'suppressed'
+            level['basis'] += ' — SUPPRESSED: scenario value is $0'
     return levels
 
 
@@ -120,6 +124,7 @@ CHART_STOP_BELOW = 0.07    # stop below the deepest buy tier when the bear stop 
 def _merge_levels(cands: list[tuple[float, str, str]], descending: bool) -> list[tuple[float, str, str]]:
     """Merge (price, basis, source) levels within MERGE_PCT; the first kept price wins."""
     out: list[list] = []
+    cands = [c for c in cands if c[0] and c[0] > 0]   # a $0 level (tiny fair values round to 0) is no level
     for price, basis, source in sorted(cands, key=lambda c: -c[0] if descending else c[0]):
         if out and abs(price - out[-1][0]) / out[-1][0] <= MERGE_PCT:
             out[-1][1] += f"; also {basis[0].lower()}{basis[1:]} (${price:.2f})"
@@ -146,8 +151,8 @@ def derive_tiers_combined(
     base fair value. Without a chart or a current price this is derive_tiers_from_dcf().
     """
     levels = derive_tiers_from_dcf(bear_fv, base_fv, bull_fv, source_date, note, current_price=current_price)
-    if not chart or not current_price:
-        return levels
+    if not chart or not current_price or round(base_fv, 2) <= 0 or round(bull_fv, 2) <= 0:
+        return levels   # no chart, no price, or a fair value too small to anchor tiers
     import chart_levels
 
     floor = current_price * (1 - MAX_BEAR_LEVEL_DISTANCE)
@@ -164,7 +169,7 @@ def derive_tiers_combined(
             buys.append({**t, 'tier': len(buys) + 1})
 
     trims = {round(t['price'], 2): t for t in levels['sellTiers']}
-    cands = [(t['price'], t['basis'] if t['basis'].startswith('DCF') else f"DCF: {t['basis']}", 'dcf') for t in levels['sellTiers']]
+    cands = [(t['price'], t['basis'] if t['basis'].startswith('DCF') else f"DCF: {t['basis']}", 'dcf') for t in levels['sellTiers'] if t['status'] == 'active']
     chart_trims = [(p, b, 'ta') for p, b in chart_levels.resistances_above(chart, current_price) if base_fv < p < bull_fv]
     cands += chart_trims[:MAX_CHART_TRIMS]
     merged = _merge_levels(cands, descending=False)
@@ -543,7 +548,7 @@ if __name__ == '__main__':
     parser.add_argument('--followed', action='store_true', help="Update every holding and watchlist name that has a valuation")
     parser.add_argument('--source', type=str, default='dcf', choices=['dcf', 'combined', 'ta', 'news', 'earnings', '13f', 'manual'],
                         help="combined = DCF tiers merged with chart support/resistance (what the skills use)")
-    parser.add_argument('--draw', action='store_true', help="With --ticker and --write: redraw the stored levels on the TradingView chart")
+    parser.add_argument('--draw', action='store_true', help="With --ticker and --write: set the chart's AI TA Levels inputs to the stored levels")
     parser.add_argument('--note', type=str, default='', help="Optional note to persist with price levels")
     parser.add_argument('--write', action='store_true', help="Persist updates to domain_model.sqlite (default is dry-run)")
     parser.add_argument('--dry-run', action='store_true', help="Dry run only")
@@ -558,9 +563,13 @@ if __name__ == '__main__':
             res = derive_and_write(args.ticker, source=args.source, note=args.note, dry_run=is_dry, db_path=db)
             print(json.dumps(res, indent=2))
             if args.draw and not is_dry:
-                from pine_script_manager import inject_pine_script
-                drawn = inject_pine_script("ai-ta-levels", args.ticker.upper())
-                print(f"TradingView levels {'drawn' if drawn else 'NOT drawn (see stderr)'} for {args.ticker.upper()}")
+                from pine_level_inputs import draw_levels
+                drawn = draw_levels(args.ticker.upper(), db)
+                if drawn.get("success"):
+                    print(f"TradingView levels drawn for {args.ticker.upper()} on '{drawn.get('study')}'")
+                else:
+                    print(f"TradingView levels NOT drawn for {args.ticker.upper()}: {drawn.get('error') or drawn}. "
+                          "Add the 'AI TA Levels' script to the chart once (Indicators -> My scripts).", file=sys.stderr)
         except Exception as e:
             print(f"Error: {e}")
             sys.exit(1)

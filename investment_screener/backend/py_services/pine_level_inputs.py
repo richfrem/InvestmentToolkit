@@ -17,16 +17,23 @@ Usage Examples:
 Key Functions (Index):
     - level_inputs(): {pine input name: price} for a ticker from domain_model.sqlite
     - fill_level_inputs(): the indicator source with those values as input defaults
+    - input_titles(): {pine input name: input title}, read from the indicator source
+    - draw_levels(): set the chart indicator's inputs to a ticker's stored levels (no Pine Editor)
 
 Key Input Dependencies:
     - domain_model.sqlite: price_level_set / price_level_tier, projection_version
 """
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "domain_model.sqlite"
+INDICATOR = Path(__file__).resolve().parents[3] / "plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine"
+INDICATOR_NAME = "AI TA Levels"   # matches the chart study name of the saved script (any version suffix)
+LEVEL_INPUTS = ("target_fair", "target_buy1", "target_buy", "target_buy3",
+                "target_trim1", "target_trim2", "target_trim3", "target_stop")
 
 
 def level_inputs(symbol: str, db_path: str | Path | None = None) -> dict[str, float]:
@@ -64,3 +71,32 @@ def fill_level_inputs(source: str, symbol: str, db_path: str | Path | None = Non
     for name, value in level_inputs(symbol, db_path).items():
         source = re.sub(rf"^({name}\s*=\s*input\.float\()\s*[0-9.]+", rf"\g<1>{value:.2f}", source, count=1, flags=re.M)
     return source
+
+
+def input_titles(source: str | None = None) -> dict[str, str]:
+    """{pine input variable: input title} for the level inputs, read from the indicator source."""
+    source = source if source is not None else INDICATOR.read_text()
+    out = {}
+    for name in LEVEL_INPUTS:
+        m = re.search(rf'^{name}\s*=\s*input\.float\([^,]+,\s*"([^"]+)"', source, flags=re.M)
+        if m:
+            out[name] = m.group(1)
+    return out
+
+
+def draw_levels(symbol: str, db_path: str | Path | None = None) -> dict:
+    """Switch the active chart to `symbol` and set the AI TA Levels indicator's inputs to its
+    stored levels; levels that are not stored are set to 0 so stale lines disappear.
+
+    Returns the CDP result: {success, study, set, missing} or {success: False, error}.
+    The indicator must already be on the chart layout (Indicators -> My scripts); it stays
+    there across symbol changes.
+    """
+    from pine_script_manager import tv_call
+
+    values = level_inputs(symbol, db_path)
+    by_title = {title: round(values.get(name, 0.0), 2) for name, title in input_titles().items()}
+    switched = tv_call("chart", "symbol", symbol.upper())
+    if not (isinstance(switched, dict) and switched.get("success")):
+        return {"success": False, "error": f"chart switch failed: {switched}"}
+    return tv_call("chart", "setInputs", "--name", INDICATOR_NAME, "--values", json.dumps(by_title, ensure_ascii=False))

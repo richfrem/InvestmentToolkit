@@ -1,15 +1,11 @@
 """Task 5B-8: Integration into /daily.
 
-Tests for daily_brief.py's Pine signal auto-injection step —
-_new_actionable_tickers() (day-over-day new-signal detection) and
-_inject_pine_signals_step() (real TradingView chart side effect via
-pine_script_manager.inject_pine_script()).
+Tests for daily_brief.py's chart step: _new_actionable_tickers() (day-over-day new-signal
+detection) and _inject_pine_signals_step(), which draws each new ticker's stored price
+levels by setting the AI TA Levels indicator's inputs (pine_level_inputs.draw_levels).
 
-inject_pine_script is mocked at pine_script_manager's module-level
-attribute (same technique test_pine_injection_auto_clicks.py uses for
-tv_call) — _inject_pine_signals_step's local `from pine_script_manager
-import inject_pine_script` re-reads the module attribute at call time,
-so no test here ever reaches real tv_call/CDP.
+draw_levels is mocked at pine_level_inputs' module attribute, so no test here reaches
+real tv_call/CDP.
 """
 
 import sys
@@ -22,6 +18,7 @@ sys.path.insert(0, str(PY_SERVICES))
 from daily_brief import _new_actionable_tickers, _inject_pine_signals_step  # noqa: E402
 import daily_brief  # noqa: E402 — needed to monkeypatch daily_brief.PY_SERVICES if required
 import pine_script_manager  # noqa: E402
+import pine_level_inputs  # noqa: E402
 
 
 def _card(ticker: str, recommendation: str, actionable: bool) -> dict:
@@ -33,8 +30,8 @@ def _yesterday_snapshot(recommendations: list[dict]) -> dict:
 
 
 def _never_call(*args, **kwargs):
-    """An inject_pine_script stand-in that fails the test loudly if invoked."""
-    raise AssertionError(f"inject_pine_script must not be invoked, but was called with args={args}")
+    """A draw_levels stand-in that fails the test loudly if invoked."""
+    raise AssertionError(f"draw_levels must not be invoked, but was called with args={args}")
 
 
 # --- _new_actionable_tickers ---
@@ -104,11 +101,11 @@ class TestInjectPineSignalsStep:
 
         calls = []
 
-        def fake_inject(script_name, chart_symbol):
-            calls.append((script_name, chart_symbol))
-            return True
+        def fake_draw(chart_symbol):
+            calls.append(("ai-ta-levels", chart_symbol))
+            return {"success": True}
 
-        monkeypatch.setattr(pine_script_manager, "inject_pine_script", fake_inject)
+        monkeypatch.setattr(pine_level_inputs, "draw_levels", fake_draw)
 
         result = _inject_pine_signals_step(today, yesterday)
 
@@ -129,11 +126,11 @@ class TestInjectPineSignalsStep:
         outcomes = {"AAPL": False, "NBIS": True}
         calls = []
 
-        def fake_inject(script_name, chart_symbol):
-            calls.append((script_name, chart_symbol))
-            return outcomes[chart_symbol]
+        def fake_draw(chart_symbol):
+            calls.append(("ai-ta-levels", chart_symbol))
+            return {"success": outcomes[chart_symbol], "error": "not on chart"}
 
-        monkeypatch.setattr(pine_script_manager, "inject_pine_script", fake_inject)
+        monkeypatch.setattr(pine_level_inputs, "draw_levels", fake_draw)
 
         result = _inject_pine_signals_step(today, yesterday)
 
@@ -150,7 +147,7 @@ class TestInjectPineSignalsStep:
         today = [_card("AAPL", "HOLD", False)]
         yesterday = _yesterday_snapshot([])
 
-        monkeypatch.setattr(pine_script_manager, "inject_pine_script", _never_call)
+        monkeypatch.setattr(pine_level_inputs, "draw_levels", _never_call)
 
         result = _inject_pine_signals_step(today, yesterday)
 

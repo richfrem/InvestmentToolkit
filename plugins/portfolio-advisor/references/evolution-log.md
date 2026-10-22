@@ -8,6 +8,12 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-10-22 — Chart levels set as indicator inputs, not written into the Pine Editor
+
+- **Failure:** drawing stored levels on TradingView went through Pine Editor injection, which wrote code into whichever Pine tab was active (it overwrote the owner's saved "AI TA Levels v2" script), closed the editor before checking the result, and failed silently; the indicator registry it needs is a gitignored local file that did not exist, so the daily brief's chart step had been failing for a while. The combined level build crashed (divide by zero) for names whose base fair value is $0 (IONQ, QBTS, RGTI), and the DCF-only build stored $0 trim tiers.
+- **Change:** `chart.setStudyInputs` (CDP engine) and `cli.js chart setInputs` set an indicator's inputs by title through the chart API. `pine_level_inputs.draw_levels` switches the chart and sets the saved AI TA Levels script's inputs from the stored rows (0 for an unstored level); input titles are read from the Pine source. `update_price_levels.py --draw` and the daily brief's chart step use it; neither writes Pine code any more. Zero levels are dropped before merging, a $0 fair value falls back to the valuation tiers, and $0 tiers are stored as suppressed. The indicator source has a versioned copy (`versions/ai-ta-levels/3.0.0.pine`).
+- **Tests:** draw sets every level input by title (0 for unstored); a $0-fair-value build does not crash and stores no $0 tier (fails on the previous code); daily-brief chart-step tests target `draw_levels`.
+
 ## 2026-10-22 — One set of price levels for the page and the chart
 
 - **Failure:** the Stock Analysis page and TradingView showed different, and partly meaningless, levels. The `ai-ta-levels` indicator was injected with every action input at 0 and then drew levels made up from the current price (Trim 2 = price x 1.30, Trim 1 = x 1.15, Buy Tier 1 = x 0.90, Primary Buy = 200 EMA or x 0.85, Stop = x 0.92), so they moved every day; earlier SQLite levels were read off those lines (VRT: buy tiers above the price and a stop already breached). The page showed every tier as "Tier 0" because `update_targets.py --set-entry` rewrote the stored tiers from raw rows, dropping `tier`, action, trim % and date. A re-valuation did not refresh the levels, though update-stock-analysis says it does.
