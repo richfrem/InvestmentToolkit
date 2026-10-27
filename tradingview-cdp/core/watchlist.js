@@ -122,17 +122,17 @@ export async function getWatchlist(client) {
    */
   try {
     const result = await client.Runtime.evaluate({
-      expression: `(function() {
+      expression: `(async function() {
         var currentWatchlist = 'Unknown';
         var activeBtn = document.querySelector('[data-name="watchlists-button"] [class*="titleRow-"]');
         if (activeBtn) {
           currentWatchlist = activeBtn.textContent.trim();
         }
 
-        var rows = Array.from(document.querySelectorAll('[class*="symbol-RsFlttSS"]'));
-        if (rows.length === 0) {
-          // Fallback if class changes
-          rows = Array.from(document.querySelectorAll('[data-symbol-short]'));
+        function collectRows() {
+          var found = Array.from(document.querySelectorAll('[class*="symbol-RsFlttSS"]'));
+          // TradingView renames its hashed classes; the data attribute is stable.
+          return found.length ? found : Array.from(document.querySelectorAll('[data-symbol-short]'));
         }
 
         function parsePercentText(text) {
@@ -143,7 +143,7 @@ export async function getWatchlist(client) {
           return isNaN(v) ? null : v;
         }
 
-        var items = rows.map(function(el) {
+        function readRow(el) {
           var symText = el.querySelector('[class*="symbolNameText-"]');
           var priceEl = el.querySelector('[class*="cell-"][class*="last-"]') || el.querySelector('[class*="last-"]');
           var chgEl = el.querySelector('[class*="changeInPercents-"]');
@@ -172,7 +172,42 @@ export async function getWatchlist(client) {
             extendedChangePercent: extChgVal,
             sessionLabel: sessionLabel
           };
-        }).filter(function(item) { return item.symbol !== ''; });
+        }\n
+
+        // The panel is virtualized: only the rows near the viewport (about 43) are in the DOM,
+        // so a single read misses the rest of a long list. Scroll through the whole list and
+        // keep the best reading seen for each symbol.
+        var bySymbol = {};
+        var order = [];
+        function harvest() {
+          collectRows().forEach(function(el) {
+            var item = readRow(el);
+            if (item.symbol === '') return;
+            if (!(item.symbol in bySymbol)) order.push(item.symbol);
+            if (!(item.symbol in bySymbol) || (item.price && !bySymbol[item.symbol].price)) bySymbol[item.symbol] = item;
+          });
+        }
+        function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+        var first = collectRows()[0];
+        var scroller = first ? first.parentElement : null;
+        while (scroller && !(scroller.scrollHeight > scroller.clientHeight + 4 && getComputedStyle(scroller).overflowY !== 'visible')) {
+          scroller = scroller.parentElement;
+        }
+        harvest();
+        if (scroller) {
+          var start = scroller.scrollTop;
+          scroller.scrollTop = 0;
+          await sleep(400);
+          harvest();
+          var guard = 0;
+          while (guard++ < 60 && scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 2) {
+            scroller.scrollTop += Math.max(60, Math.floor(scroller.clientHeight * 0.6));
+            await sleep(400);
+            harvest();
+          }
+          scroller.scrollTop = start;
+        }
+        var items = order.map(function(sym) { return bySymbol[sym]; });
 
         return JSON.stringify({
           success: true,
@@ -181,7 +216,7 @@ export async function getWatchlist(client) {
         });
       })()`,
       returnByValue: true,
-      awaitPromise: false
+      awaitPromise: true
     });
     return JSON.parse(result.result.value);
   } catch (e) {

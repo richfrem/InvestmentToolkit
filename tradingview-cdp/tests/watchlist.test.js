@@ -157,4 +157,21 @@ describe('Watchlist Automation Core (CDP)', () => {
       expect(result.success).toBe(true);
     }, 15000);
   });
+
+  describe('getWatchlist on a virtualized list', () => {
+    it('scrolls the panel and awaits the page script so rows outside the viewport are read', async () => {
+      const mockClient = {
+        Runtime: {
+          evaluate: jest.fn().mockResolvedValue({
+            result: { value: JSON.stringify({ success: true, watchlist: 'W', items: [] }) }
+          })
+        }
+      };
+      await getWatchlist(mockClient);
+      const call = mockClient.Runtime.evaluate.mock.calls[0][0];
+      expect(call.awaitPromise).toBe(true);
+      expect(call.expression).toContain('scrollTop');
+      expect(call.expression).toContain('bySymbol');
+    });
+  });
 });
