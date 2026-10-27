@@ -14,10 +14,18 @@ DAILY = (TEMPLATES / "daily_sweep.md.template").read_text()
 BOTH = pytest.mark.parametrize("text", [WEEKLY, DAILY], ids=["weekly", "daily"])
 
 
-@BOTH
-def test_robotics_sector_is_a_theme_and_its_findings_go_under_koid(text):
-    assert "Robotics" in text and "Physical AI" in text
-    assert "`## KOID`" in text
+def test_robotics_sector_is_a_theme_and_its_findings_go_under_koid():
+    assert "Robotics" in WEEKLY and "Physical AI" in WEEKLY
+    assert "`## KOID`" in WEEKLY
+
+
+def test_daily_sweep_asks_for_sectors_not_etfs():
+    for strategy in ("Robotics", "Memory, Storage", "Photonics", "Quantum", "Power / Energy"):
+        assert strategy in DAILY
+    assert "not ETFs" in DAILY
+    assert "`## SECTOR:<strategy name>`" in DAILY
+    assert "`## KOID`" not in DAILY
+    assert "`## ROBOTICS`" not in DAILY
 
 
 @BOTH

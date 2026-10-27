@@ -82,10 +82,20 @@ Answer these for the portfolio as a whole:
 4. **Most mispriced position** — which holding looks most over- or under-valued vs. current thesis?
 5. **Top trim / add priorities this month** — 2–3 highest-conviction actions.
 6. **Macro & Sector Regime** — Is the market in a risk-on or risk-off stance? Cite VIX, yields, and overall AI capex sentiment.
-7. **Robotics & Physical AI (sector focus: `KOID`)** — Humanoid / embodied-AI and automation news (Tesla Optimus, Figure, Unitree, Symbotic and similar), sector funding and orders. Say whether the sector moved on company news or on rates and sentiment.
+7. **Strategy sectors (scan sectors, not ETFs)** — Cover each strategy below with sector-level news and the owned or watchlisted names that sit in it. Do not scan thematic ETFs (KOID, HUMN, FOTO) as tickers. For each sector, say whether it moved on company news or on rates and sentiment.
+   - **Robotics & Physical AI**: humanoids, embodied AI, automation (Tesla Optimus, Figure, Unitree, Symbotic and similar). Watchlist names: SYM, TSLA.
+   - **Memory, Storage & Advanced Packaging**: HBM, DRAM, NAND/SSD, CoWoS and packaging capacity (MU, SNDK, SKHY, and similar).
+   - **Photonics / Optical Interconnect**: transceivers, lasers, co-packaged optics, AI-datacenter optical demand (LITE, COHR, CIEN, GLW, APH, VIAV).
+   - **Quantum Computing**: IONQ, RGTI, QBTS, QUBT.
+   - **Power / Energy Infrastructure**: gas turbines, fuel cells, transformers, grid and datacenter power (GEV, BE, VST, VRT).
+   - **AI Infrastructure / neoclouds and miners**: GPU cloud financing, datacenter build-outs, power-pivot miners (CRWV, NBIS, APLD, CORZ, IREN, BTDR, RIOT).
+   - **Defense AI & Space**: defense software and space infrastructure (PLTR, SPCX, KRMN, RDW).
+   - **Cybersecurity / Data OS**: platform consolidation and AI disruption (PANW, ZS, CRWD, FTNT).
+   - **Sovereign Finance / Digital** and **Healthcare AI / Life Science**: the sector drivers only, plus any watchlist names (TEM, CELH, CAKE).
+   Also answer the watchlist question: for each name marked watchlist or accumulate, flag fresh company news in the last 14 days, and say "no company news" when there is none.
 8. **Cash & rates (`PSU-U.TO`, USD cash)** — USD/CAD and its move, Bank of Canada / Fed expectations, short-term USD yields, and any change to the `PSU-U.TO` distribution or ex-dividend date. Flag Canadian market holidays (the TSX is closed even when US markets are open).
 
-For any dated, material, sourced fact, you may add it at the very end under a `## TICKER` heading (only tickers in the table), `## MACRO`, `## KOID` (theme 7) or `## PSU-U.TO` (theme 8): one factual sentence with its source, `(unverified)` if you could not confirm it from a primary source.
+For any dated, material, sourced fact, you may add it at the very end under a `## TICKER` heading (only tickers in the table), `## MACRO`, or `## SECTOR:<strategy name>` for theme 7 (for example `## SECTOR:Photonics`) or `## PSU-U.TO` (theme 8): one factual sentence with its source, `(unverified)` if you could not confirm it from a primary source.
 
 ---
 

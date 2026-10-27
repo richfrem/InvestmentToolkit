@@ -1,1 +1,0 @@
-../../../scripts/questrade_price_refresh.py
