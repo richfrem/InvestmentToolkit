@@ -181,3 +181,7 @@ docs/plans/work-tasks/
 CLAUDE.local.md
 *.local.md
 heartbeat.md
+
+
+# APM dependencies
+apm_modules/

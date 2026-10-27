@@ -17,17 +17,6 @@
       ]
     },
     {
-      "source": "/Users/richardfremmerlid/Projects/InvestmentToolkit/plugins",
-      "plugins": [
-        "etf-analysis",
-        "portfolio-advisor",
-        "questrade",
-        "stock-valuation",
-        "toolkit-manager",
-        "tradingview"
-      ]
-    },
-    {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills",
       "plugins": [
         "agent-agentic-os",
