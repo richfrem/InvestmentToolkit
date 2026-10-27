@@ -848,72 +848,6 @@
       "description": "ADR-031 5-surface synchronization architecture"
     },
     {
-      "src": "plugins/questrade/references/questrade-mcp-ai-integration.md",
-      "dst": "plugins/questrade/skills/questrade-setup/references/questrade-mcp-ai-integration.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for Questrade MCP reference in questrade-setup skill"
-    },
-    {
-      "src": "plugins/questrade/references/questrade-mcp-ai-integration.md",
-      "dst": "plugins/questrade/skills/questrade-order-draft/references/questrade-mcp-ai-integration.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for Questrade MCP reference in questrade-order-draft skill"
-    },
-    {
-      "src": "plugins/questrade/references/questrade-tool-schemas.md",
-      "dst": "plugins/questrade/skills/questrade-get-balances/references/questrade-tool-schemas.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-get-balances skill"
-    },
-    {
-      "src": "plugins/questrade/references/questrade-tool-schemas.md",
-      "dst": "plugins/questrade/skills/questrade-get-positions/references/questrade-tool-schemas.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-get-positions skill"
-    },
-    {
-      "src": "plugins/questrade/references/questrade-tool-schemas.md",
-      "dst": "plugins/questrade/skills/questrade-activities/references/questrade-tool-schemas.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-activities skill"
-    },
-    {
-      "src": "plugins/questrade/references/questrade-tool-schemas.md",
-      "dst": "plugins/questrade/skills/questrade-order-draft/references/questrade-tool-schemas.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-order-draft skill"
-    },
-    {
-      "src": "plugins/questrade/references/questrade-tool-schemas.md",
-      "dst": "plugins/questrade/skills/questrade-setup/references/questrade-tool-schemas.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-setup skill"
-    },
-    {
-      "src": "plugins/questrade/scripts/questrade_sync.py",
-      "dst": "plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_sync.py",
-      "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
-    },
-    {
-      "src": "plugins/questrade/references/questrade-tool-schemas.md",
-      "dst": "plugins/questrade/skills/questrade-sync-portfolio/references/questrade-tool-schemas.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-sync-portfolio skill"
-    },
-    {
-      "src": "plugins/questrade/references/questrade-tool-schemas.md",
-      "dst": "plugins/questrade/skills/questrade-refresh-prices/references/questrade-tool-schemas.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-refresh-prices skill"
-    },
-    {
-      "src": "plugins/questrade/scripts/questrade_price_refresh.py",
-      "dst": "plugins/questrade/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py",
-      "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
-    },
-    {
       "src": "plugins/stock-valuation/scripts/persist_valuation.py",
       "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/persist_valuation.py",
       "strategy": "symlink",
@@ -1032,18 +966,6 @@
       "dst": "plugins/portfolio-advisor/skills/strategic-review/references/strategic_review_prompt.md",
       "strategy": "symlink",
       "description": "Hub-and-spoke symlink for strategic review prompt in strategic-review"
-    },
-    {
-      "src": "plugins/questrade/references/norberts-gambit-questrade.md",
-      "dst": "plugins/questrade/skills/norberts-gambit/references/questrade.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for questrade submission steps in norberts-gambit"
-    },
-    {
-      "src": "plugins/questrade/references/questrade-tool-schemas.md",
-      "dst": "plugins/questrade/skills/questrade-deposit-funds/references/questrade-tool-schemas.md",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for questrade tool schemas in questrade-deposit-funds"
     },
     {
       "src": "plugins/portfolio-advisor/references/news-sweep-model-assessment.md",
@@ -1170,12 +1092,6 @@
       "dst": "plugins/stock-valuation/skills/forward-valuation-challenge/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": "Shared valuation workflow acceptance criteria required by plugin audit"
-    },
-    {
-      "src": "plugins/questrade/scripts/questrade_trades_import.py",
-      "dst": "plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py",
-      "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_trades_import.py",

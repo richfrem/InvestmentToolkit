@@ -58,7 +58,7 @@
     "type": "negative",
     "category": "trigger_exclusion",
     "prompt": "fetch questrade account balance",
-    "expected_trigger": "questrade-get-balances",
+    "expected_trigger": "syncing-questrade-accounts",
     "expected_not_trigger": [
       "tv-manage-indicators"
     ],

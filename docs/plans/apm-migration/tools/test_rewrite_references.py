@@ -60,7 +60,7 @@ def repo(tmp_path: Path):
     write(tmp_path, "docs/handovers/h.md", f"history mentions {OLD_SCRIPT}\n")  # history: untouched
     write(tmp_path, "evolution-log.md", f"- moved {OLD_SCRIPT}\n")               # history: untouched
     write(tmp_path, "investment_screener/backend/data/d.json", json.dumps({"p": OLD_SCRIPT}))  # data boundary
-    write(tmp_path, "plugins/new-plug/.apm/skills/hub/SKILL.md", f"hand-authored {OLD_SCRIPT}\n")  # hand-authored
+    write(tmp_path, "plugins/new-plug/.apm/skills/hub/SKILL.md", f"hub file mentions {OLD_SCRIPT}\n")  # rewritten too
     write(tmp_path, "symlinks.json", json.dumps({"version": 1, "links": [
         {"src": OLD_SCRIPT, "dst": "investment_screener/backend/py_services/wacc.py", "strategy": "symlink"},
         {"src": "plugins/keep/x.py", "dst": "plugins/keep/y.py", "strategy": "symlink"}]}, indent=2) + "\n")
@@ -121,7 +121,7 @@ def test_apply_requires_yes(repo):
     assert OLD_SCRIPT in read(repo, "docs/a.md")
 
 
-def test_apply_rewrites_settled_paths_only_and_skips_protected_files(repo):
+def test_apply_rewrites_settled_paths_only_and_skips_protected_files(repo):  # noqa: D103
     assert rr.cmd_apply(repo, "1", True) == 0
     a = read(repo, "docs/a.md")
     assert NEW_ENGINE in a and NEW_REF in a and OLD_SCRIPT not in a
@@ -130,7 +130,7 @@ def test_apply_rewrites_settled_paths_only_and_skips_protected_files(repo):
     assert OLD_SCRIPT in read(repo, "docs/handovers/h.md")                           # history untouched
     assert OLD_SCRIPT in read(repo, "evolution-log.md")
     assert OLD_SCRIPT in read(repo, "investment_screener/backend/data/d.json")       # data boundary untouched
-    assert OLD_SCRIPT in read(repo, "plugins/new-plug/.apm/skills/hub/SKILL.md")     # hand-authored untouched
+    assert NEW_ENGINE in read(repo, "plugins/new-plug/.apm/skills/hub/SKILL.md")     # hub files get cross-wave fixes
 
 
 def test_symlinks_json_entries_of_the_wave_are_removed(repo):
@@ -172,12 +172,13 @@ def test_verify_fails_before_and_passes_after(repo, capsys):
     out = capsys.readouterr().out
     assert "stale path" in out and "docs/a.md" in out
     rr.cmd_apply(repo, "1", True)
-    # the hand-authored hub file still names an old path: verify must flag it for a human
-    assert rr.cmd_verify(repo, "1") == 1
-    assert "SKILL.md" in capsys.readouterr().out
-    write(repo.root, "plugins/new-plug/.apm/skills/hub/SKILL.md", "fixed by hand\n")
-    git(repo.root, "add", "-A")
+    capsys.readouterr()
     assert rr.cmd_verify(repo, "1") == 0
+    # a stale path introduced afterwards (for example in a new hub file) is caught
+    write(repo.root, "plugins/new-plug/.apm/skills/hub/references/modes/m.md", f"oops {OLD_SCRIPT}\n")
+    git(repo.root, "add", "-A")
+    assert rr.cmd_verify(repo, "1") == 1
+    assert "m.md" in capsys.readouterr().out
 
 
 def test_verify_flags_symlinks_and_broken_links_and_syntax(repo, capsys):

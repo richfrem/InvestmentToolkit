@@ -45,7 +45,7 @@
     "type": "negative",
     "category": "trigger_exclusion",
     "prompt": "Fetch Questrade account cash balances",
-    "expected_trigger": "questrade-get-balances",
+    "expected_trigger": "syncing-questrade-accounts",
     "expected_not_trigger": [
       "valuation-math-validation"
     ],

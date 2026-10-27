@@ -159,6 +159,8 @@ Purpose: update every stale reference in documentation, code, tests, diagrams an
 
 ## 7. Wave 1: questrade (9 skills -> 2 hubs)
 
+**Status: DONE (2026-10-26)** on branch `apm-consolidation`. Evidence in `docs/plans/apm-migration/waves/wave-1/` (`summary.md`, `transition-matrix.md`, test output). Open: deploying the new hubs in place of the nine stale copies in `.agents/skills/` (Decision 5, see the transition matrix).
+
 | Legacy skill | Hub | Mode |
 |---|---|---|
 | questrade-setup | `syncing-questrade-accounts` | `setup` |

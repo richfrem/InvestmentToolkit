@@ -1,1 +1,0 @@
-../../../../scripts/questrade_trades_import.py

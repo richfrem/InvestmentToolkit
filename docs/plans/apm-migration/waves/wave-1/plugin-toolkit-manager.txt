@@ -1,0 +1,89 @@
+== plugin-toolkit-manager
+................................................F........F.............. [ 94%]
+....                                                                     [100%]
+=================================== FAILURES ===================================
+________________ test_the_repository_register_matches_the_code _________________
+
+    def test_the_repository_register_matches_the_code():
+        result = _run(REPO_ROOT, "--check")
+>       assert result.returncode == 0, result.stdout
+E       AssertionError: 71 data-file dependencies found; 74 registered
+E         NEW   plugins/etf-analysis/.apm/skills/etf-analysis/scripts/persist_etf_analysis.py [write] {ticker}.json
+E         STALE investment_screener/backend/py_services/cache.py [unresolved] {data_class}_{safe_key}.json  (no longer found: remove from the register)
+E         STALE investment_screener/backend/py_services/fetch_portfolio_heatmap.py [unresolved] {safe}_info.json  (no longer found: remove from the register)
+E         STALE plugins/etf-analysis/scripts/persist_etf_analysis.py [write] {ticker}.json  (no longer found: remove from the register)
+E         STALE plugins/stock-valuation/scripts/fetch_financials.py [write] {safe_ticker}.json  (no longer found: remove from the register)
+E         FILE-DEPENDENCY GUARD: FAIL
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/usr/local/bin/python3', '/Users/richardfremmerlid/Projects/InvestmentToolkit/plugins/toolkit-....py [write] {safe_ticker}.json  (no longer found: remove from the register)\nFILE-DEPENDENCY GUARD: FAIL\n', stderr='').returncode
+
+plugins/toolkit-manager/tests/test_file_dependency_guard.py:35: AssertionError
+_____________ test_no_document_describes_a_retired_file_as_current _____________
+
+    def test_no_document_describes_a_retired_file_as_current():
+        """Docs, skills, evals and templates may name a retired file only as history (see audit_sqlite_usage.DOC_HISTORY_*)."""
+        hits = audit.doc_violations(REPO_ROOT)
+>       assert not hits, "Documents that name a retired file without saying it is retired:\n" + "\n".join(f"{f}:{n} {t}" for f, n, t in hits)
+E       AssertionError: Documents that name a retired file without saying it is retired:
+E         PortfolioAnalysis/strategic-reviews/2026-05-16-PortfolioAnalysisRecommendations.md:117 - Portfolio: investment_screener/backend/data/portfolio.json ✅ (32 holdings, $32,643)
+E         PortfolioAnalysis/strategic-reviews/2026-05-16-PortfolioAnalysisRecommendations.md:118 - Thesis: target-portfolio.json v9.4 ✅ (10 pillars, 47 holdings)
+E         PortfolioAnalysis/strategic-reviews/2026-05-22-PortfolioAnalysisRecommendations.json:7 "targetPortfolioFile": "investment_screener/backend/data/theses/target-portfolio.json",
+E         PortfolioAnalysis/strategic-reviews/2026-05-22-PortfolioAnalysisRecommendations.md:165 | Portfolio holdings (`portfolio.json`) | ✅ Loaded — 28 holdings, $34,290 |
+E         PortfolioAnalysis/strategic-reviews/2026-05-22-PortfolioAnalysisRecommendations.md:166 | Thesis (`target-portfolio.json`) | ✅ Loaded — v9.4111 |
+E         PortfolioAnalysis/strategic-reviews/2026-05-26-PortfolioAnalysisRecommendations.json:7 "targetPortfolioFile": "investment_screener/backend/data/theses/target-portfolio.json",
+E         PortfolioAnalysis/strategic-reviews/2026-05-27-PortfolioAnalysisRecommendations.md:161 | Portfolio holdings (`portfolio.json`) | ✅ Loaded — 28 holdings, $33,972 |
+E         PortfolioAnalysis/strategic-reviews/2026-05-27-PortfolioAnalysisRecommendations.md:162 | Thesis (`target-portfolio.json`) | ✅ Loaded — v9.4111 |
+E         PortfolioAnalysis/strategic-reviews/2026-06-03-PortfolioAnalysisRecommendations.json:7 "targetPortfolioFile": "investment_screener/backend/data/theses/target-portfolio.json",
+E         PortfolioAnalysis/strategic-reviews/2026-06-05-PortfolioAnalysisRecommendations.json:7 "targetPortfolioFile": "investment_screener/backend/data/theses/target-portfolio.json",
+E         build/staging/portfolio-advisor/references/evolution-log.md:489 The daily loop triage computes TRIM/EXIT recommendations from current-weight-vs-target comparison only. It does NOT cross-check `trade-log.json` for recent user
+E         build/staging/portfolio-advisor/references/evolution-log.md:494 **Step 1**: Before any TRIM/REDUCE/EXIT recommendation is presented in the triage card, the daily loop MUST check `trade-log.json` for filled/submitted sells of
+E         build/staging/portfolio-advisor/references/evolution-log.md:504 The daily loop must read the last 14 days of `trade-log.json` sells as Step 0.5, before presenting any TRIM/EXIT triage cards. If a sell for that ticker is foun
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:16 - **v1** (superseded): modeled the holdings export/the thesis export/`watchlist.json` as
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:32 (`tradingview_alerts_actual.json`, 203 real entries, one-to-many from `investment`) rather than
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:39 `action='WATCHLIST'`; `watchlist.json`'s 80 tickers and `role='watchlist'`'s 33 tickers overlap
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:112 | **Migration complexity** | Higher — 3 source concepts (the holdings export, the thesis export, watchlist.json) map to 2 tables, still requires deciding instru
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:506 **Alerts (`tradingview_alerts_actual.json`, 203 real entries) — confirmed as its own entity, not
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:685 | `alert_id`/`symbol`/`price`/`condition`/`active`/`created`/`last_fired`/`expiration` | tradingview_alerts_actual.json | `alert` table, `investment_id` resolve
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:690 | `cash_flows[].*` | cash_flows.json | `cash_flow` table, unchanged — `investment_id` not involved, account-scoped only |
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:691 | `trade-log.json` entries | trade-log.json | `trade_log_entry`, unchanged shape, `instrument_id` column now named/pointed at `investment_id` |
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:692 | `orders_executed.jsonl` entries | orders_executed.jsonl | `order_execution`, unchanged shape, same FK rename |
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:727 `role` values, the `standingDecision`/`priceLevels` structure, the `thesis_breaker_state.json`
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:767 - **`watchlist.json` (80 tickers) and `role='watchlist'` in the thesis export (33 tickers)
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:768 overlap by only 20.** 13 tickers carry `role='watchlist'` but aren't in `watchlist.json` at
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:769 all; 60 tickers are in `watchlist.json` (including active holdings like `ALAB`, `SNDK` with
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:826 answered from theory. `account_policy.json`, real content:
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:848 max_marginal_risk_contribution_pct       REAL,           -- from account_policy.json riskBudgetCaps — simple scalar, real column
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:849 max_cluster_variance_contribution_pct      REAL,         -- from account_policy.json riskBudgetCaps
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:850 rebalance_band_relative_pct                  REAL,       -- from account_policy.json bandConfig
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:851 rebalance_band_absolute_pct                    REAL,     -- from account_policy.json bandConfig
+E         build/staging/toolkit-manager/references/data-architecture/domain-data-model.md:852 rebalance_band_critical_multiplier               REAL,   -- from account_policy.json bandConfig
+E         build/staging/toolkit-manager/references/data-architecture/migration-inventory-and-strategy.md:151 reasoning as `account_policy.json` staying JSON elsewhere in this plan.
+E         build/staging/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md:18 `trade-log.json`, `orders_executed.jsonl`, and `cash_flows.json` are a **different kind of
+E         build/staging/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md:64 ### `trade_log_entry` (from `trade-log.json`, 52 rows today)
+E         build/staging/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md:97 ### `order_execution` (from `orders_executed.jsonl`)
+E         build/staging/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md:116 ### `cash_flow` (from `cash_flows.json`'s `cash_flows` array, 3 rows today)
+E         build/staging/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md:127 ### `cash_flow_baseline` (from `cash_flows.json`'s `starting_balance_cad`/`starting_date`)
+E         build/staging/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md:307 | `watchlist.json` | JSON dict | `watchlist_entry` table: one row per `instrument_id` with `added_at`, `notes` | full design pass + rewiring 6 real consumers; s
+E         build/staging/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md:308 | `thesis_breaker_state.json` | JSON snapshot | `thesis_breaker_state` table: one row per `instrument_id` with breaker status, `generated_at` | low priority, 6 
+E         build/staging/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md:309 | `tradingview_alerts_actual.json` | JSON list (TV mirror) | stays JSON — `RETAIN_AS_EXTERNAL_CACHE` | none — TradingView is authoritative, this is a synced mir
+E         build/staging/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md:310 | `account_policy.json` | JSON config | stays JSON — `RETAIN_AS_CONFIGURATION_JSON` | none — static config, never was operational data |
+E         start_here.md:148 integrity intact, and returned **"Ready to merge: Yes."** A trivial Minor finding (`orders_executed.jsonl`/
+E         start_here.md:440 markdown prose into structured, evaluated data. Each holding in `target-portfolio.json` can
+E         start_here.md:450 `thesis_breakers.py` owns exclusively — it never mutates `target-portfolio.json`, mirroring
+E         start_here.md:518 `thesis_breaker_state.json` (a `TRIGGERED` breaker warns on a proposed buy, never suppresses
+E         start_here.md:520 `account_policy.json`'s `accountPreferenceRules` route each buy to exactly one account (real
+E         start_here.md:521 per-account data from `portfolio.json`'s `tvSnapshot` when synced, heuristic TFSA-full/
+E         start_here.md:565 E2), which collided with `target-portfolio.json` (Task 9's migration rewrites the whole
+E         start_here.md:731 1. Checks portfolio.json freshness → auto-syncs from TradingView if stale
+E         start_here.md:759 **Thesis:** Investment Thesis v9.4 · `investment_screener/backend/data/theses/target-portfolio.json`
+E         start_here.md:767 `targetEntryPrice` is now a first-class field in `target-portfolio.json` (added 2026-06-04).
+E         start_here.md:831 - **`targetEntryPrice` field** — GTC limit price per holding in `target-portfolio.json`
+E       assert not [('PortfolioAnalysis/strategic-reviews/2026-05-16-PortfolioAnalysisRecommendations.md', 117, '- Portfolio: investment_...ommendations.json', 7, '"targetPortfolioFile": "investment_screener/backend/data/theses/target-portfolio.json",'), ...]
+
+plugins/toolkit-manager/tests/test_no_retired_file_access.py:45: AssertionError
+=========================== short test summary info ============================
+FAILED plugins/toolkit-manager/tests/test_file_dependency_guard.py::test_the_repository_register_matches_the_code
+FAILED plugins/toolkit-manager/tests/test_no_retired_file_access.py::test_no_document_describes_a_retired_file_as_current
+2 failed, 74 passed in 6.04s
+exit=1

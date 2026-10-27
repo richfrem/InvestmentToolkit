@@ -1,0 +1,38 @@
+[
+  {
+    "file": "investment_screener/backend/py_services/domain_model/broker_reported_total_repository.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/questrade/.apm/skills/syncing-questrade-accounts/references/questrade-tool-schemas.md",
+    "count": 1
+  },
+  {
+    "file": "plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py",
+    "count": 2
+  },
+  {
+    "file": "plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py",
+    "count": 2
+  },
+  {
+    "file": "plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_price_refresh.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_sync.py",
+    "count": 4
+  },
+  {
+    "file": "plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py",
+    "count": 2
+  },
+  {
+    "file": "symlinks.json",
+    "count": 14
+  }
+]

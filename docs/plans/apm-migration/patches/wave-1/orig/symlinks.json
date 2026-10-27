@@ -1,0 +1,1277 @@
+{
+  "version": 1,
+  "links": [
+    {
+      "src": "investment_screener/backend/py_services/record_intelligence_event.py",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/scripts/record_intelligence_event.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> py_services/ tool"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_draw.py",
+      "dst": "plugins/tradingview/skills/tv-draw/scripts/tv_draw.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_thesis.py",
+      "dst": "investment_screener/backend/py_services/update_thesis.py",
+      "strategy": "symlink",
+      "description": "update_thesis.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_thesis.py",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/update_thesis.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/relabel_actions.py",
+      "dst": "investment_screener/backend/py_services/relabel_actions.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/relabel_actions.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/relabel_actions.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/generate_review.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_review.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/generate_portfolio_blueprint.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_portfolio_blueprint.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill references/ symlink \u2192 plugin root canonical"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/relabel_actions.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/relabel_actions.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/portfolio_action.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
+      "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/portfolio_action.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/relabel_actions.py",
+      "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/relabel_actions.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_thesis.py",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/update_thesis.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/portfolio_action.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/portfolio_action.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "investment_screener/backend/data/theses/investment_thesis.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/investment_thesis.md",
+      "strategy": "symlink",
+      "description": "ADR-003: relative symlink to plugin root references/"
+    },
+    {
+      "src": "investment_screener/backend/data/theses/investment_thesis.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/investment_thesis.md",
+      "strategy": "symlink",
+      "description": "ADR-003: relative symlink to plugin root references/"
+    },
+    {
+      "src": "investment_screener/backend/data/theses/investment_thesis.md",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/references/investment_thesis.md",
+      "strategy": "symlink",
+      "description": "ADR-003: relative symlink to plugin root references/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/scan_opportunities.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/scan_opportunities.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/scan_opportunities.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/scan_opportunities.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal \u2014 skill scripts/ symlink"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal \u2014 skill scripts/ symlink"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal \u2014 skill scripts/ symlink"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "investment_screener/backend/py_services/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "generate_review_json.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/portfolio_action.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_portfolio_blueprint.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/apply_catalyst.py",
+      "strategy": "symlink",
+      "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/apply_catalyst.py",
+      "strategy": "symlink",
+      "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/apply_catalyst.py",
+      "strategy": "symlink",
+      "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
+      "dst": "investment_screener/backend/py_services/apply_catalyst.py",
+      "strategy": "symlink",
+      "description": "apply_catalyst.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/thesis-challenge-prompt.md",
+      "dst": "plugins/portfolio-advisor/skills/external-review/assets/templates/thesis-challenge-prompt.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for thesis-challenge-prompt in external-review"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-tracker/scripts/fetch_13f.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-analyze/scripts/fetch_13f.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-analyze/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-analyze/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-analyze/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_cancel_order.py",
+      "dst": "plugins/tradingview/skills/tv-cancel-order/scripts/tv_cancel_order.py",
+      "strategy": "symlink",
+      "description": "ADR-003: cancel-order skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_modify_order.py",
+      "dst": "plugins/tradingview/skills/tv-modify-order/scripts/tv_modify_order.py",
+      "strategy": "symlink",
+      "description": "ADR-003: modify-order skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_get_orders.py",
+      "dst": "plugins/tradingview/skills/tv-get-orders/scripts/tv_get_orders.py",
+      "strategy": "symlink",
+      "description": "ADR-003: get-orders skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_create_alerts.py",
+      "dst": "plugins/tradingview/skills/tv-alert-sync/scripts/tv_create_alerts.py",
+      "strategy": "symlink",
+      "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_health_check.py",
+      "dst": "plugins/tradingview/skills/tv-alert-sync/scripts/tv_health_check.py",
+      "strategy": "symlink",
+      "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_launch.py",
+      "dst": "plugins/tradingview/skills/tv-alert-sync/scripts/tv_launch.py",
+      "strategy": "symlink",
+      "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_list_alerts.py",
+      "dst": "plugins/tradingview/skills/tv-alert-list/scripts/tv_list_alerts.py",
+      "strategy": "symlink",
+      "description": "ADR-003: alert-list skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_health_check.py",
+      "dst": "plugins/tradingview/skills/tv-alert-list/scripts/tv_health_check.py",
+      "strategy": "symlink",
+      "description": "ADR-003: alert-list skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_launch.py",
+      "dst": "plugins/tradingview/skills/tv-alert-list/scripts/tv_launch.py",
+      "strategy": "symlink",
+      "description": "ADR-003: alert-list skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_health_check.py",
+      "dst": "plugins/tradingview/skills/tv-chart-snapshot/scripts/tv_health_check.py",
+      "strategy": "symlink",
+      "description": "ADR-003: chart-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_launch.py",
+      "dst": "plugins/tradingview/skills/tv-chart-snapshot/scripts/tv_launch.py",
+      "strategy": "symlink",
+      "description": "ADR-003: chart-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_health_check.py",
+      "dst": "plugins/tradingview/skills/tv-ta-snapshot/scripts/tv_health_check.py",
+      "strategy": "symlink",
+      "description": "ADR-003: ta-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_launch.py",
+      "dst": "plugins/tradingview/skills/tv-ta-snapshot/scripts/tv_launch.py",
+      "strategy": "symlink",
+      "description": "ADR-003: ta-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_batch_quotes.py",
+      "dst": "plugins/tradingview/skills/tv-price-refresh/scripts/tv_batch_quotes.py",
+      "strategy": "symlink",
+      "description": "ADR-003: price-refresh skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_health_check.py",
+      "dst": "plugins/tradingview/skills/tv-price-refresh/scripts/tv_health_check.py",
+      "strategy": "symlink",
+      "description": "ADR-003: price-refresh skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/place_order.py",
+      "dst": "plugins/tradingview/skills/tv-place-order/scripts/place_order.py",
+      "strategy": "symlink",
+      "description": "ADR-001 cross-repo symlink: place-order skill \u2192 py_services canonical (source repo only)"
+    },
+    {
+      "src": "plugins/tradingview/scripts/place_order.py",
+      "dst": "plugins/tradingview/skills/tv-cancel-order/scripts/place_order.py",
+      "strategy": "symlink",
+      "description": "ADR-001 cross-repo symlink: cancel-order skill \u2192 py_services canonical (source repo only)"
+    },
+    {
+      "src": "plugins/tradingview/scripts/fetch_broker_data.py",
+      "dst": "plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py",
+      "strategy": "symlink",
+      "description": "ADR-001 cross-repo symlink: tv-portfolio-sync skill \u2192 py_services canonical (source repo only)"
+    },
+    {
+      "src": "plugins/tradingview/assets/templates/ta_thesis_template.md",
+      "dst": "plugins/tradingview/skills/tv-technical-analysis-expert/assets/templates/ta_thesis_template.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/tradingview/assets/templates/ta_thesis_template.md",
+      "dst": "plugins/tradingview/skills/tv-ta-red-team/assets/templates/ta_thesis_template.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/place_order.py",
+      "dst": "investment_screener/backend/py_services/place_order.py",
+      "strategy": "symlink",
+      "description": "ADR-001 cross-repo symlink: tradingview script -> py_services"
+    },
+    {
+      "src": "plugins/tradingview/scripts/fetch_broker_data.py",
+      "dst": "investment_screener/backend/py_services/fetch_broker_data.py",
+      "strategy": "symlink",
+      "description": "ADR-001 cross-repo symlink: tradingview script -> py_services"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_pine_inject.py",
+      "dst": "plugins/tradingview/skills/tv-pine-inject/scripts/tv_pine_inject.py",
+      "strategy": "symlink",
+      "description": "ADR-003: pine-inject script symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/references/pinescript_overview.md",
+      "dst": "plugins/tradingview/skills/tv-author-pine-script/references/pinescript_overview.md",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script reference symlink -> plugin root references/"
+    },
+    {
+      "src": "plugins/tradingview/references/PineScript_Agent_Skill_Rules.md",
+      "dst": "plugins/tradingview/skills/tv-author-pine-script/references/PineScript_Agent_Skill_Rules.md",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script agent rules symlink -> plugin root references/"
+    },
+    {
+      "src": "plugins/tradingview/references/Top_TradingView_Indicators_Reference.md",
+      "dst": "plugins/tradingview/skills/tv-author-pine-script/references/Top_TradingView_Indicators_Reference.md",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script indicators reference symlink -> plugin root references/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/pine_linter.py",
+      "dst": "plugins/tradingview/skills/tv-author-pine-script/scripts/pine_linter.py",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script linter symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/pine_source_reader.py",
+      "dst": "plugins/tradingview/skills/tv-author-pine-script/scripts/pine_source_reader.py",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script review loop symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/dcf_scenarios.py",
+      "dst": "investment_screener/backend/py_services/dcf_scenarios.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/dcf_scenarios.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/dcf_scenarios.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/fetch_financials.py",
+      "dst": "investment_screener/backend/py_services/fetch_financials.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/fetch_financials.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/fetch_financials.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/validate_projection.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/validate_projection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/standardize_metrics.py",
+      "dst": "investment_screener/backend/py_services/standardize_metrics.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/standardize_metrics.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/standardize_metrics.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "update target portfolio weights"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "validate target portfolio weights"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/scripts/generate_portfolio_blueprint.py",
+      "strategy": "symlink",
+      "description": "generate markdown tables for thesis"
+    },
+    {
+      "src": "investment_screener/backend/data/theses/investment_thesis.md",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/references/investment_thesis.md",
+      "strategy": "symlink",
+      "description": "canonical thesis doc"
+    },
+    {
+      "src": "plugins/stock-valuation/assets/templates/projection_template.json",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/assets/templates/projection_template.json",
+      "strategy": "symlink",
+      "description": "Official projection JSON template"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/target_portfolio_template.json",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/assets/templates/target_portfolio_template.json",
+      "strategy": "symlink",
+      "description": "Target portfolio JSON template"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/target_portfolio_template.json",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/assets/templates/target_portfolio_template.json",
+      "strategy": "symlink",
+      "description": "Target portfolio JSON template"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/portfolio_analysis_recommendations_template.json",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/assets/templates/portfolio_analysis_recommendations_template.json",
+      "strategy": "symlink",
+      "description": "Strategic review JSON template"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/thesis_proposal_template.md",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/assets/templates/thesis_proposal_template.md",
+      "strategy": "symlink",
+      "description": "Thesis proposal markdown template"
+    },
+    {
+      "src": "plugins/tradingview/scripts/ta_sweep_batch.py",
+      "dst": "plugins/tradingview/skills/tv-ta-daily-sweep/scripts/ta_sweep_batch.py",
+      "strategy": "symlink",
+      "description": "ADR-003: ta-daily-sweep skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_health_check.py",
+      "dst": "plugins/tradingview/skills/tv-ta-daily-sweep/scripts/tv_health_check.py",
+      "strategy": "symlink",
+      "description": "ADR-003: ta-daily-sweep skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/daily_brief.py",
+      "dst": "investment_screener/backend/py_services/daily_brief.py",
+      "strategy": "symlink",
+      "description": "daily_brief.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "investment_screener/backend/py_services/portfolio_io.py",
+      "dst": "plugins/portfolio-advisor/scripts/portfolio_io.py",
+      "strategy": "symlink",
+      "description": "portfolio_io.py canonical in py_services/; portfolio-advisor scripts symlink for import convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/refresh_all.py",
+      "dst": "investment_screener/backend/py_services/refresh_all.py",
+      "strategy": "symlink",
+      "description": "refresh_all.py canonical in portfolio-advisor/scripts; py_services/ symlink for fetch_broker_data access"
+    },
+    {
+      "src": "investment_screener/backend/py_services/market_data.py",
+      "dst": "plugins/stock-valuation/scripts/market_data.py",
+      "strategy": "symlink",
+      "description": "market_data.py canonical in py_services/; wacc.py co-location symlink"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/wacc.py",
+      "dst": "investment_screener/backend/py_services/wacc.py",
+      "strategy": "symlink",
+      "description": "wacc.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/wacc.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/wacc.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/reverse_dcf.py",
+      "dst": "investment_screener/backend/py_services/reverse_dcf.py",
+      "strategy": "symlink",
+      "description": "reverse_dcf.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/reverse_dcf.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/reverse_dcf.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/dcf_sensitivity.py",
+      "dst": "investment_screener/backend/py_services/dcf_sensitivity.py",
+      "strategy": "symlink",
+      "description": "dcf_sensitivity.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/dcf_sensitivity.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/dcf_sensitivity.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/comps_valuation.py",
+      "dst": "investment_screener/backend/py_services/comps_valuation.py",
+      "strategy": "symlink",
+      "description": "comps_valuation.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/comps_valuation.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/comps_valuation.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/definitive_professional_investment_framework.md",
+      "dst": "plugins/portfolio-advisor/references/defininitive_professional_investment_framework.md",
+      "strategy": "symlink",
+      "description": "Compat symlink \u2014 typo'd filename kept for any hardcoded references, Phase 2b rename"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/ytd_return.py",
+      "dst": "plugins/portfolio-advisor/skills/ytd-return/scripts/ytd_return.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/ytd_return.py",
+      "dst": "investment_screener/backend/py_services/ytd_return.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/ytd_performance_report_template.json",
+      "dst": "plugins/portfolio-advisor/skills/ytd-return/assets/templates/ytd_performance_report_template.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_reports.py",
+      "dst": "investment_screener/backend/py_services/generate_reports.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_reports.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/generate_reports.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/daily_report.md.template",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/assets/templates/daily_report.md.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/weekly_report.md.template",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/assets/templates/weekly_report.md.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "docs/architecture/domain-data-model.md",
+      "dst": "plugins/toolkit-manager/references/data-architecture/domain-data-model.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "docs/architecture/migration-inventory-and-strategy.md",
+      "dst": "plugins/toolkit-manager/references/data-architecture/migration-inventory-and-strategy.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "docs/architecture/supplementary-domain-schemas.md",
+      "dst": "plugins/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/manage_watchlist.py",
+      "dst": "investment_screener/backend/py_services/manage_watchlist.py",
+      "strategy": "symlink",
+      "description": "Canonical watchlist management script"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/manage_watchlist.py",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/scripts/manage_watchlist.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/audit_coverage.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-coverage-audit/scripts/audit_coverage.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_manage_indicators.py",
+      "dst": "plugins/tradingview/skills/tv-manage-indicators/scripts/tv_manage_indicators.py",
+      "strategy": "symlink",
+      "description": "tv_manage_indicators.py in plugin/scripts; skill symlink"
+    },
+    {
+      "src": "plugins/tradingview/scripts/ta_sweep_single.py",
+      "dst": "plugins/tradingview/skills/tv-ta-snapshot/scripts/ta_sweep_single.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/list_strategy_pillars.py",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/scripts/list_strategy_pillars.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "investment_screener/backend/py_services/verify_portfolio_invariants.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/verify_portfolio_invariants.py",
+      "strategy": "symlink",
+      "description": "Portfolio invariants sentinel tool for portfolio-health"
+    },
+    {
+      "src": "investment_screener/backend/py_services/verify_portfolio_invariants.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/verify_portfolio_invariants.py",
+      "strategy": "symlink",
+      "description": "Portfolio invariants sentinel tool for daily-loop"
+    },
+    {
+      "src": "plugins/tradingview/references/chart-types-reference.md",
+      "dst": "plugins/tradingview/skills/tv-change-type/references/chart-types-reference.md",
+      "strategy": "symlink",
+      "description": "File-level symlink for TradingView chart types reference guide"
+    },
+    {
+      "src": "docs/architecture/stock-analysis-surface-checklist.md",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/references/stock-analysis-surface-checklist.md",
+      "strategy": "symlink",
+      "description": "Checklist mapping of all 5 UI surfaces to deterministic scripts"
+    },
+    {
+      "src": "docs/architecture/stock-analysis-surface-checklist.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/stock-analysis-surface-checklist.md",
+      "strategy": "symlink",
+      "description": "Checklist mapping of all 5 UI surfaces to deterministic scripts"
+    },
+    {
+      "src": "docs/architecture/ADRs/031-five-surface-sync-engine.md",
+      "dst": "plugins/stock-valuation/references/ADR-031-five-surface-sync-engine.md",
+      "strategy": "symlink",
+      "description": "ADR-031 5-surface synchronization architecture"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-mcp-ai-integration.md",
+      "dst": "plugins/questrade/skills/questrade-setup/references/questrade-mcp-ai-integration.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for Questrade MCP reference in questrade-setup skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-mcp-ai-integration.md",
+      "dst": "plugins/questrade/skills/questrade-order-draft/references/questrade-mcp-ai-integration.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for Questrade MCP reference in questrade-order-draft skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-get-balances/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-get-balances skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-get-positions/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-get-positions skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-activities/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-activities skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-order-draft/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-order-draft skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-setup/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-setup skill"
+    },
+    {
+      "src": "plugins/questrade/scripts/questrade_sync.py",
+      "dst": "plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_sync.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-sync-portfolio/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-sync-portfolio skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-refresh-prices/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-refresh-prices skill"
+    },
+    {
+      "src": "plugins/questrade/scripts/questrade_price_refresh.py",
+      "dst": "plugins/questrade/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/persist_valuation.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/persist_valuation.py",
+      "strategy": "symlink",
+      "description": "Canonical valuation and price level persistence script"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/price_changes.py",
+      "dst": "investment_screener/backend/py_services/price_changes.py",
+      "strategy": "symlink",
+      "description": "Shared price-period % change calculation"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/price_changes.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/price_changes.py",
+      "strategy": "symlink",
+      "description": "Shared price-period % change calculation"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/run_daily.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/run_daily.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: /daily runner (canonical in plugin scripts/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/daily_receipts.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/daily_receipts.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: /daily runner (canonical in plugin scripts/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_daily_run.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/verify_daily_run.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: /daily runner (canonical in plugin scripts/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/daily_brief.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/daily_brief.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: /daily runner (canonical in plugin scripts/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/daily-brief-methodology.md",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/references/daily-brief-methodology.md",
+      "strategy": "symlink",
+      "description": "daily-loop skill: brief methodology (canonical in plugin references/)"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/repo_root.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/repo_root.py",
+      "strategy": "symlink",
+      "description": "daily-loop skill: shared repo-root finder"
+    },
+    {
+      "src": "plugins/stock-valuation/references/analysis_prompt.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/analysis_prompt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/api_reference.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/api_reference.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/fallback-tree.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-benchmarks.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/valuation-benchmarks.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/ADR-dcf-calculator.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/ADR-dcf-calculator.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/fallback-tree.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/fallback-tree.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for fallback tree in portfolio-health"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/strategic_review_prompt.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/strategic_review_prompt.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for strategic review prompt in portfolio-health"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/rebalance_prompt.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/rebalance_prompt.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for rebalance prompt in portfolio-health"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/fallback-tree.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for fallback tree in strategic-review"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/strategic_review_prompt.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/strategic_review_prompt.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for strategic review prompt in strategic-review"
+    },
+    {
+      "src": "plugins/questrade/references/norberts-gambit-questrade.md",
+      "dst": "plugins/questrade/skills/norberts-gambit/references/questrade.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for questrade submission steps in norberts-gambit"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-deposit-funds/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for questrade tool schemas in questrade-deposit-funds"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/news-sweep-model-assessment.md",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/references/news-sweep-model-assessment.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for news sweep model assessment in news-sweep"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/news-sweep-model-assessment.md",
+      "dst": "plugins/portfolio-advisor/skills/weekly-review/references/news-sweep-model-assessment.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/generate_news_prompt.py",
+      "strategy": "symlink",
+      "description": "news-sweep canonical script \u2014 generates live multi-model prompt from domain_model.sqlite"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
+      "dst": "investment_screener/backend/py_services/generate_news_prompt.py",
+      "strategy": "symlink",
+      "description": "generate_news_prompt.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/news_sweep.py",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/scripts/news_sweep.py",
+      "strategy": "symlink",
+      "description": "news-sweep canonical script \u2014 posts prompt to browser automation and captures response"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/recommendation.py",
+      "dst": "investment_screener/backend/py_services/recommendation.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/stock-valuation/skills/forward-valuation-challenge/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/references/ai-forward-valuation.md",
+      "dst": "plugins/portfolio-advisor/skills/weekly-review/references/ai-forward-valuation.md",
+      "strategy": "symlink",
+      "description": "Shared AI forward valuation evidence gate"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/recalculate_forward_valuation.py",
+      "dst": "investment_screener/backend/py_services/recalculate_forward_valuation.py",
+      "strategy": "symlink",
+      "description": "Reproducible sourced annual cash-flow valuation artifacts"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-method-and-discount-rate.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/valuation-method-and-discount-rate.md",
+      "strategy": "symlink",
+      "description": "Shared method selection and reproducible discount-rate protocol"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-method-and-discount-rate.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/valuation-method-and-discount-rate.md",
+      "strategy": "symlink",
+      "description": "Shared research gate for valuation method and rate evidence"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/persist_research.py",
+      "dst": "investment_screener/backend/py_services/persist_research.py",
+      "strategy": "symlink",
+      "description": "Canonical research report publication through observations ledger and SQLite read model"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-skill-acceptance-criteria.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Shared valuation workflow acceptance criteria required by plugin audit"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-skill-acceptance-criteria.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Shared valuation workflow acceptance criteria required by plugin audit"
+    },
+    {
+      "src": "plugins/stock-valuation/references/valuation-skill-acceptance-criteria.md",
+      "dst": "plugins/stock-valuation/skills/forward-valuation-challenge/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Shared valuation workflow acceptance criteria required by plugin audit"
+    },
+    {
+      "src": "plugins/questrade/scripts/questrade_trades_import.py",
+      "dst": "plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_trades_import.py",
+      "dst": "plugins/tradingview/skills/tv-portfolio-sync/scripts/tv_trades_import.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/weekly-review/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/stock-valuation/skills/stock-research/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/leverage.py",
+      "dst": "investment_screener/backend/py_services/leverage.py",
+      "strategy": "symlink",
+      "description": "leverage.py canonical in plugin/scripts; py_services/ symlink so the quality score shares its thresholds"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/db_backup.py",
+      "dst": "investment_screener/backend/py_services/domain_model/db_backup.py",
+      "strategy": "symlink",
+      "description": "db_backup.py canonical in plugin/scripts; linked for the migrator, run_investment_toolkit.py and the sqlite-admin skill"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/db_backup.py",
+      "dst": "plugins/toolkit-manager/skills/sqlite-admin/scripts/db_backup.py",
+      "strategy": "symlink",
+      "description": "db_backup.py canonical in plugin/scripts; linked for the migrator, run_investment_toolkit.py and the sqlite-admin skill"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/sqlite_admin.py",
+      "dst": "plugins/toolkit-manager/skills/sqlite-admin/scripts/sqlite_admin.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/sqlite_admin.py",
+      "dst": "plugins/toolkit-manager/skills/toolkit-onboarding/scripts/sqlite_admin.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/toolkit-manager/scripts/db_backup.py",
+      "dst": "plugins/toolkit-manager/skills/toolkit-onboarding/scripts/db_backup.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/references/recommendation-coherence.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the shared recommendation-coherence procedure"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/daily_sweep.md.template",
+      "dst": "plugins/portfolio-advisor/skills/news-sweep/assets/templates/daily_sweep.md.template",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for the daily sweep prompt template in news-sweep"
+    }
+  ]
+}

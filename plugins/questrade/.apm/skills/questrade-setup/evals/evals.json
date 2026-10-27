@@ -1,8 +1,0 @@
-[
-  {
-    "name": "setup_check",
-    "description": "Checks if Questrade MCP URL is configured",
-    "expected_output": "https://mcp.questrade.com/v1/brokerage/mcp",
-    "should_trigger": true
-  }
-]

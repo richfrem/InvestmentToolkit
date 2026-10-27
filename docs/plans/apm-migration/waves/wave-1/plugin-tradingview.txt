@@ -1,0 +1,88 @@
+== plugin-tradingview
+.....................................FF........FF....................... [ 55%]
+..........................................................               [100%]
+=================================== FAILURES ===================================
+_______________ TestFetchSourceLive.test_current_returns_source ________________
+
+self = <test_pine_source_reader.TestFetchSourceLive testMethod=test_current_returns_source>
+
+    @SKIP_IF_TV_DOWN
+    def test_current_returns_source(self):
+        code, stdout, _err = _run_reader("--current", "--json", timeout=40)
+>       self.assertEqual(code, 0, stdout)
+E       AssertionError: 1 != 0 : → Fetching: (current editor) ...
+E         ✗ Pine Editor not open or empty
+E       [
+E         {
+E           "success": false,
+E           "error": "Pine Editor not open or empty"
+E         }
+E       ]
+
+plugins/tradingview/tests/test_pine_source_reader.py:134: AssertionError
+___________________ TestFetchSourceLive.test_name_saves_file ___________________
+
+self = <test_pine_source_reader.TestFetchSourceLive testMethod=test_name_saves_file>
+
+    @SKIP_IF_TV_DOWN
+    def test_name_saves_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, stdout, _err = _run_reader(
+                "--name", "SuperTrend", "--out", tmp, timeout=60
+            )
+>           self.assertEqual(code, 0, stdout)
+E           AssertionError: 1 != 0 : → Fetching: SuperTrend ...
+E             ✗ no-rows
+E           
+E           Done: 0/1 indicators captured → /var/folders/d0/rrrgzlc17vq7mmy70mbxfy0r0000gn/T/tmp99ex46x8
+
+plugins/tradingview/tests/test_pine_source_reader.py:150: AssertionError
+_ TestEnrichmentPreservedAfterAdxValidation.test_invalid_adx_row_keeps_enrichment_and_nulled_adx _
+
+self = <test_ta_sweep_batch.TestEnrichmentPreservedAfterAdxValidation object at 0x11055c2d0>
+
+    def test_invalid_adx_row_keeps_enrichment_and_nulled_adx(self):
+        sys.path.insert(0, str(SCRIPT.parent))
+        from ta_sweep_batch import enrich_results  # noqa: PLC0415
+        rows = [{"ticker": "CLSK", "close": 10.0, "adx": 161.9,
+                 "flags": ["ADX_STRONG"]}]
+        out = enrich_results(
+            rows,
+            target_map={"CLSK": {"action": "MAINTAIN", "targetWeight": 2.2}},
+            dcf_loader=lambda t: None,
+        )
+        row = out[0]
+        assert row["adx"] is None, "Out-of-range ADX must be nulled in the OUTPUT rows"
+        assert "ADX_STRONG" not in row["flags"]
+>       assert row["action"] == "UNAVAILABLE", "Missing canonical data must not invent a recommendation"
+E       AssertionError: Missing canonical data must not invent a recommendation
+E       assert 'INITIATE' == 'UNAVAILABLE'
+E         
+E         - UNAVAILABLE
+E         + INITIATE
+
+plugins/tradingview/tests/test_ta_sweep_batch.py:249: AssertionError
+_ TestEnrichmentPreservedAfterAdxValidation.test_valid_adx_row_enriched_normally _
+
+self = <test_ta_sweep_batch.TestEnrichmentPreservedAfterAdxValidation object at 0x11055c410>
+
+    def test_valid_adx_row_enriched_normally(self):
+        sys.path.insert(0, str(SCRIPT.parent))
+        from ta_sweep_batch import enrich_results  # noqa: PLC0415
+        rows = [{"ticker": "AAPL", "close": 195.5, "adx": 22.0, "flags": []}]
+        out = enrich_results(rows, target_map={}, dcf_loader=lambda t: None)
+        assert out[0]["adx"] == 22.0
+>       assert out[0]["action"] == "UNAVAILABLE"
+E       AssertionError: assert 'WATCHLIST' == 'UNAVAILABLE'
+E         
+E         - UNAVAILABLE
+E         + WATCHLIST
+
+plugins/tradingview/tests/test_ta_sweep_batch.py:258: AssertionError
+=========================== short test summary info ============================
+FAILED plugins/tradingview/tests/test_pine_source_reader.py::TestFetchSourceLive::test_current_returns_source
+FAILED plugins/tradingview/tests/test_pine_source_reader.py::TestFetchSourceLive::test_name_saves_file
+FAILED plugins/tradingview/tests/test_ta_sweep_batch.py::TestEnrichmentPreservedAfterAdxValidation::test_invalid_adx_row_keeps_enrichment_and_nulled_adx
+FAILED plugins/tradingview/tests/test_ta_sweep_batch.py::TestEnrichmentPreservedAfterAdxValidation::test_valid_adx_row_enriched_normally
+4 failed, 126 passed in 12.27s
+exit=1

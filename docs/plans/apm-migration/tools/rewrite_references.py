@@ -55,8 +55,6 @@ SKIP_NAMES = {"evolution-log.md", "map-debt.md", "CHANGELOG.md", "backlog.md"}
 SKIP_FRAGMENTS = ("/ADRs/", "/handovers/", "/baseline/")
 GENERATED = ("docs/architecture/json-discovery-audit", "docs/architecture/allowed-json-register",
              "docs/architecture/file-dependency-register")
-# Hand-authored hub files: their paths are written correctly by hand, never auto-rewritten.
-HAND_AUTHORED = re.compile(r"(^|/)\.apm/skills/[^/]+/(SKILL\.md|references/modes/)")
 PY_EXPRS = [
     (re.compile(r"\bparents\[\d+\]"), "pyexpr:parents"),
     (re.compile(r"""['"]plugins['"]"""), "pyexpr:plugins-segment"),
@@ -110,7 +108,7 @@ def path_rows(names: list[dict], wave: str | None, ready: set[str] | None = None
             and (ready is None or n["old_path"] in ready)}
 
 
-SETTLED = {"MOVED_TO_SKILL", "MOVED_TO_ENGINE", "MOVED_TO_ENGINE_TESTS", "MOVED_TO_AGENT",
+SETTLED = {"DELETED_APPROVED", "MOVED_TO_SKILL", "MOVED_TO_ENGINE", "MOVED_TO_ENGINE_TESTS", "MOVED_TO_AGENT",
            "CONSOLIDATED_INTO_SKILL", "CONSOLIDATED_INTO_DOC", "KEPT", "RETIRED_SYMLINK"}
 
 
@@ -238,7 +236,7 @@ def compute_changes(ctx: Ctx, wave: str) -> list[dict]:
     old_plugins = wave_old_plugins(ctx, wave)
     changes = []
     for rel in tracked_files(ctx):
-        if in_scope(rel) or HAND_AUTHORED.search(rel):
+        if in_scope(rel):
             continue
         p = ctx.root / rel
         if p.is_symlink() or not p.is_file():
@@ -325,6 +323,9 @@ def cmd_verify(ctx: Ctx, wave: str) -> int:
         elif act == "RETIRED_SYMLINK":
             if (ctx.root / old).is_symlink() or (ctx.root / old).exists():
                 fails.append(f"symlink still present: {old}")
+        elif act == "DELETED_APPROVED":
+            if (ctx.root / old).exists():
+                fails.append(f"file approved for deletion still present: {old}")
         elif act == "COLLISION":
             fails.append(f"unresolved collision: {old} -> {new}")
         elif act in ("DECISION_PENDING", "RETIRE_PENDING", "UNMAPPED"):

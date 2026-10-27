@@ -31,9 +31,11 @@ import yaml
 
 ROOT = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip())
 OUT = ROOT / "docs/plans/apm-migration"
+BASE = (OUT / "baseline-commit.txt").read_text().strip()   # pre-migration commit
 M = yaml.safe_load((OUT / "mapping.yaml").read_text())
 INV = list(csv.DictReader(open(OUT / "inventory-before.csv")))
-TRACKED = set(subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True).splitlines())
+# collisions are judged against the baseline commit (the pre-migration tree), not the working tree
+TRACKED = set(subprocess.check_output(["git", "ls-tree", "-r", "--name-only", BASE], cwd=ROOT, text=True).splitlines())
 ENGINE, ENGINE_TESTS = M["engine_dir"], M["engine_tests_dir"]
 
 
@@ -43,7 +45,7 @@ def hub_dir(plugin: str, hub: str) -> str:
 
 def parse_value(v: str) -> tuple[str, str]:
     """Split 'DECIDE:proposal' style values into (verb, rest); plain values return ('', v)."""
-    for verb in ("DECIDE", "RETIRE", "MERGE", "KEEP", "TESTS"):
+    for verb in ("DECIDE", "RETIRE", "DELETE", "MERGE", "KEEP", "TESTS"):
         if v.startswith(verb + ":"):
             return verb, v[len(verb) + 1:]
     return "", v
@@ -94,6 +96,8 @@ def place(plugin: str, rel: str, row: dict) -> tuple[str, str, str, str]:
             return f"{hub_dir(plugin, hub)}/scripts/{name}", "DECISION_PENDING", hub, why.strip("()")
         if verb == "RETIRE":
             return "", "RETIRE_PENDING", "", rest
+        if verb == "DELETE":
+            return "", "DELETED_APPROVED", "", rest
         if verb == "TESTS":
             return f"{ENGINE_TESTS}/{name}", "MOVED_TO_ENGINE_TESTS", "engine", "test living in scripts/"
         if v == "engine":
@@ -110,6 +114,8 @@ def place(plugin: str, rel: str, row: dict) -> tuple[str, str, str, str]:
         verb, rest = parse_value(v)
         if verb == "RETIRE":
             return "", "RETIRE_PENDING", "", rest
+        if verb == "DELETE":
+            return "", "DELETED_APPROVED", "", rest
         return f"{hub_dir(plugin, v)}/assets/{sub}", "MOVED_TO_SKILL", v, ""
     if kind == "reference":
         v = M["references"].get(key)
@@ -163,7 +169,7 @@ def resolve_new(old_path: str, rows_by_path: dict[str, dict]) -> str:
 
 
 def skill_command(old_path: str) -> str:
-    text = subprocess.run(["git", "show", f"HEAD:{old_path}"], cwd=ROOT, capture_output=True, text=True).stdout
+    text = subprocess.run(["git", "show", f"{BASE}:{old_path}"], cwd=ROOT, capture_output=True, text=True).stdout
     m = re.search(r"^description:.*?(?:Trigger on|Trigger:)\s*(/[\w-]+)", text, re.M | re.S)
     if not m:
         m = re.search(r"^description:.*?(/[\w-]+)", text, re.M)
@@ -178,7 +184,7 @@ def main() -> None:
         rel = r["old_path"][len(f"plugins/{plugin}/"):]
         base = {"old_path": r["old_path"], "old_plugin": plugin, "old_skill": r["old_skill"], "kind": r["kind"],
                 "type": r["type"], "new_plugin": M["plugins"][plugin], "wave": M["waves"][plugin],
-                "status": "proposed"}
+                "status": "approved" if str(M["waves"][plugin]) in [str(w) for w in M.get("approved_waves", [])] else "proposed"}
         if r["type"] == "symlink":
             r["new_path"] = ""
             ledger.append({**base, "new_path": "", "action": "RETIRED_SYMLINK", "scope": "",

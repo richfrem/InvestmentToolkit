@@ -1,15 +1,19 @@
 name: questrade
 version: 1.0.0
-description: "Questrade Brokerage MCP integration \u2014 native AI agent connection\
-  \ for real-time account balances (CAD/USD), open positions, cash flow ledger (dividends,\
-  \ deposits), Human-in-the-Loop (HITL) order drafting with mobile push approval,\
-  \ guided deposits (Interac e-Transfer) and CAD/USD conversion (Norbert's gambit)."
-author:
-  name: Richard Fremmerlid
+description: Questrade Brokerage MCP integration - sign-in diagnostics, balances, positions, activities, portfolio and trade sync, price refresh, human-approved order drafting, guided deposits and CAD/USD conversion (Norbert's gambit).
+author: Richard Fremmerlid
+license: MIT
 targets:
 - claude
-- copilot
-- antigravity
-- codex
-dependencies: {}
-license: MIT
+- agent-skills
+dependencies:
+  apm: []
+  mcp:
+  - name: questrade
+    registry: false
+    transport: http
+    url: https://mcp.questrade.com/v1/brokerage/mcp
+includes: auto
+metadata:
+  packaging_mode: full
+  governance_lane: team

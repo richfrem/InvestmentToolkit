@@ -13,6 +13,8 @@ plugins:                      # old plugin -> new plugin
   stock-valuation: portfolio-advisor
   etf-analysis: portfolio-advisor
 
+approved_waves: [1]            # waves whose mapping you have approved
+
 waves:
   questrade: 1
   toolkit-manager: 2
@@ -196,7 +198,7 @@ scripts:
   questrade/scripts/questrade_sync.py: syncing-questrade-accounts
   questrade/scripts/questrade_trades_import.py: syncing-questrade-accounts
   questrade/scripts/questrade_price_refresh.py: syncing-questrade-accounts
-  questrade/scripts/scaffold_skill.py: "RETIRE:unused scaffolder, overlaps authoring-skills (Decision 3)"
+  questrade/scripts/scaffold_skill.py: "DELETE:unused scaffolder, overlaps authoring-skills (approved 2026-10-26)"
 
 assets:
   portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md: setting-portfolio-targets
@@ -212,7 +214,7 @@ assets:
   stock-valuation/assets/templates/projection_template.json: valuing-investments
   etf-analysis/assets/templates/etf_analysis_template.json: valuing-investments
   tradingview/assets/templates/ta_thesis_template.md: analyzing-charts
-  questrade/assets/templates/SKILL.md.template: "RETIRE:unused scaffold template (Decision 3)"
+  questrade/assets/templates/SKILL.md.template: "DELETE:unused scaffold template (approved 2026-10-26)"
   # tradingview/assets/pinescript-indicators/** -> operating-tradingview-charts (prefix rule below)
 
 asset_prefixes:

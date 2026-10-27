@@ -1,0 +1,51 @@
+== plugin-portfolio-advisor
+F....................................................................... [ 28%]
+........................................................................ [ 57%]
+..........F............................................................. [ 86%]
+..................................                                       [100%]
+=================================== FAILURES ===================================
+__ TestRecommendAllReadsSqlite.test_unheld_buy_rated_is_initiate_with_upside ___
+
+self = <test_portfolio_action.TestRecommendAllReadsSqlite testMethod=test_unheld_buy_rated_is_initiate_with_upside>
+
+    def test_unheld_buy_rated_is_initiate_with_upside(self):
+        self._seed("NBIS", "BUY", fair_value=100.0, price=50.0)
+        rec = recommend_all(str(self.db_path))["NBIS"]
+>       self.assertEqual(rec["action"], "INITIATE")
+E       AssertionError: 'WATCHLIST' != 'INITIATE'
+E       - WATCHLIST
+E       + INITIATE
+
+plugins/portfolio-advisor/scripts/test_portfolio_action.py:44: AssertionError
+_________________ test_enrich_with_scores_populates_technicals _________________
+
+    def test_enrich_with_scores_populates_technicals():
+        class DummyScore:
+            def __init__(self, ticker, rsi, adx, vol_bias, band, total, flags):
+                self.ticker = ticker
+                self.rsi = rsi
+                self.adx = adx
+                self.vol_bias = vol_bias
+                self.band = band
+                self.total = total
+                self.flags = flags
+    
+        scores = {
+            "NVDA": DummyScore("NVDA", 62.4, 28.1, 15.0, "ACCUMULATE", 3, ["ADX_STRONG"])
+        }
+        item = {"ticker": "NVDA"}
+        scan_opportunities._enrich_with_scores(item, "NVDA", scores)
+    
+        assert item["rsi"] == 62.4
+        assert item["adx"] == 28.1
+        assert item["volBias"] == 15.0
+>       assert item["band"] is None  # Numeric score alone cannot invent an action
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: assert 'ACCUMULATE' is None
+
+plugins/portfolio-advisor/tests/test_scan_opportunities.py:207: AssertionError
+=========================== short test summary info ============================
+FAILED plugins/portfolio-advisor/scripts/test_portfolio_action.py::TestRecommendAllReadsSqlite::test_unheld_buy_rated_is_initiate_with_upside
+FAILED plugins/portfolio-advisor/tests/test_scan_opportunities.py::test_enrich_with_scores_populates_technicals
+2 failed, 248 passed in 13.08s
+exit=1

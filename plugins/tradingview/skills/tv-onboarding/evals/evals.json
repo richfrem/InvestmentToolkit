@@ -34,7 +34,7 @@
     "type": "negative",
     "category": "trigger_exclusion",
     "prompt": "set up my questrade mcp connection",
-    "expected_trigger": "questrade-setup",
+    "expected_trigger": "syncing-questrade-accounts",
     "expected_not_trigger": [
       "tv-onboarding"
     ],

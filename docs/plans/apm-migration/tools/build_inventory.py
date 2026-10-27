@@ -3,9 +3,9 @@
 build_inventory.py - APM migration Wave 0: record the pre-migration state of plugins/.
 
 Purpose:
-    Writes inventory-before.csv (every file and symlink under plugins/ at git HEAD) and
+    Writes inventory-before.csv (every file and symlink under plugins/ at the pinned baseline commit) and
     external-links-before.csv (symlinks outside plugins/ that point into plugins/).
-    HEAD is the source of truth for "old paths", so work already done in the working tree
+    The commit in baseline-commit.txt is the source of truth for "old paths", so work already done in the working tree
     (the etf-analysis and questrade moves) does not distort the baseline. Where a HEAD file
     has since moved, `current_path` records where git rename detection finds it now.
 
@@ -29,6 +29,7 @@ from pathlib import Path
 
 ROOT = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip())
 OUT = ROOT / "docs/plans/apm-migration"
+BASE = (Path(__file__).resolve().parents[1] / "baseline-commit.txt").read_text().strip()   # pre-migration commit (before the checkpoint)
 
 
 def git(*args: str, raw: bool = False):
@@ -39,7 +40,7 @@ def git(*args: str, raw: bool = False):
 def ls_tree(prefix: str) -> list[tuple[str, str, str]]:
     """Return (mode, blob_sha, path) for every entry under prefix at HEAD."""
     rows = []
-    for line in git("ls-tree", "-r", "-z", "HEAD", "--", prefix, raw=True).decode().split("\0"):
+    for line in git("ls-tree", "-r", "-z", BASE, "--", prefix, raw=True).decode().split("\0"):
         if not line:
             continue
         meta, path = line.split("\t", 1)
@@ -94,7 +95,7 @@ def main() -> None:
 
     # Where each HEAD file is now (rename detection over staged and unstaged changes).
     now: dict[str, str] = {}
-    for line in git("diff", "HEAD", "-M", "--name-status", "--", "plugins/").splitlines():
+    for line in git("diff", BASE, "-M", "--name-status", "--", "plugins/").splitlines():
         cols = line.split("\t")
         if cols[0].startswith("R"):
             now[cols[1]] = cols[2]
