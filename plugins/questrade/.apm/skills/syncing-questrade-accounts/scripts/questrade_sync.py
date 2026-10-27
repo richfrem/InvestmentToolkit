@@ -236,7 +236,7 @@ def persist_questrade_data_to_db(
 
 def _run_portfolio_refresh() -> None:
     """Run refresh_all.py after broker sync to update thesis metrics and target weights."""
-    refresh_script = _REPO_ROOT / "plugins/portfolio-advisor/scripts/refresh_all.py"
+    refresh_script = _REPO_ROOT / "investment_screener/backend/py_services/refresh_all.py"
     if refresh_script.exists():
         subprocess.run([sys.executable, str(refresh_script)], check=False)
     else:

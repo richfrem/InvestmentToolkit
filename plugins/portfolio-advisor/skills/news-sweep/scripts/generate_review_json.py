@@ -1,1 +1,0 @@
-../../../scripts/generate_review_json.py

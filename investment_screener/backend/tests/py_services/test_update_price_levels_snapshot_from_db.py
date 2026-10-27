@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
 from domain_model.db_client import initialize_db  # noqa: E402

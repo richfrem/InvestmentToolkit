@@ -24,7 +24,7 @@ import pytest
 
 # ── Import the module under test ────────────────────────────────────────────
 REPO_ROOT = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
 from domain_model.db_client import initialize_db  # noqa: E402
@@ -254,7 +254,7 @@ class TestDeriveAndWriteAll:
         import subprocess
         db_path = tmp_path / "empty.sqlite"
         initialize_db(str(db_path)).close()
-        script = REPO_ROOT / "plugins/portfolio-advisor/scripts/update_price_levels.py"
+        script = REPO_ROOT / "investment_screener/backend/py_services/update_price_levels.py"
         r = subprocess.run(["python3", str(script), "--all", "--db", str(db_path)], capture_output=True, text=True)
         assert r.returncode == 1 and "thesis holdings" in r.stderr
 

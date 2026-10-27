@@ -51,7 +51,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 BACKEND   = REPO_ROOT / "investment_screener/backend"
 DATA      = BACKEND / "data"
 DB_PATH   = DATA / "domain_model.sqlite"
-SCRIPTS   = REPO_ROOT / "plugins/portfolio-advisor/scripts"
+SCRIPTS   = REPO_ROOT / "investment_screener/backend/py_services"
 RUNTIME   = REPO_ROOT / ".runtime"
 TV_CDP_PORT = int(os.environ.get("TV_CDP_PORT", "9222"))
 

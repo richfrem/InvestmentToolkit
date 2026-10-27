@@ -385,7 +385,7 @@
    "note": "Reads a prompt template markdown"
   },
   {
-   "file": "plugins/etf-analysis/scripts/persist_etf_analysis.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_etf_analysis.py",
    "kind": "write",
    "label": "{ticker}.json",
    "disposition": "table",
@@ -393,7 +393,7 @@
    "note": "ETF analysis JSON; needs a table or ledger event type"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/daily_brief.py",
+   "file": "investment_screener/backend/py_services/daily_brief.py",
    "kind": "write",
    "label": "{date.today().isoformat()}.json",
    "disposition": "ledger",
@@ -401,7 +401,7 @@
    "note": "Writes daily-briefs/*.json besides the ledger event"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/daily_brief.py",
+   "file": "investment_screener/backend/py_services/daily_brief.py",
    "kind": "write",
    "label": "{today}.json",
    "disposition": "ledger",
@@ -409,7 +409,7 @@
    "note": "Writes daily-briefs/*.json besides the ledger event"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/tracking-13f-filings/scripts/fetch_13f.py",
    "kind": "passed",
    "label": "{EDGAR_BASE}/submissions/CIK{cik10}.json",
    "disposition": "table",
@@ -417,7 +417,7 @@
    "note": "13F filings JSON; needs tables"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/tracking-13f-filings/scripts/fetch_13f.py",
    "kind": "unresolved",
    "label": "{acc_nodash(accession)}.json",
    "disposition": "table",
@@ -425,7 +425,7 @@
    "note": "13F filings JSON; needs tables"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/tracking-13f-filings/scripts/fetch_13f.py",
    "kind": "unresolved",
    "label": "{cik10}_diff.json",
    "disposition": "table",
@@ -433,7 +433,7 @@
    "note": "13F filings JSON; needs tables"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/tracking-13f-filings/scripts/fetch_13f.py",
    "kind": "unresolved",
    "label": "{cik10}_index.json",
    "disposition": "table",
@@ -441,7 +441,7 @@
    "note": "13F filings JSON; needs tables"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/generate_news_prompt.py",
+   "file": "investment_screener/backend/py_services/generate_news_prompt.py",
    "kind": "passed",
    "label": "*.json",
    "disposition": "run-state",
@@ -449,7 +449,7 @@
    "note": "Reads temp/news files"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+   "file": "investment_screener/backend/py_services/generate_review_json.py",
    "kind": "write",
    "label": "{args.date}-PortfolioAnalysisRecommendations.json",
    "disposition": "review",
@@ -457,7 +457,7 @@
    "note": "Writes PortfolioAnalysisRecommendations JSON; store as a REVIEW ledger event"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/research_parity_report.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py",
    "kind": "passed",
    "label": "*.json",
    "disposition": "tooling",
@@ -465,7 +465,7 @@
    "note": "Read-only parity report; deleted when the JSONL files are archived"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/research_parity_report.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py",
    "kind": "read",
    "label": "intelligence_events.jsonl",
    "disposition": "tooling",
@@ -473,7 +473,7 @@
    "note": "Read-only parity report; deleted when the JSONL files are archived"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/research_parity_report.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py",
    "kind": "read",
    "label": "observations.jsonl",
    "disposition": "tooling",
@@ -481,7 +481,7 @@
    "note": "Read-only parity report; deleted when the JSONL files are archived"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/run_daily.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py",
    "kind": "write",
    "label": "run_manifest.json",
    "disposition": "run-state",
@@ -489,7 +489,7 @@
    "note": "run_manifest.json in temp/ run folders"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/verify_daily_run.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/verify_daily_run.py",
    "kind": "read",
    "label": "run_manifest.json",
    "disposition": "run-state",
@@ -497,7 +497,7 @@
    "note": "Reads run_manifest.json"
   },
   {
-   "file": "plugins/portfolio-advisor/scripts/weekly_review.py",
+   "file": "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/weekly_review.py",
    "kind": "passed",
    "label": "*.json",
    "disposition": "run-state",
@@ -505,7 +505,7 @@
    "note": "Scans temp review files"
   },
   {
-   "file": "plugins/stock-valuation/scripts/fetch_financials.py",
+   "file": "investment_screener/backend/py_services/fetch_financials.py",
    "kind": "write",
    "label": "{safe_ticker}.json",
    "disposition": "pipeline-scratch",
@@ -513,7 +513,7 @@
    "note": "Valuation pipeline intermediate JSON"
   },
   {
-   "file": "plugins/stock-valuation/scripts/recalculate_forward_valuation.py",
+   "file": "investment_screener/backend/py_services/recalculate_forward_valuation.py",
    "kind": "write",
    "label": "{name}.json",
    "disposition": "pipeline-scratch",

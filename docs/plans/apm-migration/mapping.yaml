@@ -13,7 +13,7 @@ plugins:                      # old plugin -> new plugin
   stock-valuation: portfolio-advisor
   etf-analysis: portfolio-advisor
 
-approved_waves: [1, 2, 3]            # waves whose mapping you have approved
+approved_waves: [1, 2, 3, 4]            # waves whose mapping you have approved
 
 waves:
   questrade: 1
@@ -138,8 +138,8 @@ scripts:
   portfolio-advisor/scripts/fetch_13f.py: tracking-13f-filings
   portfolio-advisor/scripts/audit_coverage.py: auditing-portfolio-data
   portfolio-advisor/scripts/list_strategy_pillars.py: valuing-investments
-  portfolio-advisor/scripts/consolidate_research.py: "DECIDE:valuing-investments (used by no skill, has tests)"
-  portfolio-advisor/scripts/research_parity_report.py: "DECIDE:valuing-investments (used by no skill, has tests)"
+  portfolio-advisor/scripts/consolidate_research.py: valuing-investments
+  portfolio-advisor/scripts/research_parity_report.py: valuing-investments
   portfolio-advisor/scripts/test_portfolio_action.py: "TESTS:engine"
   # stock-valuation
   stock-valuation/scripts/comps_valuation.py: engine
@@ -153,9 +153,9 @@ scripts:
   stock-valuation/scripts/reverse_dcf.py: engine
   stock-valuation/scripts/standardize_metrics.py: engine
   stock-valuation/scripts/wacc.py: engine
-  stock-valuation/scripts/validate_projection.py: valuing-investments
+  stock-valuation/scripts/validate_projection.py: engine
   stock-valuation/scripts/persist_valuation.py: valuing-investments
-  stock-valuation/scripts/rebase_equity_valuations.py: "DECIDE:valuing-investments (used by no skill, has tests)"
+  stock-valuation/scripts/rebase_equity_valuations.py: valuing-investments
   # etf-analysis
   etf-analysis/scripts/fetch_fund_data.py: valuing-investments
   etf-analysis/scripts/persist_etf_analysis.py: valuing-investments
@@ -171,7 +171,7 @@ scripts:
   tradingview/scripts/tv_manage_indicators.py: operating-tradingview-charts
   tradingview/scripts/tv_pine_inject.py: operating-tradingview-charts
   tradingview/scripts/tv_pine_manager.py: operating-tradingview-charts
-  tradingview/scripts/pine_linter.py: operating-tradingview-charts
+  tradingview/scripts/pine_linter.py: engine
   tradingview/scripts/pine_source_reader.py: operating-tradingview-charts
   tradingview/scripts/tv_thesis_overlay.py: operating-tradingview-charts
   tradingview/scripts/tv_create_alerts.py: operating-tradingview-charts
@@ -181,7 +181,7 @@ scripts:
   tradingview/scripts/tv_modify_order.py: trading-via-tradingview
   tradingview/scripts/tv_cancel_order.py: trading-via-tradingview
   tradingview/scripts/tv_trades_import.py: trading-via-tradingview
-  tradingview/scripts/tv_batch_quotes.py: trading-via-tradingview
+  tradingview/scripts/tv_batch_quotes.py: engine
   tradingview/scripts/tv_price_refresh.py: trading-via-tradingview
   tradingview/scripts/watchlist_manager.py: trading-via-tradingview
   tradingview/scripts/ta_sweep_batch.py: analyzing-charts
@@ -230,7 +230,7 @@ references:
   portfolio-advisor/references/strategic_review_prompt.md: setting-portfolio-targets
   portfolio-advisor/references/recommendation-coherence.md: setting-portfolio-targets
   portfolio-advisor/references/thesis-page-currency.md: setting-portfolio-targets
-  portfolio-advisor/references/definitive_professional_investment_framework.md: "DECIDE:setting-portfolio-targets (no skill links it)"
+  portfolio-advisor/references/definitive_professional_investment_framework.md: setting-portfolio-targets
   # stock-valuation
   stock-valuation/references/ADR-dcf-calculator.md: valuing-investments
   stock-valuation/references/AI-augmented-stock-valuation-and-thesis-alignment.md: valuing-investments

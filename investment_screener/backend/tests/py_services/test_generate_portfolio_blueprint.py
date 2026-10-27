@@ -1,0 +1,208 @@
+"""Tests for generate_portfolio_blueprint.py's projection reads from
+domain_model.sqlite: `_get_latest_ai_projection` (used in generate_section's AI Signal / Upside
+column) and `_get_latest_ai_agent_projection` (used by update_section_tables's
+`get_ai_signal`, which must stay strictly AI_AGENT-only, no fallback).
+
+Also covers `build_thesis_map`, which reads per-investment thesis
+fields (target_weight, lifecycle_status, thesis_for_inclusion, sub_strategy_id/
+pillar_id) via `domain_model.investment_repository.list_investments`.
+
+All tests run against a `tmp_path`-backed SQLite database via `initialize_db` —
+never the real `data/domain_model.sqlite` file.
+"""
+
+import sys
+from pathlib import Path
+
+REPO_ROOT = next(p for p in Path(__file__).resolve().parents if (p / "investment_screener").is_dir())
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import (  # noqa: E402
+    resolve_investment,
+    update_investment_fields,
+)
+from domain_model.pillar_repository import resolve_pillar, resolve_sub_strategy  # noqa: E402
+from domain_model.projection_repository import save_projection_version  # noqa: E402
+
+import generate_portfolio_blueprint as gpb  # noqa: E402
+
+
+from datetime import date as _date, timedelta as _timedelta  # noqa: E402
+_RECENT_SAVED_AT = (_date.today() - _timedelta(days=3)).isoformat() + "T00:00:00Z"
+
+def _reviewed_and_current(conn):
+    """Fixture names are reviewed this cycle (review_cycle gate)."""
+    conn.execute("UPDATE investment SET review_state = 'REVIEWED'")
+    conn.commit()
+
+
+
+def test_build_thesis_map_reads_from_sqlite_not_json(tmp_path):
+    """build_thesis_map must source targetPct/role/thesisNote/subStrategyId
+    from investment columns."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        resolve_pillar(conn, "ai-compute", "AI Compute")
+        resolve_sub_strategy(conn, "sa-asi-race", "ai-compute", "SA / ASI Race")
+        nvda_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
+        update_investment_fields(
+            conn, nvda_id,
+            pillar_id="ai-compute", sub_strategy_id="sa-asi-race",
+            target_weight=5.5, lifecycle_status="accumulate",
+            thesis_for_inclusion="Highest-conviction BUY.",
+        )
+        # Watchlist-only row (no pillar_id) must be excluded, matching the
+        # original JSON read's implicit scope (thesis.holdings only).
+        wl_id = resolve_investment(conn, "ZZZZ", asset_class="EQUITY")
+        update_investment_fields(conn, wl_id, is_watchlisted=True)
+    finally:
+        conn.close()
+
+    thesis_map = gpb.build_thesis_map(db_path)
+    assert thesis_map["NVDA"] == {
+        "subStrategyId": "sa-asi-race",
+        "targetPct": 5.5,
+        "role": "accumulate",
+        "thesisNote": "Highest-conviction BUY.",
+        "thesisBreakers": [],
+    }
+    assert "ZZZZ" not in thesis_map
+
+
+def test_get_latest_ai_projection_returns_none_for_unknown_ticker(tmp_path):
+    db_path = tmp_path / "test.sqlite"
+    initialize_db(str(db_path)).close()
+    assert gpb._get_latest_ai_projection("ZZZZ", db_path=db_path) is None
+
+
+def test_get_latest_ai_projection_prefers_ai_agent_source(tmp_path):
+    """AI_AGENT row must win even when a newer non-AI_AGENT row exists."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        investment_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
+        save_projection_version(
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
+            fair_value=300.0, action="ACCUMULATE", source="AI_AGENT",
+        )
+        save_projection_version(
+            conn, investment_id, version=2, saved_at=_RECENT_SAVED_AT,
+            fair_value=310.0, action="TRIM", source="USER",
+        )
+    finally:
+        conn.close()
+
+    entry = gpb._get_latest_ai_projection("NVDA", db_path=db_path)
+    assert entry is not None
+    assert entry["fair_value"] == 300.0
+    assert entry["action"] == "ACCUMULATE"
+
+
+def test_get_latest_ai_projection_falls_back_to_any_source(tmp_path):
+    """No AI_AGENT row for this ticker -> falls back to MAX(version) of any source."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        investment_id = resolve_investment(conn, "DXYZ", asset_class="ETF")
+        save_projection_version(
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
+            fair_value=40.0, action="INITIATE", source="ETF_ANALYSIS",
+        )
+    finally:
+        conn.close()
+
+    entry = gpb._get_latest_ai_projection("DXYZ", db_path=db_path)
+    assert entry is not None
+    assert entry["fair_value"] == 40.0
+    assert entry["action"] == "INITIATE"
+
+
+def test_get_latest_ai_agent_projection_strict_no_fallback(tmp_path):
+    """get_ai_signal's helper must return None (not fall back) when no AI_AGENT
+    row exists, even if other-sourced rows exist — matches the original file-based
+    code's `[p for p in projs if p.get("source") == "AI_AGENT"]` with no fallback."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        investment_id = resolve_investment(conn, "DXYZ", asset_class="ETF")
+        save_projection_version(
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
+            fair_value=40.0, action="INITIATE", source="ETF_ANALYSIS",
+        )
+    finally:
+        conn.close()
+
+    assert gpb._get_latest_ai_agent_projection("DXYZ", db_path=db_path) is None
+
+
+def test_get_latest_ai_agent_projection_returns_latest_by_saved_at(tmp_path):
+    """Picks latest by saved_at, not MAX(version), matching the original
+    `max(ai, key=lambda x: x.get("savedAt", ""))` semantics."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        investment_id = resolve_investment(conn, "AMD", asset_class="EQUITY")
+        save_projection_version(
+            conn, investment_id, version=2, saved_at="2026-05-01T00:00:00Z",
+            fair_value=180.0, action="MAINTAIN", source="AI_AGENT",
+        )
+        save_projection_version(
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
+            fair_value=200.0, action="BUY", source="AI_AGENT",
+        )
+    finally:
+        conn.close()
+
+    entry = gpb._get_latest_ai_agent_projection("AMD", db_path=db_path)
+    assert entry is not None
+    assert entry["action"] == "BUY"
+    assert entry["fair_value"] == 200.0
+
+
+def test_get_ai_signal_no_real_io(tmp_path, monkeypatch):
+    """update_section_tables's nested get_ai_signal must resolve through the DB
+    helper, not read projections/{TICKER}.json."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        investment_id = resolve_investment(conn, "MSFT", asset_class="EQUITY")
+        save_projection_version(
+            conn, investment_id, version=1, saved_at=_RECENT_SAVED_AT,
+            fair_value=500.0, action="ACCUMULATE", source="AI_AGENT", snapshot_json='{"price":300}',
+        )
+    finally:
+        _reviewed_and_current(conn)
+        conn.close()
+
+    monkeypatch.setattr(gpb, "DOMAIN_DB", db_path)
+
+    content = (
+        "| Ticker | Role | Conviction Note |\n"
+        "| :--- | :--- | :--- |\n"
+        "| **MSFT** | CORE | Cloud + AI |\n"
+    )
+    current_data = {"holdings": {"MSFT": 5.0}}
+    target_data = {"holdings": {"MSFT": 6.0}}
+
+    updated = gpb.update_section_tables(content, current_data, target_data)
+    assert "INITIATE" in updated  # No broker shares; caller weights cannot override ownership
+
+
+def test_build_thesis_map_carries_stored_thesis_breakers(tmp_path):
+    from domain_model.thesis_breaker_repository import upsert_breaker
+
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        resolve_pillar(conn, "ai-compute", "AI Compute")
+        nvda_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
+        update_investment_fields(conn, nvda_id, pillar_id="ai-compute", target_weight=5.5)
+        breaker = {"id": "rsi-low", "type": "auto", "metric": "rsi", "operator": "<", "threshold": 30, "horizon": 3}
+        upsert_breaker(conn, "NVDA", breaker)
+    finally:
+        conn.close()
+
+    assert gpb.build_thesis_map(db_path)["NVDA"]["thesisBreakers"] == [breaker]

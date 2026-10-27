@@ -1,0 +1,29 @@
+# Mode: thesis-review
+
+Interactive entry point for pitching a new investment thesis or challenging an existing one, delegating analysis to the thesis-review-agent.
+
+## Constraints
+- Acts as a delegator; hands off execution to `thesis-review-agent`.
+- Scripts and reference files must remain unexecuted until invoked by the agent.
+- Target portfolio adjustments must preserve the 100.00% allocation invariant.
+
+## Quick start
+```bash
+python3 investment_screener/backend/py_services/update_targets.py --show
+```
+
+## Workflow
+1. **Intake Pitch**: Receive the user's thesis pitch, macro theme, or proposed pillar adjustment.
+2. **Delegate Agent**: Launch `thesis-review-agent` via sub-agent orchestration.
+3. **Committee Review**: Agent conducts adversarial research, DCF valuations, and weight calibrations.
+4. **Apply Blueprint**: Finalized target updates are written using canonical scripts and blueprint generators.
+5. **Link Stocks & First Note**: Run `thesis_currency.py set-members --document <page> --tickers ...` for the new or reshaped thesis, then write its first current-developments note (protocol: `references/thesis-page-currency.md`).
+6. **Closing Refresh**: Run `python3 investment_screener/backend/py_services/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
+
+## Verification
+```bash
+python3 investment_screener/backend/py_services/validate_weights.py --mode target
+```
+
+## References
+- Investment Thesis (`investment_screener/backend/data/theses/investment_thesis.md`) - Canonical portfolio thesis and sub-strategy definitions.

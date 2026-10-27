@@ -190,7 +190,7 @@ To maintain perfect synchronization in your workspace, utilize these canonical c
 python3 investment_screener/backend/py_services/verify_thesis_sync.py
 
 # 2. Add or update a holding's target weight and regenerate the thesis blueprint
-python3 plugins/portfolio-advisor/scripts/update_targets.py --set TICKER=5.50 --write --blueprint
+python3 investment_screener/backend/py_services/update_targets.py --set TICKER=5.50 --write --blueprint
 
 # 3. Synchronize actual live broker holdings from TradingView Desktop into domain_model.sqlite
 # (Node.js engine must be initialized in tradingview-cdp/)

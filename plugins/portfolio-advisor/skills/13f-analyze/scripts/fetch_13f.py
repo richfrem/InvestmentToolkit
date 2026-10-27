@@ -1,1 +1,0 @@
-../../../scripts/fetch_13f.py

@@ -6,7 +6,7 @@ research files under ``investment_screener/backend/data/research/``
 (``{TICKER}_{YYYY-MM-DD}.md``).
 
 Reuses the file-discovery glob and ticker/date parsing approach from
-``plugins/portfolio-advisor/scripts/consolidate_research.py`` rather than
+``plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/consolidate_research.py`` rather than
 re-deriving it, per this task's brief.
 
 Global Constraint: no raw dated research markdown files are ever deleted.

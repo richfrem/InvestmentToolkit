@@ -2,8 +2,8 @@
 
 ## 1. The Job
 Unify morning operations under **`/daily`** (`--scan` vs `--interactive`) and cleanly remove `/daily-brief`.
-- **Master Entry Point (`plugins/portfolio-advisor/scripts/run_daily.py`)**:
-  - Authoritative entry point lives exclusively in `plugins/portfolio-advisor/scripts/run_daily.py` (NO symlinks into `investment_screener/backend/py_services/`, keeping operational and web application domains strictly decoupled).
+- **Master Entry Point (`plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py`)**:
+  - Authoritative entry point lives exclusively in `plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py` (NO symlinks into `investment_screener/backend/py_services/`, keeping operational and web application domains strictly decoupled).
   - Mode-aware execution:
     - `--scan`: Non-interactive fast morning brief. Executes Step 0 (Readiness) ➔ Step 1 (Morning Brief) ➔ Finalizes (`required_steps = [0, 1]`).
     - `--interactive` (Default): Full 6-step loop. Executes Step 0 ➔ Step 1 ➔ Step 2 ➔ Step 3 ➔ Step 4 ➔ Step 5 ➔ Finalizes (`required_steps = [0, 1, 2, 3, 4, 5]`).
@@ -89,5 +89,5 @@ Unify morning operations under **`/daily`** (`--scan` vs `--interactive`) and cl
 - [ ] Unresolved path symlink check enforced prior to path resolution.
 - [ ] Janitor (`--prune-stale`) enforces path sandbox + process liveness check before pruning abandoned runs.
 - [ ] Step 0 verifies `control_plane.db` write transaction without coupling to git dev tooling.
-- [ ] Comprehensive adversarial unit tests pass in `plugins/portfolio-advisor/tests/test_daily_loop_receipts.py`.
+- [ ] Comprehensive adversarial unit tests pass in `plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py`.
 - [ ] Full regression suite (`python3 run_tests.py --unit`) passes cleanly.

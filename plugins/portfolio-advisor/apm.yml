@@ -1,0 +1,15 @@
+name: portfolio-advisor
+version: 3.0.0
+description: Investment portfolio advisor suite - AI stock valuation and ETF/fund analysis, daily and weekly review loops, news and 13F sweeps, target calibration and valuation-gated rebalancing, and the data audits that guard them.
+author: Richard Fremmerlid
+license: MIT
+targets:
+- claude
+- agent-skills
+dependencies:
+  apm: []
+  mcp: []
+includes: auto
+metadata:
+  packaging_mode: full
+  governance_lane: team

@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-SCRIPT_DIR = REPO_ROOT / "plugins/portfolio-advisor/scripts"
+SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 
 sys.path.insert(0, str(PY_SERVICES))

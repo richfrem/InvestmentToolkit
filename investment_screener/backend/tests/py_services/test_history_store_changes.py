@@ -2,7 +2,7 @@
 test_history_store_changes.py — HistoricalPriceStore.calc_changes() delegates to
 the shared price_changes.period_changes() (one definition of period % change for
 heatmap, Portfolio Table, Screener and Stock Analysis). The math itself is tested
-in plugins/stock-valuation/tests/test_price_changes.py.
+in investment_screener/backend/tests/py_services/test_price_changes.py.
 """
 import sys
 from datetime import date, timedelta

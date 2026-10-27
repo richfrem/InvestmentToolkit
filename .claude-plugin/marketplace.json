@@ -1,28 +1,9 @@
 {
     "name": "investment-toolkit-plugins",
-    "description": "Investment Toolkit plugins: AI stock valuation, portfolio advisor (health, rebalancing, strategy review), and suite orchestration.",
+    "description": "Investment Toolkit plugins are packaged with APM (see plugins/*/apm.yml).",
     "owner": {
         "name": "richfrem",
         "email": "connect.richfrem@gmail.com"
     },
-    "plugins": [
-        {
-            "name": "stock-valuation",
-            "description": "AI-driven autonomous stock valuation and research engine. Skills: /update-stock-analysis (Bear/Base/Bull DCF projections with analyticsLog), /research-stock (qualitative sweep with Class A/B/C/D change classification and decision gate before re-valuation), /forward-valuation-challenge (stress-test valuations against trailing financials), /valuation-math-validation (deterministic DCF math and spread checks).",
-            "source": "./plugins/stock-valuation",
-            "strict": true
-        },
-        {
-            "name": "portfolio-advisor",
-            "description": "Investment portfolio advisor suite. Flagship /daily interactive loop. Skills: /stock-intake, /portfolio-coverage-audit, /weekly-review, /data-quality-audit, /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /news-sweep, /adversarial-review, /bundle-thesis-review, /13f-tracker, /13f-analyze, /ytd-return, /set-thesis-breakers. Agents: portfolio-advisor-orchestrator, red-team-agent, risk-officer-agent.",
-            "source": "./plugins/portfolio-advisor",
-            "strict": true
-        },
-        {
-            "name": "etf-analysis",
-            "description": "AI-driven ETF and fund analysis engine. Three fund types: CLOSED_END, THEMATIC_ETF, CASH_FUND. Trigger: /analyze-etf {TICKER}.",
-            "source": "./plugins/etf-analysis",
-            "strict": true
-        }
-    ]
+    "plugins": []
 }

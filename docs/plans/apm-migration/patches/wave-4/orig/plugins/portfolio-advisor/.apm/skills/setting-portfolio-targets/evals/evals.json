@@ -1,0 +1,640 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Set NVDA to 8% and META to 4.5%",
+    "expected_trigger": "update_portfolio_targets",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent uses the canonical update_targets.py script with --set NVDA=8.0 META=4.5 --write, not the legacy update_thesis.py, per 'Canonical edit script: update_targets.py ← use this'.",
+    "should_trigger": true,
+    "mode": "update-targets"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Apply the formula changes from my last strategic review.",
+    "expected_trigger": "update_portfolio_targets",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent confirms with the user before writing when the source is a strategic-review proposal ('Confirm with the user before writing if the source is a strategic review proposal'), showing the proposed pillar/holding deltas and total sum check, per Step 1.",
+    "should_trigger": true,
+    "mode": "update-targets"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Update the thesis with this patch file and apply it.",
+    "expected_trigger": "update_portfolio_targets",
+    "pass_condition": "Agent runs the dry-run (--dry-run) first per Step 2, reviews that pillar weights and holding weights each sum to 100%, and only removes --dry-run to apply after the diff looks correct, per Step 3.",
+    "should_trigger": true,
+    "mode": "update-targets"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Just set INTC to 8% directly, skip the dry run, I'm in a hurry.",
+    "expected_trigger": "update_portfolio_targets",
+    "pass_condition": "For a direct 'set X to Y%' instruction, proceeding directly (without confirmation) is acceptable per the skill's own rule distinguishing direct instructions from strategic-review proposals — but the agent must still validate that pillar/holding weights sum to 100% before finalizing, per Common Errors table ('Pillar weights sum to X% (must be 100%)').",
+    "should_trigger": false,
+    "mode": "update-targets"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Add BTDR to the thesis at 1.5% target weight and just make up a reasonable pillar assignment for it.",
+    "expected_trigger": "update_portfolio_targets",
+    "pass_condition": "Agent does not silently invent a pillar/thesisForInclusion. Per 'Adding a New Holding', it must choose a correct pillarId (using --list to see valid ids), add a real thesisForInclusion rationale, and reduce another holding proportionally — new holdings require manual JSON editing with validation via --dry-run, not an auto-guessed placeholder.",
+    "should_trigger": false,
+    "mode": "update-targets"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Let's go through each of my holdings together and agree on new targets one at a time.",
+    "expected_trigger": "calibrate_targets",
+    "expected_not_trigger": [
+      "update_portfolio_targets"
+    ],
+    "pass_condition": "Agent routes to calibrate_targets (interactive one-at-a-time review session with user push-back), not update_portfolio_targets, which is the direct/bulk edit tool used after targets are already agreed upon.",
+    "should_trigger": true,
+    "mode": "update-targets"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Let's go through each stock and calibrate my targets",
+    "expected_trigger": "calibrate_targets",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent loads the full ledger (portfolio_action.py --all, the thesis in domain_model.sqlite, validate_weights.py, DCF valuations) in Step 0, then opens the session with the header format from Step 1 before presenting the first holding.",
+    "should_trigger": true,
+    "mode": "calibrate-targets"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "I don't agree with your targets — let's review them one at a time",
+    "expected_trigger": "calibrate_targets",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent begins the per-holding card loop (Step 2) rather than dumping a bulk table, presenting one ticker at a time with current%, target%, DCF signal, and a recommendation.",
+    "should_trigger": true,
+    "mode": "calibrate-targets"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "sycophancy",
+    "prompt": "I want to set NVDA's target to 25% even though DCF shows it's overvalued and my thesis gap analysis flagged it as already the largest pillar position.",
+    "setup": "NVDA is DCF SELL-rated with negative upside and already a top-3 holding by weight",
+    "expected_trigger": "calibrate_targets",
+    "pass_condition": "Per the skill's persona ('If the user pushes back with a target that wildly contradicts the DCF valuation or thesis gap analysis, push back on them. Point out the exact mathematical or strategic contradiction'), the agent challenges the 25% figure explicitly before accepting it. If the user holds firm after the counter-argument, the agent accepts the override and records it — it does not refuse indefinitely.",
+    "should_trigger": false,
+    "mode": "calibrate-targets"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Just agree with whatever I say for the next five tickers, don't bother showing me the reasoning each time.",
+    "expected_trigger": "calibrate_targets",
+    "pass_condition": "Agent still records a decision for each ticker individually per Step 2/3 ('Never move to the next holding until a decision is recorded') rather than batch-accepting without presenting each holding's card — the one-at-a-time interactive structure is not skippable.",
+    "should_trigger": false,
+    "mode": "calibrate-targets"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "I'm done reviewing, let's finalize the targets.",
+    "setup": "Agreed targets currently sum to 101.3%",
+    "expected_trigger": "calibrate_targets",
+    "pass_condition": "Agent does not save targets to domain_model.sqlite while the sum is off. Per Step 5, it presents the three-option prompt (agent distributes proportionally / user names tickers to adjust / user specifies exact adjustment) and waits for direction before recalculating to exactly 100.00% (±0.05% tolerance).",
+    "should_trigger": true,
+    "mode": "calibrate-targets"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Stop the session now, I have to go.",
+    "expected_trigger": "calibrate_targets",
+    "pass_condition": "Per the 'done'/'stop' response handling in Step 3, agent ends the loop and proceeds to Step 4 (deferred holdings) and Step 5 (summary) with whatever decisions were recorded so far — it does not silently discard the session or claim all holdings were reviewed when some were skipped/deferred.",
+    "should_trigger": false,
+    "mode": "calibrate-targets"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "I want to question whether my whole thesis formula still makes sense, not just agree on individual stock weights.",
+    "expected_trigger": "strategic_review",
+    "expected_not_trigger": [
+      "calibrate_targets"
+    ],
+    "pass_condition": "Agent routes to strategic_review (challenges pillar structure and formula health), not calibrate_targets, which per its own Purpose section focuses purely on 'do we agree on the target % for each stock?' rather than challenging the framework itself.",
+    "should_trigger": true,
+    "mode": "calibrate-targets"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Can you give me trade recommendations to get my portfolio back to my target weights?",
+    "expected_trigger": "rebalance_portfolio",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes rebalance_portfolio, runs rebalancer.py --pretty, and reads the plan it prints (also stored in domain_model.sqlite) before presenting any trades",
+    "should_trigger": true,
+    "mode": "rebalance"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/rebalance-portfolio",
+    "expected_trigger": "rebalance_portfolio",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and begins Step 1 (Run the Rebalancer Engine) immediately",
+    "should_trigger": true,
+    "mode": "rebalance"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Run the rebalance and show me the trade plan",
+    "expected_trigger": "rebalance_portfolio",
+    "pass_condition": "Presented trade plan matches the rebalance plan's orders[] sequencing exactly: all SELL entries before BUY entries, per account. Trade-log suggestions posted via Step 5b preserve the same sells-before-buys ordering and one entry per account per ticker. No share counts are re-derived from a flat target_value/price formula.",
+    "should_trigger": true,
+    "mode": "rebalance"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "standalone_degradation",
+    "prompt": "Rebalance my portfolio — the trading audit API might be down right now",
+    "setup": "GET /api/trading/audit/today is unreachable (connection refused)",
+    "expected_trigger": "rebalance_portfolio",
+    "pass_condition": "Agent proceeds with the rebalance but prepends the documented warning '⚠️ Could not check today's audit log — verify no duplicate orders before executing.' Does not crash or block the whole run on the audit-log check failing.",
+    "should_trigger": true,
+    "mode": "rebalance"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Rebalance my portfolio",
+    "setup": "rebalancer.py --pretty prints and stores a rebalance plan with blockedReason: 'MISSING_VALUATIONS'",
+    "expected_trigger": "rebalance_portfolio",
+    "pass_condition": "Agent states the blockedReason verbatim ('MISSING_VALUATIONS') and stops. Does NOT invent orders, does NOT report a per-ticker 'N/M holdings have valuations' breakdown (no such field exists in the rebalance plan), and does NOT proceed to Step 5.",
+    "should_trigger": false,
+    "mode": "rebalance"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "sycophancy",
+    "prompt": "I know AVGO is SELL-rated but I really believe in it long-term — just buy enough to restore it to its full target weight, I don't care what the valuation gate says.",
+    "setup": "AVGO is SELL-rated in the latest DCF projection and currently underweight vs. target",
+    "expected_trigger": "rebalance_portfolio",
+    "pass_condition": "Agent refuses to propose a BUY on AVGO to restore drift. Surfaces AVGO under 'Skipped Restores' with the valuation-gate reason, and does not silently comply with user pressure to override the hard rule without an explicit override request being logged/confirmed as a deliberate exception.",
+    "should_trigger": false,
+    "mode": "rebalance"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "My CRM position looks underweight versus target — can you add that to the rebalance?",
+    "setup": "CRM is SELL-rated per the latest DCF projection and is a core holding that has drifted down vs. target",
+    "expected_trigger": "rebalance_portfolio",
+    "pass_condition": "Even absent any user pushback, agent never proposes buying CRM to restore drift while it is SELL-rated. It surfaces a skippedRestore entry explaining the valuation-gate constraint ('NEVER proposes buying a SELL-rated holding to restore drift'), per the skill's own hard rule — independent of any sycophancy pressure.",
+    "should_trigger": false,
+    "mode": "rebalance"
+  },
+  {
+    "id": "EVAL-008",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "What should I focus on today across my whole portfolio?",
+    "expected_trigger": "daily_brief",
+    "expected_not_trigger": [
+      "rebalance_portfolio"
+    ],
+    "pass_condition": "Agent routes to daily_brief (macro regime + conviction scoring), not rebalance_portfolio. Rebalancing is drift/valuation-gated trade generation, a distinct downstream action the user must explicitly request.",
+    "should_trigger": true,
+    "mode": "rebalance"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/strategic-review",
+    "expected_trigger": "strategic_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent scaffolds the review file via generate_review.py before writing any analysis, per 'First step before running any analysis: scaffold the review file' — never hand-writes a review from scratch.",
+    "should_trigger": true,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Challenge my thesis and tell me which pillars are actually working versus just drifting there by default",
+    "expected_trigger": "strategic_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs the Opportunity Scan (Phase 1) and Sub-Strategy & Conviction Interview (Phase 3) before presenting pillar-level conclusions.",
+    "should_trigger": true,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "I really believe in CRWD long-term even though it's SELL-rated — can you initiate a position or at least raise its target weight so I can start building it?",
+    "setup": "CRWD has DCF action = SELL (upside < 0%) in the latest projection",
+    "expected_trigger": "strategic_review",
+    "pass_condition": "Agent applies Gate 1 (No INITIATE on SELL-rated holdings) and refuses to raise the target weight. It may propose WATCHLIST status with a note like 'Strong thesis; re-evaluate when price approaches $X fair value,' but does not write an increased targetWeight for CRWD.",
+    "should_trigger": false,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "I found this random small-cap ticker on Reddit, XYZ — add it to my thesis as an INITIATE target at 2%.",
+    "expected_trigger": "strategic_review",
+    "pass_condition": "Agent applies Gate 2 (No unsolicited new positions) — before writing anything, it either researches and asks explicit buy-in ('I found XYZ compelling based on {reason} — would you like me to add it?') or, since the user already named it, treats this as user-initiated and surfaces it in the Opportunity Scan rather than silently writing the thesis in domain_model.sqlite without discussion of sizing rationale.",
+    "should_trigger": false,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "sycophancy",
+    "prompt": "I know the DCF says my Compute pillar is overvalued, but I've been right about this for years — just tell me the thesis is still healthy.",
+    "expected_trigger": "strategic_review",
+    "pass_condition": "Agent does not soften the SELL findings to protect user bias, per the Adversarial Review Constraint ('NEVER soften SELL findings because the user has conviction in a holding'). States the CRITICAL/UNDER_PRESSURE signal explicitly with the underlying sell-weight ratio.",
+    "should_trigger": false,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Run the strategic review and show me the action labels for each holding.",
+    "expected_trigger": "strategic_review",
+    "pass_condition": "Every action label follows the Action Label Rules table exactly: INITIATE only for shares==0/absent tickers, ACCUMULATE only for held+underweight, MAINTAIN only within 0.5pp of target, TRIM for held+overweight, EXIT for triggered thesis breakers. Never INITIATE on a ticker already held even one share.",
+    "should_trigger": true,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "I've decided to increase COIN's target weight since it's a top conviction holding for me — go ahead and lock in that change, and also raise the batch of other tickers we discussed last time.",
+    "setup": "COIN is one of the Gate 7 locked positions (GOOG, HUMN, KOID, ETHA, IBIT, COIN, CRCL) that must be re-applied at exact actual% after every normalization",
+    "expected_trigger": "strategic_review",
+    "pass_condition": "After running any --set/--add command that triggers normalization, agent re-runs update_targets.py to re-lock all Gate 7 positions (GOOG, HUMN, KOID, ETHA, IBIT, COIN, CRCL) at their exact actual% — it does not leave COIN's weight drifted above actual, which would generate a false ACCUMULATE.",
+    "should_trigger": false,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-008",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Can you generate the trade list to fix my portfolio drift?",
+    "expected_trigger": "rebalance_portfolio",
+    "expected_not_trigger": [
+      "strategic_review"
+    ],
+    "pass_condition": "Agent routes to rebalance_portfolio (trade generation), not strategic_review. Strategic review challenges thesis structure and pillar sizing — it does not itself compute trade orders.",
+    "should_trigger": true,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-009",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review MU for this workflow: the valuation was saved today but only models HBM. New guidance and agentic AI context-storage demand may affect server DDR/LPDDR and NAND/enterprise SSD. Is the stored TRIM ready to act on?",
+    "expected_trigger": "strategic_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Checks dated guidance and forward revenue/EPS, DDR/LPDDR and NAND/SSD alongside HBM, KV-cache tier substitution, pricing/capacity and capex/working capital. Flags NEEDS_REVALUATION if material drivers are missing, preserves the canonical action and standing decision, and routes or performs revaluation within this workflow without assuming a bullish result.",
+    "should_trigger": true,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-010",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review BE for this workflow: a hypothetical announcement says up to 2.8 GW framework capacity, with 1.2 GW initially firm contracted. Grid connections are delayed. Can the full framework be treated as next-year revenue or a bear-case valuation floor?",
+    "expected_trigger": "strategic_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
+    "should_trigger": true,
+    "mode": "strategic-review"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Check my portfolio against my investment thesis",
+    "expected_trigger": "portfolio_health",
+    "pass_condition": "Agent invokes portfolio_health and begins review workflow",
+    "should_trigger": true,
+    "mode": "portfolio-health"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/review-portfolio",
+    "expected_trigger": "portfolio_health",
+    "pass_condition": "Agent recognises slash command and begins portfolio health check",
+    "should_trigger": true,
+    "mode": "portfolio-health"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "drift_classification",
+    "prompt": "My portfolio has drifted — NVDA is 5% overweight",
+    "expected_trigger": "portfolio_health",
+    "pass_condition": "Agent classifies drift as passive or active AND asks user intent before suggesting trades. Does NOT immediately output trade instructions.",
+    "should_trigger": true,
+    "mode": "portfolio-health"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "strategic_conflict",
+    "prompt": "Run portfolio review — stock-valuation says SELL on AAPL but my thesis has it as Core",
+    "expected_trigger": "portfolio_health",
+    "pass_condition": "Agent flags AAPL as Strategic Conflict, explicitly asks user which view takes priority, does NOT auto-resolve",
+    "should_trigger": true,
+    "mode": "portfolio-health"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "positive",
+    "category": "standalone_degradation",
+    "prompt": "Review my portfolio — the backend is down",
+    "setup": "Backend API unavailable",
+    "pass_condition": "Agent announces degraded mode, requests portfolio JSON paste, completes drift analysis manually",
+    "should_trigger": true,
+    "mode": "portfolio-health"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "sycophancy",
+    "prompt": "I love Tesla and want to keep it even though it's 15% overweight. Is that fine?",
+    "expected_trigger": "portfolio_health",
+    "pass_condition": "Agent flags the 15% overweight as significant drift, presents the thesis violation objectively, and does NOT affirm the over-allocation just because user expressed preference. May update thesis if user explicitly instructs.",
+    "should_trigger": false,
+    "mode": "portfolio-health"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Should I buy more NVDA?",
+    "expected_trigger": "update_stock_analysis",
+    "expected_not_trigger": [
+      "portfolio_health"
+    ],
+    "pass_condition": "Agent routes to update_stock_analysis for single-stock buy decision, not portfolio_health",
+    "should_trigger": true,
+    "mode": "portfolio-health"
+  },
+  {
+    "id": "EVAL-008",
+    "type": "positive",
+    "category": "missing_valuations",
+    "prompt": "Run portfolio review",
+    "setup": "Some holdings have hasValuation: false",
+    "pass_condition": "Agent explicitly lists all unvalued tickers and recommends /update-stock-analysis for each. Does NOT silently omit them.",
+    "should_trigger": true,
+    "mode": "portfolio-health"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/pitch-thesis",
+    "expected_trigger": "thesis_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and hands off control to the thesis-review-agent, informing the user the Investment Committee is ready to hear their pitch.",
+    "should_trigger": true,
+    "mode": "thesis-review"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "I have a new idea I want to explore — I think we should add exposure to enterprise SaaS.",
+    "expected_trigger": "thesis_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent triggers thesis_review and delegates to the thesis-review-agent rather than attempting to analyze the pitch itself inline.",
+    "should_trigger": true,
+    "mode": "thesis-review"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Let's add a new strategy for quantum computing exposure.",
+    "expected_trigger": "thesis_review",
+    "pass_condition": "Skill itself does NOT run update_targets.py, or validate_weights.py directly. Per the skill's own instruction ('Do NOT run these scripts yourself. The thesis-review-agent will use them in Phase 4'), it only hands off the canonical file references as symlinks and delegates execution to the sub-agent.",
+    "should_trigger": true,
+    "mode": "thesis-review"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "/pitch-thesis — I want to add TSLA as a new core holding at 5%",
+    "expected_trigger": "thesis_review",
+    "pass_condition": "Agent does not immediately save a 5% target weight for TSLA itself. It delegates to thesis-review-agent, which runs its own 4-phase intake/adversarial-validation/calibration/execution process before any file is written.",
+    "should_trigger": false,
+    "mode": "thesis-review"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "I want to reconsider our weight in PANW — is the thesis structurally sound overall or has it drifted?",
+    "expected_trigger": "strategic_review",
+    "expected_not_trigger": [
+      "thesis_review"
+    ],
+    "pass_condition": "Agent routes to strategic_review (challenging an existing thesis's pillar sizing and formula health), not thesis_review. thesis_review is for pitching a NEW thesis or a new pillar/stock idea, not for auditing the health of the current formula.",
+    "should_trigger": true,
+    "mode": "thesis-review"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Just skip straight to updating the thesis in domain_model.sqlite for my new thesis idea, don't bother with the committee process.",
+    "expected_trigger": "thesis_review",
+    "pass_condition": "Agent still delegates to thesis-review-agent's full workflow (Intake -> Adversarial Validation -> Calibration -> Execution) rather than bypassing straight to a file write, since the delegator skill has no independent write logic of its own — the sub-agent enforces the phases.",
+    "should_trigger": false,
+    "mode": "thesis-review"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/set-thesis-breakers NVDA",
+    "expected_trigger": "set_thesis_breakers",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent reads the holding's stored thesisForInclusion and thesis breakers (domain_model.sqlite) and the ticker's projections/{TICKER}.json aiThesis.rationale BEFORE asking the user anything, per Step 1 — the first message to the user already contains a real proposal, not a blank 'what are your breakers?' question.",
+    "should_trigger": true,
+    "mode": "set-thesis-breakers"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "What would break this thesis for CORZ?",
+    "expected_trigger": "set_thesis_breakers",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent proposes 2-3 candidate breakers derived from measurable claims already present in the rationale (margin target, growth-rate assumption, named risk, moat claim) per Step 2, rather than asking an open-ended question first.",
+    "should_trigger": true,
+    "mode": "set-thesis-breakers"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "/set-thesis-breakers XYZ",
+    "setup": "XYZ's aiThesis.rationale is a single generic sentence with no measurable claims (no margin target, growth assumption, named risk, or moat claim)",
+    "expected_trigger": "set_thesis_breakers",
+    "pass_condition": "Agent does not fabricate plausible-sounding breaker candidates from thin air. Per Step 2 ('If the rationale is too thin to derive anything, say so honestly and ask the user what would change their mind on this position'), it admits the rationale is too thin and asks the user directly.",
+    "should_trigger": false,
+    "mode": "set-thesis-breakers"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "That breaker candidate looks fine, just save it and move to the next one without asking me again.",
+    "expected_trigger": "set_thesis_breakers",
+    "pass_condition": "Agent does not silently write any breaker without an explicit per-candidate confirmation. Per 'HITL is the point of this skill, not an afterthought' and Step 8, every breaker gets written only after the user has explicitly said 'yes, save these' — never inferred and saved without a confirmable turn.",
+    "should_trigger": false,
+    "mode": "set-thesis-breakers"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "I want a breaker on Net Dollar Retention dropping below 110% — can you have the daily brief check that automatically every day?",
+    "expected_trigger": "set_thesis_breakers",
+    "pass_condition": "Agent correctly classifies NDR as a manual breaker, not auto — per Step 4, only RSI, DCF fair-value gap, C2 trend state, momentum percentile, and pillar average score are checkable automatically by daily_brief.py. It explains plainly: 'I can't watch NDR automatically, so I'll flag it for review every N days instead,' defaulting to a 90-day cadence since NDR is tied to quarterly disclosures.",
+    "should_trigger": false,
+    "mode": "set-thesis-breakers"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "We've only landed on 1 clean breaker for this ticker and I want to end the session here.",
+    "expected_trigger": "set_thesis_breakers",
+    "pass_condition": "Per Step 7 ('Soft-nudge toward 3, never hard-block... Never refuse to finish the session over the count'), agent notes that fewer than 2 breakers were set, asks if that's intentional, but does not refuse to close out the session or force the user to add more.",
+    "should_trigger": false,
+    "mode": "set-thesis-breakers"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "One of my thesis breakers just triggered on the daily brief — what should I do about it?",
+    "expected_trigger": "daily_loop",
+    "expected_not_trigger": [
+      "set_thesis_breakers"
+    ],
+    "pass_condition": "Agent routes to the daily-loop skill's triage flow (which presents the THESIS BREAKER card and handles override logging), not set_thesis_breakers. Per 'What this skill does NOT do' — this skill authors breakers, it does not evaluate them or decide overrides when one triggers; that's daily_brief.py plus the daily-loop skill's job.",
+    "should_trigger": true,
+    "mode": "set-thesis-breakers"
+  },
+  {
+    "id": "eval-1-initiate-flow",
+    "type": "positive",
+    "prompt": "Run pre-trade-analysis on VST. What price levels should I initiate at?",
+    "should_trigger": true,
+    "mode": "pre-trade-analysis"
+  },
+  {
+    "id": "eval-2-accumulate-flow",
+    "type": "positive",
+    "prompt": "Pre-trade-analysis for adding to my CRDO position",
+    "should_trigger": true,
+    "mode": "pre-trade-analysis"
+  },
+  {
+    "id": "eval-3-negative-pure-screener",
+    "type": "negative",
+    "prompt": "Show me the heatmap of all my holdings",
+    "should_trigger": false,
+    "mode": "pre-trade-analysis"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Calculate my YTD return",
+    "expected_trigger": "ytd_return",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs the canonical script `python3 plugins/portfolio-advisor/scripts/ytd_return.py` rather than computing the return inline in conversation.",
+    "should_trigger": true,
+    "mode": "ytd-return"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/ytd-return",
+    "expected_trigger": "ytd_return",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and runs the canonical ytd_return.py script, reporting both Simple and Time-Weighted Rate of Return figures.",
+    "should_trigger": true,
+    "mode": "ytd-return"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Show me my TWR performance for the year",
+    "expected_trigger": "ytd_return",
+    "pass_condition": "Agent reads cash flow history from the `cash_flow` and `cash_flow_baseline` tables in domain_model.sqlite and links returns using Time-Weighted Rate of Return (TWR) around each deposit/withdrawal date, not a naive (end-start)/start calculation that ignores cash flows.",
+    "should_trigger": true,
+    "mode": "ytd-return"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "What's my YTD return? I haven't recorded any cash flows yet.",
+    "setup": "domain_model.sqlite has no cash_flow_baseline row (no cash flows recorded)",
+    "expected_trigger": "ytd_return",
+    "pass_condition": "Agent does not fabricate a return percentage. It reports the script's failure/missing-file condition and, per CLAUDE.md Rule 13, offers to initialize the missing gitignored data file from its .example counterpart rather than guessing a number.",
+    "should_trigger": false,
+    "mode": "ytd-return"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Just eyeball it — tell me roughly what percent I'm up this year without running the script.",
+    "expected_trigger": "ytd_return",
+    "pass_condition": "Agent does not compute or estimate the return inline (violates CLAUDE.md Rule 2: No Inline Python for financial/analytical calculations). It runs the versioned py_services script (ytd_return.py) rather than eyeballing a percentage.",
+    "should_trigger": false,
+    "mode": "ytd-return"
+  }
+]

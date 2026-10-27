@@ -1,0 +1,60 @@
+# Mode: sync-portfolio (`/questrade-sync-portfolio`)
+
+Directly queries Questrade MCP balances and positions tools to synchronize holdings and cash into the SQLite domain model. Trigger on `/questrade-sync-portfolio`, "sync questrade portfolio" or "refresh my trades from questrade".
+Allowed tools: Bash, Read, Write. Paths starting with `scripts/` are relative to this skill's folder.
+
+## Constraints
+
+- **Optional source**: TradingView is the default for positions and trades. Use this mode only when `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade` as available and the owner chose Questrade for this refresh; otherwise run `/tv-portfolio-sync`.
+- **Sign-in first**: Questrade tools exist only after the owner signs in through a browser, and the sign-in does not carry over between sessions. If `List Accounts` is unavailable or fails, stop and follow the [setup mode](setup.md) (start the sign-in, give the owner the link, wait for them to finish) before staging any payload. Never substitute stale data for a failed sign-in.
+- **Scope boundaries**: Syncs holdings, quantities, cash splits, and exchange rates; does not update market prices.
+- **Account resolution**: Canonical account identifiers (`TFSA`, `RRSP`, `CASH`) are mapped automatically by `questrade_sync.py`.
+- **Atomic sync**: Stale positions no longer present in the Questrade account snapshot are cleared automatically.
+- **Trades with every sync**: Import executed trades in the same run so the Trade Log and the recommendations' recent-trade context match the new positions. Only executed trades are imported; open, cancelled and rejected orders are not.
+
+## Quick start
+
+Execute full portfolio ingestion from Questrade:
+
+```bash
+python3 scripts/questrade_sync.py --help
+```
+
+Use `--dry-run` to preview changes without committing to SQLite.
+
+## Workflow
+
+1. **Query MCP Account Data**:
+   - Call MCP tool `List Accounts` to enumerate active accounts; this also proves the session is signed in.
+   - For each account, call `Get Balances` and `Get Positions`.
+2. **Stage Intermediate Payload**:
+   Construct payload at `temp/questrade_sync_payload.json` containing `accounts`, `balances`, and `positions`.
+3. **Execute Persistence Script**:
+   ```bash
+   python3 scripts/questrade_sync.py --payload temp/questrade_sync_payload.json
+   ```
+4. **Import Executed Trades**:
+   - For each account call `Get Account Activities` with `transactionTypes=["Trades"]` for the last 30 days (page through `metadata.totalPages`).
+   - Also call `Get Order History` per account: it supplies order type, limit price and market-order time.
+   - Stage `temp/questrade_trades_payload.json` as `{"accounts": [...List Accounts rows...], "activities": {"<accountId>": [...raw activity rows...]}, "orders": {"<accountId>": <raw order history response>}}`. Copy the tool responses unchanged; the script does the mapping, so never reshape, round or fill in values.
+   - Preview, then import:
+   ```bash
+   python3 scripts/questrade_trades_import.py --payload temp/questrade_trades_payload.json --dry-run
+   python3 scripts/questrade_trades_import.py --payload temp/questrade_trades_payload.json --json
+   ```
+   - Exit code 2 means some trades were rejected: report each reason; do not edit values to force them through. An "unknown symbol" rejection is usually a broker-only symbol (cash fund, currency conversion): leave it out unless the owner asks for it.
+5. **Re-baseline Targets and Roles**: run `python3 plugins/portfolio-advisor/scripts/rebaseline_targets.py --write`, then `python3 plugins/portfolio-advisor/scripts/sync_portfolio_roles.py`, so a position just bought is never left on a stale 0% target labelled exit. Report any position skipped because its price was missed.
+6. **Trigger Refresh & Invariant Check**:
+   - Run `python3 investment_screener/backend/py_services/verify_portfolio_invariants.py`.
+   - Remove temporary JSON payload and display sync summary.
+   - Closing refresh: run `python3 plugins/portfolio-advisor/scripts/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
+
+## Verification
+
+- Confirm portfolio invariants match via `verify_portfolio_invariants.py`.
+- Confirm imported trades appear under the Trade Log page's Filled tab and that a re-run reports them as skipped, not imported again.
+- Validate test cases against `evals/evals.json`.
+
+## References
+
+- [Questrade Tool Schemas](../questrade-tool-schemas.md): Schema reference for `list_accounts`, `get_balances`, `get_positions` and the trades import payload.

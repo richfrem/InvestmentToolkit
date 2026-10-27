@@ -1,1 +1,0 @@
-../../../scripts/ytd_return.py

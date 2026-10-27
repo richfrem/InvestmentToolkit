@@ -12,7 +12,7 @@ the record before it is said, and is the same everywhere.
 
 ## Invariants
 
-1. **One source of calls.** Present only stances from `python3 plugins/portfolio-advisor/scripts/recommendation.py --all`
+1. **One source of calls.** Present only stances from `python3 investment_screener/backend/py_services/recommendation.py --all`
    (`decision_check.effective`). NEVER present a ranking or BUY/TRIM list derived outside it.
 2. **Analysis reaches the record in the same session.** A valuation is saved with `persist_valuation.py`
    (plus `persist_research.py`); a change of stance goes through `set_standing_decision.py` or

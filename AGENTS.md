@@ -100,7 +100,7 @@ Detailed policy documents and invariants are governed in [`.agent/rules/`](file:
 | `py_services/fetch_financials.py {TICKER}` | Raw yfinance data |
 | `py_services/dcf_scenarios.py --raw FILE --scenarios FILE` | DCF scenario math |
 | `plugins/stock-valuation/.../validate_projection.py` | Schema validation |
-| `plugins/stock-valuation/scripts/price_changes.py` (`period_changes`) | The only 1D/1W/1M/3M/YTD/1Y/5Y % change calculation (heatmap, tables, Stock Analysis) |
+| `investment_screener/backend/py_services/price_changes.py` (`period_changes`) | The only 1D/1W/1M/3M/YTD/1Y/5Y % change calculation (heatmap, tables, Stock Analysis) |
 
 Create a new canonical script + ADR in `docs/architecture/` whenever you'd compute the same formula twice (see rule 19).
 

@@ -1,1 +1,0 @@
-../../../scripts/list_strategy_pillars.py

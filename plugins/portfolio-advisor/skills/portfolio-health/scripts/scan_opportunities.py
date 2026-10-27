@@ -1,1 +1,0 @@
-../../../scripts/scan_opportunities.py

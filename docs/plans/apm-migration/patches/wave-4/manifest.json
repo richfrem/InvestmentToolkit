@@ -1,0 +1,282 @@
+[
+  {
+    "file": ".agent/rules/local-recommendation-coherence.md",
+    "count": 1
+  },
+  {
+    "file": "AGENTS.md",
+    "count": 1
+  },
+  {
+    "file": "architecture.md",
+    "count": 1
+  },
+  {
+    "file": "docs/architecture/file-dependency-register.json",
+    "count": 17
+  },
+  {
+    "file": "docs/architecture/portfolio_sync_data_flow.md",
+    "count": 1
+  },
+  {
+    "file": "docs/plans/TASK-DAILY-UNIFICATION-spec.md",
+    "count": 3
+  },
+  {
+    "file": "docs/plans/sqlite-single-source-of-truth-implementation-prompt.md",
+    "count": 1
+  },
+  {
+    "file": "docs/plans/sqlite-single-source-of-truth-spec.md",
+    "count": 6
+  },
+  {
+    "file": "investment_screener/backend/py_services/daily_brief.py",
+    "count": 3
+  },
+  {
+    "file": "investment_screener/backend/py_services/fetch_broker_data.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/generate_news_prompt.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/generate_portfolio_blueprint.py",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/backend/py_services/generate_reports.py",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/backend/py_services/generate_review_json.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/migrate_research_to_ledger.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/rebaseline_targets.py",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/backend/py_services/refresh_all.py",
+    "count": 3
+  },
+  {
+    "file": "investment_screener/backend/py_services/review_gate.py",
+    "count": 4
+  },
+  {
+    "file": "investment_screener/backend/py_services/set_standing_decision.py",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/backend/py_services/thesis_currency.py",
+    "count": 6
+  },
+  {
+    "file": "investment_screener/backend/py_services/update_targets.py",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/backend/py_services/verify_refresh.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/ytd_return.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/src/routes/dailybrief.ts",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/ProjectionRepository.spec.ts",
+    "count": 3
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_annual_fcff.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_audit_json_usage.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_build_consumer_inventory.py",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_canonical_recommendation_consumers.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_compute_current_weights.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_daily_brief_ta_sweep_delegates.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_discount_rate_audit.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_forward_recalculation.py",
+    "count": 3
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_generate_news_prompt.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_history_store_changes.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_manage_watchlist.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_persist_research.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_portfolio_action_import.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_set_standing_decision.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_standardize_metrics.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_update_price_levels.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_update_thesis_sqlite.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_validate_weights_sqlite_write.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_verify_refresh.py",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/frontend/src/pages/DailyBriefPage.tsx",
+    "count": 2
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/agents/portfolio-advisor-orchestrator.agent.md",
+    "count": 5
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/agents/thesis-review-agent.agent.md",
+    "count": 3
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/auditing-portfolio-data/tests/test_audit_coverage.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/references/daily-brief-methodology.md",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/news_sweep.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/record_news_sweep.py",
+    "count": 2
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/weekly_review.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/assets/templates/portfolio_analysis_recommendations_template.json",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/evals/evals.json",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/references/recommendation-coherence.md",
+    "count": 7
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/references/thesis-page-currency.md",
+    "count": 7
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/scripts/generate_review.py",
+    "count": 4
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/scripts/scan_opportunities.py",
+    "count": 4
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/tests/test_recommendation_coherence_contract.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/references/ADR-dcf-calculator.md",
+    "count": 2
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/references/api_reference.md",
+    "count": 2
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/references/valuation-method-and-discount-rate.md",
+    "count": 4
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/list_strategy_pillars.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py",
+    "count": 6
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_persist_valuation.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/questrade/.apm/skills/syncing-questrade-accounts/references/modes/sync-portfolio.md",
+    "count": 3
+  },
+  {
+    "file": "plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py",
+    "count": 1
+  },
+  {
+    "file": "symlinks.json",
+    "count": 155
+  }
+]

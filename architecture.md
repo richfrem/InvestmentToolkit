@@ -265,7 +265,7 @@ Both are gitignored, private data files created automatically the first time a s
 | `backend/data/etf_analysis/*.json` | JSON | ETF holdings analysis (versioned array) | No |
 | `backend/data/theses/` | Markdown + JSON | Investment thesis narrative + sub-strategies | No |
 | `plugins/portfolio-advisor/assets/templates/` | Markdown | Grok sweep prompt templates (daily + weekly) | No |
-| `plugins/portfolio-advisor/references/evolution-log.md` | Markdown | Daily session log (scores, overrides, tool failures) | No |
+| `plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/references/evolution-log.md` | Markdown | Daily session log (scores, overrides, tool failures) | No |
 | `temp/` | Various | Scratch space for scripts (never /tmp/) | Yes |
 
 **Retired files** (formerly live JSON, now SQLite-backed; superseded files under

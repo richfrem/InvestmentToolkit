@@ -19,7 +19,7 @@ Pulls real-time prices for portfolio positions from TradingView Desktop. Prices 
 
 ```bash
 python3 scripts/tv_price_refresh.py
-python3 scripts/tv_batch_quotes.py '["NVDA","AAPL"]'
+python3 investment_screener/backend/py_services/tv_batch_quotes.py '["NVDA","AAPL"]'
 ```
 The first command saves prices and also refreshes the USD->CAD rate (`--skip-fx` to skip). Exit 0: every symbol written; 1: some symbols had no usable quote and keep their old price (listed under `stale`); 2: database not found.
 
@@ -27,7 +27,7 @@ The first command saves prices and also refreshes the USD->CAD rate (`--skip-fx`
 
 1. Enumerate held tickers from `domain_model.sqlite`.
 2. Check if TradingView Desktop CDP is reachable (`scripts/tv_health_check.py`).
-3. Fetch real-time quotes with `scripts/tv_batch_quotes.py --tradingview-only` for the on-screen table.
+3. Fetch real-time quotes with `investment_screener/backend/py_services/tv_batch_quotes.py --tradingview-only` for the on-screen table.
 4. Persist prices with `tv_price_refresh.py`; the table in step 3 is not what gets saved. Report any `failed`/`stale` symbols.
 5. Output price summary and delta table in chat, with the source of each quote.
 

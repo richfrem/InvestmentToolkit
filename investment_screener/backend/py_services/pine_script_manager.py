@@ -35,10 +35,7 @@ logger = logging.getLogger(__name__)
 # (Task 5A-8). Follows the same sys.path-insert pattern as
 # tv_cdp_health.py's import of tv_client.py — investment_screener/backend/py_services/
 # is not a package on the default path. Neither pine_linter.py nor
-# tv_client.py is touched; this module only wraps their output.
-_TV_SCRIPTS_DIR = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts")
-if _TV_SCRIPTS_DIR not in sys.path:
-    sys.path.insert(0, _TV_SCRIPTS_DIR)
+# tv_client.py (both siblings in this folder) is touched; this module only wraps their output.
 
 from pine_linter import PineLinter  # noqa: E402
 from tv_client import tv_call  # noqa: E402

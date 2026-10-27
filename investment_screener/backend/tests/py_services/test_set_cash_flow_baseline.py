@@ -68,7 +68,7 @@ def test_cli_writes_the_baseline_and_dry_run_writes_nothing(tmp_path):
 
 def test_ytd_report_json_carries_the_rate_and_writes_no_file(tmp_path):
     """ytd_return.py prints the report with the baseline's rate and writes no report file."""
-    sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
     import ytd_return
 
     db = tmp_path / "domain_model.sqlite"

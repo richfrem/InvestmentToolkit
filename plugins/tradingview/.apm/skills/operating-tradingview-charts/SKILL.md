@@ -35,7 +35,7 @@ Paths starting with `scripts/` or `assets/` are relative to this skill's folder;
 - **Port 9222**: TradingView Desktop must be launched with `--remote-debugging-port=9222`; the Node CDP engine in `tradingview-cdp/` needs its dependencies installed (`npm ci`).
 - **Read-only diagnostics**: health checks never change user settings or network configuration.
 - **Single chart target**: commands act on the active chart layout; `chart-setup` uses the dedicated `agent-layout` so the owner's own layouts are untouched.
-- **Pine Script v6 only**, linted before injection (`scripts/pine_linter.py`), no repainting or lookahead.
+- **Pine Script v6 only**, linted before injection (`investment_screener/backend/py_services/pine_linter.py`), no repainting or lookahead.
 - **Database authority**: levels and alert targets come from `domain_model.sqlite`; stored levels are authoritative over alert text.
 
 ## Modes

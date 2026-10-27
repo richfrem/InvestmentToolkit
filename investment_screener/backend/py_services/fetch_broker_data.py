@@ -614,7 +614,7 @@ def emit_snapshot_json(snapshot: dict) -> None:
 def _run_portfolio_refresh() -> None:
     """Run refresh_all.py after any broker sync to keep thesis pages current."""
     _repo_root = Path(SCRIPT_DIR).parents[2]
-    refresh_script = _repo_root / "plugins/portfolio-advisor/scripts/refresh_all.py"
+    refresh_script = _repo_root / "investment_screener/backend/py_services/refresh_all.py"
     if refresh_script.exists():
         # Redirect the child's stdout to OUR stderr so refresh_all.py's progress
         # output can never contaminate the stdout JSON IPC channel emitted by

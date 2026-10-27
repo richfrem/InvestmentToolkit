@@ -197,9 +197,14 @@ def main() -> None:
         # destination collisions (real file already there; a backend symlink at the path is expected)
         if new_path and action.startswith("MOVED") and new_path in TRACKED and new_path != r["old_path"]:
             link = next((x for x in INV if False), None)
-            is_link = subprocess.run(["git", "ls-files", "-s", new_path], cwd=ROOT, capture_output=True,
+            # was the destination a symlink at the baseline? (the backend's links to plugin scripts)
+            is_link = subprocess.run(["git", "ls-tree", BASE, "--", new_path], cwd=ROOT, capture_output=True,
                                      text=True).stdout.startswith("120000")
-            if not is_link:
+            if not is_link and action == "MOVED_TO_ENGINE_TESTS":
+                stem, ext = posixpath.splitext(posixpath.basename(new_path))
+                new_path = posixpath.join(posixpath.dirname(new_path), f"{stem}_plugin{ext}")
+                notes = (notes + "; renamed (_plugin) because a backend test of that name already exists").strip("; ")
+            elif not is_link:
                 action, notes = "COLLISION", f"destination already exists; {notes}".strip("; ")
             else:
                 notes = (notes + "; replaces the backend symlink at this path").strip("; ")

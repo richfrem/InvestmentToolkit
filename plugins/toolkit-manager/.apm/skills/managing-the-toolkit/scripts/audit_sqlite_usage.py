@@ -547,7 +547,7 @@ DOC_HISTORY_PREFIXES = (
 )
 DOC_HISTORY_FILES = {
     # logs of what changed and when
-    "plugins/portfolio-advisor/references/evolution-log.md", "references/map-debt.md", ".agent/map-debt.md",
+    "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/references/evolution-log.md", "references/map-debt.md", ".agent/map-debt.md",
     "docs/architecture/skill-renames-2026-08-28.md",
     # generated audit snapshots
     "docs/architecture/json-discovery-audit.json", "docs/architecture/json-discovery-audit.md",

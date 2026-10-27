@@ -269,10 +269,7 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False, tradingview_only
     # Overrides yfinance price in info_map.
     tv_quotes: dict[str, dict] = {}
     try:
-        import sys as _sys
-        _tv_scripts = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts")
-        if _tv_scripts not in _sys.path:
-            _sys.path.insert(0, _tv_scripts)
+        # tv_batch_quotes is a sibling engine module in this folder
         from tv_batch_quotes import batch_quotes as _tv_batch  # type: ignore[import]
         tv_result = _tv_batch(to_fetch, allow_fallback=not tradingview_only)
         for sym, q in tv_result.get("quotes", {}).items():
