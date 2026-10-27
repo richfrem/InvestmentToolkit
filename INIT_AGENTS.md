@@ -90,21 +90,14 @@ apm install --target agent-skills
 
 This deploys the skill hubs into `.agents/skills/` and writes `apm.lock.yaml` (commit it with any change; use `apm install --frozen` to reproduce exactly). `.agents/` and `apm_modules/` are gitignored. Never edit the deployed copies; change the plugin source under `plugins/<plugin>/.apm/` and reinstall. APM prints that questrade's MCP server cannot be configured for the `agent-skills` target; the skills still install, and `/questrade-setup` connects the server.
 
-**b. The shared library** (`agent-plugins-skills`: Agentic OS substrate, developer skills, hooks). Install it pinned to a tag or commit, using the installer script from the `packaging-with-apm` skill (it backs up the APM state first and supports rollback):
+**b. The shared library is a global prerequisite, not a dependency of this repo.** `agent-plugins-skills` is a separate APM package set (`agent-agentic-os`, `agent-memory`, `agent-orchestration`, `agent-extension-authoring`, `agent-exploration-cycle`, `dev-utils`), maintained in its own clone (`../agent-plugins-skills`) and installed **globally**, so it is not listed in this repo's `apm.yml`. It supplies the Agentic OS substrate and the authoring and packaging skills (`packaging-with-apm`, `authoring-skills` and the rest) that this guide and `AGENTS.md` refer to. Confirm it before continuing:
 
 ```bash
-python3 <packaging-with-apm>/scripts/apm_consumer.py install --plugins agent-agentic-os,dev-utils --ref <tag-or-sha> --global
-python3 <packaging-with-apm>/scripts/apm_consumer.py list-backups
-python3 <packaging-with-apm>/scripts/apm_consumer.py rollback        # undo the last install
+grep -c "agent-plugins-skills/plugins" ~/.apm/apm.yml            # expect 6
+ls ~/.claude/skills/packaging-with-apm ~/.claude/skills/authoring-skills >/dev/null && echo "global skills present"
 ```
 
-Install only universal infrastructure globally. Domain plugins stay project-local (step a).
-
-**c. Maintainers with a local `agent-plugins-skills` checkout** (sibling folder `../agent-plugins-skills`): install from the checkout by absolute path, for example `apm install /absolute/path/to/agent-plugins-skills/plugins/agent-agentic-os --target agent-skills`, or clone it for `fork-and-pr` work:
-
-```bash
-cd .. && git clone https://github.com/richfrem/agent-plugins-skills.git && cd InvestmentToolkit
-```
+If it is missing, clone it next to this repository (`cd .. && git clone https://github.com/richfrem/agent-plugins-skills.git`) and install each plugin globally from the clone with its **absolute path** (APM 0.33.0 rejects relative paths for global installs), for example `apm install -g /absolute/path/to/agent-plugins-skills/plugins/agent-agentic-os`, or use `packaging-with-apm`'s `scripts/apm_consumer.py` for a pinned install with backup and rollback. Install only universal infrastructure globally; domain plugins stay project-local (step a). Maintainers edit the clone directly and reinstall.
 
 > The files `plugin-sources.json` and `plugin-retention.json` belong to the legacy `plugin-syncer` and cover only library plugins still deployed that way. They go away once every library plugin is installed with APM.
 
