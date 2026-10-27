@@ -66,7 +66,7 @@ The launcher only prints a note when `.env` is missing, so do this first. Defaul
 
 ## Step 2: Plugins and Ecosystem
 
-InvestmentToolkit relies on shared ecosystem skills and plugins (from `agent-plugins-skills`) alongside domain-specific investment tools.
+InvestmentToolkit relies on shared ecosystem skills and plugins (from `agent-plugins-skills`, installed globally with APM) alongside domain-specific investment tools.
 
 ### 1. Choose Your Plugin Maintenance & Contribution Mode
 
@@ -107,10 +107,10 @@ Run the installation probe preflight first, then initialize or retrofit targetin
 
 ```bash
 # 1. Check current substrate state (read-only diagnostic):
-python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/control_plane/installation_probe.py --target .
+python3 ~/.agents/skills/running-control-plane/scripts/control_plane/installation_probe.py --target .
 
-# 2. Run retrofit (if agent-plugins-skills is local):
-python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/init_agentic_os.py \
+# 2. Run retrofit (uses the globally installed skills; add --dry-run first to preview):
+python3 ~/.agents/skills/setting-up-agentic-os/scripts/init_agentic_os.py \
   --target . \
   --retrofit \
   --contribution-mode fork-and-pr
@@ -119,7 +119,7 @@ python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/init_agentic_os
 python3 -c "
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path('../agent-plugins-skills/plugins/agent-agentic-os/scripts').resolve()))
+sys.path.insert(0, str(Path('~/.agents/skills/running-control-plane/scripts').expanduser()))
 from agent_control import ControlPlane
 ControlPlane(db_path=Path('context/control_plane.db')).init_db()
 "
@@ -149,11 +149,11 @@ Questrade users also install `questrade@investment-toolkit-plugins`; see [Option
 
 ## Step 3: Core Substrate Health Check
 
-Confirm that the local agentic runtime substrate is operational. These commands use tools installed by Step 2, so run Step 2 first (`.agents/` does not exist on a fresh clone):
+Confirm that the local agentic runtime substrate is operational. These commands use the globally installed `agent-plugins-skills` skills (Step 2b); the project's own `.agents/skills/` appears after Step 2a:
 
 ```bash
 # 1. Installation probe verification
-python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/control_plane/installation_probe.py --target .
+python3 ~/.agents/skills/running-control-plane/scripts/control_plane/installation_probe.py --target .
 
 # 2. Control plane, hooks, and evolution CI gate
 test -f context/control_plane.db && echo "✅ control_plane.db active" || echo "❌ Missing control_plane.db"
@@ -162,14 +162,14 @@ test -f .git/hooks/pre-commit-evolution-guard && echo "✅ Evolution guard activ
 test -f .github/workflows/verify-evolution-integrity.yml && echo "✅ CI integrity gate active" || echo "❌ Missing CI gate"
 
 # 3. Cryptographic signing identity readiness (read-only)
-python3 .agents/skills/os-control-health/scripts/setup_ciba_identity.py --check
+python3 ~/.agents/skills/setting-up-agentic-os/scripts/setup_ciba_identity.py --check
 
 # 4. Core test suites
 python3 run_tests.py --t0-only
 python3 run_tests.py --unit
 
 # 5. Run full OS health check loop
-python3 .agents/skills/os-control-health/scripts/kernel.py emit_event --agent os-control-health --type intent --action scan_metrics
+python3 ~/.agents/skills/running-control-plane/scripts/kernel.py emit_event --agent running-control-plane --type intent --action scan_metrics
 ```
 
 ---
