@@ -78,26 +78,50 @@ When an agent encounters a bug, deprecated selector, or friction in an upstream 
 | **Local Patch & Issue** | `local-patch-and-issue` | You want rapid local resolution without maintaining a full git clone of the plugin repo. | Patches installed files directly in `.agents/skills/`. Generates an issue reproduction report to submit to upstream maintainers. |
 | **Domain Override** | `domain-override` | Strict production consumer. Upstream plugins remain 100% vanilla. | Never alters upstream skills. Overrides logic using `.agent/rules/local-*` or dedicated `plugins/` in this repository. |
 
-### 2. Install with APM (project plugins and shared library)
+### 2. Install with APM
 
-Everything installs with [APM](https://github.com/microsoft/apm), pinned to `apm-cli==0.33.0` (`pip install apm-cli==0.33.0`, then `apm --version`). There is no `uvx` or `plugin_add.py` step. Install each plugin with one installer only; installing it twice gives duplicate skill names.
+Plugins install with [APM](https://github.com/microsoft/apm) (Agent Package Manager). There is no `uvx` or `plugin_add.py` step. The shared library's own guide, `../agent-plugins-skills/INSTALL.md`, is the authority for its installation; the steps below are the short version for this repository. Do them in order.
 
-**a. This repository's four plugins** (`portfolio-advisor`, `tradingview`, `toolkit-manager`, `questrade`). The root `apm.yml` lists them, so from the repository root:
+**a. Install APM.** This repository is verified with APM 0.33.0; the library's guide recommends 0.35.0 or newer (the `agy` target needs it).
+
+```bash
+# macOS / Linux
+curl -sSL https://aka.ms/apm-unix | sh -s -- @v0.35.0
+# Windows (PowerShell)
+irm https://aka.ms/apm-windows | iex
+
+apm --version
+```
+
+**b. The shared library is a global prerequisite, not a dependency of this repo.** `agent-plugins-skills` (`agent-agentic-os`, `agent-memory`, `agent-orchestration`, `agent-extension-authoring`, `agent-exploration-cycle`, `dev-utils`) is maintained in its own clone and installed **globally**, so it is not listed in this repo's `apm.yml`. It supplies the Agentic OS substrate and the authoring and packaging skills (`packaging-with-apm`, `authoring-skills` and the rest) that this guide and `AGENTS.md` refer to. Install each plugin in one scope only: a plugin installed globally must not also be listed in a project `apm.yml`, or it installs twice.
+
+Check what is already installed:
+
+```bash
+apm deps list --global                         # expect the six agent-* / dev-utils plugins, source "local"
+ls ~/.claude/skills/packaging-with-apm ~/.claude/skills/authoring-skills >/dev/null && echo "global skills present"
+```
+
+If they are missing, install from a clone pinned to a release tag or commit. Global installs need the **absolute path**; a relative path is rejected:
+
+```bash
+git clone https://github.com/richfrem/agent-plugins-skills.git ~/Projects/agent-plugins-skills
+cd ~/Projects/agent-plugins-skills && git checkout <tag-or-commit>
+apm install --global "$PWD" --target claude,copilot,codex,agy        # all six plugins, via the clone's root apm.yml
+# Windows (PowerShell): add --parallel-downloads 0, and use a short clone path such as C:\src\agent-plugins-skills
+```
+
+Skills land in `~/.claude/skills/`, `~/.agents/skills/` (Copilot, Codex) and `~/.gemini/antigravity-cli/skills/`; APM state is in `~/.apm/`. To update, check out the new tag and run `apm install --global`. To undo, use `python3 <clone>/plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py list-backups` and `... rollback`. For single plugins, `--skill` selection, Windows troubleshooting and the full detail, read the library's `INSTALL.md`.
+
+If a machine was set up with the older `plugin-add` installer (it has `.agents/ownership/` and `plugin-sources.json`), remove that installation of a plugin before installing it with APM, or skill names are duplicated.
+
+**c. This repository's four plugins** (`portfolio-advisor`, `tradingview`, `toolkit-manager`, `questrade`). The root `apm.yml` lists them, so from the repository root:
 
 ```bash
 apm install --target agent-skills
 ```
 
-This deploys the skill hubs into `.agents/skills/` and writes `apm.lock.yaml` (commit it with any change; use `apm install --frozen` to reproduce exactly). `.agents/` and `apm_modules/` are gitignored. Never edit the deployed copies; change the plugin source under `plugins/<plugin>/.apm/` and reinstall. APM prints that questrade's MCP server cannot be configured for the `agent-skills` target; the skills still install, and `/questrade-setup` connects the server.
-
-**b. The shared library is a global prerequisite, not a dependency of this repo.** `agent-plugins-skills` is a separate APM package set (`agent-agentic-os`, `agent-memory`, `agent-orchestration`, `agent-extension-authoring`, `agent-exploration-cycle`, `dev-utils`), maintained in its own clone (`../agent-plugins-skills`) and installed **globally**, so it is not listed in this repo's `apm.yml`. It supplies the Agentic OS substrate and the authoring and packaging skills (`packaging-with-apm`, `authoring-skills` and the rest) that this guide and `AGENTS.md` refer to. Confirm it before continuing:
-
-```bash
-grep -c "agent-plugins-skills/plugins" ~/.apm/apm.yml            # expect 6
-ls ~/.claude/skills/packaging-with-apm ~/.claude/skills/authoring-skills >/dev/null && echo "global skills present"
-```
-
-If it is missing, clone it next to this repository (`cd .. && git clone https://github.com/richfrem/agent-plugins-skills.git`) and install each plugin globally from the clone with its **absolute path** (APM 0.33.0 rejects relative paths for global installs), for example `apm install -g /absolute/path/to/agent-plugins-skills/plugins/agent-agentic-os`, or use `packaging-with-apm`'s `scripts/apm_consumer.py` for a pinned install with backup and rollback. Install only universal infrastructure globally; domain plugins stay project-local (step a). Maintainers edit the clone directly and reinstall.
+This deploys the skill hubs into `.agents/skills/` and writes `apm.lock.yaml`; commit the lockfile with any change and use `apm install --frozen` to reproduce it exactly. `.agents/` and `apm_modules/` are gitignored. Never edit the deployed copies: change the plugin source under `plugins/<plugin>/.apm/` and reinstall. To remove one, run `apm uninstall ./plugins/<plugin>`. APM prints that questrade's MCP server cannot be configured for the `agent-skills` target; the skills still install, and `/questrade-setup` connects the server.
 
 > The files `plugin-sources.json` and `plugin-retention.json` belong to the legacy `plugin-syncer` and cover only library plugins still deployed that way. They go away once every library plugin is installed with APM.
 
@@ -117,18 +141,9 @@ python3 ~/.agents/skills/setting-up-agentic-os/scripts/init_agentic_os.py \
 
 The approval signing key is created by **you** in your own terminal (the skill's `signing-setup` mode walks you through it); an agent never creates or enrolls keys.
 
-### 4. Claude Code only: register the project plugins
+### 4. Claude Code
 
-Skip this if you do not use Claude Code. The APM install above deploys the skills into `.agents/`. Claude Code also needs the plugins registered before `/tv-*` and the other plugin commands appear:
-
-```text
-/plugin marketplace add richfrem/InvestmentToolkit
-/plugin install tradingview@investment-toolkit-plugins
-/plugin install portfolio-advisor@investment-toolkit-plugins
-/plugin install toolkit-manager@investment-toolkit-plugins
-```
-
-Questrade users also install `questrade@investment-toolkit-plugins`; see [Optional: Questrade](#optional-questrade-pluginsquestrade).
+The project's skills deploy to `.agents/skills/`, which `AGENTS.md` points every agent to. The old Claude Code marketplace (`investment-toolkit-plugins`) is retired: its catalog is empty and the `/plugin install ...@investment-toolkit-plugins` commands no longer apply. If you want the skills in `.claude/skills/` as well, install with `--target claude` instead of `agent-skills`. Use one target, not both, or skills are listed twice.
 
 > [!IMPORTANT]
 > **Single Instruction File (`AGENTS.md`) & Handling `.bak` Files**:
@@ -140,7 +155,7 @@ Questrade users also install `questrade@investment-toolkit-plugins`; see [Option
 
 ## Step 3: Core Substrate Health Check
 
-Confirm that the local agentic runtime substrate is operational. These commands use the globally installed `agent-plugins-skills` skills (Step 2b); the project's own `.agents/skills/` appears after Step 2a:
+Confirm that the local agentic runtime substrate is operational. These commands use the globally installed `agent-plugins-skills` skills (Step 2b); the project's own `.agents/skills/` appears after Step 2c:
 
 ```bash
 # 1. Installation probe verification
@@ -255,7 +270,7 @@ Questrade support is an optional add-on for people who have a Questrade account.
 
 ### Setup
 
-1. **Install the plugin.** Claude Code: `/plugin install questrade@investment-toolkit-plugins` (the marketplace was added in Step 2, step 4). Other clients: `apm install --target agent-skills` (Step 2a) deploys it with the others.
+1. **Install the plugin.** It is already deployed by `apm install --target agent-skills` (Step 2c) with the other three plugins.
 2. **Run `/questrade-setup`.** It adds the server (Claude Code: `claude mcp add questrade --url https://mcp.questrade.com/v1/brokerage/mcp`; Codex CLI: `codex mcp add questrade --url ...`; Cursor and VS Code: add a server entry with that URL).
 3. **Sign in.** You must complete the browser sign-in yourself; an agent cannot. If the page afterwards shows a connection error, paste the full address-bar URL back to the agent. No token is stored in the repository.
 4. **Verify.** The agent calls `List Accounts`; it should return your account IDs. The sign-in lasts one session, so every Questrade skill re-checks it and sends you back to `/questrade-setup` when it has expired.

@@ -224,7 +224,7 @@ file in place of these databases.
 
 ## 🔌 How to Install Plugins
 
-The four project plugins install with [APM](https://github.com/microsoft/apm) (`apm-cli==0.33.0`). The root `apm.yml` lists them, so from the repository root:
+The four project plugins install with [APM](https://github.com/microsoft/apm) (verified with APM 0.33.0; see `INIT_AGENTS.md` Step 2a for installing APM). The root `apm.yml` lists them, so from the repository root:
 
 ```bash
 apm install --target agent-skills
@@ -232,7 +232,7 @@ apm install --target agent-skills
 
 This deploys the skills into `.agents/skills/` and writes `apm.lock.yaml`. Questrade also declares an MCP server; `apm` reports that the `agent-skills` target cannot configure it (the skills still install), so set the Questrade MCP up with `/questrade-setup`. Never edit the deployed copies; change the plugin source and reinstall.
 
-Shared library plugins from `richfrem/agent-plugins-skills` (Agentic OS substrate, developer skills) are still installed with the legacy sync; see `INIT_AGENTS.md` and `plugin-sources.json`.
+The shared library `agent-plugins-skills` (Agentic OS substrate, developer skills) is a separate package set installed **globally** with APM from your own clone, not through this repo's `apm.yml`. `INIT_AGENTS.md` Step 2b shows how to check it and install it; the library's own `INSTALL.md` is the full guide.
 
 ---
 
