@@ -74,7 +74,7 @@ Canonical `lifecycle_status` values: `accumulate`, `trim`, `exit`, `initiate`, `
 
 ## 4. Guard (WS0)
 
-- **Module:** promote `temp/evaluations/audit_sqlite_usage.py` (in the main checkout; gitignored, so copy it) into the repo (suggested: `plugins/toolkit-manager/scripts/audit_sqlite_usage.py`; confirm the plugin's script location) with the standard header. Keep its 25-case `--self-test` as a pytest module.
+- **Module:** promote `temp/evaluations/audit_sqlite_usage.py` (in the main checkout; gitignored, so copy it) into the repo (suggested: `plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py`; confirm the plugin's script location) with the standard header. Keep its 25-case `--self-test` as a pytest module.
 - **Test:** `test_no_retired_file_access.py` runs the audit over `plugins/` and `investment_screener/` and fails if any READ_CONTENT, STAT_ONLY or WRITE use of `portfolio.json`, `target-portfolio.json`, `trade-log.json`, `orders_executed.jsonl`, `cash_flows.json`, `account_policy.json`, `watchlist(s).json`, `tradingview_alerts_actual.json` or `ta-sweep-results.json` exists, except in a frozen allow-list of migration tools (`migrate_portfolio_to_sqlite.py`, `migrate_target_portfolio_to_sqlite.py`, `migrate_wave4_to_sqlite.py`, `migrate_account_policy_to_sqlite.py`, `migrations/remove_drift_threshold_fields.py`). It must also fail on UNUSED and VESTIGIAL path constants.
 - **TypeScript and JavaScript:** a companion check (regex over `investment_screener/backend/src`, `investment_screener/frontend/src`, `tradingview-cdp`, excluding `node_modules` and tests) for the same filenames and for `PORTFOLIO_FILE`, `THESIS_FILE`, `TARGET_PORTFOLIO_FILE`, `readPortfolio(`.
 - **Wiring:** run from `run_tests.py` as part of the T0 gate so it blocks regressions.
@@ -139,7 +139,7 @@ Add `export_research_markdown.py` (ledger to `research/<TICKER>_<date>.md`, rege
 
 ## 9. Docs and instructions (WS6)
 
-Update, so that no document describes a retired file as current: `architecture.md` (directory tree, data table, API list, glossary), `README.md`, `AGENTS.md` (rules 14, 29, 30; pitfalls; Key Files), `docs/architecture/*` (73 stale lines), `.agent/rules/*` (15), `plugins/portfolio-advisor` skills and agents (`calibrate-targets`, `thesis-review`, `set-thesis-breakers`, `strategic-review`, `portfolio-advisor-orchestrator`, `thesis-review-agent`), `plugins/toolkit-manager/references/agent-quick-reference.md`, `plugins/tradingview` docs. Add ADR-038.
+Update, so that no document describes a retired file as current: `architecture.md` (directory tree, data table, API list, glossary), `README.md`, `AGENTS.md` (rules 14, 29, 30; pitfalls; Key Files), `docs/architecture/*` (73 stale lines), `.agent/rules/*` (15), `plugins/portfolio-advisor` skills and agents (`calibrate-targets`, `thesis-review`, `set-thesis-breakers`, `strategic-review`, `portfolio-advisor-orchestrator`, `thesis-review-agent`), `plugins/toolkit-manager/.apm/skills/managing-the-toolkit/references/agent-quick-reference.md`, `plugins/tradingview` docs. Add ADR-038.
 
 ## 10. Retiring files (WS7)
 

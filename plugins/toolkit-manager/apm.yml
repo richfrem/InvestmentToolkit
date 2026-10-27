@@ -1,0 +1,15 @@
+name: toolkit-manager
+version: 2.0.0
+description: Operations for the Investment Toolkit itself - fresh-clone onboarding, launching the Investment Screener suite, SQLite backup/export/rebuild/restore, and the maintenance audits that guard the SQLite-only data rule.
+author: Richard Fremmerlid
+license: MIT
+targets:
+- claude
+- agent-skills
+dependencies:
+  apm: []
+  mcp: []
+includes: auto
+metadata:
+  packaging_mode: full
+  governance_lane: team

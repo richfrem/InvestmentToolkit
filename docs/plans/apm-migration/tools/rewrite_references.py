@@ -53,8 +53,9 @@ SKIP_DIRS = ("ARCHIVE/", "temp/", "build/", "venv/", "node_modules/", "docs/plan
              "investment_screener/backend/data/", "context/", ".runtime/", "ecosystem_yaml_summary.md")
 SKIP_NAMES = {"evolution-log.md", "map-debt.md", "CHANGELOG.md", "backlog.md"}
 SKIP_FRAGMENTS = ("/ADRs/", "/handovers/", "/baseline/")
-GENERATED = ("docs/architecture/json-discovery-audit", "docs/architecture/allowed-json-register",
-             "docs/architecture/file-dependency-register")
+# Produced by audit_json_usage.py; regenerated once after the last wave rather than edited.
+# (file-dependency-register.json is hand-curated, so its paths ARE rewritten.)
+GENERATED = ("docs/architecture/json-discovery-audit", "docs/architecture/allowed-json-register")
 PY_EXPRS = [
     (re.compile(r"\bparents\[\d+\]"), "pyexpr:parents"),
     (re.compile(r"""['"]plugins['"]"""), "pyexpr:plugins-segment"),

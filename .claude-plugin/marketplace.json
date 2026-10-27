@@ -19,12 +19,6 @@
             "strict": true
         },
         {
-            "name": "toolkit-manager",
-            "description": "Master orchestrator plugin for InvestmentToolkit. Features /toolkit-onboarding (Master Portfolio Bootstrap Wizard — guides zero-config installation, account & pillar architecture, broker ingestion, automated DCF baseline, and live TradingView visual sync) and /start-screener.",
-            "source": "./plugins/toolkit-manager",
-            "strict": true
-        },
-        {
             "name": "etf-analysis",
             "description": "AI-driven ETF and fund analysis engine. Three fund types: CLOSED_END, THEMATIC_ETF, CASH_FUND. Trigger: /analyze-etf {TICKER}.",
             "source": "./plugins/etf-analysis",

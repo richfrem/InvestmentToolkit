@@ -1,1 +1,0 @@
-../../../../docs/architecture/supplementary-domain-schemas.md

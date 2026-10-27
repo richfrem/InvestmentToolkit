@@ -256,7 +256,7 @@ def t0_file_dependency_guard() -> bool:
     """Fails when code gains a data-file dependency the register does not list, or keeps a removed one."""
     print(f"\n{HEADER}T0 — File dependency guard{RESET}")
     return run(
-        ["python3", "plugins/toolkit-manager/scripts/audit_file_dependencies.py", "--root", ".", "--check"],
+        ["python3", "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py", "--root", ".", "--check"],
         label="every data-file dependency is registered",
     )
 
@@ -266,7 +266,7 @@ def t0_retired_file_guard() -> bool:
     """Fails when any code reads, writes or stats a retired portfolio data file (ADR-038)."""
     print(f"\n{HEADER}T0 — Retired portfolio file guard{RESET}")
     return run(
-        ["python3", "-m", "pytest", "plugins/toolkit-manager/tests/test_no_retired_file_access.py", "-q"],
+        ["python3", "-m", "pytest", "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py", "-q"],
         label="no code access to retired portfolio files",
     )
 

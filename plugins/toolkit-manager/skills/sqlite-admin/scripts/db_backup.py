@@ -1,1 +1,0 @@
-../../../scripts/db_backup.py

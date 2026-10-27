@@ -57,11 +57,11 @@
     "type": "negative",
     "category": "trigger_exclusion",
     "prompt": "Deploy the application servers using run_investment_toolkit.py",
-    "expected_trigger": "run-screener",
+    "expected_trigger": "managing-the-toolkit",
     "expected_not_trigger": [
       "valuation-math-validation"
     ],
-    "pass_condition": "Agent routes to run-screener, not valuation math validation.",
+    "pass_condition": "Agent routes to managing-the-toolkit (run-app mode), not valuation math validation.",
     "should_trigger": false
   }
 ]

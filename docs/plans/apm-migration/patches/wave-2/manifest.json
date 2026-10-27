@@ -1,0 +1,50 @@
+[
+  {
+    "file": "INIT_AGENTS.md",
+    "count": 4
+  },
+  {
+    "file": "docs/architecture/file-dependency-register.json",
+    "count": 6
+  },
+  {
+    "file": "docs/architecture/known-pitfalls.md",
+    "count": 2
+  },
+  {
+    "file": "docs/architecture/schema-migrations.md",
+    "count": 1
+  },
+  {
+    "file": "docs/plans/sqlite-single-source-of-truth-spec.md",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/backend/src/utils/paths.ts",
+    "count": 1
+  },
+  {
+    "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/archive_temp_json.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py",
+    "count": 4
+  },
+  {
+    "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py",
+    "count": 4
+  },
+  {
+    "file": "run_tests.py",
+    "count": 2
+  },
+  {
+    "file": "symlinks.json",
+    "count": 8
+  }
+]

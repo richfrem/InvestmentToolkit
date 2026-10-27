@@ -182,6 +182,8 @@ Purpose: update every stale reference in documentation, code, tests, diagrams an
 
 ## 8. Wave 2: toolkit-manager (3 skills -> 1 hub)
 
+**Status: DONE (2026-10-26).** Evidence in `docs/plans/apm-migration/waves/wave-2/`.
+
 | Legacy skill | Hub | Mode |
 |---|---|---|
 | toolkit-onboarding | `managing-the-toolkit` | `onboarding` |

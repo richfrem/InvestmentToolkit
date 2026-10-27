@@ -75,7 +75,7 @@ InvestmentToolkit/                         ← repo root
 │   │   ├── assets/pinescript-indicators/ ← ai-ta-levels.pine, community-reference/
 │   │   └── tests/                        ← test_pine_advisor_skill.py, tv_test_harness.py
 │   ├── toolkit-manager/                  ← onboarding, startup orchestration
-│   │   └── skills/                       ← toolkit-onboarding, run-screener
+│   │   └── skills/                       ← .apm/skills/managing-the-toolkit
 │   └── etf-analysis/                     ← ETF holdings alignment + dual-write
 │       └── skills/                       ← etf_analysis
 │

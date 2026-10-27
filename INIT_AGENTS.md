@@ -199,7 +199,7 @@ On a fresh clone the migrator creates `investment_screener/backend/data/domain_m
 
 ```bash
 python3 investment_screener/backend/py_services/domain_model/schema_migrator.py --status
-python3 plugins/toolkit-manager/scripts/sqlite_admin.py status --db domain_model
+python3 plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py status --db domain_model
 ```
 
 `status` lists every table with its row count and the schema `user_version`. Right after step 2 only `schema_migrations` has rows.
@@ -209,12 +209,12 @@ python3 plugins/toolkit-manager/scripts/sqlite_admin.py status --db domain_model
 Do this before any bulk write (syncs, imports, migrations) and after onboarding:
 
 ```bash
-python3 plugins/toolkit-manager/scripts/db_backup.py backup --db domain_model
-python3 plugins/toolkit-manager/scripts/sqlite_admin.py export --db domain_model --out temp/exports/domain_model-$(date +%F)
-python3 plugins/toolkit-manager/scripts/sqlite_admin.py verify-export temp/exports/domain_model-$(date +%F)
+python3 investment_screener/backend/py_services/domain_model/db_backup.py backup --db domain_model
+python3 plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py export --db domain_model --out temp/exports/domain_model-$(date +%F)
+python3 plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py verify-export temp/exports/domain_model-$(date +%F)
 ```
 
-The `sqlite-admin` skill documents restore and rebuild. Worktrees hold their own empty copies of the gitignored databases; real backups are taken from the main checkout.
+The `sqlite-admin` mode of the `managing-the-toolkit` skill documents restore and rebuild. Worktrees hold their own empty copies of the gitignored databases; real backups are taken from the main checkout.
 
 ### 5. TradingView, then load holdings
 
@@ -291,7 +291,7 @@ Once Steps 1–4 are done, trigger the portfolio-side coordinator:
 /toolkit-onboarding
 ```
 
-It does not install anything itself. It checks the runtime, backs up the database before the first write, asks whether you use Questrade, delegates to `/tv-portfolio-sync` and `/stock-intake` for holdings, builds DCF baselines, takes a verified export, and launches the suite through `run-screener`.
+It does not install anything itself. It checks the runtime, backs up the database before the first write, asks whether you use Questrade, delegates to `/tv-portfolio-sync` and `/stock-intake` for holdings, builds DCF baselines, takes a verified export, and launches the suite through the `run-app` mode of `managing-the-toolkit`.
 
 ---
 

@@ -57,10 +57,10 @@ The true power of this repository is not just the frontend UI—it is the **Agen
 
 > **`/toolkit-onboarding`** or **`/portfolio-bootstrap`** or **"Help me set up the toolkit"**
 
-Runs the **`toolkit-onboarding`** master wizard. This coordinator guides you end-to-end through:
+Runs the **`onboarding`** mode of the `managing-the-toolkit` skill (the master wizard). This coordinator guides you end-to-end through:
 
 0. **Agentic OS Substrate & Contribution Alignment**: Interactively configures plugin maintenance policy (`context/plugin-config.json` via `fork-and-pr`, `local-patch-and-issue`, or `domain-override`), initializes the `context/control_plane.db` SQLite state store, configures pre-commit evolution guards, and verifies substrate liveness via `os-health-check`.
-1. **Runtime check and database protection**: confirms the environment set up in `INIT_AGENTS.md` (venv, npm and `tradingview-cdp` dependencies, plugins, `.env`), backs up `domain_model.sqlite` before the first write, and starts the app through `run-screener`.
+1. **Runtime check and database protection**: confirms the environment set up in `INIT_AGENTS.md` (venv, npm and `tradingview-cdp` dependencies, plugins, `.env`), backs up `domain_model.sqlite` before the first write, and starts the app through the `run-app` mode.
 2. **Accounts**: the TFSA, RRSP and CASH accounts are created by the first broker sync (`/tv-portfolio-sync`). Strategy pillars are not seeded yet; they are created as theses are written (open item in `references/map-debt.md`).
 3. **Portfolio Ingestion**: Scrapes active holdings, shares, and USD cash from TradingView Desktop via `/tv-portfolio-sync` (or manual intake via `/stock-intake`).
 4. **Automated DCF & Quality Baseline**: Computes Rule of 40 scores, Piotroski metrics, and Bear/Base/Bull 5-year DCF models across all holdings.

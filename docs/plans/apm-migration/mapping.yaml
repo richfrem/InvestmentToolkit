@@ -13,7 +13,7 @@ plugins:                      # old plugin -> new plugin
   stock-valuation: portfolio-advisor
   etf-analysis: portfolio-advisor
 
-approved_waves: [1]            # waves whose mapping you have approved
+approved_waves: [1, 2]            # waves whose mapping you have approved
 
 waves:
   questrade: 1
@@ -191,9 +191,9 @@ scripts:
   toolkit-manager/scripts/sqlite_admin.py: managing-the-toolkit
   toolkit-manager/scripts/audit_file_dependencies.py: managing-the-toolkit
   toolkit-manager/scripts/audit_sqlite_usage.py: managing-the-toolkit
-  toolkit-manager/scripts/app_smoke_test.py: "DECIDE:managing-the-toolkit (maintenance-audits mode, or archive)"
-  toolkit-manager/scripts/archive_temp_json.py: "DECIDE:managing-the-toolkit (maintenance-audits mode, or archive)"
-  toolkit-manager/scripts/extract_ecosystem_yaml.py: "DECIDE:managing-the-toolkit (maintenance-audits mode, or archive)"
+  toolkit-manager/scripts/app_smoke_test.py: managing-the-toolkit
+  toolkit-manager/scripts/archive_temp_json.py: managing-the-toolkit
+  toolkit-manager/scripts/extract_ecosystem_yaml.py: managing-the-toolkit
   # questrade
   questrade/scripts/questrade_sync.py: syncing-questrade-accounts
   questrade/scripts/questrade_trades_import.py: syncing-questrade-accounts

@@ -113,6 +113,6 @@ migrations, not against losing the machine. Copy `backups/` somewhere else for t
 ## Known gaps (not addressed here)
 
 * `intelligence.sqlite` migrations are separate and not yet unified with this runner.
-* The reference file `plugins/toolkit-manager/references/data-architecture/sql/03_domain_data_model_schema.sql`
+* The reference file `plugins/toolkit-manager/.apm/skills/managing-the-toolkit/references/data-architecture/sql/03_domain_data_model_schema.sql`
   is a historical design document, superseded by the migration files.
 * Broker sync does not yet trigger its own backup; the launch-time backup is the safety net.

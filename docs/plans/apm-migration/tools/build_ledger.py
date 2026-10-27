@@ -101,7 +101,8 @@ def place(plugin: str, rel: str, row: dict) -> tuple[str, str, str, str]:
         if verb == "TESTS":
             return f"{ENGINE_TESTS}/{name}", "MOVED_TO_ENGINE_TESTS", "engine", "test living in scripts/"
         if v == "engine":
-            return f"{ENGINE}/{name}", "MOVED_TO_ENGINE", "engine", ""
+            # land exactly where the backend already links to this script, else in the engine dir
+            return (row.get("backend_link") or f"{ENGINE}/{name}"), "MOVED_TO_ENGINE", "engine", ""
         return f"{hub_dir(plugin, v)}/scripts/{name}", "MOVED_TO_SKILL", v, ""
     if kind == "asset":
         v = M["assets"].get(key)

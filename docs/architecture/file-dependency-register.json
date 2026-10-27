@@ -521,7 +521,7 @@
    "note": "Valuation pipeline intermediate JSON"
   },
   {
-   "file": "plugins/toolkit-manager/scripts/app_smoke_test.py",
+   "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py",
    "kind": "passed",
    "label": "data-dir",
    "disposition": "tooling",
@@ -529,7 +529,7 @@
    "note": "Verification tool: copies the real databases and calls the app; the data-dir pattern is a word in its text"
   },
   {
-   "file": "plugins/toolkit-manager/scripts/audit_file_dependencies.py",
+   "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py",
    "kind": "passed",
    "label": "\\.jsonl?[",
    "disposition": "tooling",
@@ -537,7 +537,7 @@
    "note": "Guard: contains the patterns it detects and writes its own register"
   },
   {
-   "file": "plugins/toolkit-manager/scripts/audit_file_dependencies.py",
+   "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py",
    "kind": "write",
    "label": "docs/architecture/file-dependency-register.json",
    "disposition": "tooling",
@@ -545,7 +545,7 @@
    "note": "Guard: contains the patterns it detects and writes its own register"
   },
   {
-   "file": "plugins/toolkit-manager/scripts/audit_sqlite_usage.py",
+   "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py",
    "kind": "passed",
    "label": "|thesis_breaker_state\\.json",
    "disposition": "tooling",
@@ -553,7 +553,7 @@
    "note": "Guard: contains the file-name patterns it detects"
   },
   {
-   "file": "plugins/toolkit-manager/scripts/sqlite_admin.py",
+   "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py",
    "kind": "read",
    "label": "manifest.json",
    "disposition": "decision",
@@ -561,7 +561,7 @@
    "note": "Export folder manifest.json: owner decides whether the export manifest may stay JSON or becomes a .sql/.txt file"
   },
   {
-   "file": "plugins/toolkit-manager/scripts/sqlite_admin.py",
+   "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py",
    "kind": "write",
    "label": "manifest.json",
    "disposition": "decision",

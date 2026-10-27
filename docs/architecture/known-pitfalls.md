@@ -94,7 +94,7 @@ Never convert USD to CAD using external API calls. Always infer the exchange rat
 All development and agent orchestration must be isolated in dedicated git worktrees. Follow the mandatory post-task verification in `.agent/rules/worktree-subagent-leak-detection.md`.
 
 ### 29. Gitignored SQLite Data Files in Worktrees
-`domain_model.sqlite`, `intelligence.sqlite`, and `.env` are gitignored. Each git worktree maintains its own isolated on-disk database copies that are never merged back to `main`. To test a schema change against real data without altering it, run `plugins/toolkit-manager/scripts/app_smoke_test.py`. Always verify real data state against the main checkout's actual database.
+`domain_model.sqlite`, `intelligence.sqlite`, and `.env` are gitignored. Each git worktree maintains its own isolated on-disk database copies that are never merged back to `main`. To test a schema change against real data without altering it, run `plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py`. Always verify real data state against the main checkout's actual database.
 
 ### 30. Deprecated JSON Data Stores Retired
-`target-portfolio.json` and `portfolio.json` are permanently retired. `domain_model.sqlite` is the sole source of truth for portfolio holdings, thesis targets, pillars, price levels, and standing decisions. Automated test `plugins/toolkit-manager/tests/test_no_retired_file_access.py` strictly prevents new reads or writes to retired JSON paths.
+`target-portfolio.json` and `portfolio.json` are permanently retired. `domain_model.sqlite` is the sole source of truth for portfolio holdings, thesis targets, pillars, price levels, and standing decisions. Automated test `plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py` strictly prevents new reads or writes to retired JSON paths.

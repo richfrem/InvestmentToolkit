@@ -1,1 +1,0 @@
-../../../scripts/sqlite_admin.py
