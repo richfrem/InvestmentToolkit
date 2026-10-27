@@ -288,7 +288,7 @@ export const syncPortfolio = async (): Promise<{ success: boolean; dataSource: s
     return data;
 };
 
-export const refreshPrices = async (): Promise<{ success: boolean; updated: number; missingPrices?: string[]; heatmap: any }> => {
+export const refreshPrices = async (): Promise<{ success: boolean; updated: number; missingPrices?: string[]; stale?: Array<{ symbol: string; fetched_at: string | null }> }> => {
     const response = await fetch('/api/portfolio/refresh-prices', {
         method: 'POST',
     });
