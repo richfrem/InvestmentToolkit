@@ -34,12 +34,12 @@ On a fresh clone the database does not exist yet; the launcher (the [run-app mod
    - Sync plugins with the `plugin-syncer` skill.
    - Record the year-to-date baseline (starting balance, date, January 1 USD/CAD rate) with `set_cash_flow_baseline.py` once the database exists; the YTD summary shows zeros until it is set.
    - Run the [run-app mode](run-app.md) once so the virtual environment, dependencies and database migrations are in place, then stop it if the next steps need the ports free.
-   - Invoke `tv-setup` to confirm TradingView Desktop's debugging port is reachable.
+   - Invoke the `setup` mode of the `operating-tradingview-charts` skill (`/tv-setup`) to confirm TradingView Desktop's debugging port is reachable.
 2. **Protect the database before the first write:** `python3 investment_screener/backend/py_services/domain_model/db_backup.py backup --db domain_model` (see the [sqlite-admin mode](sqlite-admin.md) for restore and rebuild). Repeat before every later bulk write.
 3. **Accounts and pillars:** establish the account structure (TFSA primary, RRSP mirror, CASH). There is no standalone seeding command; the account rows come from the portfolio migration and the broker sync, and pillar rows are created as theses are written.
 4. **Ingest holdings and cash:**
    - Ask once: "Do you also use Questrade?" If no, leave `QUESTRADE_ENABLED=false` in `.env` (TradingView only, the default). If yes, invoke the `setup` mode of the `syncing-questrade-accounts` skill (`/questrade-setup`), which records `QUESTRADE_ENABLED=true`.
-   - Invoke `tv-portfolio-sync` to sync broker positions and executed trades, or `stock-intake` to onboard watchlist tickers. Show the per-account diff and wait for the user's go-ahead before any sync is applied.
+   - Invoke the `portfolio-sync` mode of the `trading-via-tradingview` skill (`/tv-portfolio-sync`) to sync broker positions and executed trades, or `stock-intake` to onboard watchlist tickers. Show the per-account diff and wait for the user's go-ahead before any sync is applied.
 5. **Build DCF baselines (silent batch mode):** for all imported tickers, invoke the `stock-valuation` skills to fetch financials, compute Rule of 40 and Piotroski F-Scores, and compile Bear/Base/Bull DCF scenarios.
 6. **Take a rebuild-from-anything export:** `python3 scripts/sqlite_admin.py export --db domain_model --out <empty folder>` then `python3 scripts/sqlite_admin.py verify-export <folder>`.
 7. **Launch the suite:** run the [run-app mode](run-app.md) (Frontend 5173, Backend API 3001, TradingView CDP 9222).

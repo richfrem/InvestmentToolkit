@@ -70,7 +70,7 @@ InvestmentToolkit/                         ← repo root
 │   │   └── assets/templates/            ← daily_sweep.md.template, weekly_sweep.md.template
 │   ├── tradingview/                      ← CDP automation skills
 │   │   ├── agents/                       ← ta-guide.md
-│   │   ├── skills/                       ← tv-onboarding, tv-price-refresh, tv-portfolio-sync, etc.
+│   │   ├── skills/                       ← .apm/skills: operating-tradingview-charts, trading-via-tradingview, analyzing-charts
 │   │   ├── scripts/                      ← tv_client.py, ta_sweep_batch.py, fetch_broker_data.py
 │   │   ├── assets/pinescript-indicators/ ← ai-ta-levels.pine, community-reference/
 │   │   └── tests/                        ← test_pine_advisor_skill.py, tv_test_harness.py
@@ -157,7 +157,7 @@ InvestmentToolkit/                         ← repo root
                    │ subprocess
                    ▼
 ┌──────────────────────────────────────────────────────────────┐
-│  plugins/tradingview/scripts/tv_client.py                    │
+│  investment_screener/backend/py_services/tv_client.py                    │
 │  (Python bridge — locates CLI via TV_CDP_DIR or walk-up)    │
 │  Used by: ta_sweep_batch.py, place_order.py, fetch_broker_  │
 │           data.py, tv_pine_inject.py, tv_pine_manager.py,   │
@@ -205,7 +205,7 @@ InvestmentToolkit/                         ← repo root
 ### 3.4. TradingView CDP Engine
 **Location:** `tradingview-cdp/` (standalone Node.js package, `npm ci` once)  
 **Entry:** `node tradingview-cdp/cli.js <namespace> <command> [args]`  
-**Python bridge:** `plugins/tradingview/scripts/tv_client.py` — locates the CLI via `TV_CDP_DIR` env var or 10-level directory walk-up. Import: `from tv_client import TV_CLI, tv_call, TV_NODE_DIR`
+**Python bridge:** `investment_screener/backend/py_services/tv_client.py` — locates the CLI via `TV_CDP_DIR` env var or 10-level directory walk-up. Import: `from tv_client import TV_CLI, tv_call, TV_NODE_DIR`
 
 **Key capabilities:**
 - `chart symbol/timeframe/addIndicator/openDataWindow/read` — chart control
@@ -336,7 +336,7 @@ npm run lint -w frontend
 python3 run_tests.py            # T0 compile gate + T0.5 bridge smoke
 python3 run_tests.py --t0-only  # compile + syntax only
 pytest investment_screener/backend/tests/    # unit tests
-pytest plugins/tradingview/tests/            # TV CDP unit tests
+pytest plugins/tradingview/.apm/skills/*/tests/   # TV CDP unit tests (pytest skips dot-directories: pass the path)
 ```
 
 **Test locations:**
@@ -344,8 +344,8 @@ pytest plugins/tradingview/tests/            # TV CDP unit tests
 |------|------|
 | Python py_services | `investment_screener/backend/tests/py_services/` |
 | Express routes | `investment_screener/backend/tests/api/` |
-| TV CDP | `plugins/tradingview/tests/` |
-| Plugin scripts | `plugins/<plugin>/tests/` |
+| TV CDP | `plugins/tradingview/.apm/skills/*/tests/` (engine tests in `investment_screener/backend/tests/py_services/`) |
+| Plugin scripts | `plugins/<plugin>/.apm/skills/*/tests/` |
 | React | `investment_screener/frontend/tests/` |
 
 **Code quality:** ESLint (frontend), Pyright (Python), `python3 -m py_compile` in T0 gate.  

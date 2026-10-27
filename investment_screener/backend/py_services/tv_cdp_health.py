@@ -231,7 +231,7 @@ def _check_chart_responsive(timeout: int = 5) -> bool:
         import sys
         from pathlib import Path
 
-        tv_scripts = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/scripts")
+        tv_scripts = str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services")
         if tv_scripts not in sys.path:
             sys.path.insert(0, tv_scripts)
 
@@ -268,7 +268,7 @@ def run_tv_cdp_subprocess() -> bool:
         Exception: If subprocess execution fails
     """
     try:
-        tv_launch_path = Path(__file__).resolve().parents[3] / "plugins/tradingview/scripts/tv_launch.py"
+        tv_launch_path = Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services/tv_launch.py"
 
         if not tv_launch_path.exists():
             raise FileNotFoundError(f"tv_launch.py not found at {tv_launch_path}")

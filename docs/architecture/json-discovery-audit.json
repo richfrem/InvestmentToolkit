@@ -72652,7 +72652,7 @@
       "line": 17,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "- plugins/tradingview/assets/pinescript-indicators/registry.json"
+      "line_text": "- plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json"
     },
     {
       "referencing_file": "investment_screener/backend/py_services/pine_script_manager.py",
@@ -73744,7 +73744,7 @@
       "line": 14,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "plugins/tradingview/assets/pinescript-indicators/registry.json path or"
+      "line_text": "plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json path or"
     },
     {
       "referencing_file": "investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py",
@@ -74094,7 +74094,7 @@
       "line": 18,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "plugins/tradingview/assets/pinescript-indicators/registry.json path or"
+      "line_text": "plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json path or"
     },
     {
       "referencing_file": "investment_screener/backend/tests/py_services/test_pine_auto_discovery_registers_scripts.py",
@@ -75032,7 +75032,7 @@
       "line": 12,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "plugins/tradingview/assets/pinescript-indicators/registry.json path."
+      "line_text": "plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json path."
     },
     {
       "referencing_file": "investment_screener/backend/tests/py_services/test_pine_registry_reads_writes_json.py",
@@ -93708,7 +93708,7 @@
       "line": 238,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "| `plugins/tradingview/assets/pinescript-indicators/registry.json` | No known heuristic match | INVESTIGATE |"
+      "line_text": "| `plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json` | No known heuristic match | INVESTIGATE |"
     },
     {
       "referencing_file": "docs/architecture/json-discovery-audit.md",
@@ -95010,7 +95010,7 @@
       "line": 2730,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "### plugins/tradingview/assets/pinescript-indicators/registry.json"
+      "line_text": "### plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json"
     },
     {
       "referencing_file": "docs/architecture/json-discovery-audit.md",

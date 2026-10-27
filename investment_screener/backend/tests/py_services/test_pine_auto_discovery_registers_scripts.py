@@ -3,7 +3,7 @@ Task 5B-7: Auto-Discovery
 
 Tests for pine_script_manager.py's discover_and_register_scripts() and
 _first_commit_hash(), which scan
-plugins/tradingview/assets/pinescript-indicators/ (top-level only, via
+plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/ (top-level only, via
 Path.glob("*.pine")) for .pine files not yet in the registry, and
 auto-register each new one with register_script() (5B-1), deriving its
 version from the git commit hash that first added the file (or
@@ -15,7 +15,7 @@ PINE_REGISTRY_PATH monkeypatched into that repo's directory structure —
 same pattern as test_pine_version_history_from_git.py and
 test_pine_rollback_on_error.py. subprocess/git are never mocked here.
 None of these tests may touch the real
-plugins/tradingview/assets/pinescript-indicators/registry.json path or
+plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json path or
 the worktree's own git history.
 """
 
@@ -100,7 +100,7 @@ def _real_first_commit_hash(repo_dir: Path, relative_path: str) -> str:
 def git_registry(tmp_path, monkeypatch):
     """A real git repo with PINE_REGISTRY_PATH pointed at registry.json
     inside it — its parent directory stands in for
-    plugins/tradingview/assets/pinescript-indicators/."""
+    plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/."""
     repo_dir = tmp_path / "repo"
     _init_repo(repo_dir)
     registry_path = repo_dir / "registry.json"

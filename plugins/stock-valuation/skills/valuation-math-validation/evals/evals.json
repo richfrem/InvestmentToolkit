@@ -33,7 +33,7 @@
     "type": "negative",
     "category": "trigger_exclusion",
     "prompt": "Show me active alerts on TradingView Desktop",
-    "expected_trigger": "tv-alert-list",
+    "expected_trigger": "operating-tradingview-charts",
     "expected_not_trigger": [
       "valuation-math-validation"
     ],

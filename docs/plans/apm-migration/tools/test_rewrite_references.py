@@ -208,3 +208,49 @@ def test_scan_classifies_rules(repo):
     assert ("docs/a.md", "path") in rules
     assert not any(r["file"].startswith("docs/handovers") for r in idx)
     assert not any(r["file"].startswith("investment_screener/backend/data") for r in idx)
+
+
+def test_unmoved_paths_are_never_stale(repo, capsys):
+    """A KEPT row (old path == new path) must not make every mention of that file a stale reference."""
+    import csv
+    nm = repo.out / "name-map.csv"
+    rows = list(csv.DictReader(open(nm)))
+    rows.append({"kind": "doc", "old_id": "README.md", "old_path": "plugins/old-plug/README.md", "new_id": "README.md",
+                 "new_path": "plugins/old-plug/README.md", "wave": "1", "policy": "keep"})
+    make_csv(nm, NAME_COLS, rows)
+    write(repo.root, "docs/b.md", "see plugins/old-plug/README.md\n")
+    git(repo.root, "add", "-A")
+    rr.cmd_apply(repo, "1", True)
+    capsys.readouterr()
+    rr.cmd_verify(repo, "1")
+    assert "plugins/old-plug/README.md" not in capsys.readouterr().out
+
+
+def test_dirfix_points_sys_path_at_the_folder_that_holds_the_imported_module(repo):
+    """A directory-level sys.path insert follows the modules the file actually imports."""
+    import csv
+    nm = repo.out / "name-map.csv"
+    rows = list(csv.DictReader(open(nm)))
+    rows.append({"kind": "script", "old_id": "helper.py", "old_path": "plugins/old-plug/scripts/helper.py", "new_id": "helper.py",
+                 "new_path": "plugins/new-plug/.apm/skills/hub/scripts/helper.py", "wave": "1", "policy": "rewrite"})
+    make_csv(nm, NAME_COLS, rows)
+    led = repo.out / "master_migration_inventory.csv"
+    lrows = list(csv.DictReader(open(led)))
+    lrows.append({"old_path": "plugins/old-plug/scripts/helper.py", "new_path": "plugins/new-plug/.apm/skills/hub/scripts/helper.py",
+                  "action": "MOVED_TO_SKILL", "wave": "1", "old_plugin": "old-plug", "new_plugin": "new-plug"})
+    make_csv(led, LEDGER_COLS, lrows)
+    write(repo.root, "tests/uses_both.py",
+          'import sys\nsys.path.insert(0, str(ROOT / "plugins/old-plug/scripts"))\nimport wacc\nimport helper\n')
+    write(repo.root, "tests/uses_none.py", 'sys.path.insert(0, str(ROOT / "plugins/old-plug/scripts"))\nimport json\n')
+    write(repo.root, "tests/segments.py", 'import helper\nP = ROOT / "plugins" / "old-plug" / "scripts"\n')
+    git(repo.root, "add", "-A")
+    changes, manual = rr.compute_dirfix(repo, "1")
+    by = {c["file"]: c["new"] for c in changes}
+    both = by["tests/uses_both.py"]
+    assert 'ROOT / "investment_screener/backend/py_services"' in both          # wacc: engine
+    assert 'ROOT / "plugins/new-plug/.apm/skills/hub/scripts"' in both          # helper: hub
+    assert "plugins/old-plug/scripts" not in both
+    assert 'ROOT / "plugins/new-plug/.apm/skills/hub/scripts"' in by["tests/segments.py"]
+    assert any("uses_none.py" in m for m in manual)                           # nothing imported: left for a human
+    assert rr.cmd_dirfix(repo, "1", True) == 1                                  # exit 1 while something is manual
+    assert "plugins/old-plug/scripts" not in read(repo, "tests/uses_both.py")

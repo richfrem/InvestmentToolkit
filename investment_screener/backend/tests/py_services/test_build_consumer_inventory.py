@@ -37,14 +37,14 @@ def test_build_consumer_inventory_inverts_producer_and_consumer_refs():
         _file_entry(
             "investment_screener/backend/data/ta-sweep-results.json",
             "MIGRATE_TO_INTELLIGENCE_LEDGER",
-            producers=[{"referencing_file": "plugins/tradingview/scripts/ta_sweep_batch.py", "line": 40, "confidence": "exact"}],
+            producers=[{"referencing_file": "plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_batch.py", "line": 40, "confidence": "exact"}],
             consumers=[{"referencing_file": "plugins/portfolio-advisor/scripts/daily_brief.py", "line": 48, "confidence": "probable"}],
         ),
     ]
     result = build_consumer_inventory(_discovery_result(files))
     consumer_names = {c["consumer_file"] for c in result}
 
-    assert "plugins/tradingview/scripts/ta_sweep_batch.py" in consumer_names
+    assert "plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_batch.py" in consumer_names
     assert "plugins/portfolio-advisor/scripts/daily_brief.py" in consumer_names
 
 

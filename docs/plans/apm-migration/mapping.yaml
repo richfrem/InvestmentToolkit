@@ -13,7 +13,7 @@ plugins:                      # old plugin -> new plugin
   stock-valuation: portfolio-advisor
   etf-analysis: portfolio-advisor
 
-approved_waves: [1, 2]            # waves whose mapping you have approved
+approved_waves: [1, 2, 3]            # waves whose mapping you have approved
 
 waves:
   questrade: 1

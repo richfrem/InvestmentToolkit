@@ -101,11 +101,7 @@ class _NpEncoder(json.JSONEncoder):
 # We still check TV availability so the badge shows connection status correctly.
 _TV_AVAILABLE = False
 try:
-    _TV_PLUGIN_SCRIPTS = str(
-        Path(__file__).resolve().parent.parent.parent.parent
-        / "plugins" / "tradingview" / "scripts"
-    )
-    sys.path.insert(0, _TV_PLUGIN_SCRIPTS)
+    # tv_client is the shared TradingView engine module in this same folder (py_services/).
     from tv_client import is_tv_running  # type: ignore[import-not-found]
     _TV_AVAILABLE = is_tv_running()
 except Exception:
@@ -274,7 +270,7 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False, tradingview_only
     tv_quotes: dict[str, dict] = {}
     try:
         import sys as _sys
-        _tv_scripts = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/scripts")
+        _tv_scripts = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts")
         if _tv_scripts not in _sys.path:
             _sys.path.insert(0, _tv_scripts)
         from tv_batch_quotes import batch_quotes as _tv_batch  # type: ignore[import]

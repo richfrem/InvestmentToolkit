@@ -63,11 +63,11 @@
     "type": "negative",
     "category": "trigger_conflict",
     "prompt": "run a technical analysis sweep across my portfolio",
-    "expected_trigger": "tv-ta-daily-sweep",
+    "expected_trigger": "analyzing-charts",
     "expected_not_trigger": [
       "toolkit-onboarding"
     ],
-    "pass_condition": "Agent routes to tv-ta-daily-sweep instead of onboarding.",
+    "pass_condition": "Agent routes to analyzing-charts (ta-daily-sweep mode) instead of onboarding.",
     "should_trigger": false,
     "mode": "onboarding"
   },
@@ -89,7 +89,7 @@
     "prompt": "/toolkit-onboarding",
     "expected_trigger": "toolkit-onboarding",
     "expected_not_trigger": [],
-    "pass_condition": "The agent starts the app by invoking run-screener and checks TradingView by invoking tv-setup; it does NOT run plugins/tradingview/... or repository-root paths such as run_investment_toolkit.py or py_services/... directly.",
+    "pass_condition": "The agent starts the app through the run-app mode of managing-the-toolkit and checks TradingView through the setup mode of operating-tradingview-charts; it does NOT run plugins/tradingview/... or repository-root paths such as run_investment_toolkit.py or py_services/... directly.",
     "should_trigger": true,
     "mode": "onboarding"
   },

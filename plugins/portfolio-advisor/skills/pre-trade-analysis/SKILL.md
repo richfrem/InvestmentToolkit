@@ -20,7 +20,7 @@ description: Conducts comprehensive pre-trade analysis synthesizing earnings tra
 
 ## Quick start
 ```bash
-python3 plugins/tradingview/scripts/ta_sweep_single.py --symbol AAPL --timeframe 1D
+python3 plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_single.py --symbol AAPL --timeframe 1D
 ```
 
 ## Workflow

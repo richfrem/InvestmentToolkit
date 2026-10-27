@@ -9,7 +9,7 @@ JSON, atomic writes, and add/update semantics for register_script().
 IMPORTANT: All tests monkeypatch the module-level PINE_REGISTRY_PATH
 constant to a pytest tmp_path location. None of these tests may write to
 the real
-plugins/tradingview/assets/pinescript-indicators/registry.json path.
+plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json path.
 """
 
 import json

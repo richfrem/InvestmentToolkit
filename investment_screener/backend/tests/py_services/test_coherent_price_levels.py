@@ -18,7 +18,7 @@ from domain_model.projection_repository import add_projection_scenario, save_pro
 import chart_levels  # noqa: E402
 from update_price_levels import derive_and_write, derive_tiers_combined  # noqa: E402
 
-PINE = REPO_ROOT / "plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine"
+PINE = REPO_ROOT / "plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/ai-ta-levels.pine"
 
 
 def _bars():

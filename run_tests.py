@@ -77,8 +77,13 @@ def t0_python_syntax() -> bool:
     scripts = [
         REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py",
     ]
-    for s in glob.glob(str(REPO_ROOT / "plugins/tradingview/scripts/*.py")):
-        scripts.append(Path(s))
+    # TradingView scripts: per-skill folders plus the shared engine modules in py_services
+    for pattern in ("plugins/tradingview/.apm/skills/*/scripts/*.py",
+                    "investment_screener/backend/py_services/tv_*.py",
+                    "investment_screener/backend/py_services/place_order.py",
+                    "investment_screener/backend/py_services/fetch_broker_data.py"):
+        for s in glob.glob(str(REPO_ROOT / pattern)):
+            scripts.append(Path(s))
         
     ok = True
     for script in scripts:
@@ -135,7 +140,7 @@ def t0_path_regression() -> bool:
 def verify_script_health(cwd: Path, label: str) -> bool:
     """Executes the health check script and validates JSON result."""
     result = subprocess.run(
-        ["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"],
+        ["python3", str(REPO_ROOT / "investment_screener/backend/py_services/tv_health_check.py"), "--json"],
         capture_output=True, text=True, cwd=str(cwd)
     )
     try:
@@ -164,7 +169,7 @@ def t0_symlink_cwd_invariance() -> bool:
     ok &= verify_script_health(REPO_ROOT, "tv_health_check.py from repo root")
     
     # Run from symlink path
-    skill_dir = REPO_ROOT / "plugins/tradingview/skills/get-orders"
+    skill_dir = REPO_ROOT / "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts"
     if skill_dir.exists():
         ok &= verify_script_health(skill_dir, "tv_health_check.py from skill dir")
     
@@ -172,7 +177,7 @@ def t0_symlink_cwd_invariance() -> bool:
     env = os.environ.copy()
     env["TV_CDP_DIR"] = "/tmp/fake-tradingview-cdp"
     result = subprocess.run(
-        ["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"],
+        ["python3", str(REPO_ROOT / "investment_screener/backend/py_services/tv_health_check.py"), "--json"],
         capture_output=True, text=True, cwd=str(REPO_ROOT), env=env
     )
     combined = result.stdout + result.stderr
@@ -277,11 +282,11 @@ def t1_unit_tests() -> bool:
     print(f"\n{HEADER}T1 — Python Unit Tests (pytest){RESET}")
     cmd = [
         "python3", "-m", "pytest",
-        "plugins/tradingview/tests/test_tv_thesis_overlay.py",
-        "plugins/tradingview/tests/test_tv_alert_reconcile.py",
-        "plugins/tradingview/tests/test_tv_create_alerts.py",
-        "plugins/tradingview/tests/test_ta_sweep_batch.py",
-        "plugins/tradingview/tests/test_tv_manage_indicators.py",
+        "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_thesis_overlay.py",
+        "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_alert_reconcile.py",
+        "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_create_alerts.py",
+        "plugins/tradingview/.apm/skills/analyzing-charts/tests/test_ta_sweep_batch.py",
+        "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_manage_indicators.py",
         "-q",
     ]
     return run(cmd, label="TradingView Plugin Unit Tests")

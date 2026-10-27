@@ -154,7 +154,7 @@ investment_screener/backend/data/daily-briefs/
 
 # TradingView order audit logs & runtime registries (runtime output)
 plugins/tradingview/audit/
-plugins/tradingview/assets/pinescript-indicators/registry.json
+plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json
 
 .pytest_cache/
 **/.pytest_cache/

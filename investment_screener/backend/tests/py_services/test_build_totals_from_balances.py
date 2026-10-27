@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-SCRIPT_DIR = REPO_ROOT / "plugins/tradingview/scripts"
+SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from fetch_broker_data import build_totals_from_balances  # noqa: E402

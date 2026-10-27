@@ -70,7 +70,7 @@ Runs the **`onboarding`** mode of the `managing-the-toolkit` skill (the master w
 
 > **`/tv-onboarding`** or **"Set up TradingView for me"**
 
-Runs the **`tv-onboarding`** skill. This deep-dive guide covers:
+Runs the **`setup`** mode of the `operating-tradingview-charts` skill (`/tv-onboarding`). This deep-dive guide covers:
 
 1. TradingView Desktop install check
 2. Subscription tier verification (Premium recommended for real-time data)

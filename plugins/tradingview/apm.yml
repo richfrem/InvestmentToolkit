@@ -1,0 +1,15 @@
+name: tradingview
+version: 2.0.0
+description: TradingView Desktop integration over the Chrome DevTools Protocol - chart control, Pine Script, alerts, human-approved orders, broker and price sync, watchlists and technical-analysis workflows.
+author: Richard Fremmerlid
+license: MIT
+targets:
+- claude
+- agent-skills
+dependencies:
+  apm: []
+  mcp: []
+includes: auto
+metadata:
+  packaging_mode: full
+  governance_lane: team

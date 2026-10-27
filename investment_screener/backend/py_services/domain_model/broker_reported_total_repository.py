@@ -28,7 +28,7 @@ Key Input Dependencies:
     - An open domain_model.sqlite connection with the broker_reported_total table (schema_migrator)
 
 Key Output Dependencies:
-    - Written by plugins/tradingview/scripts/fetch_broker_data.py and plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py
+    - Written by investment_screener/backend/py_services/fetch_broker_data.py and plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py
     - Read by py_services/verify_portfolio_total.py
 """
 

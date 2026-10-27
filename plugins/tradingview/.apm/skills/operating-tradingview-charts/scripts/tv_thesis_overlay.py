@@ -1,0 +1,364 @@
+#!/usr/bin/env python3
+"""
+tv_thesis_overlay.py (Python Utility)
+=====================================
+
+Purpose:
+    Generate and inject Pine Script Thesis Overlays directly into TradingView Desktop.
+    Reads fundamental valuation price levels (Fair Value from projection table,
+    Target Entry and Stop Loss from price_level_tier, Thesis Breaker status from investment table,
+    DCF Bear/Base/Bull scenario prices from projection_scenario for the latest projection version)
+    from domain_model.sqlite, switches the active TradingView chart to the target ticker,
+    validates the active chart symbol (Pitfall #7), lints the generated Pine Script v6 (Pitfall #26),
+    and injects the indicator via Chrome DevTools Protocol (CDP).
+
+Layer: Plugins / TradingView / Scripts
+
+Usage Examples:
+    # Dry run — generate, lint, and view levels without modifying chart:
+    python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_thesis_overlay.py --ticker NVDA --dry-run
+
+    # Live inject onto active TradingView Desktop chart:
+    python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_thesis_overlay.py --ticker NVDA
+
+Key Functions:
+    - resolve_ticker_levels()      — Joins investment, projection, projection_scenario (bear/base/bull) and price_level_tier rows
+    - generate_pine_script_content() — Compiles valid Pine Script v6 overlay code with badges
+    - switch_chart_symbol()        — Ensures active TradingView chart symbol matches target
+    - apply_overlay()              — Main execution pipeline (Resolve -> Lint -> Switch -> Inject)
+
+Key Input Dependencies:
+    - investment_screener/backend/data/domain_model.sqlite (Valuation & Price Levels)
+    - tradingview-cdp/ (Node.js CDP Engine)
+"""
+
+import os
+import sys
+import argparse
+import json
+from pathlib import Path
+import sqlite3
+from typing import Dict, Any, Optional
+
+# Resolve imports when executed directly or via symlink
+SCRIPTS_DIR = os.path.dirname(os.path.realpath(__file__))
+PROJECT_ROOT = str(next(p for p in Path(SCRIPTS_DIR).parents if (p / "investment_screener").is_dir()))
+if SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, SCRIPTS_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+# Engine modules (tv_client, tv_launch, place_order, ...) live in the backend's py_services folder.
+_ENGINE_DIR = next((p / "investment_screener/backend/py_services" for p in __import__("pathlib").Path(__file__).resolve().parents
+                    if (p / "investment_screener").is_dir()), None)
+if _ENGINE_DIR is not None and str(_ENGINE_DIR) not in __import__("sys").path:
+    __import__("sys").path.insert(0, str(_ENGINE_DIR))
+from tv_client import tv_call, validate_cdp_installation, MUTATING_CALL_OPTS
+from pine_linter import PineLinter
+from investment_screener.backend.py_services.ticker_aliases import normalize_ticker
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "investment_screener/backend/py_services"))
+from recommendation import recommend_all
+
+DEFAULT_DB_PATH = os.path.join(
+    PROJECT_ROOT, "investment_screener/backend/data/domain_model.sqlite"
+)
+
+
+def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[str, Any]:
+    """
+    Resolve valuation levels across investment, projection, and price_level_tier tables.
+
+    Args:
+        symbol: Ticker symbol (e.g. "NVDA", "PSU-U.TO").
+        db_path: Path to domain_model.sqlite database.
+
+    Returns:
+        Dict with keys: symbol, name, fair_value, target_entry, stop_loss, breaker_status, action,
+        bear_price, base_price, bull_price (DCF scenario prices from the latest projection version).
+    """
+    norm_symbol = normalize_ticker(symbol)
+    result = {
+        "symbol": norm_symbol,
+        "name": norm_symbol,
+        "fair_value": None,
+        "target_entry": None,
+        "stop_loss": None,
+        "breaker_status": None,
+        "action": None,
+        "bear_price": None,
+        "base_price": None,
+        "bull_price": None,
+    }
+
+    if not os.path.exists(db_path):
+        return result
+
+    rec = recommend_all(db_path).get(norm_symbol, {})
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        # 1. Investment table
+        inv = conn.execute(
+            "SELECT investment_id, name, thesis_breaker_status FROM investment WHERE symbol = ?;",
+            (norm_symbol,),
+        ).fetchone()
+
+        investment_id = inv["investment_id"] if inv else norm_symbol
+        if inv:
+            result["name"] = inv["name"] or norm_symbol
+            result["breaker_status"] = inv["thesis_breaker_status"]
+
+        # 2. Projection table (latest version)
+        proj = conn.execute(
+            "SELECT fair_value, action FROM projection_version WHERE investment_id = ? ORDER BY version DESC LIMIT 1;",
+            (investment_id,),
+        ).fetchone()
+        if proj:
+            result["fair_value"] = proj["fair_value"]
+            result["action"] = rec.get("action")
+            result["fair_value"] = rec.get("fair_value")
+
+        # 3. DCF scenario prices (bear/base/bull) from the latest projection version
+        scenarios = conn.execute(
+            """
+            SELECT ps.scenario_name, ps.scenario_price
+            FROM projection_scenario ps
+            JOIN projection_version pv ON ps.projection_id = pv.projection_id
+            WHERE pv.investment_id = ?
+              AND pv.projection_id = ?;
+            """,
+            (investment_id, rec.get("projection_id")),
+        ).fetchall()
+        for sc in scenarios:
+            key = f"{(sc['scenario_name'] or '').strip().lower()}_price"
+            if key in ("bear_price", "base_price", "bull_price"):
+                result[key] = sc["scenario_price"]
+
+        # 4. Price level tier table (Target Entry and Stop Loss)
+        tiers = conn.execute(
+            """
+            SELECT plt.tier_kind, plt.price
+            FROM price_level_tier plt
+            JOIN price_level_set pls ON plt.price_level_set_id = pls.price_level_set_id
+            WHERE pls.investment_id = ?
+              AND COALESCE(plt.status, 'active') NOT IN ('inactive', 'suppressed');
+            """,
+            (investment_id,),
+        ).fetchall()
+
+        for t in tiers:
+            kind = t["tier_kind"]
+            price = t["price"]
+            if kind == "TARGET_ENTRY" and result["target_entry"] is None:
+                result["target_entry"] = price
+            elif kind == "STOP_LOSS" and result["stop_loss"] is None:
+                result["stop_loss"] = price
+
+    finally:
+        conn.close()
+
+    return result
+
+
+def generate_pine_script_content(levels: Dict[str, Any]) -> str:
+    """
+    Generate clean Pine Script v6 code with horizontal plot lines and table overlay.
+
+    Args:
+        levels: Dictionary of valuation levels produced by resolve_ticker_levels.
+
+    Returns:
+        String containing complete Pine Script v6 code.
+    """
+    symbol = levels["symbol"]
+    fv = levels.get("fair_value")
+    entry = levels.get("target_entry")
+    stop = levels.get("stop_loss")
+    bear = levels.get("bear_price")
+    base = levels.get("base_price")
+    bull = levels.get("bull_price")
+    action = levels.get("action") or "MONITOR"
+    breaker = levels.get("breaker_status") or "OK"
+
+    lines = [
+        "//@version=6",
+        f'indicator("AI Thesis Overlay - {symbol}", overlay=true)',
+        "",
+        "// === Valuation Level Inputs ===",
+        f"var float fairValue = input.float({fv if fv is not None else 0.0}, title='Fair Value', inline='fv')",
+        f"var float targetEntry = input.float({entry if entry is not None else 0.0}, title='Target Entry (Buy Zone)', inline='entry')",
+        f"var float stopLoss = input.float({stop if stop is not None else 0.0}, title='Stop Loss / Breaker', inline='stop')",
+        f"var float bearPrice = input.float({bear if bear is not None else 0.0}, title='DCF Bear Case', inline='bear')",
+        f"var float basePrice = input.float({base if base is not None else 0.0}, title='DCF Base Case', inline='base')",
+        f"var float bullPrice = input.float({bull if bull is not None else 0.0}, title='DCF Bull Case', inline='bull')",
+        "",
+        "// === Persistent Labeled Lines & Annotations ===",
+        "var line fvLine = na",
+        "var label fvLabel = na",
+        "var line entryLine = na",
+        "var label entryLabel = na",
+        "var line stopLine = na",
+        "var label stopLabel = na",
+        "var line bearLine = na",
+        "var label bearLabel = na",
+        "var line baseLine = na",
+        "var label baseLabel = na",
+        "var line bullLine = na",
+        "var label bullLabel = na",
+        "",
+        "if barstate.islast",
+        "    if not na(fvLine)",
+        "        line.delete(fvLine)",
+        "        label.delete(fvLabel)",
+        "    if fairValue > 0",
+        "        fvLine := line.new(bar_index - 50, fairValue, bar_index + 10, fairValue, color=color.rgb(156, 39, 176), width=2, style=line.style_solid, extend=extend.right)",
+        "        fvLabel := label.new(bar_index + 10, fairValue, '💎 DCF Fair Value: $' + str.tostring(fairValue, '#.##'), color=color.rgb(156, 39, 176), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    if not na(entryLine)",
+        "        line.delete(entryLine)",
+        "        label.delete(entryLabel)",
+        "    if targetEntry > 0",
+        "        entryLine := line.new(bar_index - 50, targetEntry, bar_index + 10, targetEntry, color=color.rgb(38, 166, 154), width=2, style=line.style_solid, extend=extend.right)",
+        "        entryLabel := label.new(bar_index + 10, targetEntry, '🟢 Buy Pocket: $' + str.tostring(targetEntry, '#.##'), color=color.rgb(38, 166, 154), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    if not na(stopLine)",
+        "        line.delete(stopLine)",
+        "        label.delete(stopLabel)",
+        "    if stopLoss > 0",
+        "        stopLine := line.new(bar_index - 50, stopLoss, bar_index + 10, stopLoss, color=color.rgb(239, 83, 80), width=2, style=line.style_dashed, extend=extend.right)",
+        "        stopLabel := label.new(bar_index + 10, stopLoss, '🛑 Stop / Breaker: $' + str.tostring(stopLoss, '#.##'), color=color.rgb(239, 83, 80), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    // DCF scenario lines (dotted): bear red, base blue, bull green",
+        "    if not na(bearLine)",
+        "        line.delete(bearLine)",
+        "        label.delete(bearLabel)",
+        "    if bearPrice > 0",
+        "        bearLine := line.new(bar_index - 50, bearPrice, bar_index + 10, bearPrice, color=color.rgb(244, 67, 54), width=1, style=line.style_dotted, extend=extend.right)",
+        "        bearLabel := label.new(bar_index + 10, bearPrice, '🐻 DCF Bear: $' + str.tostring(bearPrice, '#.##'), color=color.rgb(244, 67, 54), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    if not na(baseLine)",
+        "        line.delete(baseLine)",
+        "        label.delete(baseLabel)",
+        "    if basePrice > 0",
+        "        baseLine := line.new(bar_index - 50, basePrice, bar_index + 10, basePrice, color=color.rgb(33, 150, 243), width=1, style=line.style_dotted, extend=extend.right)",
+        "        baseLabel := label.new(bar_index + 10, basePrice, '📘 DCF Base: $' + str.tostring(basePrice, '#.##'), color=color.rgb(33, 150, 243), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    if not na(bullLine)",
+        "        line.delete(bullLine)",
+        "        label.delete(bullLabel)",
+        "    if bullPrice > 0",
+        "        bullLine := line.new(bar_index - 50, bullPrice, bar_index + 10, bullPrice, color=color.rgb(76, 175, 80), width=1, style=line.style_dotted, extend=extend.right)",
+        "        bullLabel := label.new(bar_index + 10, bullPrice, '🐂 DCF Bull: $' + str.tostring(bullPrice, '#.##'), color=color.rgb(76, 175, 80), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "// === Alert Conditions ===",
+        f"alertcondition(ta.crossover(close, targetEntry), title='Alert: Crossed into Buy Zone', message='{symbol} has entered the target Buy Pocket at $' + str.tostring(close, '#.##'))",
+        f"alertcondition(ta.crossover(close, fairValue), title='Alert: Reached DCF Fair Value', message='{symbol} has reached probability-weighted DCF Fair Value at $' + str.tostring(close, '#.##'))",
+        f"alertcondition(ta.crossunder(close, stopLoss), title='Alert: Breached Stop Loss', message='⚠️ {symbol} has breached Stop Loss / Breaker level at $' + str.tostring(close, '#.##'))",
+        "",
+        "// === Dashboard Status Badge ===",
+        "var table infoTable = table.new(position.top_right, 2, 4, bgcolor=color.new(color.black, 30), border_color=color.gray, border_width=1)",
+        "if barstate.islast",
+        f"    table.cell(infoTable, 0, 0, 'Ticker', text_color=color.white, text_size=size.small)",
+        f"    table.cell(infoTable, 1, 0, '{symbol}', text_color=color.yellow, text_size=size.small)",
+        f"    table.cell(infoTable, 0, 1, 'Action', text_color=color.white, text_size=size.small)",
+        f"    table.cell(infoTable, 1, 1, '{action}', text_color=color.green, text_size=size.small)",
+        f"    table.cell(infoTable, 0, 2, 'Breaker', text_color=color.white, text_size=size.small)",
+        f"    table.cell(infoTable, 1, 2, '{breaker}', text_color=color.aqua, text_size=size.small)",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def switch_chart_symbol(symbol: str) -> bool:
+    """
+    Ensure the active chart matches the requested symbol per Pitfall #7.
+
+    Args:
+        symbol: Target ticker symbol.
+
+    Returns:
+        True if symbol change succeeded, False otherwise.
+    """
+    norm_symbol = normalize_ticker(symbol)
+    res = tv_call("chart", "symbol", norm_symbol)
+    if isinstance(res, dict) and res.get("error"):
+        print(f"❌ Failed to switch symbol to {norm_symbol}: {res['error']}", file=sys.stderr)
+        return False
+    return True
+
+
+def apply_overlay(symbol: str, dry_run: bool = False) -> Dict[str, Any]:
+    """
+    Main orchestration flow for injecting thesis levels.
+
+    Args:
+        symbol: Target stock ticker symbol.
+        dry_run: If True, resolves and lints code without invoking CDP chart injection.
+
+    Returns:
+        Dictionary with execution status and level payload.
+    """
+    levels = resolve_ticker_levels(symbol)
+    pine_code = generate_pine_script_content(levels)
+
+    # Save to temp file for linting
+    temp_dir = os.path.join(PROJECT_ROOT, "temp")
+    os.makedirs(temp_dir, exist_ok=True)
+    temp_pine = os.path.join(temp_dir, f"ai_thesis_{levels['symbol']}.pine")
+
+    with open(temp_pine, "w", encoding="utf-8") as f:
+        f.write(pine_code)
+
+    # Run Pine Linter (Pitfall #26)
+    linter = PineLinter(temp_pine)
+    if not linter.lint():
+        return {
+            "success": False,
+            "error": f"Generated Pine Script failed linting: {linter.errors}",
+        }
+
+    if dry_run:
+        return {
+            "success": True,
+            "dry_run": True,
+            "levels": levels,
+            "pine_file": temp_pine,
+        }
+
+    # Verify CDP runtime
+    cdp_status = validate_cdp_installation()
+    if not cdp_status.get("installed"):
+        return {"success": False, "error": f"TradingView CDP engine not ready: {cdp_status.get('issues')}"}
+
+    # Step 1: Switch chart symbol (Pitfall #7)
+    if not switch_chart_symbol(levels["symbol"]):
+        return {"success": False, "error": f"Could not switch active chart to {levels['symbol']}"}
+
+    # Step 2: Remove existing duplicate overlay if present
+    tv_call("chart", "removeIndicator", "AI Thesis")
+
+    # Step 3: Inject Pine Script via Node CLI (Pitfall #12 — pass content, not file path)
+    inject_res = tv_call("pine", "inject", "--content", pine_code, **MUTATING_CALL_OPTS)
+    is_ok = isinstance(inject_res, dict) and (inject_res.get("success") is True or "error" not in inject_res)
+    return {
+        "success": is_ok,
+        "symbol": levels["symbol"],
+        "levels": levels,
+        "inject_result": inject_res,
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Inject AI Thesis Overlay onto TradingView chart")
+    parser.add_argument("--ticker", "-t", required=True, help="Stock ticker symbol (e.g. NVDA)")
+    parser.add_argument("--dry-run", action="store_true", help="Generate and lint without injecting")
+    args = parser.parse_args()
+
+    res = apply_overlay(args.ticker, dry_run=args.dry_run)
+    print(json.dumps(res, indent=2))
+    if not res.get("success"):
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

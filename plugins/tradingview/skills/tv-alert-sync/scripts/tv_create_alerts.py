@@ -1,1 +1,0 @@
-../../../scripts/tv_create_alerts.py

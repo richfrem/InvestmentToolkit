@@ -57,11 +57,11 @@
     "type": "negative",
     "category": "trigger_conflict",
     "prompt": "Sync broker orders from TradingView via CDP",
-    "expected_trigger": "tv-portfolio-sync",
+    "expected_trigger": "trading-via-tradingview",
     "expected_not_trigger": [
       "forward-valuation-challenge"
     ],
-    "pass_condition": "Agent routes to tv-portfolio-sync, not forward-valuation-challenge.",
+    "pass_condition": "Agent routes to trading-via-tradingview (portfolio-sync mode), not forward-valuation-challenge.",
     "should_trigger": false
   },
   {

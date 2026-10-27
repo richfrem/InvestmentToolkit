@@ -171,9 +171,8 @@ def resolve_new(old_path: str, rows_by_path: dict[str, dict]) -> str:
 
 def skill_command(old_path: str) -> str:
     text = subprocess.run(["git", "show", f"{BASE}:{old_path}"], cwd=ROOT, capture_output=True, text=True).stdout
+    # only an explicit "Trigger on /command" counts; a stray slash (DLR.TO/DLR.U) is not a command
     m = re.search(r"^description:.*?(?:Trigger on|Trigger:)\s*(/[\w-]+)", text, re.M | re.S)
-    if not m:
-        m = re.search(r"^description:.*?(/[\w-]+)", text, re.M)
     return m.group(1) if m else ""
 
 

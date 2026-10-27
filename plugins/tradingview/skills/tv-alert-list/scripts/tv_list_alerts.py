@@ -1,1 +1,0 @@
-../../../scripts/tv_list_alerts.py

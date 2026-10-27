@@ -29,7 +29,7 @@ python3 plugins/portfolio-advisor/scripts/weekly_review.py --prompt-output temp/
 ```
 
 ## Workflow
-1. **Refresh Reality**, in this order: positions and the week's trades with `/tv-portfolio-sync` (only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask whether to use TradingView (default) or Questrade); then prices with `python3 plugins/tradingview/scripts/tv_price_refresh.py`, filling any `stale` symbols with the `refresh-prices` mode of the `syncing-questrade-accounts` skill (`/questrade-refresh-prices`) when Questrade is enabled, or reporting them.
+1. **Refresh Reality**, in this order: positions and the week's trades with `/tv-portfolio-sync` (only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask whether to use TradingView (default) or Questrade); then prices with `python3 plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_price_refresh.py`, filling any `stale` symbols with the `refresh-prices` mode of the `syncing-questrade-accounts` skill (`/questrade-refresh-prices`) when Questrade is enabled, or reporting them.
 2. **Start the Review Cycle**: `python3 plugins/portfolio-advisor/scripts/review_gate.py begin`, after step 1 so triage measures today's prices; the weekly review clears the whole queue (holdings and watchlist).
 3. **Price Levels**: `python3 plugins/portfolio-advisor/scripts/update_price_levels.py --followed --source combined --write` so every holding and watchlist name has numbered buy/trim tiers from its latest valuation and this week's chart; the page and TradingView show the same tiers.
 4. **Drift Audit**: Evaluate week-over-week price changes and allocation drift across all active holdings and watchlists.

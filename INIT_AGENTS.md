@@ -218,7 +218,7 @@ The `sqlite-admin` mode of the `managing-the-toolkit` skill documents restore an
 
 ### 5. TradingView, then load holdings
 
-1. `/tv-setup` (or `python3 plugins/tradingview/scripts/tv_health_check.py`) confirms port 9222 and the CDP dependencies. `/tv-onboarding` is the longer walkthrough.
+1. `/tv-setup` (or `python3 investment_screener/backend/py_services/tv_health_check.py`) confirms port 9222 and the CDP dependencies. `/tv-onboarding` is the longer walkthrough.
 2. Log in to your broker in TradingView's broker panel.
 3. `/tv-portfolio-sync`. The accounts (TFSA, RRSP, CASH) and positions are created by this first sync; there is no separate account seeding command. The skill shows a per-account diff and asks for your go-ahead before writing.
 4. Strategy pillars and sub-strategies are **not seeded** by any step yet (known gap, `references/map-debt.md` DEBT-20260930-02). They are created as theses are written.

@@ -2,7 +2,7 @@
 Task 5B-2: Script Validation (Lint)
 
 Tests for pine_script_manager.validate_pine_script(), a thin wrapper
-around the existing plugins/tradingview/scripts/pine_linter.py's
+around the existing plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/pine_linter.py's
 PineLinter class. Exercises the REAL PineLinter against real, temp-file
 .pine content (no mocking of PineLinter itself) — validates actual
 linter behavior wrapped in a structured {"valid", "errors", "warnings"}

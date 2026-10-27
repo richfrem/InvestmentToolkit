@@ -20,7 +20,7 @@ Hardcoding absolute local user or machine filesystem paths (such as home directo
 ### A. Inside Skills & Plugins
 Always use **skill-root-relative** paths:
 - **Correct**: `references/chart-types-reference.md` or `../scripts/helper.py` or `./scripts/task_manager.py`
-- **Incorrect**: `.../plugins/tradingview/references/chart-types-reference.md` using absolute prefixes
+- **Incorrect**: `.../plugins/tradingview/.apm/skills/operating-tradingview-charts/references/chart-types-reference.md` using absolute prefixes
 
 ### B. Inside Python & Node Scripts
 Derive paths dynamically using standard library utilities:

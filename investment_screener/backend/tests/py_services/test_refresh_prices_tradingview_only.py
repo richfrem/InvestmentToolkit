@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
-sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/scripts"))
+sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts"))
 
 import fetch_portfolio_heatmap as heatmap  # noqa: E402
 import tv_batch_quotes  # noqa: E402

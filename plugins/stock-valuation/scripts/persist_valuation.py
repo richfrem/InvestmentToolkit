@@ -43,7 +43,7 @@ from sqlite3 import Connection
 # Resolve repository paths
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _PY_SERVICES = _REPO_ROOT / "investment_screener/backend/py_services"
-_TV_SCRIPTS = _REPO_ROOT / "plugins/tradingview/scripts"
+_TV_SCRIPTS = _REPO_ROOT / "plugins/tradingview/.apm/skills/analyzing-charts/scripts"
 
 sys.path.insert(0, str(_PY_SERVICES))
 sys.path.insert(0, str(_TV_SCRIPTS))

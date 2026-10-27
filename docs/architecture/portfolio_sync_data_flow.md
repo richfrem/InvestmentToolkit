@@ -124,7 +124,7 @@ graph TD
 ### Loop 1: The Scrape Loop (Actual State Sync)
 - **Path**: `TradingView Desktop` → `TradingView CDP Engine` → `fetch_broker_data.py --snapshot` → `domain_model.sqlite`.
 - **Flow**:
-  1. The user launches `tv-portfolio-sync` (or `BrokerSyncService.ts::syncAuto()` runs on its own schedule).
+  1. The user launches `/tv-portfolio-sync` (or `BrokerSyncService.ts::syncAuto()` runs on its own schedule).
   2. The Node.js CDP client hooks into the active Chrome debugging port of TradingView Desktop.
   3. The CDP agent traverses the React fiber tree of the broker panel to parse account numbers and positions.
   4. `fetch_broker_data.py --snapshot` persists the real per-account holdings/cash directly into
@@ -194,7 +194,7 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py --set TICKER=5.50 --
 
 # 3. Synchronize actual live broker holdings from TradingView Desktop into domain_model.sqlite
 # (Node.js engine must be initialized in tradingview-cdp/)
-python3 plugins/tradingview/scripts/fetch_broker_data.py --snapshot
+python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot
 
 # 4. Reconcile the computed portfolio total against the broker's own last-reported total
 # (uses domain_model.sqlite's broker_reported_total scalar, per ADR-030)

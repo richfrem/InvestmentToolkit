@@ -1,0 +1,590 @@
+#!/usr/bin/env python3
+"""
+ta_sweep_batch.py — Daily TA sweep across the combined portfolio-holdings + watchlist ticker universe.
+=========================================================================
+
+Purpose:
+    Reads current holdings from domain_model.sqlite, runs a batch CDP scan via
+    tradingview-cdp/cli.js sweep, cross-references DCF projections and
+    thesis target weights for context, then outputs enriched JSON to stdout.
+
+Layer:
+    Plugins / TradingView
+
+Key Input Dependencies:
+    - investment_screener/backend/data/domain_model.sqlite (Reads holdings, target
+      weights via portfolio_io.load_thesis_holdings(), DCF valuations (ADR-029),
+      and watchlist membership via is_watchlisted)
+
+Usage:
+    python3 plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_batch.py [--skip TICKERS]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+# ── Paths ──────────────────────────────────────────────────────────────────────
+REPO_ROOT       = next(p for p in Path(__file__).resolve().parents if (p / "investment_screener").is_dir())
+DB_PATH         = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
+TV_CLI          = REPO_ROOT / "tradingview-cdp/cli.js"
+
+# Always skip — cash / non-equity entries. "CASH_USD" is the domain_model.sqlite
+# symbol for the cash position; "USD_CASH" is kept so neither spelling can leak
+# a cash "ticker".
+DEFAULT_SKIP: set[str] = {"PSU.U.TO", "PSU-U.TO", "USD_CASH", "CASH_USD"}
+
+# --validate mode: local (technicals.py) vs. TV Data Window cross-check
+DIVERGENCE_THRESHOLD_PTS = 2.0
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from technicals import compute_technical_snapshot  # noqa: E402
+from portfolio_io import load_portfolio_state  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection,
+    get_projection_scenarios,
+)
+from domain_model.price_level_repository import get_price_levels  # noqa: E402
+
+
+# ── Data loaders ───────────────────────────────────────────────────────────────
+
+def load_portfolio() -> list[dict[str, Any]]:
+    """Return current holdings as ``[{"symbol": ...}, ...]`` from domain_model.sqlite.
+
+    The holdings universe is read from SQLite via ``portfolio_io.load_portfolio_state()``
+    (whose ``shares`` dict is keyed by the aggregated-across-accounts symbol). The only
+    field this consumer needs is ``symbol`` (see main()'s ticker-filtering loop), so each
+    holding is projected down to that single key.
+    """
+    state = load_portfolio_state()
+    return [{"symbol": symbol} for symbol in state["shares"]]
+
+
+def load_watchlisted_tickers(db_path: Path = DB_PATH) -> list[str]:
+    """Return watchlisted (not-yet-held) ticker symbols from domain_model.sqlite.
+
+    Mirrors overnight_gaps.py::_load_tickers()'s watchlist half — same
+    domain_model.investment_repository.list_investments(is_watchlisted=True) query,
+    kept as a separate loader (not merged with load_portfolio()) so callers can
+    still distinguish held-vs-watchlisted tickers if needed later.
+    """
+    from domain_model.investment_repository import list_investments
+
+    conn = initialize_db(str(db_path))
+    try:
+        return [
+            inv["symbol"] for inv in list_investments(conn, is_watchlisted=True)
+            if inv.get("symbol")
+        ]
+    finally:
+        conn.close()
+
+
+def load_target_portfolio() -> dict[str, dict[str, Any]]:
+    """Return thesis holdings (domain_model.sqlite investment.* columns) keyed by ticker."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from portfolio_io import load_thesis_holdings
+    return {h["ticker"]: h for h in load_thesis_holdings()}
+
+
+def load_dcf(ticker: str, db_path: Path | None = None) -> dict[str, Any] | None:
+    """Load the most recent DCF projection for ticker, or None if not found.
+
+    Storage backend (Wave 1 Task 7B): reads `projection_version`/
+    `projection_scenario` via `domain_model.projection_repository`, not
+    `projections/{TICKER}.json` directly (ADR-029). The original code took
+    `raw[-1]` (the last array element, i.e. highest MAX(version) for an
+    append-only file) with no `source` filter, so this uses plain
+    `get_latest_projection` — no AI_AGENT preference, matching the original's
+    lack of source filtering.
+    """
+    conn = initialize_db(str(db_path or DB_PATH))
+    try:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
+            return None
+        investment_id = row[0]
+        entry = get_latest_projection(conn, investment_id)
+        if entry is None:
+            return None
+        scenario_rows = get_projection_scenarios(conn, entry["projection_id"])
+        scenarios = {r["scenario_name"]: r for r in scenario_rows}
+        analyzed_at = entry.get("analyzed_at") or entry.get("saved_at")
+        days_since_dcf = None
+        if analyzed_at:
+            try:
+                # Handle ISO format strings like '2026-05-02T21:15:00.000Z'
+                clean_ts = analyzed_at.replace("Z", "+00:00")
+                parsed_dt = datetime.fromisoformat(clean_ts)
+                now_utc = datetime.now(timezone.utc)
+                days_since_dcf = int((now_utc - parsed_dt).total_seconds() / 86400)
+            except Exception:
+                days_since_dcf = None
+
+        return {
+            "fairValue": entry.get("fair_value"),
+            "action":    entry.get("action"),
+            "bear":      (scenarios.get("bear") or {}).get("scenario_price"),
+            "base":      (scenarios.get("base") or {}).get("scenario_price"),
+            "bull":      (scenarios.get("bull") or {}).get("scenario_price"),
+            "analyzedAt": analyzed_at,
+            "daysSinceDCF": days_since_dcf,
+        }
+    finally:
+        conn.close()
+
+
+# ── CDP sweep ──────────────────────────────────────────────────────────────────
+
+def run_sweep(tickers: list[str], delay_ms: int = 1500) -> list[dict[str, Any]]:
+    """Invoke cli.js sweep and return parsed JSON results.
+
+    Args:
+        tickers:  List of ticker symbols to scan.
+        delay_ms: CDP wait between symbol switch and data window read.
+
+    Returns:
+        List of per-ticker scan dicts from sweep.js.
+
+    Raises:
+        RuntimeError: If cli.js sweep exits non-zero.
+    """
+    cmd = [
+        "node", str(TV_CLI),
+        "sweep",
+        "--tickers", ",".join(tickers),
+        "--delay",   str(delay_ms),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(REPO_ROOT))
+    if result.returncode != 0:
+        raise RuntimeError(f"sweep failed (exit {result.returncode}):\n{result.stderr[:600]}")
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"JSON parse error: {exc}\nOutput: {result.stdout[:400]}") from exc
+
+
+def load_levels(ticker: str, db_path: Path | None = None) -> dict[str, Any] | None:
+    """Load execution price levels (Buy Tiers, Trim Tiers, Target Entry, Stop Loss) from domain_model.sqlite."""
+    conn = initialize_db(str(db_path or DB_PATH))
+    try:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
+            return None
+        return get_price_levels(conn, row[0])
+    finally:
+        conn.close()
+
+
+def add_price_level_alerts(result: dict[str, Any], levels: dict[str, Any] | None) -> None:
+    """Check proximity to chart lines (Target Buy, Trims, Stop Loss) and attach HITL reminders."""
+    if not levels:
+        return
+    price = result.get("close")
+    if not price:
+        return
+
+    flags = result.setdefault("flags", [])
+    hitl_reminders = result.setdefault("hitl_reminders", [])
+
+    # Check Target Entry & Buy Tiers
+    target_entry = levels.get("target_entry")
+    if target_entry and target_entry.get("price"):
+        te_price = float(target_entry["price"])
+        if price <= te_price:
+            flags.append("AT_TARGET_ENTRY")
+            hitl_reminders.append(f"🟢 AT BUY TARGET: ${price:.2f} reached target entry line (${te_price:.2f}). Consider manual ADD order in broker.")
+        elif price <= te_price * 1.03:
+            flags.append("NEAR_TARGET_ENTRY")
+            hitl_reminders.append(f"🟡 NEAR BUY TARGET: ${price:.2f} within 3% of target entry line (${te_price:.2f}). Prepare manual limit buy.")
+
+    for bt in levels.get("buy_tiers", []):
+        bp = float(bt["price"]) if bt.get("price") else None
+        if bp and price <= bp:
+            flags.append("AT_BUY_TIER")
+            hitl_reminders.append(f"🟢 AT BUY TIER {bt.get('tier_number', '')}: ${price:.2f} <= ${bp:.2f}. Manual execution candidate.")
+
+    # Check Trim / Sell Tiers
+    for st in levels.get("sell_tiers", []):
+        sp = float(st["price"]) if st.get("price") else None
+        trim_pct = st.get("trim_pct") or 25
+        if sp and price >= sp:
+            flags.append("AT_TRIM_TARGET")
+            hitl_reminders.append(f"🟠 AT TRIM LINE: ${price:.2f} reached sell target (${sp:.2f}). Recommended HITL action: trim {trim_pct}% manually in broker.")
+        elif sp and price >= sp * 0.97:
+            flags.append("NEAR_TRIM_TARGET")
+            hitl_reminders.append(f"🟡 NEAR TRIM LINE: ${price:.2f} within 3% of sell target (${sp:.2f}). Watch closely for manual exit/trim.")
+
+    # Check Stop Loss / Breaker
+    stop = levels.get("stop_loss")
+    if stop and stop.get("price"):
+        stop_price = float(stop["price"])
+        if price <= stop_price:
+            flags.append("STOP_LOSS_BREACHED")
+            hitl_reminders.append(f"🚨 STOP LOSS BREACHED: ${price:.2f} fell below stop level (${stop_price:.2f})! Review position for manual defense/exit.")
+
+
+# ── Enrichment ─────────────────────────────────────────────────────────────────
+
+def add_dcf_flags(result: dict[str, Any], dcf: dict[str, Any] | None) -> None:
+    """Append DCF-relative flags and attach dcf context to result in-place.
+
+    Args:
+        result: Per-ticker sweep result dict (mutated in-place).
+        dcf:    DCF projection dict, or None if unavailable.
+    """
+    if not dcf:
+        return
+    fv    = dcf.get("fairValue")
+    price = result.get("close")
+    flags = result.setdefault("flags", [])
+    hitl_reminders = result.setdefault("hitl_reminders", [])
+
+    days_since_dcf = dcf.get("daysSinceDCF")
+    if days_since_dcf is not None and days_since_dcf >= 90:
+        flags.append("EARNINGS_DCF_DUE")
+        hitl_reminders.append(
+            f"📅 EARNINGS / QUARTERLY DCF UPDATE DUE: DCF baseline is {days_since_dcf} days old (last analyzed {dcf.get('analyzedAt', '')[:10]}). Refresh quarterly fundamental model."
+        )
+
+    if not fv or not price:
+        result["dcf"] = dcf
+        return
+
+    ratio = price / fv
+    if ratio > 0.95:
+        flags.append("NEAR_FV")
+    if ratio > 1.0:
+        flags.append("ABOVE_FV")
+    if ratio < 0.75:
+        flags.append("DEEP_VALUE")
+
+    result["dcf"] = {
+        "fairValue": round(fv, 2),
+        # % move from current price to fair value — denominator must be price.
+        # (fv − price) / fv understates upside and can print impossible values
+        # like −742% on deep-SELL names (a price-relative gap floors at −100%).
+        "pctToFV":   round((fv - price) / price * 100, 1),
+        "base":      dcf.get("base"),
+        "action":    dcf.get("action"),
+        "daysSinceDCF": days_since_dcf,
+        "analyzedAt": dcf.get("analyzedAt"),
+    }
+
+
+def add_local_validation(result: dict[str, Any], snapshot_fn: Any = compute_technical_snapshot) -> dict[str, Any]:
+    """Cross-check TV Data Window rsi/adx against technicals.py's local computation.
+
+    Args:
+        result: Per-ticker sweep result dict (must have "ticker"; "rsi"/"adx"
+            keys are the TV-scraped values, absent or None if the scrape
+            didn't produce them).
+        snapshot_fn: Injectable — defaults to the real technicals.py call;
+            tests pass a stub instead of hitting the network.
+
+    Returns:
+        A new dict (result plus a "localValidation" block) — does not mutate
+        the input, matching validate_adx()'s existing copy-on-write pattern.
+    """
+    snapshot = snapshot_fn(result["ticker"], "D", "3mo", "SPY", None)
+    result = {**result}
+    result["localValidation"] = {}
+    for tv_key, local_key in (("rsi", "rsi14"), ("adx", "adx14")):
+        tv_value = result.get(tv_key)
+        local_value = snapshot.get(local_key)
+        divergence = abs(local_value - tv_value) if (local_value is not None and tv_value is not None) else None
+        result["localValidation"][tv_key] = {
+            "local": local_value,
+            "tv": tv_value,
+            "divergencePts": round(divergence, 2) if divergence is not None else None,
+            "flag": bool(divergence is not None and divergence > DIVERGENCE_THRESHOLD_PTS),
+        }
+    return result
+
+
+def derive_action(result: dict[str, Any], _target: dict[str, Any] | None) -> str:
+    """Return the canonical recommendation; TA flags describe timing only."""
+    from recommendation import recommend_all
+    rec = recommend_all(str(DB_PATH)).get(result["ticker"])
+    return rec["action"] if rec else "UNAVAILABLE"
+
+
+def validate_adx(result: dict[str, Any]) -> dict[str, Any]:
+    """Null out ADX values outside the valid 0–100 range and remove stale ADX flags.
+
+    ADX from ta.dmi() is always 0–100. Negative or >100 values indicate a Data Window
+    field collision (another indicator using the same 'ADX' key). Until the Pine Script
+    is updated to use a unique key ('AI-ADX'), this guards against false ADX_WEAK /
+    ADX_STRONG flags.
+
+    Args:
+        result: Per-ticker sweep result dict (mutated in-place copy).
+
+    Returns:
+        Result dict with adx=None and ADX flags removed when value is out of range.
+    """
+    adx = result.get("adx")
+    if adx is not None and not (0 <= adx <= 100):
+        result = {**result}  # shallow copy — don't mutate caller's dict
+        result["adx"] = None
+        result["flags"] = [f for f in result.get("flags", []) if not f.startswith("ADX_")]
+    return result
+
+
+def backfill_missing_technicals(
+    result: dict[str, Any],
+    snapshot_fn: Any = None,
+) -> None:
+    """Backfill missing RSI or ADX from local computation when CDP scrape returned null."""
+    if snapshot_fn is None:
+        return
+    ticker = result.get("ticker")
+    if not ticker:
+        return
+    need_rsi = result.get("rsi") is None
+    need_adx = result.get("adx") is None
+    if not (need_rsi or need_adx):
+        return
+    try:
+        snap = snapshot_fn(ticker, "D", "3mo", "SPY", None)
+        if need_rsi and snap.get("rsi14") is not None:
+            result["rsi"] = float(round(snap["rsi14"], 1))
+        if need_adx and snap.get("adx14") is not None:
+            result["adx"] = float(round(snap["adx14"], 1))
+        if result.get("close") is None and snap.get("asOf"):
+            # If close was missing, we could supply close
+            pass
+        flags = result.setdefault("flags", [])
+        rsi = result.get("rsi")
+        if rsi is not None:
+            if rsi > 72 and "RSI_OB" not in flags:
+                flags.append("RSI_OB")
+            elif rsi < 30 and "RSI_OS" not in flags:
+                flags.append("RSI_OS")
+        adx = result.get("adx")
+        if adx is not None:
+            if adx > 30 and "ADX_STRONG" not in flags:
+                flags.append("ADX_STRONG")
+            elif adx < 20 and "ADX_WEAK" not in flags:
+                flags.append("ADX_WEAK")
+    except Exception:
+        pass
+
+
+def run_headless_sweep(
+    tickers: list[str],
+    snapshot_fn: Any = compute_technical_snapshot,
+) -> list[dict[str, Any]]:
+    """Fallback headless scan using technicals.py when TradingView CDP is unreachable."""
+    results = []
+    for ticker in tickers:
+        try:
+            snap = snapshot_fn(ticker, "D", "3mo", "SPY", None)
+            rsi = snap.get("rsi14")
+            adx = snap.get("adx14")
+            flags = []
+            if rsi is not None:
+                if rsi > 72:
+                    flags.append("RSI_OB")
+                elif rsi < 30:
+                    flags.append("RSI_OS")
+            if adx is not None:
+                if adx > 30:
+                    flags.append("ADX_STRONG")
+                elif adx < 20:
+                    flags.append("ADX_WEAK")
+            results.append({
+                "ticker": ticker,
+                "close": snap.get("close"),
+                "changePct": None,
+                "rsi": float(round(rsi, 1)) if rsi is not None else None,
+                "rsima": None,
+                "volBias": None,
+                "adx": float(round(adx, 1)) if adx is not None else None,
+                "squeezeOn": snap.get("squeeze") == "ON",
+                "vol": None,
+                "volMA": None,
+                "volumeRatio": snap.get("volumeRatio20d"),
+                "flags": flags,
+            })
+        except Exception as e:
+            results.append({"ticker": ticker, "error": str(e), "flags": []})
+    return results
+
+
+def is_degenerate_batch(rows: list[dict[str, Any]], min_rows: int = 3) -> bool:
+    """True when every scanned row carries one identical close.
+
+    That pattern means the CDP data-window read never followed the symbol
+    switch (every row is a copy of whatever chart was active), so close, ADX and
+    volume bias are untrustworthy for the whole batch.
+    """
+    closes = [r.get("close") for r in rows if r.get("close") is not None]
+    return len(closes) >= min_rows and len(set(closes)) == 1
+
+
+def sweep_with_fallback(
+    tickers: list[str],
+    delay_ms: int,
+    sweep_fn: Any = None,
+    headless_fn: Any = None,
+) -> list[dict[str, Any]]:
+    """Run the CDP sweep; fall back to the headless sweep on failure or a degenerate batch."""
+    sweep_fn = sweep_fn or run_sweep
+    headless_fn = headless_fn or run_headless_sweep
+    try:
+        rows = sweep_fn(tickers, delay_ms=delay_ms)
+    except Exception as exc:  # noqa: BLE001
+        print(f"TradingView CDP sweep unavailable ({exc}); falling back to headless TA sweep...", file=sys.stderr)
+        return headless_fn(tickers)
+    if is_degenerate_batch(rows):
+        print("CDP sweep returned identical closes for every ticker (chart did not follow symbol "
+              "switches); discarding and using headless TA sweep...", file=sys.stderr)
+        return headless_fn(tickers)
+    return rows
+
+
+def enrich_results(
+    scan_results: list[dict[str, Any]],
+    target_map: dict[str, dict[str, Any]],
+    dcf_loader: Any = None,
+    levels_loader: Any = None,
+    snapshot_fn: Any = None,
+) -> list[dict[str, Any]]:
+    """Apply DCF flags, visual price level reminders, ADX validation, and action derivation to sweep rows.
+
+    validate_adx returns a shallow copy when it nulls an out-of-range ADX —
+    all enrichment must be applied to (and returned from) that copy, otherwise
+    the persisted output silently keeps the invalid ADX and loses the derived
+    action/target fields.
+
+    Args:
+        scan_results: Raw per-ticker rows from sweep.js.
+        target_map:   thesis holdings keyed by ticker.
+        dcf_loader:   Callable ticker → DCF dict or None (defaults to load_dcf).
+        levels_loader: Callable ticker → price levels dict or None (defaults to load_levels).
+        snapshot_fn:  Optional callable for local technical snapshot fallback.
+
+    Returns:
+        New list of fully enriched rows.
+    """
+    if dcf_loader is None:
+        dcf_loader = load_dcf
+    if levels_loader is None:
+        levels_loader = load_levels
+    enriched: list[dict[str, Any]] = []
+    for res in scan_results:
+        ticker = res["ticker"]
+        target = target_map.get(ticker)
+        if snapshot_fn is not None:
+            backfill_missing_technicals(res, snapshot_fn=snapshot_fn)
+        add_dcf_flags(res, dcf_loader(ticker))
+        add_price_level_alerts(res, levels_loader(ticker))
+        res = validate_adx(res)
+        res["action"]       = derive_action(res, target)
+        res["targetAction"] = (target or {}).get("action")
+        res["targetWeight"] = (target or {}).get("targetWeight")
+        enriched.append(res)
+    return enriched
+
+
+def save_sweep_results(results: list[dict[str, Any]], db_path: Path | None = None) -> None:
+    """Write one TECHNICAL_SWEEP event per ticker to the intelligence ledger.
+
+    A same-day re-sweep with different readings supersedes the earlier event (plain
+    idempotency would silently keep a bad batch for the rest of the day).
+
+    Args:
+        results: Enriched per-ticker sweep results from the main sweep loop.
+        db_path: Optional path to intelligence.sqlite (defaults to the standard path).
+    """
+    from intelligence.event_store import append_or_supersede_event
+    from intelligence.db_client import initialize_db
+    import sys
+
+    # Testing guardrail: bypass writing to the real ledger during generic tests that do not configure a path
+    if "pytest" in sys.modules and db_path is None:
+        return
+
+    scan_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    resolved_db_path = db_path or (REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
+    conn = initialize_db(str(resolved_db_path))
+    try:
+        for res in results:
+            ticker = res["ticker"]
+            append_or_supersede_event(
+                conn,
+                event_type="TECHNICAL_SWEEP",
+                effective_at=scan_date,
+                status="ACTIVE",
+                title=f"TA Sweep for {ticker}",
+                body_markdown=f"Batch technical indicators for {ticker}.",
+                ticker=ticker,
+                source_id="tradingview-cdp",
+                payload=res,
+                idempotency_key=f"ta-sweep-{ticker}-{scan_date}",
+            )
+    finally:
+        conn.close()
+
+
+# ── Main ───────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    """Entry point — run sweep, enrich results, print JSON to stdout, and optionally persist."""
+    parser = argparse.ArgumentParser(description="Daily TA sweep across portfolio holdings")
+    parser.add_argument("--skip",  default="", help="Extra comma-separated tickers to skip")
+    parser.add_argument("--delay", default="1500", help="CDP wait ms per ticker (default 1500)")
+    parser.add_argument(
+        "--holdings-only",
+        action="store_true",
+        help="Scan only held portfolio positions, skipping watchlist",
+    )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Cross-check TV rsi/adx against technicals.py's local computation, flag >2pt divergence",
+    )
+    args = parser.parse_args()
+
+    extra_skip: set[str] = set(args.skip.upper().split(",")) if args.skip else set()
+    skip = DEFAULT_SKIP | extra_skip
+
+    holdings = load_portfolio()
+    watchlisted = [] if args.holdings_only else load_watchlisted_tickers()
+    seen: set[str] = set()
+    tickers: list[str] = []
+    for sym in [h["symbol"] for h in holdings] + watchlisted:
+        if sym and sym not in skip and sym not in seen:
+            seen.add(sym)
+            tickers.append(sym)
+    delay_ms = int(args.delay)
+
+    print(f"Scanning {len(tickers)} holdings...", file=sys.stderr)
+
+    scan_results = sweep_with_fallback(tickers, delay_ms=delay_ms)
+
+    target_map   = load_target_portfolio()
+    scan_results = enrich_results(scan_results, target_map, snapshot_fn=compute_technical_snapshot)
+
+    if args.validate:
+        scan_results = [add_local_validation(r) for r in scan_results]
+
+    print(json.dumps(scan_results, indent=2))
+
+    save_sweep_results(scan_results)
+
+
+if __name__ == "__main__":
+    main()

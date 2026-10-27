@@ -9,6 +9,8 @@ Purpose:
       plan      shows the unambiguous path rewrites for one wave as unified diffs (writes nothing)
       apply     performs those rewrites (needs --yes), backing up each original first
       rollback  restores the originals saved by `apply`
+      dirfix    rewrites directory-level references (sys.path inserts of a plugin's scripts folder) to the folder(s)
+                that now hold the modules the file actually imports; anything ambiguous is listed, not guessed
       verify    checks one wave is complete: files accounted for, no old paths left, no symlinks,
                 links resolve, Python compiles, JSON/YAML parse
     Only exact old-path -> new-path rewrites are automatic. Skill names, plugin-name prose,
@@ -19,6 +21,7 @@ Usage:
     python3 docs/plans/apm-migration/tools/rewrite_references.py plan   --wave N
     python3 docs/plans/apm-migration/tools/rewrite_references.py apply  --wave N --yes
     python3 docs/plans/apm-migration/tools/rewrite_references.py rollback --wave N
+    python3 docs/plans/apm-migration/tools/rewrite_references.py dirfix --wave N [--yes]
     python3 docs/plans/apm-migration/tools/rewrite_references.py verify --wave N
 
 Output:
@@ -32,6 +35,7 @@ import argparse
 import csv
 import difflib
 import json
+import posixpath
 import re
 import shutil
 import subprocess
@@ -105,7 +109,8 @@ def path_rows(names: list[dict], wave: str | None, ready: set[str] | None = None
     never rewritten to a destination that is still pending a decision.
     """
     return {n["old_path"]: n for n in names
-            if n["old_path"] and n["kind"] != "plugin" and n["new_path"] and (not wave or n["wave"] == wave)
+            if n["old_path"] and n["kind"] != "plugin" and n["new_path"] and n["new_path"] != n["old_path"]
+            and (not wave or n["wave"] == wave)
             and (ready is None or n["old_path"] in ready)}
 
 
@@ -302,6 +307,95 @@ def cmd_rollback(ctx: Ctx, wave: str) -> int:
     return 0
 
 
+
+# ------------------------------------------------------------------ dirfix
+IMPORT_RE = re.compile(r"^\s*(?:from|import)\s+([A-Za-z_][\w]*)", re.M)
+
+
+def compute_dirfix(ctx: Ctx, wave: str) -> tuple[list[dict], list[str]]:
+    """Directory-level references to a moved plugin's scripts folder, rewritten per file.
+
+    For each file that names `plugins/<old>/scripts` (or its segment form) the modules it imports are
+    matched against the wave's old scripts; the new folders of those modules replace the old folder.
+    """
+    names = load_csv(ctx.out / "name-map.csv")
+    ready = ready_paths(ctx)
+    # stem -> new dir, per old plugin
+    by_plugin: dict[str, dict[str, str]] = {}
+    for n in names:
+        if n["kind"] == "script" and n["wave"] == wave and n["new_path"] and n["old_path"] in ready:
+            m = re.match(r"plugins/([\w-]+)/scripts/([\w]+)\.py$", n["old_path"])
+            if m:
+                by_plugin.setdefault(m.group(1), {})[m.group(2)] = posixpath.dirname(n["new_path"])
+    changes, manual = [], []
+    for rel in tracked_files(ctx):
+        if in_scope(rel) or not rel.endswith(".py"):
+            continue
+        p = ctx.root / rel
+        if p.is_symlink() or not p.is_file():
+            continue
+        try:
+            text = p.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        stems = set(IMPORT_RE.findall(text))
+        new_lines, touched = [], False
+        for ln, line in enumerate(text.splitlines(keepends=True), 1):
+            repl_line = None
+            for plug, modules in by_plugin.items():
+                lit = re.compile(r'plugins/' + re.escape(plug) + r'/scripts(?![/\w.])')
+                seg = re.compile(r'"plugins"\s*(?:/|,)\s*"' + re.escape(plug) + r'"\s*(?:/|,)\s*"scripts"')
+                if not (lit.search(line) or seg.search(line)):
+                    continue
+                dirs = sorted({modules[s_] for s_ in stems if s_ in modules})
+                if not dirs:
+                    manual.append(f"{rel}:{ln}: no imported module of {plug} found for: {line.strip()[:100]}")
+                    break
+                indent = re.match(r"\s*", line).group(0)
+                out = []
+                for d in dirs:
+                    new = lit.sub(d, line)
+                    new = seg.sub('"' + d + '"', new)
+                    out.append(new)
+                if len(out) > 1 and not line.lstrip().startswith("sys.path.insert"):
+                    manual.append(f"{rel}:{ln}: {len(dirs)} target folders but not a plain sys.path insert: {line.strip()[:100]}")
+                    break
+                repl_line = "".join(out)
+                break
+            if repl_line is not None:
+                new_lines.append(repl_line)
+                touched = True
+            else:
+                new_lines.append(line)
+        if touched:
+            changes.append({"file": rel, "old": text, "new": "".join(new_lines),
+                            "count": sum(1 for a, b in zip(text.splitlines(), "".join(new_lines).splitlines()) if a != b)
+                            or 1})
+    return changes, manual
+
+
+def cmd_dirfix(ctx: Ctx, wave: str, yes: bool, show: int = 12) -> int:
+    changes, manual = compute_dirfix(ctx, wave)
+    print(f"wave {wave}: {len(changes)} files with directory-level references to fix; {len(manual)} need a human")
+    for c in changes[:show]:
+        diff = difflib.unified_diff(c["old"].splitlines(), c["new"].splitlines(), c["file"], c["file"], lineterm="", n=0)
+        print("\n".join(list(diff)[:10]))
+    for m in manual:
+        print("  MANUAL:", m)
+    if not yes:
+        print("(plan only; pass --yes to write)")
+        return 0
+    dest = ctx.out / "patches" / f"wave-{wave}-dirfix"
+    for c in changes:
+        bak = dest / "orig" / c["file"]
+        bak.parent.mkdir(parents=True, exist_ok=True)
+        bak.write_text(c["old"], encoding="utf-8")
+        (ctx.root / c["file"]).write_text(c["new"], encoding="utf-8")
+    (dest).mkdir(parents=True, exist_ok=True)
+    (dest / "manifest.json").write_text(json.dumps([{"file": c["file"]} for c in changes], indent=2))
+    print(f"rewrote {len(changes)} files; originals in {dest}")
+    return 0 if not manual else 1
+
 # ------------------------------------------------------------------ verify
 ACCOUNTED = {"MOVED_TO_SKILL", "MOVED_TO_ENGINE", "MOVED_TO_ENGINE_TESTS", "MOVED_TO_AGENT",
              "CONSOLIDATED_INTO_SKILL", "CONSOLIDATED_INTO_DOC", "KEPT", "RETIRED_MANIFEST"}
@@ -409,10 +503,32 @@ def cmd_verify(ctx: Ctx, wave: str) -> int:
                         manual += 1
                         warns.append(f"path expression to review: {r['new_path']}:{ln}: {line.strip()[:90]}")
 
-    for w in warns[:40]:
+    # 6. directory-level mentions of a retired plugin folder (the exact-path rule cannot rewrite these)
+    old_plugs = sorted({x["old_plugin"] for x in ledger})
+    dir_rx = re.compile(r"plugins/(" + "|".join(map(re.escape, old_plugs)) + r")/(scripts|assets|references|tests|skills|agents)(?![\w.\-])")
+    dir_hits = 0
+    for rel in tracked_files(ctx):
+        if in_scope(rel):
+            continue
+        p = ctx.root / rel
+        if p.is_symlink() or not p.is_file():
+            continue
+        try:
+            text = p.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for ln, line in enumerate(text.splitlines(), 1):
+            if dir_rx.search(line):
+                dir_hits += 1
+                if dir_hits <= 25:
+                    warns.append(f"directory-level mention {rel}:{ln}: {line.strip()[:100]}")
+    if dir_hits > 25:
+        warns.append(f"... {dir_hits - 25} more directory-level mentions")
+
+    for w in warns[:80]:
         print("warn:", w)
-    if len(warns) > 40:
-        print(f"warn: ... {len(warns) - 40} more")
+    if len(warns) > 80:
+        print(f"warn: ... {len(warns) - 80} more")
     for f in fails:
         print("FAIL:", f)
     print(f"\nwave {wave}: {len(ledger)} ledger rows | {len(fails)} failures | {len(warns)} warnings "
@@ -423,7 +539,7 @@ def cmd_verify(ctx: Ctx, wave: str) -> int:
 # ------------------------------------------------------------------ cli
 def main(argv: list[str] | None = None, ctx: Ctx | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["scan", "plan", "apply", "rollback", "verify"])
+    ap.add_argument("command", choices=["scan", "plan", "apply", "rollback", "dirfix", "verify"])
     ap.add_argument("--wave")
     ap.add_argument("--yes", action="store_true")
     ap.add_argument("--show", type=int, default=12)
@@ -448,6 +564,8 @@ def main(argv: list[str] | None = None, ctx: Ctx | None = None) -> int:
         return cmd_apply(ctx, args.wave, args.yes)
     if args.command == "rollback":
         return cmd_rollback(ctx, args.wave)
+    if args.command == "dirfix":
+        return cmd_dirfix(ctx, args.wave, args.yes, args.show)
     return cmd_verify(ctx, args.wave)
 
 

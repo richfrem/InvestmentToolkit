@@ -1,1 +1,0 @@
-../../../scripts/tv_batch_quotes.py

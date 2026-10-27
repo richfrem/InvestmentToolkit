@@ -11,7 +11,7 @@ PINE_REGISTRY_PATH monkeypatched into that repo. subprocess/git are never
 mocked here — this function's whole job is correctly parsing real git
 output, so the only meaningful test is against a real repo. None of these
 tests may touch the real
-plugins/tradingview/assets/pinescript-indicators/registry.json path or
+plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json path or
 the worktree's own git history.
 """
 

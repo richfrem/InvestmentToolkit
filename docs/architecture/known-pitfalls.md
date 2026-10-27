@@ -83,7 +83,7 @@ Dispatch `Input.dispatchMouseEvent` at the geometric center of the Indicators bu
 Access via Legend More menu → `"Source code…"` (unicode ellipsis `…`) or Indicators dialog search → source icon.
 
 ### 26. Custom Pine Script Library
-Canonical multi-EMA indicator lives at `plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine` (Multi-EMA 21/50/200 + volume bias). Always lint custom Pine Script before injecting: `python3 .../pine_linter.py <file.pine>`.
+Canonical multi-EMA indicator lives at `plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/ai-ta-levels.pine` (Multi-EMA 21/50/200 + volume bias). Always lint custom Pine Script before injecting: `python3 .../pine_linter.py <file.pine>`.
 
 ### 27. Portfolio Total Calculation & Exchange Rates
 Compute portfolio totals using the exact cash invariant:

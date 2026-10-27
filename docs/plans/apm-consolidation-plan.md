@@ -197,6 +197,8 @@ Purpose: update every stale reference in documentation, code, tests, diagrams an
 
 ## 9. Wave 3: tradingview (27 skills -> 3 hubs, 1 agent)
 
+**Status: DONE (2026-10-26).** Evidence in `docs/plans/apm-migration/waves/wave-3/`.
+
 | Hub | Modes (legacy skills) |
 |---|---|
 | `operating-tradingview-charts` | `setup` (tv-setup + tv-onboarding, true duplicates), `change-symbol`, `change-type`, `chart-setup`, `chart-snapshot`, `draw`, `add-indicator`, `manage-indicators`, `save-indicator`, `pine-inject`, `author-pine-script`, `thesis-overlay`, `alert-list`, `alert-reconcile`, `alert-sync` |

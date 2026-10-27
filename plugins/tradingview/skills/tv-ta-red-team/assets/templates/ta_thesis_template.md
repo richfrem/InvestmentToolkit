@@ -1,1 +1,0 @@
-../../../../assets/templates/ta_thesis_template.md

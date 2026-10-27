@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))  # sibling helpers, als
 from repo_root import find_repo_root  # noqa: E402  (shared; works from installed copies)
 REPO_ROOT        = find_repo_root(Path(__file__))
 PY_SERVICES      = REPO_ROOT / "investment_screener/backend/py_services"
-TA_SWEEP_SCRIPT  = REPO_ROOT / "plugins/tradingview/scripts/ta_sweep_batch.py"
+TA_SWEEP_SCRIPT  = REPO_ROOT / "plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_batch.py"
 DAILY_BRIEFS_DIR = REPO_ROOT / "investment_screener/backend/data/daily-briefs"
 INTELLIGENCE_DB_PATH = REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite"
 

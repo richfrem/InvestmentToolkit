@@ -1,0 +1,234 @@
+[
+  {
+    "file": "plugins/tradingview/.apm/skills/analyzing-charts/evals/evals.json",
+    "count": 1
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/operating-tradingview-charts/evals/evals.json",
+    "count": 1
+  },
+  {
+    "file": ".agent/rules/local-no-hardcoded-paths.md",
+    "count": 1
+  },
+  {
+    "file": "AGENTS.md",
+    "count": 1
+  },
+  {
+    "file": "INIT_AGENTS.md",
+    "count": 1
+  },
+  {
+    "file": "architecture.md",
+    "count": 2
+  },
+  {
+    "file": "docs/architecture/known-pitfalls.md",
+    "count": 1
+  },
+  {
+    "file": "docs/architecture/portfolio_sync_data_flow.md",
+    "count": 1
+  },
+  {
+    "file": "docs/plans/nbis-scenario-lines-overlay-implementation-plan.md",
+    "count": 5
+  },
+  {
+    "file": "docs/plans/nbis-scenario-lines-overlay-spec.md",
+    "count": 7
+  },
+  {
+    "file": "docs/plans/sqlite-single-source-of-truth-spec.md",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/backend/py_services/alert_manager.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/data_window_validator.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/domain_model/broker_reported_total_repository.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/pine_level_inputs.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/pine_script_manager.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/tv_cdp_health.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/py_services/tv_health_check.py",
+    "count": 3
+  },
+  {
+    "file": "investment_screener/backend/py_services/tv_launch.py",
+    "count": 5
+  },
+  {
+    "file": "investment_screener/backend/src/routes/trading.ts",
+    "count": 3
+  },
+  {
+    "file": "investment_screener/backend/tests/api/test_tv_client_wrapped_calls_survive_transient_errors.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_build_consumer_inventory.py",
+    "count": 2
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_coherent_price_levels.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_fetch_broker_data_compare.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_fetch_broker_data_persist.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_pine_script_validation_catches_syntax_errors.py",
+    "count": 1
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_tv_account_coverage.py",
+    "count": 4
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/tv_test_harness.py",
+    "count": 4
+  },
+  {
+    "file": "plugins/portfolio-advisor/scripts/daily_brief.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/skills/daily-loop/SKILL.md",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/skills/pre-trade-analysis/SKILL.md",
+    "count": 1
+  },
+  {
+    "file": "plugins/portfolio-advisor/skills/weekly-review/SKILL.md",
+    "count": 1
+  },
+  {
+    "file": "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/references/agent-quick-reference.md",
+    "count": 1
+  },
+  {
+    "file": "plugins/tradingview/.apm/agents/ta-guide.agent.md",
+    "count": 4
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_batch.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_single.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/analyzing-charts/tests/test_ta_sweep_batch.py",
+    "count": 2
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/operating-tradingview-charts/references/self-evolution-profile.md",
+    "count": 2
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_create_alerts.py",
+    "count": 4
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_draw.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_manage_indicators.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_thesis_overlay.py",
+    "count": 2
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_pine_linter.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_pine_source_reader.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_list_alerts.py",
+    "count": 2
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_cancel_order.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_get_orders.py",
+    "count": 4
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_modify_order.py",
+    "count": 4
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_price_refresh.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_trades_import.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/watchlist_manager.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/tests/test_tv_batch_quotes.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/tests/test_tv_price_refresh.py",
+    "count": 2
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/tests/test_tv_trades_import.py",
+    "count": 3
+  },
+  {
+    "file": "plugins/tradingview/.apm/skills/trading-via-tradingview/tests/test_watchlist_manager.py",
+    "count": 1
+  },
+  {
+    "file": "plugins/tradingview/README.md",
+    "count": 17
+  },
+  {
+    "file": "run_tests.py",
+    "count": 7
+  },
+  {
+    "file": "symlinks.json",
+    "count": 35
+  }
+]

@@ -1,0 +1,37 @@
+== plugin-portfolio-advisor
+........................................................................ [ 29%]
+........................................................................ [ 58%]
+........F............................................................... [ 87%]
+................................                                         [100%]
+=================================== FAILURES ===================================
+_________________ test_enrich_with_scores_populates_technicals _________________
+
+    def test_enrich_with_scores_populates_technicals():
+        class DummyScore:
+            def __init__(self, ticker, rsi, adx, vol_bias, band, total, flags):
+                self.ticker = ticker
+                self.rsi = rsi
+                self.adx = adx
+                self.vol_bias = vol_bias
+                self.band = band
+                self.total = total
+                self.flags = flags
+    
+        scores = {
+            "NVDA": DummyScore("NVDA", 62.4, 28.1, 15.0, "ACCUMULATE", 3, ["ADX_STRONG"])
+        }
+        item = {"ticker": "NVDA"}
+        scan_opportunities._enrich_with_scores(item, "NVDA", scores)
+    
+        assert item["rsi"] == 62.4
+        assert item["adx"] == 28.1
+        assert item["volBias"] == 15.0
+>       assert item["band"] is None  # Numeric score alone cannot invent an action
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: assert 'ACCUMULATE' is None
+
+plugins/portfolio-advisor/tests/test_scan_opportunities.py:207: AssertionError
+=========================== short test summary info ============================
+FAILED plugins/portfolio-advisor/tests/test_scan_opportunities.py::test_enrich_with_scores_populates_technicals
+1 failed, 247 passed in 12.06s
+exit=1

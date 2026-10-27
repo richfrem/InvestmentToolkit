@@ -1,1 +1,0 @@
-../../../scripts/tv_pine_inject.py

@@ -169,8 +169,8 @@ Candidates (each needs the owner's explicit OK, one file at a time): `portfolio.
 | `investment_screener/backend/py_services/lock_and_normalize_targets.py` | `load_portfolio` (56) | needs `--target-file` |
 | `investment_screener/backend/py_services/system_health.py` | 89, 105, 118 | checks FAIL or read stale |
 | `investment_screener/backend/py_services/verify_thesis_sync.py` | `main` (164) | override path only |
-| `plugins/tradingview/scripts/place_order.py` | `_check_data_freshness` (183-186) | freshness gate always stale |
-| `plugins/tradingview/scripts/fetch_broker_data.py` | `fetch_broker_snapshot` (233) | `--compare` baseline missing |
+| `investment_screener/backend/py_services/place_order.py` | `_check_data_freshness` (183-186) | freshness gate always stale |
+| `investment_screener/backend/py_services/fetch_broker_data.py` | `fetch_broker_snapshot` (233) | `--compare` baseline missing |
 
 **Vestigial:** `PORTFOLIO_PATH` in `sync_portfolio_roles.py:15`, `ta_sweep_batch.py:34`, `order_risk_gates.py:186`, `rebalancer.py:70`, `risk_engine.py:64`.
 **Unused constants:** `update_price_levels.py:37`, `verify_refresh.py:22`, `watchlist_manager.py:30`, `rebalancer.py:68` and `:77`, `verify_thesis_sync.py:48`.

@@ -8,12 +8,6 @@
       "description": "ADR-003: skill scripts/ symlink -> py_services/ tool"
     },
     {
-      "src": "plugins/tradingview/scripts/tv_draw.py",
-      "dst": "plugins/tradingview/skills/tv-draw/scripts/tv_draw.py",
-      "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
-    },
-    {
       "src": "plugins/portfolio-advisor/scripts/update_thesis.py",
       "dst": "investment_screener/backend/py_services/update_thesis.py",
       "strategy": "symlink",
@@ -362,174 +356,6 @@
       "description": ""
     },
     {
-      "src": "plugins/tradingview/scripts/tv_cancel_order.py",
-      "dst": "plugins/tradingview/skills/tv-cancel-order/scripts/tv_cancel_order.py",
-      "strategy": "symlink",
-      "description": "ADR-003: cancel-order skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_modify_order.py",
-      "dst": "plugins/tradingview/skills/tv-modify-order/scripts/tv_modify_order.py",
-      "strategy": "symlink",
-      "description": "ADR-003: modify-order skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_get_orders.py",
-      "dst": "plugins/tradingview/skills/tv-get-orders/scripts/tv_get_orders.py",
-      "strategy": "symlink",
-      "description": "ADR-003: get-orders skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_create_alerts.py",
-      "dst": "plugins/tradingview/skills/tv-alert-sync/scripts/tv_create_alerts.py",
-      "strategy": "symlink",
-      "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_health_check.py",
-      "dst": "plugins/tradingview/skills/tv-alert-sync/scripts/tv_health_check.py",
-      "strategy": "symlink",
-      "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_launch.py",
-      "dst": "plugins/tradingview/skills/tv-alert-sync/scripts/tv_launch.py",
-      "strategy": "symlink",
-      "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_list_alerts.py",
-      "dst": "plugins/tradingview/skills/tv-alert-list/scripts/tv_list_alerts.py",
-      "strategy": "symlink",
-      "description": "ADR-003: alert-list skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_health_check.py",
-      "dst": "plugins/tradingview/skills/tv-alert-list/scripts/tv_health_check.py",
-      "strategy": "symlink",
-      "description": "ADR-003: alert-list skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_launch.py",
-      "dst": "plugins/tradingview/skills/tv-alert-list/scripts/tv_launch.py",
-      "strategy": "symlink",
-      "description": "ADR-003: alert-list skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_health_check.py",
-      "dst": "plugins/tradingview/skills/tv-chart-snapshot/scripts/tv_health_check.py",
-      "strategy": "symlink",
-      "description": "ADR-003: chart-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_launch.py",
-      "dst": "plugins/tradingview/skills/tv-chart-snapshot/scripts/tv_launch.py",
-      "strategy": "symlink",
-      "description": "ADR-003: chart-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_health_check.py",
-      "dst": "plugins/tradingview/skills/tv-ta-snapshot/scripts/tv_health_check.py",
-      "strategy": "symlink",
-      "description": "ADR-003: ta-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_launch.py",
-      "dst": "plugins/tradingview/skills/tv-ta-snapshot/scripts/tv_launch.py",
-      "strategy": "symlink",
-      "description": "ADR-003: ta-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_batch_quotes.py",
-      "dst": "plugins/tradingview/skills/tv-price-refresh/scripts/tv_batch_quotes.py",
-      "strategy": "symlink",
-      "description": "ADR-003: price-refresh skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_health_check.py",
-      "dst": "plugins/tradingview/skills/tv-price-refresh/scripts/tv_health_check.py",
-      "strategy": "symlink",
-      "description": "ADR-003: price-refresh skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/place_order.py",
-      "dst": "plugins/tradingview/skills/tv-place-order/scripts/place_order.py",
-      "strategy": "symlink",
-      "description": "ADR-001 cross-repo symlink: place-order skill \u2192 py_services canonical (source repo only)"
-    },
-    {
-      "src": "plugins/tradingview/scripts/place_order.py",
-      "dst": "plugins/tradingview/skills/tv-cancel-order/scripts/place_order.py",
-      "strategy": "symlink",
-      "description": "ADR-001 cross-repo symlink: cancel-order skill \u2192 py_services canonical (source repo only)"
-    },
-    {
-      "src": "plugins/tradingview/scripts/fetch_broker_data.py",
-      "dst": "plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py",
-      "strategy": "symlink",
-      "description": "ADR-001 cross-repo symlink: tv-portfolio-sync skill \u2192 py_services canonical (source repo only)"
-    },
-    {
-      "src": "plugins/tradingview/assets/templates/ta_thesis_template.md",
-      "dst": "plugins/tradingview/skills/tv-technical-analysis-expert/assets/templates/ta_thesis_template.md",
-      "strategy": "symlink",
-      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
-    },
-    {
-      "src": "plugins/tradingview/assets/templates/ta_thesis_template.md",
-      "dst": "plugins/tradingview/skills/tv-ta-red-team/assets/templates/ta_thesis_template.md",
-      "strategy": "symlink",
-      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/place_order.py",
-      "dst": "investment_screener/backend/py_services/place_order.py",
-      "strategy": "symlink",
-      "description": "ADR-001 cross-repo symlink: tradingview script -> py_services"
-    },
-    {
-      "src": "plugins/tradingview/scripts/fetch_broker_data.py",
-      "dst": "investment_screener/backend/py_services/fetch_broker_data.py",
-      "strategy": "symlink",
-      "description": "ADR-001 cross-repo symlink: tradingview script -> py_services"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_pine_inject.py",
-      "dst": "plugins/tradingview/skills/tv-pine-inject/scripts/tv_pine_inject.py",
-      "strategy": "symlink",
-      "description": "ADR-003: pine-inject script symlink -> plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/references/pinescript_overview.md",
-      "dst": "plugins/tradingview/skills/tv-author-pine-script/references/pinescript_overview.md",
-      "strategy": "symlink",
-      "description": "ADR-003: author-pine-script reference symlink -> plugin root references/"
-    },
-    {
-      "src": "plugins/tradingview/references/PineScript_Agent_Skill_Rules.md",
-      "dst": "plugins/tradingview/skills/tv-author-pine-script/references/PineScript_Agent_Skill_Rules.md",
-      "strategy": "symlink",
-      "description": "ADR-003: author-pine-script agent rules symlink -> plugin root references/"
-    },
-    {
-      "src": "plugins/tradingview/references/Top_TradingView_Indicators_Reference.md",
-      "dst": "plugins/tradingview/skills/tv-author-pine-script/references/Top_TradingView_Indicators_Reference.md",
-      "strategy": "symlink",
-      "description": "ADR-003: author-pine-script indicators reference symlink -> plugin root references/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/pine_linter.py",
-      "dst": "plugins/tradingview/skills/tv-author-pine-script/scripts/pine_linter.py",
-      "strategy": "symlink",
-      "description": "ADR-003: author-pine-script linter symlink -> plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/pine_source_reader.py",
-      "dst": "plugins/tradingview/skills/tv-author-pine-script/scripts/pine_source_reader.py",
-      "strategy": "symlink",
-      "description": "ADR-003: author-pine-script review loop symlink -> plugin root scripts/"
-    },
-    {
       "src": "plugins/stock-valuation/scripts/dcf_scenarios.py",
       "dst": "investment_screener/backend/py_services/dcf_scenarios.py",
       "strategy": "symlink",
@@ -624,18 +450,6 @@
       "dst": "plugins/portfolio-advisor/skills/thesis-review/assets/templates/thesis_proposal_template.md",
       "strategy": "symlink",
       "description": "Thesis proposal markdown template"
-    },
-    {
-      "src": "plugins/tradingview/scripts/ta_sweep_batch.py",
-      "dst": "plugins/tradingview/skills/tv-ta-daily-sweep/scripts/ta_sweep_batch.py",
-      "strategy": "symlink",
-      "description": "ADR-003: ta-daily-sweep skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_health_check.py",
-      "dst": "plugins/tradingview/skills/tv-ta-daily-sweep/scripts/tv_health_check.py",
-      "strategy": "symlink",
-      "description": "ADR-003: ta-daily-sweep skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/daily_brief.py",
@@ -776,18 +590,6 @@
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     },
     {
-      "src": "plugins/tradingview/scripts/tv_manage_indicators.py",
-      "dst": "plugins/tradingview/skills/tv-manage-indicators/scripts/tv_manage_indicators.py",
-      "strategy": "symlink",
-      "description": "tv_manage_indicators.py in plugin/scripts; skill symlink"
-    },
-    {
-      "src": "plugins/tradingview/scripts/ta_sweep_single.py",
-      "dst": "plugins/tradingview/skills/tv-ta-snapshot/scripts/ta_sweep_single.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/portfolio-advisor/scripts/list_strategy_pillars.py",
       "dst": "plugins/portfolio-advisor/skills/stock-intake/scripts/list_strategy_pillars.py",
       "strategy": "symlink",
@@ -804,12 +606,6 @@
       "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/verify_portfolio_invariants.py",
       "strategy": "symlink",
       "description": "Portfolio invariants sentinel tool for daily-loop"
-    },
-    {
-      "src": "plugins/tradingview/references/chart-types-reference.md",
-      "dst": "plugins/tradingview/skills/tv-change-type/references/chart-types-reference.md",
-      "strategy": "symlink",
-      "description": "File-level symlink for TradingView chart types reference guide"
     },
     {
       "src": "docs/architecture/stock-analysis-surface-checklist.md",
@@ -1074,12 +870,6 @@
       "dst": "plugins/stock-valuation/skills/forward-valuation-challenge/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": "Shared valuation workflow acceptance criteria required by plugin audit"
-    },
-    {
-      "src": "plugins/tradingview/scripts/tv_trades_import.py",
-      "dst": "plugins/tradingview/skills/tv-portfolio-sync/scripts/tv_trades_import.py",
-      "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/references/recommendation-coherence.md",
