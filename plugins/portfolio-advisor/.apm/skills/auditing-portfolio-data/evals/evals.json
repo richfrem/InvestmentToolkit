@@ -1,0 +1,164 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/data-quality-audit",
+    "expected_trigger": "data_quality_audit",
+    "should_trigger": true,
+    "mode": "data-quality"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Audit data quality across our sqlite databases",
+    "expected_trigger": "data_quality_audit",
+    "should_trigger": true,
+    "mode": "data-quality"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Check db integrity for domain_model and intelligence databases",
+    "expected_trigger": "data_quality_audit",
+    "should_trigger": true,
+    "mode": "data-quality"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Can you write a SQL query to select all holdings from domain_model.sqlite?",
+    "expected_trigger": "none",
+    "should_trigger": false,
+    "mode": "data-quality"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Run the frontend linter and fix any typescript formatting issues",
+    "expected_trigger": "none",
+    "should_trigger": false,
+    "mode": "data-quality"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Rebalance the portfolio toward our target weights",
+    "expected_trigger": "rebalance_portfolio",
+    "should_trigger": false,
+    "mode": "data-quality"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/portfolio-coverage-audit",
+    "expected_trigger": "portfolio_coverage_audit",
+    "should_trigger": true,
+    "mode": "coverage"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Audit screener coverage across our portfolio holdings and watchlist",
+    "expected_trigger": "portfolio_coverage_audit",
+    "should_trigger": true,
+    "mode": "coverage"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Which tickers in our portfolio are missing DCF projections or valuation data?",
+    "expected_trigger": "portfolio_coverage_audit",
+    "should_trigger": true,
+    "mode": "coverage"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Audit the entire portfolio-advisor plugin structure using audit-plugin",
+    "expected_trigger": "audit_plugin",
+    "should_trigger": false,
+    "mode": "coverage"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Check active TradingView price alerts on NVDA",
+    "expected_trigger": "tv_alert_list",
+    "should_trigger": false,
+    "mode": "coverage"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Run an automated intake and valuation model on TSLA",
+    "expected_trigger": "stock_intake",
+    "should_trigger": false,
+    "mode": "coverage"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/screener-audit",
+    "expected_trigger": "screener_integrity_audit",
+    "should_trigger": true,
+    "mode": "screener-integrity"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Audit screener integrity and check dashboard table rules",
+    "expected_trigger": "screener_integrity_audit",
+    "should_trigger": true,
+    "mode": "screener-integrity"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Verify screener invariants across the portfolio table and intelligence feed",
+    "expected_trigger": "screener_integrity_audit",
+    "should_trigger": true,
+    "mode": "screener-integrity"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Start the investment screener web server and vite frontend",
+    "expected_trigger": "run_screener",
+    "should_trigger": false,
+    "mode": "screener-integrity"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Draft a limit buy order for 10 shares of MSFT in my TFSA",
+    "expected_trigger": "questrade_order_draft",
+    "should_trigger": false,
+    "mode": "screener-integrity"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Convert CAD cash to USD using Norbert's Gambit",
+    "expected_trigger": "norberts_gambit",
+    "should_trigger": false,
+    "mode": "screener-integrity"
+  }
+]

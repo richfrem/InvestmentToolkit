@@ -1,0 +1,43 @@
+# Evolution Log — TradingView Plugin
+
+Append-only record of every self-evolution event. Written by the `self-evolution` skill.
+Do not edit manually except to correct a factual error.
+
+| Date | Tier | Failure | Patch | Edit Type | Outcome |
+|------|------|---------|-------|-----------|---------|
+| 2026-05-27 | Regression | Account selection dropdown option click failed (remained in previous TFSA account) | Changed `.click()` to dispatch sequence of `mousedown`, `mouseup`, and `click` MouseEvents to both `match` and `match.parentElement`. | Modified `selectAccount` in `trading.js` | Successfully switched account to RRSP and executed PSU.U order |
+| 2026-06-08 | Tier 2 (Failure) | `addIndicator` clicked timezone display instead of indicator — `[class*="item-"]` matched a time element. Dialog not opening reliably because `.click()` opened timezone dropdown instead of Indicators dialog. Wrong result selected because `includes("rsi")` matched a longer title before RSI. | (1) Changed Indicators button click to `Input.dispatchMouseEvent` at `getBoundingClientRect()` center. (2) Changed result selector from `[class*="item-"]` to `div[class*="container-WeNdU0sq"]`. (3) Changed match priority to exact → first result (TV's top rank) → contains. | Modified `addIndicator` in `core/chart.js` | Indicators dialog opens reliably; correct indicator selected |
+| 2026-06-08 | Tier 1 (Gap) | No `removeIndicator` function existed — could not remove indicators from chart via CDP. | Built `removeIndicator(client, name)` using mouseover dispatch to legend row + `button[aria-label="Remove"]` selector within ±15px cy band of legend title. Added `chart removeIndicator` command to `cli.js`. | Added `removeIndicator` to `core/chart.js` and routing to `cli.js` | Successfully removes named indicator from chart legend |
+| 2026-06-08 | Tier 2 (Failure) | `addIndicator` fails with "no search input found" when Pine Editor dialog is open — Pine Editor class `editorBaseLayoutContainer-dialog-z_CXxRZA` overlays screen and blocks Indicators dialog. `pine-dialog-button` toggle had `aria-pressed=false` but dialog was still visible — unreliable state signal. | Documented workaround: after `pine inject` + `pine save`, click "Update on chart" button (title attr, matched by `/(?:add|update).*(?:to|on).*chart/i`) via `Input.dispatchMouseEvent`. No need to close Pine Editor first. Updated CLAUDE.md Pitfall 23 with this path. | Pattern change — document-only; no chart.js code change needed | Successfully added AI TA Levels v2 to chart via "Update on chart" button |
+| 2026-10-04 | Tier 1 | TradingView skills had legacy headings, unmanaged acceptance-criteria file, broken relative links, and missing evals | Retrofitted all 27 skills to 6 canonical sections within lean budget, added missing evals, resolved links, removed unmanaged file | fix | PASS |
+| 2026-10-04 | Tier 2 (Failure) | TA sweep wrote one chart's close (195.13) and ADX (22) to every ticker — the CDP data-window read never followed the symbol switch — corrupting `pct_to_fv` and conviction scores in `/strategic-review`. A same-day re-sweep could not correct it: the `ta-sweep-{ticker}-{date}` idempotency key silently dropped the new rows. | (1) `is_degenerate_batch` + `sweep_with_fallback`: a batch where every row shares one close is discarded for the headless sweep. (2) `compute_technical_snapshot` returns `close`. (3) `append_or_supersede_event` in `intelligence/event_store.py`: a changed payload under an existing key appends `key#rN` superseding the prior event; both sweep writers use it. | Modified `ta_sweep_batch.py`, `ta_sweep_single.py`, `technicals.py`, `event_store.py` | 12 new tests pass. Open: why the CDP read stops following symbol switches is not diagnosed — the guard detects and routes around it. |
+
+## 2026-07-01 — Tier 1 Gap: 15m timeframe not accessible via toolbar
+
+**Tier: 1 (Gap)** — `chart timeframe 15` returns `"No interval dialog button found"`.
+
+**Root cause:** TradingView toolbar only shows quick-access buttons (1s, 1m, 5m, 1h, 4h, D).
+The 15m timeframe requires clicking the dropdown chevron ("v") to expand more options.
+`chart.js` tries toolbar buttons and an interval dialog button — neither matches the dropdown.
+
+**Workaround used:** Proceeded with 1m, 5m, 1H, 1D (sufficient for the analysis).
+
+**Fix required:** In `tradingview-cdp/core/chart.js` `changeTimeframe()`, add Step 3:
+click the "show more intervals" chevron button (`[data-name="time-interval-more"]` or
+button following the last visible toolbar interval button), wait for the dropdown menu to
+appear, then click the matching resolution row. Close the dropdown after selection.
+
+**Standing permission:** Auto-approved to patch `tradingview-cdp/core/chart.js` for this fix.
+
+## 2026-09-02 — Tier 1 Gap: Batch TA sweep lacked notification when DCF baseline aged past earnings cycle
+
+**Tier: 1 (Gap)** — TA sweep did not alert when a ticker's fundamental DCF was over 90 days old (past a quarterly earnings release).
+**Fix:** Added `analyzedAt` and `daysSinceDCF` tracking to `load_dcf` in `ta_sweep_batch.py`, triggering an `EARNINGS_DCF_DUE` flag and HITL reminder when `daysSinceDCF >= 90`.
+
+## 2026-10-04 — Skill Retrofit: Align tv-author-pine-script references and TOCs
+
+**Tier: 0 (Routine Evolution)** — Connected managed symlinks in `tv-author-pine-script/references/` to canonical references (`pinescript_overview.md`, `PineScript_Agent_Skill_Rules.md`, `Top_TradingView_Indicators_Reference.md`), added early Contents TOCs, and achieved 100% audit pass across all 27 TradingView skills (0 errors, 0 warnings).
+| 2026-10-08 | Tier 1 (Gap) | Executed trades could only be imported through the optional Questrade connection; TradingView, the baseline every user has, read open orders only. | Added `getOrderHistory()` / `getOrderHistoryAllAccounts()` (Order history > Filled, header-mapped by pure `order_history.js`), `tv_trades_import.py`, a trades step in `tv-portfolio-sync`, and trade import on the Trade Log page's Sync from TV button (ADR-036). | Engine + script + skill + tests | Live run read 31 filled orders across accounts and matched all of them to trades already in the log: none duplicated, 29 gained order ids, a second run changed nothing. |
+| 2026-10-08 | Tier 1 (Gap) | The broker panel's account dropdown sometimes listed only some accounts; a trade import read TFSA alone and a position snapshot saved RRSP alone, leaving TFSA stale while reporting success. | `getAccounts` now accepts a list only when two consecutive reads agree (`core/account_reads.js`). `tv_account_coverage.py` is the shared rule for which accounts a read must cover (those holding something in the database) and re-reads up to three times; `fetch_broker_data.py --snapshot` refuses to save an incomplete snapshot (exit 3, `--allow-partial` to override) and `tv_trades_import.py` reports `incomplete_accounts` with a warning and exit 2. |
+| 2026-10-16 | Tier 2 (Failure) | `/tv-portfolio-sync` left a fully sold position in SQLite: after a position was sold to zero, `_persist_snapshot_to_db` skipped the 0-qty row but never deleted its old `account_investment` rows, overstating holdings. `questrade_sync.py` already cleaned up stale rows; the TV path did not. | Each successfully read account now calls the shared `delete_stale_account_investments()` helper. Accounts with a failed read (`error`) and `CASH_*` rows are left alone, because TV reports a CAD-only account's cash as `cashUSD 0`. | Modified `_persist_snapshot_to_db` in `fetch_broker_data.py` | 3 new tests; the sold-position test fails on `main` and passes with the fix. Open: TV price refresh only quotes symbols loaded in the TradingView Desktop watchlist. |
+| 2026-10-26 | Tier 1 (Structure) | 27 single-purpose skills shared 25 scripts through ~190 symlinks, the backend imported `place_order.py` and `fetch_broker_data.py` through links back into this plugin, and several docs cited scripts that never existed (`tv_snapshot.py`, `manage_watchlists.py`). | Three hubs (`operating-tradingview-charts`, `trading-via-tradingview`, `analyzing-charts`) with 26 mode files (setup and onboarding combined); the shared engine (`tv_client`, `tv_launch`, `tv_health_check`, `place_order`, `fetch_broker_data`, `tv_account_coverage`) became real backend modules; scripts and tests find the repo by marker; the agent's stale skill references fixed. | refactor | PASS (full regression = baseline; 25 engine tests now in the backend suite) |

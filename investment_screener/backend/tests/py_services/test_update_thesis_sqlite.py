@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-SCRIPT = REPO_ROOT / "plugins/portfolio-advisor/scripts/update_thesis.py"
+SCRIPT = REPO_ROOT / "investment_screener/backend/py_services/update_thesis.py"
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
 from domain_model.db_client import initialize_db  # noqa: E402

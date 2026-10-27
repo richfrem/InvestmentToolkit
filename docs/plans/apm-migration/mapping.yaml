@@ -1,0 +1,329 @@
+# APM migration mapping (PROPOSED - nothing here is approved until you sign off each wave).
+# Read by tools/build_ledger.py, which turns it into master_migration_inventory.csv and name-map.csv.
+# Anything in the baseline inventory that this file does not place shows up as UNMAPPED.
+
+engine_dir: investment_screener/backend/py_services        # Decision 1 (recommended default)
+engine_tests_dir: investment_screener/backend/tests/py_services
+
+plugins:                      # old plugin -> new plugin
+  questrade: questrade
+  toolkit-manager: toolkit-manager
+  tradingview: tradingview
+  portfolio-advisor: portfolio-advisor
+  stock-valuation: portfolio-advisor
+  etf-analysis: portfolio-advisor
+
+approved_waves: [1, 2, 3, 4]            # waves whose mapping you have approved
+
+waves:
+  questrade: 1
+  toolkit-manager: 2
+  tradingview: 3
+  portfolio-advisor: 4
+  stock-valuation: 4
+  etf-analysis: 4
+
+# ---------------------------------------------------------------- skills -> hub + mode
+skills:
+  # questrade (wave 1)
+  questrade-setup:           {hub: syncing-questrade-accounts, mode: setup}
+  questrade-get-balances:    {hub: syncing-questrade-accounts, mode: balances}
+  questrade-get-positions:   {hub: syncing-questrade-accounts, mode: positions}
+  questrade-activities:      {hub: syncing-questrade-accounts, mode: activities}
+  questrade-sync-portfolio:  {hub: syncing-questrade-accounts, mode: sync-portfolio}
+  questrade-refresh-prices:  {hub: syncing-questrade-accounts, mode: refresh-prices}
+  questrade-order-draft:     {hub: trading-with-questrade, mode: order-draft}
+  questrade-deposit-funds:   {hub: trading-with-questrade, mode: deposit-funds}
+  norberts-gambit:           {hub: trading-with-questrade, mode: norberts-gambit}
+  # toolkit-manager (wave 2)
+  toolkit-onboarding:        {hub: managing-the-toolkit, mode: onboarding}
+  run-screener:              {hub: managing-the-toolkit, mode: run-app}
+  sqlite-admin:              {hub: managing-the-toolkit, mode: sqlite-admin}
+  # tradingview (wave 3)
+  tv-setup:                  {hub: operating-tradingview-charts, mode: setup}
+  tv-onboarding:             {hub: operating-tradingview-charts, mode: setup}
+  tv-change-symbol:          {hub: operating-tradingview-charts, mode: change-symbol}
+  tv-change-type:            {hub: operating-tradingview-charts, mode: change-type}
+  tv-chart-setup:            {hub: operating-tradingview-charts, mode: chart-setup}
+  tv-chart-snapshot:         {hub: operating-tradingview-charts, mode: chart-snapshot}
+  tv-draw:                   {hub: operating-tradingview-charts, mode: draw}
+  tv-add-indicator:          {hub: operating-tradingview-charts, mode: add-indicator}
+  tv-manage-indicators:      {hub: operating-tradingview-charts, mode: manage-indicators}
+  tv-save-indicator:         {hub: operating-tradingview-charts, mode: save-indicator}
+  tv-pine-inject:            {hub: operating-tradingview-charts, mode: pine-inject}
+  tv-author-pine-script:     {hub: operating-tradingview-charts, mode: author-pine-script}
+  tv-thesis-overlay:         {hub: operating-tradingview-charts, mode: thesis-overlay}
+  tv-alert-list:             {hub: operating-tradingview-charts, mode: alert-list}
+  tv-alert-reconcile:        {hub: operating-tradingview-charts, mode: alert-reconcile}
+  tv-alert-sync:             {hub: operating-tradingview-charts, mode: alert-sync}
+  tv-place-order:            {hub: trading-via-tradingview, mode: place-order}
+  tv-modify-order:           {hub: trading-via-tradingview, mode: modify-order}
+  tv-cancel-order:           {hub: trading-via-tradingview, mode: cancel-order}
+  tv-get-orders:             {hub: trading-via-tradingview, mode: get-orders}
+  tv-portfolio-sync:         {hub: trading-via-tradingview, mode: portfolio-sync}
+  tv-price-refresh:          {hub: trading-via-tradingview, mode: price-refresh}
+  tv-manage-watchlists:      {hub: trading-via-tradingview, mode: manage-watchlists}
+  tv-ta-daily-sweep:         {hub: analyzing-charts, mode: ta-daily-sweep}
+  tv-ta-snapshot:            {hub: analyzing-charts, mode: ta-snapshot}
+  tv-ta-red-team:            {hub: analyzing-charts, mode: ta-red-team}
+  tv-technical-analysis-expert: {hub: analyzing-charts, mode: technical-analysis-expert}
+  # portfolio-advisor + stock-valuation + etf-analysis (wave 4)
+  update-stock-analysis:     {hub: valuing-investments, mode: update-analysis}
+  stock-research:            {hub: valuing-investments, mode: research-sweep}
+  forward-valuation-challenge: {hub: valuing-investments, mode: forward-challenge}
+  valuation-math-validation: {hub: valuing-investments, mode: math-validation}
+  etf-analysis:              {hub: valuing-investments, mode: fund-analysis}
+  stock-intake:              {hub: valuing-investments, mode: stock-intake}
+  daily-loop:                {hub: running-portfolio-reviews, mode: daily-loop}
+  weekly-review:             {hub: running-portfolio-reviews, mode: weekly-review}
+  news-sweep:                {hub: running-portfolio-reviews, mode: news-sweep}
+  adversarial-review:        {hub: running-portfolio-reviews, mode: external-review}
+  external-review:           {hub: running-portfolio-reviews, mode: external-review}
+  update-portfolio-targets:  {hub: setting-portfolio-targets, mode: update-targets}
+  calibrate-targets:         {hub: setting-portfolio-targets, mode: calibrate-targets}
+  rebalance-portfolio:       {hub: setting-portfolio-targets, mode: rebalance}
+  strategic-review:          {hub: setting-portfolio-targets, mode: strategic-review}
+  portfolio-health:          {hub: setting-portfolio-targets, mode: portfolio-health}
+  thesis-review:             {hub: setting-portfolio-targets, mode: thesis-review}
+  set-thesis-breakers:       {hub: setting-portfolio-targets, mode: set-thesis-breakers}
+  pre-trade-analysis:        {hub: setting-portfolio-targets, mode: pre-trade-analysis}
+  ytd-return:                {hub: setting-portfolio-targets, mode: ytd-return}
+  13f-tracker:               {hub: tracking-13f-filings, mode: track}
+  13f-analyze:               {hub: tracking-13f-filings, mode: analyze}
+  data-quality-audit:        {hub: auditing-portfolio-data, mode: data-quality}
+  portfolio-coverage-audit:  {hub: auditing-portfolio-data, mode: coverage}
+  screener-integrity-audit:  {hub: auditing-portfolio-data, mode: screener-integrity}
+
+# ---------------------------------------------------------------- plugin-level files
+# value: "engine" (real file in engine_dir) | hub name (real file in that hub) | DECIDE:<proposal> | RETIRE:<reason>
+# key: <old plugin>/<path relative to plugin>
+scripts:
+  # portfolio-advisor: engine (backend-imported, or shared by two or more hubs)
+  portfolio-advisor/scripts/apply_catalyst.py: engine
+  portfolio-advisor/scripts/daily_brief.py: engine
+  portfolio-advisor/scripts/generate_news_prompt.py: engine
+  portfolio-advisor/scripts/generate_portfolio_blueprint.py: engine
+  portfolio-advisor/scripts/generate_reports.py: engine
+  portfolio-advisor/scripts/generate_review_json.py: engine
+  portfolio-advisor/scripts/manage_watchlist.py: engine
+  portfolio-advisor/scripts/portfolio_action.py: engine
+  portfolio-advisor/scripts/recommendation.py: engine
+  portfolio-advisor/scripts/refresh_all.py: engine
+  portfolio-advisor/scripts/relabel_actions.py: engine
+  portfolio-advisor/scripts/update_thesis.py: engine
+  portfolio-advisor/scripts/ytd_return.py: engine
+  portfolio-advisor/scripts/update_targets.py: engine
+  portfolio-advisor/scripts/validate_weights.py: engine
+  portfolio-advisor/scripts/verify_refresh.py: engine
+  portfolio-advisor/scripts/review_gate.py: engine
+  portfolio-advisor/scripts/thesis_currency.py: engine
+  portfolio-advisor/scripts/set_standing_decision.py: engine
+  portfolio-advisor/scripts/recent_trades.py: engine
+  portfolio-advisor/scripts/risk_reward.py: engine
+  portfolio-advisor/scripts/standing_decision_check.py: engine
+  portfolio-advisor/scripts/generate_sub_strategy_blocks.py: engine
+  portfolio-advisor/scripts/update_price_levels.py: engine
+  portfolio-advisor/scripts/sync_portfolio_roles.py: engine
+  portfolio-advisor/scripts/rebaseline_targets.py: engine
+  portfolio-advisor/scripts/repo_root.py: engine
+  # portfolio-advisor: hub-owned
+  portfolio-advisor/scripts/run_daily.py: running-portfolio-reviews
+  portfolio-advisor/scripts/verify_daily_run.py: running-portfolio-reviews
+  portfolio-advisor/scripts/daily_receipts.py: running-portfolio-reviews
+  portfolio-advisor/scripts/news_sweep.py: running-portfolio-reviews
+  portfolio-advisor/scripts/record_news_sweep.py: running-portfolio-reviews
+  portfolio-advisor/scripts/weekly_review.py: running-portfolio-reviews
+  portfolio-advisor/scripts/generate_review.py: setting-portfolio-targets
+  portfolio-advisor/scripts/scan_opportunities.py: setting-portfolio-targets
+  portfolio-advisor/scripts/fetch_13f.py: tracking-13f-filings
+  portfolio-advisor/scripts/audit_coverage.py: auditing-portfolio-data
+  portfolio-advisor/scripts/list_strategy_pillars.py: valuing-investments
+  portfolio-advisor/scripts/consolidate_research.py: valuing-investments
+  portfolio-advisor/scripts/research_parity_report.py: valuing-investments
+  portfolio-advisor/scripts/test_portfolio_action.py: "TESTS:engine"
+  # stock-valuation
+  stock-valuation/scripts/comps_valuation.py: engine
+  stock-valuation/scripts/dcf_scenarios.py: engine
+  stock-valuation/scripts/dcf_sensitivity.py: engine
+  stock-valuation/scripts/fetch_financials.py: engine
+  stock-valuation/scripts/leverage.py: engine
+  stock-valuation/scripts/persist_research.py: engine
+  stock-valuation/scripts/price_changes.py: engine
+  stock-valuation/scripts/recalculate_forward_valuation.py: engine
+  stock-valuation/scripts/reverse_dcf.py: engine
+  stock-valuation/scripts/standardize_metrics.py: engine
+  stock-valuation/scripts/wacc.py: engine
+  stock-valuation/scripts/validate_projection.py: engine
+  stock-valuation/scripts/persist_valuation.py: valuing-investments
+  stock-valuation/scripts/rebase_equity_valuations.py: valuing-investments
+  # etf-analysis
+  etf-analysis/scripts/fetch_fund_data.py: valuing-investments
+  etf-analysis/scripts/persist_etf_analysis.py: valuing-investments
+  etf-analysis/scripts/validate_etf_analysis.py: valuing-investments
+  # tradingview
+  tradingview/scripts/tv_client.py: engine
+  tradingview/scripts/tv_launch.py: engine
+  tradingview/scripts/tv_health_check.py: engine
+  tradingview/scripts/place_order.py: engine
+  tradingview/scripts/fetch_broker_data.py: engine
+  tradingview/scripts/tv_account_coverage.py: engine
+  tradingview/scripts/tv_draw.py: operating-tradingview-charts
+  tradingview/scripts/tv_manage_indicators.py: operating-tradingview-charts
+  tradingview/scripts/tv_pine_inject.py: operating-tradingview-charts
+  tradingview/scripts/tv_pine_manager.py: operating-tradingview-charts
+  tradingview/scripts/pine_linter.py: engine
+  tradingview/scripts/pine_source_reader.py: operating-tradingview-charts
+  tradingview/scripts/tv_thesis_overlay.py: operating-tradingview-charts
+  tradingview/scripts/tv_create_alerts.py: operating-tradingview-charts
+  tradingview/scripts/tv_list_alerts.py: operating-tradingview-charts
+  tradingview/scripts/tv_quote.py: operating-tradingview-charts
+  tradingview/scripts/tv_get_orders.py: trading-via-tradingview
+  tradingview/scripts/tv_modify_order.py: trading-via-tradingview
+  tradingview/scripts/tv_cancel_order.py: trading-via-tradingview
+  tradingview/scripts/tv_trades_import.py: trading-via-tradingview
+  tradingview/scripts/tv_batch_quotes.py: engine
+  tradingview/scripts/tv_price_refresh.py: trading-via-tradingview
+  tradingview/scripts/watchlist_manager.py: trading-via-tradingview
+  tradingview/scripts/ta_sweep_batch.py: analyzing-charts
+  tradingview/scripts/ta_sweep_single.py: analyzing-charts
+  # toolkit-manager
+  toolkit-manager/scripts/db_backup.py: engine
+  toolkit-manager/scripts/sqlite_admin.py: managing-the-toolkit
+  toolkit-manager/scripts/audit_file_dependencies.py: managing-the-toolkit
+  toolkit-manager/scripts/audit_sqlite_usage.py: managing-the-toolkit
+  toolkit-manager/scripts/app_smoke_test.py: managing-the-toolkit
+  toolkit-manager/scripts/archive_temp_json.py: managing-the-toolkit
+  toolkit-manager/scripts/extract_ecosystem_yaml.py: managing-the-toolkit
+  # questrade
+  questrade/scripts/questrade_sync.py: syncing-questrade-accounts
+  questrade/scripts/questrade_trades_import.py: syncing-questrade-accounts
+  questrade/scripts/questrade_price_refresh.py: syncing-questrade-accounts
+  questrade/scripts/scaffold_skill.py: "DELETE:unused scaffolder, overlaps authoring-skills (approved 2026-10-26)"
+
+assets:
+  portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md: setting-portfolio-targets
+  portfolio-advisor/assets/templates/portfolio_analysis_recommendations_template.json: setting-portfolio-targets
+  portfolio-advisor/assets/templates/target_portfolio_template.json: setting-portfolio-targets
+  portfolio-advisor/assets/templates/thesis_proposal_template.md: setting-portfolio-targets
+  portfolio-advisor/assets/templates/ytd_performance_report_template.json: setting-portfolio-targets
+  portfolio-advisor/assets/templates/daily_report.md.template: running-portfolio-reviews
+  portfolio-advisor/assets/templates/weekly_report.md.template: running-portfolio-reviews
+  portfolio-advisor/assets/templates/daily_sweep.md.template: running-portfolio-reviews
+  portfolio-advisor/assets/templates/weekly_sweep.md.template: running-portfolio-reviews
+  portfolio-advisor/assets/templates/thesis-challenge-prompt.md: running-portfolio-reviews
+  stock-valuation/assets/templates/projection_template.json: valuing-investments
+  etf-analysis/assets/templates/etf_analysis_template.json: valuing-investments
+  tradingview/assets/templates/ta_thesis_template.md: analyzing-charts
+  questrade/assets/templates/SKILL.md.template: "DELETE:unused scaffold template (approved 2026-10-26)"
+  # tradingview/assets/pinescript-indicators/** -> operating-tradingview-charts (prefix rule below)
+
+asset_prefixes:
+  tradingview/assets/pinescript-indicators/: operating-tradingview-charts
+
+references:
+  # portfolio-advisor
+  portfolio-advisor/references/daily-brief-methodology.md: running-portfolio-reviews
+  portfolio-advisor/references/news-sweep-model-assessment.md: running-portfolio-reviews
+  portfolio-advisor/references/evolution-log.md: running-portfolio-reviews
+  portfolio-advisor/references/fallback-tree.md: setting-portfolio-targets
+  portfolio-advisor/references/rebalance_prompt.md: setting-portfolio-targets
+  portfolio-advisor/references/strategic_review_prompt.md: setting-portfolio-targets
+  portfolio-advisor/references/recommendation-coherence.md: setting-portfolio-targets
+  portfolio-advisor/references/thesis-page-currency.md: setting-portfolio-targets
+  portfolio-advisor/references/definitive_professional_investment_framework.md: setting-portfolio-targets
+  # stock-valuation
+  stock-valuation/references/ADR-dcf-calculator.md: valuing-investments
+  stock-valuation/references/AI-augmented-stock-valuation-and-thesis-alignment.md: valuing-investments
+  stock-valuation/references/README.md: valuing-investments
+  stock-valuation/references/ai-forward-valuation.md: valuing-investments
+  stock-valuation/references/analysis_prompt.md: valuing-investments
+  stock-valuation/references/api_reference.md: valuing-investments
+  stock-valuation/references/evolution-log.md: valuing-investments
+  stock-valuation/references/fallback-tree.md: valuing-investments
+  stock-valuation/references/interaction_flow.md: valuing-investments
+  stock-valuation/references/perform-stock-valuation-opus-version.md: valuing-investments
+  stock-valuation/references/stock_valuation_sequence.mmd: valuing-investments
+  stock-valuation/references/valuation-benchmarks.md: valuing-investments
+  stock-valuation/references/valuation-method-and-discount-rate.md: valuing-investments
+  stock-valuation/references/valuation-persistence.md: valuing-investments
+  stock-valuation/references/acceptance-criteria.md: "MERGE:valuing-investments/references/acceptance-criteria.md"
+  stock-valuation/references/valuation-skill-acceptance-criteria.md: "MERGE:valuing-investments/references/acceptance-criteria.md"
+  etf-analysis/references/evolution-log.md: valuing-investments
+  # tradingview
+  tradingview/references/PineScript_Agent_Skill_Rules.md: operating-tradingview-charts
+  tradingview/references/Top_TradingView_Indicators_Reference.md: operating-tradingview-charts
+  tradingview/references/pinescript_overview.md: operating-tradingview-charts
+  tradingview/references/chart-types-reference.md: operating-tradingview-charts
+  tradingview/references/self-evolution-profile.md: operating-tradingview-charts
+  tradingview/references/evolution-log.md: operating-tradingview-charts
+  tradingview/references/playbooks/README.md: operating-tradingview-charts
+  # toolkit-manager
+  toolkit-manager/references/agent-quick-reference.md: managing-the-toolkit
+  toolkit-manager/references/evolution-log.md: managing-the-toolkit
+  toolkit-manager/references/data-architecture/sql/01_intelligence_ledger_schema.sql: managing-the-toolkit
+  toolkit-manager/references/data-architecture/sql/02_portfolio_operations_schema.sql: managing-the-toolkit
+  toolkit-manager/references/data-architecture/sql/03_domain_data_model_schema.sql: managing-the-toolkit
+  # questrade
+  questrade/references/questrade-tool-schemas.md: syncing-questrade-accounts
+  questrade/references/questrade-mcp-ai-integration.md: syncing-questrade-accounts
+  questrade/references/evolution-log.md: syncing-questrade-accounts
+  questrade/references/norberts-gambit-questrade.md: trading-with-questrade
+
+reference_prefixes:
+  stock-valuation/references/forward-valuation-reviews/: valuing-investments
+
+agents:                       # old agent file -> new .apm/agents/<name>.agent.md
+  portfolio-advisor/agents/portfolio-advisor-orchestrator.md: portfolio-advisor
+  portfolio-advisor/agents/red-team-agent.md: portfolio-advisor
+  portfolio-advisor/agents/risk-officer-agent.md: portfolio-advisor
+  portfolio-advisor/agents/thesis-review-agent.md: portfolio-advisor
+  tradingview/agents/ta-guide.md: tradingview
+
+# ---------------------------------------------------------------- tests
+# default: a test follows the script it names (test_<stem>.py); engine script -> engine_tests_dir, hub script -> hub tests/
+# explicit overrides below ("engine" | hub name)
+test_overrides:
+  portfolio-advisor/tests/test_sweep_templates.py: running-portfolio-reviews
+  portfolio-advisor/tests/test_recommendation_coherence_contract.py: setting-portfolio-targets
+  portfolio-advisor/tests/test_daily_loop_receipts.py: running-portfolio-reviews
+  portfolio-advisor/tests/test_daily_brief_render.py: engine
+  portfolio-advisor/tests/test_generate_review_json_overwrite.py: engine
+  portfolio-advisor/tests/test_repo_root.py: engine
+  stock-valuation/tests/test_ai_forward_skill_contract.py: valuing-investments
+  stock-valuation/tests/test_annual_fcff.py: engine
+  stock-valuation/tests/test_discount_rate_audit.py: engine
+  stock-valuation/tests/test_forward_recalculation.py: engine
+  stock-valuation/tests/test_fetch_financials_performance.py: engine
+  stock-valuation/tests/fixtures/forward-valuation/BE_inputs.json: engine
+  stock-valuation/tests/fixtures/forward-valuation/MU_inputs.json: engine
+  tradingview/tests/test_account_parsing.py: engine
+  tradingview/tests/test_fetch_broker_data_compare.py: engine
+  tradingview/tests/test_fetch_broker_data_exchange_rate.py: engine
+  tradingview/tests/test_tv_account_coverage.py: engine
+  tradingview/tests/test_tv_alert_reconcile.py: operating-tradingview-charts
+  tradingview/tests/tv_test_harness.py: engine
+  toolkit-manager/tests/test_file_dependency_guard.py: managing-the-toolkit
+  toolkit-manager/tests/test_no_retired_file_access.py: managing-the-toolkit
+  toolkit-manager/tests/test_audit_sqlite_usage.py: managing-the-toolkit
+  toolkit-manager/tests/test_app_smoke_test.py: managing-the-toolkit
+  toolkit-manager/tests/test_archive_temp_json.py: managing-the-toolkit
+  toolkit-manager/tests/test_sqlite_admin.py: managing-the-toolkit
+  etf-analysis/tests/test_persist_etf_analysis.py: valuing-investments
+
+# ---------------------------------------------------------------- manifests, docs, data
+manifests:                    # all retired in favour of the new apm.yml (Decision 4, option A)
+  - plugin.json
+  - plugin.yaml
+  - .claude-plugin/plugin.json
+  - .mcp.json                 # questrade: becomes dependencies.mcp in apm.yml
+
+docs:                         # old doc -> merge target
+  portfolio-advisor/README.md: "KEEP:portfolio-advisor/README.md"
+  portfolio-advisor/CONNECTORS.md: "KEEP:portfolio-advisor/CONNECTORS.md"
+  stock-valuation/README.md: "MERGE:portfolio-advisor/README.md"
+  stock-valuation/CONNECTORS.md: "MERGE:portfolio-advisor/CONNECTORS.md"
+  tradingview/README.md: "KEEP:tradingview/README.md"
+  toolkit-manager/README.md: "KEEP:toolkit-manager/README.md"
+
+data_prefixes:                # runtime data that is not package content
+  tradingview/audit/: "DECIDE:move out of the plugin after confirming the writer path"

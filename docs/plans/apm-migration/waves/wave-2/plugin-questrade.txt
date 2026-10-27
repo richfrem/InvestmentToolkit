@@ -1,0 +1,4 @@
+== plugin-questrade
+...........................                                              [100%]
+27 passed in 2.77s
+exit=0

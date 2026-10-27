@@ -1,0 +1,1659 @@
+== backend-ts
+
+
+  mergeIntoPortfolio — broker ticker aliases
+    ✔ normalizes PSU.U.TO from TV to canonical PSU-U.TO
+    ✔ merges TV dot-form into an existing hyphen-form holding (no duplicate, no false add/remove)
+    ✔ aggregates dot and hyphen forms across accounts into one position
+    ✔ leaves non-aliased symbols untouched
+
+  BrokerSyncService.persistSnapshotToDb
+    ✔ writes real account_investment rows for positions and a CASH_USD row for balances (171ms)
+    ✔ writes an investment_price row of $1.00 for CASH_USD, not just an account_investment row (162ms)
+    ✔ converts a CAD-only cash balance (cashUSD=0) to its USD equivalent, not silently $0 (159ms)
+    ✔ persistSnapshotToDb writes only the SQLite dbPath — creates no JSON file (159ms)
+    ✔ syncAuto writes only through persistSnapshotToDb (source-level regression guard)
+    ✔ skips unrecognized non-real accounts and zero/negative-quantity positions (157ms)
+    ✔ removes a fully closed position from account_investment on the next sync (164ms)
+    ✔ leaves an untouched account's rows alone when only other accounts are synced (161ms)
+
+  BrokerSyncService stored-positions fallback
+    ✔ serves the stored positions with the last sync time in the message (160ms)
+    ✔ says TradingView is unreachable when it is (159ms)
+    ✔ reports an explicit empty state for an empty database (157ms)
+
+  dailybrief.ts route helpers integration tests
+[Bridge] Spawning: python3 /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/py_services/query_ledger_brief.py --latest --db-path /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/temp/test_intelligence_brief.sqlite
+    ✔ queryLatestBriefFromLedger returns the latest REVIEW_DAILY event payload (40ms)
+[Bridge] Spawning: python3 /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/py_services/query_ledger_brief.py --history --db-path /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/temp/test_intelligence_brief.sqlite
+    ✔ queryBriefHistoryFromLedger returns mapped metadata for all available events sorted descending
+[Bridge] Spawning: python3 /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/py_services/query_ledger_brief.py --conviction MSFT --db-path /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/temp/test_intelligence_brief.sqlite
+    ✔ queryTickerConvictionFromLedger returns historical conviction scores for one ticker sorted ascending
+
+  dailybrief.ts route handlers — no JSON fallback after Wave 5C cutover
+    ✔ module no longer exports latestBriefPath or references BRIEFS_DIR fallback
+    ✔ module source no longer contains legacy filesystem fallback code
+
+  replaceGeneratedBlueprint
+    ✔ replaces the generated block, markers included, with the live-positions marker
+    ✔ keeps the headings and prose around the block
+    ✔ leaves a document with no generated block unchanged, marker included
+    ✔ ignores an unterminated block rather than swallowing the rest of the document
+
+  DATED_FILENAME_RE / CANONICAL_FILENAME_RE
+    ✔ accepts a dated filename
+    ✔ accepts a canonical summary/timeline filename
+    ✔ rejects neither shape
+
+  parseResearchFilename
+    ✔ parses a dated filename into ticker + date
+    ✔ parses a canonical filename into ticker + null date (not undefined)
+
+  docs.ts ledger query helpers
+[Bridge] Spawning: python3 /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/py_services/query_ledger_research.py --get MSFT_2026-07-18.md --db-path /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/temp/test_intelligence_docs.sqlite
+    ✔ queryLatestResearchFromLedger retrieves research event body by filename
+[Bridge] Spawning: python3 /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/py_services/query_ledger_research.py --list --db-path /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/temp/test_intelligence_docs.sqlite
+    ✔ queryResearchListFromLedger retrieves all active research event references
+
+  getResearchReport (Wave 5A — no fs fallback for dated filenames)
+    ✔ rejects a filename matching neither shape
+[Bridge] Spawning: python3 /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/py_services/query_ledger_research.py --get MSFT_2026-07-18.md --db-path /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/temp/test_intelligence_docs_report.sqlite
+    ✔ serves a dated filename found in the ledger (40ms)
+[Bridge] Spawning: python3 /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/py_services/query_ledger_research.py --get MSFT_2026-07-18.md --db-path /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/temp/test_intelligence_docs_report.sqlite
+    ✔ returns not_found for a dated filename missing from the ledger, even when a stale file of the same name exists on disk (no fs fallback) (39ms)
+    ✔ serves a canonical (.summary.md) filename from disk — unaffected by ledger state
+    ✔ returns not_found for a canonical filename missing from disk
+
+  routes/portfolio.ts GET / display holdings (Wave 3 completion)
+    ✔ returns null on an empty db so GET / reports an empty state (158ms)
+    ✔ sources shares/price and enriched metadata from SQLite once populated (173ms)
+    ✔ falls back to "Unknown" sector/industry before the first price refresh (171ms)
+    ✔ persistRefreshedPricesToDb writes sector/industry into investment.* (163ms)
+    ✔ a price-only item (no sector/industry keys) never blanks resolved metadata (160ms)
+    ✔ static guard: /sync-tv/promote and /sync-tv/apply persist only via persistSnapshotToDb
+
+  portfolio route: SQLite only, no JSON fallback
+    ✔ has no readPortfolio, PORTFOLIO_FILE or backupPortfolio
+    ✔ has no POST / route that saves positions
+    ✔ serves an explicit empty state, not file data, when the database has no positions
+    ✔ paths.ts exports no retired data file constant
+    ✔ does not hand a portfolio file path to the performance script
+
+  routes/portfolio.ts persistPortfolioWithSnapshot -> SQLite dual-write
+    ✔ a promote/apply-shaped tvSnapshot persists real per-account rows (161ms)
+
+  routes/portfolio.ts /refresh-prices -> SQLite-only price persistence
+    ✔ persists a freshly-refreshed price into investment_price (not the stale one) (158ms)
+    ✔ the /refresh-prices handler is SQLite-only: it writes no file
+    ✔ the /refresh-prices handler takes prices from TradingView only and does not clear stored prices
+    ✔ skips USD_CASH and non-numeric/non-positive prices without throwing (163ms)
+    getWatchlistTickersForRefresh
+      ✔ returns watchlist-only tickers as shares:0 refresh items (162ms)
+      ✔ returns an empty array when nothing is watchlisted (165ms)
+
+  routes/portfolio.ts SQLite-backed read helpers (Wave 3 Task 6)
+    ✔ getPositionPriceFromDb is read-only: an unknown ticker returns null and creates no investment row (210ms)
+    ✔ getPortfolioTotalUsdFromDb returns null on an empty db (158ms)
+    ✔ getPortfolioTotalUsdFromDb sums per-account totals (4 NVDA @ 900 + 10 AMD @ 130) (156ms)
+    ✔ getWeightsFromDb returns per-symbol percentage weights summing to ~100 (164ms)
+    ✔ getStrategyAllocationInputFromDb returns positions + totalUSD sourced from SQLite (160ms)
+    ✔ getAccountPositionsFromDb returns per-account quantity/average_cost for a ticker (159ms)
+    ✔ getAccountPositionsFromDb returns [] for a symbol with no rows (164ms)
+    ✔ getLastSyncedAtFromDb returns null on an empty db (157ms)
+    ✔ getLastSyncedAtFromDb returns the real, current sync timestamp (not frozen) (160ms)
+    ✔ getBookValueAndCountFromDb returns null on an empty db (161ms)
+    ✔ getBookValueAndCountFromDb sums quantity*average_cost and counts positions  (161ms)
+    ✔ getPositionPriceFromDb returns null for a ticker with no investment_price row (159ms)
+    ✔ getPositionPriceFromDb returns live price and weighted-average book_price (161ms)
+    ✔ getJan1UsdCadRateFromDb is null with no baseline, and returns the recorded rate once set (160ms)
+
+  buildPortfolioSnapshot
+    ✔ adds market_value to each holding (shares * price)
+    ✔ preserves all existing holding fields
+    ✔ sums holdingsUSD from market_value
+    ✔ excludes USD_CASH entries from holdingsUSD
+    ✔ sums cashUSD from all TV snapshot account balances
+    ✔ computes totalUSD as holdingsUSD + cashUSD
+    ✔ computes totalCAD as totalUSD * exchangeRate
+    ✔ stores exchangeRate in totals
+    ✔ includes a timestamp in totals
+    ✔ handles missing cashUSD in snapshot balances gracefully
+    ✔ handles empty snapshots array gracefully
+    ✔ falls back to USD_CASH entry in holdings when TV snapshot has no cash or is empty
+    ✔ marks totalUSD as computed_fallback when no authoritative total is provided
+    ✔ prefers an authoritative total over the shares*price fallback when provided
+    ✔ recomputes totalCAD from the authoritative total, not the shares*price sum
+    ✔ falls back to computed total when authoritative total is explicitly zero
+    ✔ falls back to computed total when authoritative total is null
+
+  preserveAuthoritativeTotal
+    ✔ carries forward a previously-known authoritative total when no fresh one exists
+    ✔ uses the computed fallback when no prior authoritative total exists
+    ✔ uses the computed fallback when the prior total was itself only a fallback
+
+  computeWeightsMap
+    ✔ divides each holding market_value by the persisted totals.totalUSD, not a recomputed sum
+    ✔ falls back to a recomputed sum when totals is null
+    ✔ falls back to a recomputed sum when totals.totalUSD is zero
+    ✔ supports ticker field as an alternative to symbol
+
+  canonical recommendation bridge
+[Bridge] Spawning: python3 /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/py_services/recommendation.py --all --db /var/folders/d0/rrrgzlc17vq7mmy70mbxfy0r0000gn/T/recommendations-GJESVb/domain_model.sqlite
+    1) returns actual records and never derives actions from targets
+
+  routes/screener.ts SQLite-backed read helper (Wave 3 Task 6)
+    ✔ returns null when the tmp SQLite db has no priced positions (156ms)
+    ✔ returns {symbol, shares, price} per ticker aggregated across accounts (162ms)
+
+  buildActualPctMap — single source of truth for current weight %
+    ✔ uses getWeightsFromDb() values exactly — no independent recomputation drift (161ms)
+    ✔ falls back to shares*price/totalValue math when dbWeights is null (no priced positions yet)
+    ✔ getProjectedTickersFromDb returns the symbols with a saved projection (hasValuation) and an empty set otherwise (162ms)
+
+  buildLookupDictionary
+    ✔ should map exact tickers to themselves
+    ✔ should map company names in uppercase without suffixes
+    ✔ should handle phonetic and common typos/aliases (e.g. CEREBRUS, GOOGLE, FACEBOOK)
+    ✔ should normalize spaces and special characters
+
+  routes/stock.ts SQLite-backed read helper (Wave 3 Task 6)
+    ✔ returns null when the tmp SQLite db has no priced positions (156ms)
+    ✔ returns totalUSD summed across accounts (4 NVDA @ 900 + 10 AMD @ 130) (162ms)
+    ✔ identifies symbol not found or insufficient financial data errors as 404 client errors
+
+  computeStrategyAllocation
+    ✔ falls back to book_price when price is null or undefined
+    ✔ uses totals.totalUSD as totalUSD when available
+    ✔ falls back to sum of positions when totals is not available
+
+  stripGeneratedPositions
+    ✔ removes the generated positions section through the end of the document
+    ✔ drops the trailing rule so the document does not end on a dangling divider
+    ✔ keeps any section that follows the generated one
+    ✔ returns a document without the section unchanged
+
+  currencyView
+    ✔ is null when the document has no note
+    ✔ gives the age in days and marks a note older than a week as stale
+    ✔ carries the note text and who wrote it
+    ✔ never reports a negative age for a note dated today
+
+  routes/trading.ts readLog()/writeLog() (Wave 4 Task 11 SQLite cutover)
+    ✔ readLog() returns [] against a fresh/empty DB (154ms)
+    ✔ writeLog() then readLog() round-trips an entry with the original JSON shape (164ms)
+    ✔ writeLog() upserts in place — a second call with the same id updates, no duplicate row (228ms)
+    ✔ preserves tvOrderId across writeLog/readLog (needed by /modify, /cancel, /log/sync-from-tv) (161ms)
+    ✔ readLog() returns entries newest-first by loggedAt, matching the old unshift() order (158ms)
+    ✔ writeLog() resolves ticker -> investment_id and creates the account row if new (162ms)
+
+  BrokerSyncService exchange-rate (Wave 3 Task 8)
+    ✔ computes rate as sum(CAD)/sum(USD) across snapshots, mirroring helpers.ts
+    ✔ returns null when no CAD/USD totals present
+    ✔ persistSnapshotToDb writes the computed rate into broker_exchange_rate (158ms)
+    ✔ computes broker-reported total as sum(USD)/sum(CAD) combined across snapshots
+    ✔ returns null when no USD equity total present
+    ✔ persistSnapshotToDb writes the broker-reported total into broker_reported_total (164ms)
+
+  BrokerSyncService.spawnFetchBroker (stdout IPC)
+    ✔ parses the snapshot from stdout, ignoring stderr progress noise
+    ✔ parses the LAST non-empty stdout line when earlier stray stdout output exists
+    ✔ rejects when the subprocess exits non-zero
+    ✔ rejects when stdout has no parseable JSON line
+
+  getLiveUsdCadRate (Wave 3 Task 8 — SQLite-sourced)
+    ✔ falls back to the static fallback when no rate has been synced (165ms)
+    ✔ returns the stored rate exactly when synced (160ms)
+
+  InvestmentRepository
+    listThesisHoldings
+      ✔ only returns rows with a non-null target_weight, mapped to the JSON holding shape
+    listDocumentMembers
+      ✔ maps each ticker to the thesis documents that list it, sorted, and is empty without members
+    getDocumentCurrency
+      ✔ is null until a note exists, then returns the one current note
+    listWatchlisted
+      ✔ returns only is_watchlisted=1 rows as {ticker, addedAt}
+    listPillars
+      ✔ maps strategy_pillar rows to {id, name, targetWeight}
+    standingDecision byte-for-byte parity (real domain_model.sqlite)
+[standingDecision parity] ticker=AAPL type=WATCHLIST_WAIT_FOR_PULLBACK
+      ✔ getInvestment() matches an independent ground-truth query for a real ticker
+
+  PortfolioChangeLogRepository
+    ✔ returns empty list when no entries exist
+    ✔ addEntry appends, does not replace
+    ✔ listEntries ordered by date ascending
+
+  PortfolioRepository
+    upsertAccountInvestment
+      ✔ round-trips a write+read for a fixture account/investment/quantity
+      ✔ is idempotent — a second call for the same (account, investment) updates in place, no duplicate row
+    listPositionsBySymbol average cost across accounts
+      ✔ returns the quantity-weighted average cost, not the highest account cost
+      ✔ ignores accounts with no recorded cost instead of treating them as zero
+    broker reported total (broker_reported_total singleton)
+      ✔ returns null when never synced
+      ✔ round-trips a total and overwrites the single row idempotently
+    getLastSyncedAt
+      ✔ returns null when no account_investment rows exist yet
+      ✔ returns the most recent last_synced_at across all account_investment rows
+      ✔ reflects a fresh sync overwriting an older last_synced_at (idempotent upsert)
+    exchange rate (broker_exchange_rate singleton)
+      ✔ returns null when never synced
+      ✔ round-trips a rate and overwrites the single row idempotently
+    portfolio policy (portfolio_policy singleton, Wave 5E)
+      ✔ returns null when never written
+      ✔ reads back a row seeded via the Python-owned schema/columns
+
+  PriceLevelRepository
+    ✔ returns null for an investment with no price levels
+    ✔ round-trips buy/sell tiers, stop loss, and target entry price
+    ✔ replacePriceLevels fully replaces the prior set (full-rewrite semantics)
+    ✔ handles no stop loss / no target entry gracefully
+
+  ProjectionRepository
+    upsertProjection
+      ✔ assigns version 1 to a brand-new projection
+      ✔ increments version on re-save of the same id
+      ✔ throws a Conflict error when incoming version is stale
+      ✔ does not collide version slots for two distinct ids on the same ticker
+      ✔ never overwrites an earlier version when the same id is saved repeatedly
+      ✔ a same-id re-save never overwrites another identity's version
+      ✔ persists scenarios and passthrough fields (round trips via raw_json)
+    source column persistence (caught live 2026-08-28)
+      ✔ writes the source column, not just raw_json — get_latest_projection_by_source (Python) filters on this column directly
+    listProjectedTickers
+      ✔ returns the upper-cased symbols that have a saved projection, once each
+    findByTicker / findAll
+[ProjectionRepository] Reconstructed legacy projection failed schema validation (ticker=HIGH, id=04bdd6a8-5c5b-4376-8ea0-68736694977d, projection_id=HIGH:1): [
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "savedAt"
+    ]
+  },
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "updatedAt"
+    ]
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "null",
+    "path": [
+      "snapshot",
+      "price"
+    ],
+    "message": "Expected number, received null"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "null",
+    "path": [
+      "snapshot",
+      "shares"
+    ],
+    "message": "Expected number, received null"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "null",
+    "path": [
+      "snapshot",
+      "revenue"
+    ],
+    "message": "Expected number, received null"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "scenarios",
+      "bear"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "scenarios",
+      "base"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "scenarios",
+      "bull"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "aiThesis",
+      "analyzedAt"
+    ]
+  },
+  {
+    "code": "too_big",
+    "maximum": 100,
+    "type": "number",
+    "inclusive": true,
+    "exact": false,
+    "message": "Number must be less than or equal to 100",
+    "path": [
+      "globalSettings",
+      "discountRate"
+    ]
+  }
+]
+[ProjectionRepository] Reconstructed legacy projection failed schema validation (ticker=HIGH, id=04bdd6a8-5c5b-4376-8ea0-68736694977d, projection_id=HIGH:1): [
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "savedAt"
+    ]
+  },
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "updatedAt"
+    ]
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "undefined",
+    "path": [
+      "snapshot",
+      "price"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "undefined",
+    "path": [
+      "snapshot",
+      "shares"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "undefined",
+    "path": [
+      "snapshot",
+      "revenue"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "scenarios",
+      "bear"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "scenarios",
+      "base"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "scenarios",
+      "bull"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "aiThesis",
+      "analyzedAt"
+    ]
+  }
+]
+      ✔ uses the Python decimal-rate contract even above 100% and preserves absent rates (640ms)
+[ProjectionRepository] Reconstructed legacy projection failed schema validation (ticker=AUDIT, id=1abdf74a-5ca1-49b5-bc11-764fccbfa1be, projection_id=AUDIT:1): [
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "savedAt"
+    ]
+  },
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "updatedAt"
+    ]
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "null",
+    "path": [
+      "snapshot",
+      "shares"
+    ],
+    "message": "Expected number, received null"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "null",
+    "path": [
+      "snapshot",
+      "revenue"
+    ],
+    "message": "Expected number, received null"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "scenarios",
+      "bear"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "scenarios",
+      "bull"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "aiThesis",
+      "analyzedAt"
+    ]
+  }
+]
+      ✔ serves the Python-calculated rate audit from SQLite without recalculating it (939ms)
+[ProjectionRepository] Reconstructed legacy projection failed schema validation (ticker=APLD, id=92507a4a-80d0-4d45-bd9d-61cdff640816, projection_id=APLD:1): [
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "savedAt"
+    ]
+  },
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "updatedAt"
+    ]
+  },
+  {
+    "code": "custom",
+    "message": "Scenario weights must sum to 1.0",
+    "path": [
+      "scenarios",
+      "base"
+    ]
+  },
+  {
+    "code": "invalid_string",
+    "validation": "datetime",
+    "message": "Invalid datetime",
+    "path": [
+      "aiThesis",
+      "analyzedAt"
+    ]
+  }
+]
+      ✔ normalizes the canonical Python persistence snapshot without losing scenario targets or discount settings (449ms)
+      ✔ returns an empty array for an unknown ticker
+      ✔ returns ONE current-state entry when the same id is saved twice (Finding 2 regression)
+      ✔ returns TWO entries when two distinct ids are saved for the same ticker (Finding 2 regression)
+      ✔ aggregates current-state-per-identity projections across all tickers
+    deleteById
+      ✔ returns false when the ticker does not exist
+      ✔ returns false when the id does not exist for a known ticker
+      ✔ deletes a matching projection and its scenarios
+
+  buildPositionRows
+    ✔ gives a held ticker its shares, cost, market value, weight, target and gap from the database reads
+    ✔ lists an unheld thesis ticker as 0% of the portfolio with zero shares
+    ✔ gives an unheld ticker with a target a negative gap: the allocation it is missing
+    ✔ leaves the weight unknown (null) for a held ticker the weight calculation does not cover
+    ✔ takes the action from the recommendation verbatim and leaves it null without one
+    ✔ includes a held ticker that has no thesis row, as untracked
+    ✔ marks cash rows with the cash pillar and no strategy
+    ✔ lists the thesis documents a ticker belongs to, empty when none
+
+  ThesisService.getLatestAIProjection
+    ✔ returns null when the ticker has no projections
+    ✔ returns null when projections exist but none are source AI_AGENT
+    ✔ returns the latest AI_AGENT projection by version, not the file-order default
+    ✔ reads through ProjectionService, not through data/projections/*.json on disk
+
+  ThesisService.getPortfolioItems (Wave 3 Task 6)
+    ✔ returns [] when the tmp SQLite db has no priced positions (159ms)
+    ✔ reads per-symbol quantity/price aggregated from account_investment/investment_price (160ms)
+
+  ThesisService.getAccountPolicy (Wave 5E cutover)
+    ✔ returns null when portfolio_policy has never been written (no account_policy.json fallback) (160ms)
+    ✔ reads the account policy from portfolio_policy (SQLite), not account_policy.json (162ms)
+
+  ThesisService CRUD (SQLite)
+    getThesis
+      ✔ carries each holding's stored thesis breakers and validates them
+      ✔ gives a holding with no breakers an empty list
+      ✔ validates persisted legacy price levels without inventing missing metadata
+      ✔ returns null for a non-canonical id
+      ✔ assembles the thesis document from SQLite
+      ✔ has no thesis-file path helpers (source-level guard)
+    listTheses
+      ✔ returns the single canonical thesis entry
+      ✔ returns empty array when no thesis holdings exist yet (164ms)
+    updateHolding
+      ✔ writes the updated target weight to investment.target_weight
+    addHolding
+      ✔ writes a new holding into investment
+      ✔ throws if the holding already exists
+    removeHolding
+      ✔ zeroes target_weight rather than deleting the investment row
+    deleteThesis
+      ✔ is a no-op that returns false (single-document architecture)
+
+  WatchlistService
+    ✔ marks a ticker as watchlisted in sqlite (159ms)
+    ✔ is idempotent — adding the same ticker twice does not reset watchlist_added_at (174ms)
+    ✔ removes a ticker from the watchlist (is_watchlisted=0) (161ms)
+    ✔ creates the investment row if it does not already exist (160ms)
+    getWatchlist (read-path cutover)
+      ✔ returns an empty array when nothing is watchlisted (167ms)
+      ✔ returns watchlisted tickers with their addedAt timestamps (180ms)
+      ✔ excludes tickers after they are removed from the watchlist (163ms)
+
+  ThesisBreakerRepository
+    ✔ round-trips auto and manual definitions
+    ✔ lists every ticker when no symbol is given
+    ✔ upsert replaces an existing breaker
+    ✔ rejects invalid breakers and unknown tickers
+    ✔ deletes a breaker with its state and rejects an unknown id
+    ✔ sets a manual status, rejecting auto breakers
+    ✔ replaces state, round-trips it, and rejects state for an undefined breaker
+
+  TradeLogRepository
+    upsertTradeLogEntry
+      ✔ creates a new row and round-trips via getTradeLogEntry
+      ✔ persists tv_order_id (Task 11 addition — needed by /modify, /cancel, /log/sync-from-tv)
+      ✔ is idempotent — a second call for the same entry_id updates in place, no duplicate row
+    listTradeLogEntries
+      ✔ lists all entries when no accountId filter is given
+      ✔ filters by accountId when provided
+    getTradeLogEntry
+      ✔ returns null when the entry does not exist
+    deleteTradeLogEntry
+      ✔ removes the row
+
+  lifecycle vocabulary
+    ✔ matches py_services/portfolio_io.py LIFECYCLE_STATUSES
+    ✔ matches py_services/portfolio_io.py INACTIVE_STATUSES
+    ✔ accepts exactly the writer statuses plus the inactive ones
+
+  schemaVersion gate (Python owns the schema)
+    ✔ requires the newest migration number present in schema/domain_model
+    ✔ asks Python to build a brand-new empty database, then proceeds (160ms)
+    ✔ is a no-op on an up-to-date database (159ms)
+    ✔ refuses (and does not migrate) a populated database that is behind
+    ✔ refuses a database newer than this checkout understands
+    ✔ refuses to build an in-memory database (Python cannot reach it)
+
+  Zod Schemas Validation
+Validation Errors: {
+  "_errors": [],
+  "holdings": {
+    "0": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "1": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "2": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "3": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "4": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "5": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "7": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "8": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "9": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "10": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "11": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "12": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "13": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "14": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "16": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "18": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "19": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "20": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "21": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "22": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "23": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "24": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "25": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "26": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "27": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "30": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "31": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "32": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "33": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "36": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "37": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "38": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "40": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "41": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "43": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "44": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "45": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "47": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "49": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "51": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "53": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "54": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "57": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "58": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "61": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "63": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "64": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "65": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "66": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "71": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "72": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "74": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "75": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "77": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "78": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "79": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "80": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "81": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "82": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "83": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "84": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "87": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "88": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "89": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "90": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "91": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "92": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "93": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "94": {
+      "_errors": [],
+      "priceLevels": {
+        "_errors": [],
+        "stopLoss": {
+          "_errors": [],
+          "type": {
+            "_errors": [
+              "Invalid enum value. Expected 'thesis_breaker' | 'trailing' | 'manual', received 'support_break'"
+            ]
+          }
+        }
+      }
+    },
+    "_errors": []
+  }
+}
+    2) should successfully validate the production thesis ground truth (from domain_model.sqlite)
+
+
+  237 passing (25s)
+  2 failing
+
+  1) canonical recommendation bridge
+       returns actual records and never derives actions from targets:
+     AssertionError: expected 'Needs analysis this cycle (not yet re…' to include 'no valuation'
+      at /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/tests/api/resolveFallbackAction.spec.ts:30:47
+      at Generator.next (<anonymous>)
+      at fulfilled (tests/api/resolveFallbackAction.spec.ts:5:58)
+
+  2) Zod Schemas Validation
+       should successfully validate the production thesis ground truth (from domain_model.sqlite):
+
+      AssertionError: expected false to be true
+      + expected - actual
+
+      -false
+      +true
+      
+      at /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/tests/utils/zod-schemas.spec.ts:20:42
+      at Generator.next (<anonymous>)
+      at fulfilled (tests/utils/zod-schemas.spec.ts:5:58)
+
+
+
+exit=2

@@ -40,7 +40,7 @@ npm ci
 cd ..
 
 # Verify
-python3 plugins/tradingview/scripts/tv_health_check.py
+python3 investment_screener/backend/py_services/tv_health_check.py
 ```
 
 ---
@@ -67,6 +67,18 @@ TradingView adds a real-time price layer **only for current price and 1d change%
 **Automatic fallback:** if TradingView is not running or not reachable, the screener and analysis scripts fall back to yfinance (price refresh is the exception: it uses TradingView only and reports an error instead). The screener, heatmap, and portfolio table continue working exactly as before.
 
 ---
+
+## Packaging layout
+
+This plugin is an APM-native package (`apm.yml`, primitives under `.apm/`). The 27 original skills are modes of three skills; slash commands are unchanged.
+
+| Skill | Modes |
+|---|---|
+| `operating-tradingview-charts` | setup, change-symbol, change-type, chart-setup, chart-snapshot, draw, add-indicator, manage-indicators, save-indicator, pine-inject, author-pine-script, thesis-overlay, alert-list, alert-reconcile, alert-sync |
+| `trading-via-tradingview` | place-order, modify-order, cancel-order, get-orders, portfolio-sync, price-refresh, manage-watchlists |
+| `analyzing-charts` | ta-daily-sweep, ta-snapshot, ta-red-team, technical-analysis-expert |
+
+The shared engine (`tv_client.py`, `tv_launch.py`, `tv_health_check.py`, `place_order.py`, `fetch_broker_data.py`, `tv_account_coverage.py`) lives in `investment_screener/backend/py_services/` because the backend imports it. The `ta-guide` agent is in `.apm/agents/`. `audit/` holds runtime order logs written by `tradingview-cdp/core/audit.js`; it is local data, not package content. Tests are under each skill's `tests/` (pytest skips dot-directories, so pass the path explicitly).
 
 ## Skills
 
@@ -130,7 +142,7 @@ node tradingview-cdp/cli.js chart openDataWindow  # open panel + switch tab
 node tradingview-cdp/cli.js chart read            # returns JSON of all indicator values
 
 # Pine Script
-node tradingview-cdp/cli.js pine inject --file plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine
+node tradingview-cdp/cli.js pine inject --file plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/ai-ta-levels.pine
 node tradingview-cdp/cli.js pine save "AI TA Levels"
 node tradingview-cdp/cli.js pine read             # read current Pine Editor content
 ```
@@ -143,14 +155,14 @@ node tradingview-cdp/cli.js pine read             # read current Pine Editor con
 
 ### Custom Pine Script Indicators
 
-Indicator files live at `plugins/tradingview/assets/pinescript-indicators/`:
+Indicator files live at `plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/`:
 
 | File | Purpose |
 |------|---------|
 | `ai-ta-levels.pine` | Multi-EMA (21/50/200) + volume bias % — designed to give AI precise numeric levels from the Data Window without relying on screenshot OCR |
 | `community-reference/pa-toolkit-lite-ualgo.pine` | PA Toolkit Lite source (CC BY-NC-SA 4.0) — reference for `type` UDTs, `box.new()` order blocks, `ta.pivothigh`/`ta.pivotlow` liquidity detection patterns |
 
-Lint before injecting: `python3 plugins/tradingview/skills/author-pine-script/scripts/pine_linter.py <file.pine>`
+Lint before injecting: `python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/pine_linter.py <file.pine>`
 
 ---
 
@@ -160,47 +172,47 @@ All scripts run from the repo root:
 
 ```bash
 # Single ticker quote (reads active chart; label shows requested symbol)
-python3 plugins/tradingview/scripts/tv_quote.py CRWV
+python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_quote.py CRWV
 
 # Batch quotes
-python3 plugins/tradingview/scripts/tv_batch_quotes.py '["CRWV","NVDA","INTC","AMD"]'
+python3 plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_batch_quotes.py '["CRWV","NVDA","INTC","AMD"]'
 
 # Create DCF alerts for all holdings
-python3 plugins/tradingview/scripts/tv_create_alerts.py
+python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_create_alerts.py
 
 # Create DCF alerts for one ticker
-python3 plugins/tradingview/scripts/tv_create_alerts.py --ticker CRWV
+python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_create_alerts.py --ticker CRWV
 
 # Dry run (shows what would be created)
-python3 plugins/tradingview/scripts/tv_create_alerts.py --dry-run
+python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_create_alerts.py --dry-run
 
 # Health check
-python3 plugins/tradingview/scripts/tv_health_check.py
-python3 plugins/tradingview/scripts/tv_health_check.py --json
+python3 investment_screener/backend/py_services/tv_health_check.py
+python3 investment_screener/backend/py_services/tv_health_check.py --json
 
 # Launch TradingView manually (also done automatically at startup)
-python3 plugins/tradingview/scripts/tv_launch.py
+python3 investment_screener/backend/py_services/tv_launch.py
 
 # Daily portfolio TA sweep — scans all holdings, writes TECHNICAL_SWEEP events to the Intelligence Ledger
-python3 plugins/tradingview/scripts/ta_sweep_batch.py
-python3 plugins/tradingview/scripts/ta_sweep_batch.py --skip HUMN,WYFI    # skip specific tickers
-python3 plugins/tradingview/scripts/ta_sweep_batch.py --delay 1200         # faster scan (~1.2s/ticker)
+python3 plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_batch.py
+python3 plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_batch.py --skip HUMN,WYFI    # skip specific tickers
+python3 plugins/tradingview/.apm/skills/analyzing-charts/scripts/ta_sweep_batch.py --delay 1200         # faster scan (~1.2s/ticker)
 
 # Results written to the Intelligence Ledger (TECHNICAL_SWEEP events) / SQLite read-model, not to a flat JSON file by default.
 
 # --- Order Management (requires TradingView Desktop + broker connected) ---
 
 # List open Working/Inactive orders with UUIDs
-python3 plugins/tradingview/scripts/tv_get_orders.py
-python3 plugins/tradingview/scripts/tv_get_orders.py --ticker INTC --json
+python3 plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_get_orders.py
+python3 plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_get_orders.py --ticker INTC --json
 
 # Modify a limit order price (finds row by UUID, fills form via keyboard events)
-python3 plugins/tradingview/scripts/tv_modify_order.py \
+python3 plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_modify_order.py \
     --order-id 292b5304-0c3d-42c2-02c0-290f6d322c12 \
     --new-price 47.00 --ticker INTC --action buy
 
 # Cancel an order (clicks × row button, handles secondary confirmation dialog)
-python3 plugins/tradingview/scripts/tv_cancel_order.py \
+python3 plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_cancel_order.py \
     --order-id 292b5304-0c3d-42c2-02c0-290f6d322c12 \
     --ticker INTC --action buy
 

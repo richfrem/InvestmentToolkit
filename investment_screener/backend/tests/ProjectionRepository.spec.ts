@@ -137,7 +137,7 @@ describe('ProjectionRepository', () => {
         it('writes the source column, not just raw_json — get_latest_projection_by_source (Python) filters on this column directly', () => {
             // Caught live persisting AMAT's projection: the API returned success,
             // and findByTicker (which reads raw_json) showed source correctly, but
-            // plugins/portfolio-advisor/scripts/update_price_levels.py's
+            // investment_screener/backend/py_services/update_price_levels.py's
             // load_latest_projection() -> get_latest_projection_by_source() queries
             // the dedicated `projection_version.source` SQL column directly, not
             // raw_json — and that column was NULL for every projection ever saved
@@ -169,7 +169,7 @@ describe('ProjectionRepository', () => {
 
     describe('findByTicker / findAll', () => {
         it('uses the Python decimal-rate contract even above 100% and preserves absent rates', () => {
-            const script = path.resolve(__dirname, '../../../plugins/stock-valuation/scripts/persist_valuation.py');
+            const script = path.resolve(__dirname, '../../../plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_valuation.py');
             const payload = { symbol: 'HIGH', projection: { fair_value: 10, discount_rate: 1.20 } };
             const result = spawnSync('python3', [script, '--db', dbPath, '--payload', JSON.stringify(payload)], { encoding: 'utf8' });
             expect(result.status, result.stderr).to.equal(0);
@@ -182,7 +182,8 @@ describe('ProjectionRepository', () => {
         });
 
         it('serves the Python-calculated rate audit from SQLite without recalculating it', () => {
-            const scripts = path.resolve(__dirname, '../../../plugins/stock-valuation/scripts');
+            const scripts = path.resolve(__dirname, '../py_services');
+            const hubScripts = path.resolve(__dirname, '../../../plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts');
             const inputs = { method: 'terminal_earnings', asOf: '2026-10-07', currency: 'USD',
                 riskFreeRate: 0.04, beta: 1, erp: 0.06, marketCap: 800, totalDebt: 200,
                 costOfDebtPreTax: 0.05, taxShieldRate: 0,
@@ -201,7 +202,7 @@ describe('ProjectionRepository', () => {
                     valuationModel: { method: 'terminal_earnings' },
                     scenarios: { base: { weight: 1, price: 30 } },
                 } };
-                const persistence = spawnSync('python3', [path.join(scripts, 'persist_valuation.py'),
+                const persistence = spawnSync('python3', [path.join(hubScripts, 'persist_valuation.py'),
                     '--db', dbPath, '--payload', JSON.stringify(payload), '--rate-audit', auditFile], { encoding: 'utf8' });
                 expect(persistence.status, persistence.stderr).to.equal(0);
                 const [projection] = repo.findByTicker('AUDIT');
@@ -214,7 +215,7 @@ describe('ProjectionRepository', () => {
         });
 
         it('normalizes the canonical Python persistence snapshot without losing scenario targets or discount settings', () => {
-            const script = path.resolve(__dirname, '../../../plugins/stock-valuation/scripts/persist_valuation.py');
+            const script = path.resolve(__dirname, '../../../plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_valuation.py');
             const payload = { symbol: 'APLD', projection: {
                 fair_value: 27.67, action: 'MAINTAIN', current_price: 25.34,
                 base_revenue: 611311000, base_shares: 302387140,

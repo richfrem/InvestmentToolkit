@@ -54,7 +54,7 @@ CREATE TABLE thesis_breaker_state (
 );
 ```
 
-**Confirm:** read `plugins/portfolio-advisor/scripts/update_thesis.py::validate_breaker` (fields `id`, `type`, `metric`, `operator`, `threshold`, `status`, `statusSetAt`, `reviewCadenceDays`) and `investment_screener/backend/py_services/thesis_breakers.py::_evaluate_auto_breaker` / `_evaluate_manual_breaker` (fields `currentStreak`, `streakStartDate`, `lastEvaluatedAt`, `status`, staleness). Add any further field they use (for example a required-streak length) as a column before writing the migration. Move `AUTO_METRICS`, `VALID_OPERATORS`, `VALID_STATUSES` into one shared module; `thesis_breakers.py` and `update_thesis.py` must import them, not redefine them.
+**Confirm:** read `investment_screener/backend/py_services/update_thesis.py::validate_breaker` (fields `id`, `type`, `metric`, `operator`, `threshold`, `status`, `statusSetAt`, `reviewCadenceDays`) and `investment_screener/backend/py_services/thesis_breakers.py::_evaluate_auto_breaker` / `_evaluate_manual_breaker` (fields `currentStreak`, `streakStartDate`, `lastEvaluatedAt`, `status`, staleness). Add any further field they use (for example a required-streak length) as a column before writing the migration. Move `AUTO_METRICS`, `VALID_OPERATORS`, `VALID_STATUSES` into one shared module; `thesis_breakers.py` and `update_thesis.py` must import them, not redefine them.
 
 `investment.thesis_breaker_status` stays a derived scalar (worst current status). It is written only by the breaker evaluator.
 
@@ -74,7 +74,7 @@ Canonical `lifecycle_status` values: `accumulate`, `trim`, `exit`, `initiate`, `
 
 ## 4. Guard (WS0)
 
-- **Module:** promote `temp/evaluations/audit_sqlite_usage.py` (in the main checkout; gitignored, so copy it) into the repo (suggested: `plugins/toolkit-manager/scripts/audit_sqlite_usage.py`; confirm the plugin's script location) with the standard header. Keep its 25-case `--self-test` as a pytest module.
+- **Module:** promote `temp/evaluations/audit_sqlite_usage.py` (in the main checkout; gitignored, so copy it) into the repo (suggested: `plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py`; confirm the plugin's script location) with the standard header. Keep its 25-case `--self-test` as a pytest module.
 - **Test:** `test_no_retired_file_access.py` runs the audit over `plugins/` and `investment_screener/` and fails if any READ_CONTENT, STAT_ONLY or WRITE use of `portfolio.json`, `target-portfolio.json`, `trade-log.json`, `orders_executed.jsonl`, `cash_flows.json`, `account_policy.json`, `watchlist(s).json`, `tradingview_alerts_actual.json` or `ta-sweep-results.json` exists, except in a frozen allow-list of migration tools (`migrate_portfolio_to_sqlite.py`, `migrate_target_portfolio_to_sqlite.py`, `migrate_wave4_to_sqlite.py`, `migrate_account_policy_to_sqlite.py`, `migrations/remove_drift_threshold_fields.py`). It must also fail on UNUSED and VESTIGIAL path constants.
 - **TypeScript and JavaScript:** a companion check (regex over `investment_screener/backend/src`, `investment_screener/frontend/src`, `tradingview-cdp`, excluding `node_modules` and tests) for the same filenames and for `PORTFOLIO_FILE`, `THESIS_FILE`, `TARGET_PORTFOLIO_FILE`, `readPortfolio(`.
 - **Wiring:** run from `run_tests.py` as part of the T0 gate so it blocks regressions.
@@ -127,7 +127,7 @@ Use the existing loaders (`portfolio_io.load_thesis_holdings`, `load_target_weig
 
 ### 8.2 Parity report
 
-Write `plugins/portfolio-advisor/scripts/research_parity_report.py` (read-only): for each source above, list items present in the ledger (by `content_hash` or `idempotency_key`), items missing, and items intentionally dropped. WS5 cannot proceed to `--write` until the owner approves the report.
+Write `plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py` (read-only): for each source above, list items present in the ledger (by `content_hash` or `idempotency_key`), items missing, and items intentionally dropped. WS5 cannot proceed to `--write` until the owner approves the report.
 
 ### 8.3 Loading
 
@@ -139,7 +139,7 @@ Add `export_research_markdown.py` (ledger to `research/<TICKER>_<date>.md`, rege
 
 ## 9. Docs and instructions (WS6)
 
-Update, so that no document describes a retired file as current: `architecture.md` (directory tree, data table, API list, glossary), `README.md`, `AGENTS.md` (rules 14, 29, 30; pitfalls; Key Files), `docs/architecture/*` (73 stale lines), `.agent/rules/*` (15), `plugins/portfolio-advisor` skills and agents (`calibrate-targets`, `thesis-review`, `set-thesis-breakers`, `strategic-review`, `portfolio-advisor-orchestrator`, `thesis-review-agent`), `plugins/toolkit-manager/references/agent-quick-reference.md`, `plugins/tradingview` docs. Add ADR-038.
+Update, so that no document describes a retired file as current: `architecture.md` (directory tree, data table, API list, glossary), `README.md`, `AGENTS.md` (rules 14, 29, 30; pitfalls; Key Files), `docs/architecture/*` (73 stale lines), `.agent/rules/*` (15), `plugins/portfolio-advisor` skills and agents (`calibrate-targets`, `thesis-review`, `set-thesis-breakers`, `strategic-review`, `portfolio-advisor-orchestrator`, `thesis-review-agent`), `plugins/toolkit-manager/.apm/skills/managing-the-toolkit/references/agent-quick-reference.md`, `plugins/tradingview` docs. Add ADR-038.
 
 ## 10. Retiring files (WS7)
 
@@ -161,16 +161,16 @@ Candidates (each needs the owner's explicit OK, one file at a time): `portfolio.
 
 | File | Function / line | Behavior with the file missing |
 |---|---|---|
-| `plugins/portfolio-advisor/scripts/update_thesis.py` | `load_thesis`, `save_thesis` (74, 106-108) | exits "thesis file not found" |
-| `plugins/portfolio-advisor/scripts/validate_weights.py` | `compute_current` (51), `compute_target` (120), `normalize_target` (138) | `--mode target` crashes with `FileNotFoundError` |
-| `plugins/portfolio-advisor/scripts/generate_review.py` | `main` (228) | silent empty thesis |
-| `plugins/portfolio-advisor/scripts/update_price_levels.py` | `derive_and_write_all` (435) | silent no-op |
+| `investment_screener/backend/py_services/update_thesis.py` | `load_thesis`, `save_thesis` (74, 106-108) | exits "thesis file not found" |
+| `investment_screener/backend/py_services/validate_weights.py` | `compute_current` (51), `compute_target` (120), `normalize_target` (138) | `--mode target` crashes with `FileNotFoundError` |
+| `plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/scripts/generate_review.py` | `main` (228) | silent empty thesis |
+| `investment_screener/backend/py_services/update_price_levels.py` | `derive_and_write_all` (435) | silent no-op |
 | `investment_screener/backend/py_services/harvest_predictions.py` | `harvest_rebalance_and_breaker_claims` (274) | breaker claims skipped |
 | `investment_screener/backend/py_services/lock_and_normalize_targets.py` | `load_portfolio` (56) | needs `--target-file` |
 | `investment_screener/backend/py_services/system_health.py` | 89, 105, 118 | checks FAIL or read stale |
 | `investment_screener/backend/py_services/verify_thesis_sync.py` | `main` (164) | override path only |
-| `plugins/tradingview/scripts/place_order.py` | `_check_data_freshness` (183-186) | freshness gate always stale |
-| `plugins/tradingview/scripts/fetch_broker_data.py` | `fetch_broker_snapshot` (233) | `--compare` baseline missing |
+| `investment_screener/backend/py_services/place_order.py` | `_check_data_freshness` (183-186) | freshness gate always stale |
+| `investment_screener/backend/py_services/fetch_broker_data.py` | `fetch_broker_snapshot` (233) | `--compare` baseline missing |
 
 **Vestigial:** `PORTFOLIO_PATH` in `sync_portfolio_roles.py:15`, `ta_sweep_batch.py:34`, `order_risk_gates.py:186`, `rebalancer.py:70`, `risk_engine.py:64`.
 **Unused constants:** `update_price_levels.py:37`, `verify_refresh.py:22`, `watchlist_manager.py:30`, `rebalancer.py:68` and `:77`, `verify_thesis_sync.py:48`.

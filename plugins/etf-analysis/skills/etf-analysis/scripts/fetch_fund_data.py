@@ -1,1 +1,0 @@
-../../../scripts/fetch_fund_data.py

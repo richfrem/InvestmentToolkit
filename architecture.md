@@ -11,7 +11,6 @@ InvestmentToolkit/                         ← repo root
 ├── run_investment_toolkit.py              ← unified startup (venv + npm + TV launch)
 ├── run_tests.py                           ← T0 compile gate + T0.5 bridge smoke
 ├── requirements.in / requirements.txt    ← Python deps (pip-compile managed)
-├── symlinks.json                          ← cross-platform symlink manifest
 │
 ├── investment_screener/                   ← npm workspace root
 │   ├── frontend/                          ← React 19 + Vite + Tailwind CSS 4.0 (port 5173)
@@ -59,25 +58,16 @@ InvestmentToolkit/                         ← repo root
 │   │   └── sweep.js                      ← batch TA Data Window reads
 │   └── package.json
 │
-├── plugins/                               ← modular AI agent plugins
-│   ├── stock-valuation/                  ← DCF valuation + research sweep
-│   │   └── skills/update-stock-analysis/scripts/
-│   │       └── validate_projection.py
-│   ├── portfolio-advisor/                ← drift monitor, triage, rebalance, Grok sweeps
-│   │   ├── agents/                       ← portfolio-advisor-orchestrator.md
-│   │   ├── skills/                       ← stock-intake, portfolio-coverage-audit, weekly-review, etc.
-│   │   ├── scripts/                      ← audit_coverage.py, manage_watchlist.py, daily_brief.py
-│   │   └── assets/templates/            ← daily_sweep.md.template, weekly_sweep.md.template
-│   ├── tradingview/                      ← CDP automation skills
-│   │   ├── agents/                       ← ta-guide.md
-│   │   ├── skills/                       ← tv-onboarding, tv-price-refresh, tv-portfolio-sync, etc.
-│   │   ├── scripts/                      ← tv_client.py, ta_sweep_batch.py, fetch_broker_data.py
-│   │   ├── assets/pinescript-indicators/ ← ai-ta-levels.pine, community-reference/
-│   │   └── tests/                        ← test_pine_advisor_skill.py, tv_test_harness.py
-│   ├── toolkit-manager/                  ← onboarding, startup orchestration
-│   │   └── skills/                       ← toolkit-onboarding, run-screener
-│   └── etf-analysis/                     ← ETF holdings alignment + dual-write
-│       └── skills/                       ← etf_analysis
+├── plugins/                               ← APM packages (apm.yml + .apm/skills|agents)
+│   ├── portfolio-advisor/                ← valuing-investments, running-portfolio-reviews,
+│   │                                       setting-portfolio-targets, tracking-13f-filings,
+│   │                                       auditing-portfolio-data (+ 4 agents)
+│   ├── tradingview/                      ← operating-tradingview-charts, trading-via-tradingview,
+│   │                                       analyzing-charts (+ ta-guide agent; audit/ runtime data)
+│   ├── toolkit-manager/                  ← managing-the-toolkit (onboarding, run-app, sqlite-admin, audits)
+│   └── questrade/                        ← syncing-questrade-accounts, trading-with-questrade (MCP)
+│
+├── apm.yml / apm.lock.yaml               ← installs the four plugins into .agents/skills/
 │
 ├── .agents/                               ← multi-tool skill/agent store (Claude, Gemini, Copilot)
 │   ├── skills/                           ← project-local skills
@@ -157,7 +147,7 @@ InvestmentToolkit/                         ← repo root
                    │ subprocess
                    ▼
 ┌──────────────────────────────────────────────────────────────┐
-│  plugins/tradingview/scripts/tv_client.py                    │
+│  investment_screener/backend/py_services/tv_client.py                    │
 │  (Python bridge — locates CLI via TV_CDP_DIR or walk-up)    │
 │  Used by: ta_sweep_batch.py, place_order.py, fetch_broker_  │
 │           data.py, tv_pine_inject.py, tv_pine_manager.py,   │
@@ -205,7 +195,7 @@ InvestmentToolkit/                         ← repo root
 ### 3.4. TradingView CDP Engine
 **Location:** `tradingview-cdp/` (standalone Node.js package, `npm ci` once)  
 **Entry:** `node tradingview-cdp/cli.js <namespace> <command> [args]`  
-**Python bridge:** `plugins/tradingview/scripts/tv_client.py` — locates the CLI via `TV_CDP_DIR` env var or 10-level directory walk-up. Import: `from tv_client import TV_CLI, tv_call, TV_NODE_DIR`
+**Python bridge:** `investment_screener/backend/py_services/tv_client.py` — locates the CLI via `TV_CDP_DIR` env var or 10-level directory walk-up. Import: `from tv_client import TV_CLI, tv_call, TV_NODE_DIR`
 
 **Key capabilities:**
 - `chart symbol/timeframe/addIndicator/openDataWindow/read` — chart control
@@ -219,16 +209,14 @@ InvestmentToolkit/                         ← repo root
 ### 3.5. AI Agent Plugin & Substrate Layer
 **Location:** `plugins/` (canonical domain plugins), `.agents/` (multi-tool ecosystem skill store), `context/` (control plane & configuration).  
 **Ecosystem Upstream Dependency:** [`richfrem/agent-plugins-skills`](https://github.com/richfrem/agent-plugins-skills) — provides the core **Agentic OS substrate** (`agent-agentic-os` plugin: `os-control-init`, `os-control-health`, `os-control-intake`) and shared developer skills.  
-**Convention:** Each plugin has `skills/`, `agents/`, `scripts/`, `tests/`, `references/`.
+**Convention:** Each plugin is an APM package (`apm.yml`, `.apm/skills/<hub>/`, `.apm/agents/`). A hub holds `SKILL.md`, `references/modes/<mode>.md`, `scripts/`, `assets/`, `tests/`, `evals/`. The root `apm.yml` installs the four plugins into `.agents/skills/`.
 
 #### Domain Plugins (Local to InvestmentToolkit)
 | Plugin | Key Skills | Key Scripts |
 |--------|-----------|-------------|
-| `portfolio-advisor` | `/daily`, `/weekly-review`, `/run-advisor`, `/news-sweep`, `/rebalance` | `daily_brief.py`, `update_targets.py` |
-| `stock-valuation` | `/update-stock-analysis`, `/stock-research` | `validate_projection.py`, `dcf_scenarios.py` |
+| `portfolio-advisor` | `/daily`, `/weekly-review`, `/run-advisor`, `/news-sweep`, `/rebalance`, `/update-stock-analysis`, `/stock-research`, `/analyze-etf` | `daily_brief.py`, `update_targets.py`, `validate_projection.py`, `dcf_scenarios.py`, `persist_etf_analysis.py` |
 | `tradingview` | `/tv-place-order`, `/tv-ta-daily-sweep`, `/tv-portfolio-sync`, `/tv-pine-inject` | `ta_sweep_batch.py`, `place_order.py`, `tv_launch.py` |
-| `etf-analysis` | `/etf_analysis` | `persist_etf_analysis.py` |
-| `toolkit-manager` | `/toolkit-onboarding`, `/todo-check` | `symlink_manager.py`, `plugin_add.py` |
+| `toolkit-manager` | `/toolkit-onboarding`, `/start-screener` | `sqlite_admin.py`, `db_backup.py` |
 | `questrade` | `/questrade-sync-portfolio`, `/questrade-activities`, `/questrade-order-draft`, `/questrade-deposit-funds`, `/norberts-gambit` | `questrade_sync.py`, `questrade_trades_import.py` |
 
 #### Agentic OS Substrate (`agent-agentic-os` via upstream repo)
@@ -264,8 +252,8 @@ Both are gitignored, private data files created automatically the first time a s
 | `backend/data/projections/*.json` | JSON | DCF Bear/Base/Bull, aiThesis action/rationale, analyticsLog (also mirrored into `projection_version`/`projection_scenario`) | No |
 | `backend/data/etf_analysis/*.json` | JSON | ETF holdings analysis (versioned array) | No |
 | `backend/data/theses/` | Markdown + JSON | Investment thesis narrative + sub-strategies | No |
-| `plugins/portfolio-advisor/assets/templates/` | Markdown | Grok sweep prompt templates (daily + weekly) | No |
-| `plugins/portfolio-advisor/references/evolution-log.md` | Markdown | Daily session log (scores, overrides, tool failures) | No |
+| `plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/assets/templates/` | Markdown | Grok sweep prompt templates (daily + weekly) | No |
+| `plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/references/evolution-log.md` | Markdown | Daily session log (scores, overrides, tool failures) | No |
 | `temp/` | Various | Scratch space for scripts (never /tmp/) | Yes |
 
 **Retired files** (formerly live JSON, now SQLite-backed; superseded files under
@@ -336,7 +324,7 @@ npm run lint -w frontend
 python3 run_tests.py            # T0 compile gate + T0.5 bridge smoke
 python3 run_tests.py --t0-only  # compile + syntax only
 pytest investment_screener/backend/tests/    # unit tests
-pytest plugins/tradingview/tests/            # TV CDP unit tests
+pytest plugins/tradingview/.apm/skills/*/tests/   # TV CDP unit tests (pytest skips dot-directories: pass the path)
 ```
 
 **Test locations:**
@@ -344,8 +332,8 @@ pytest plugins/tradingview/tests/            # TV CDP unit tests
 |------|------|
 | Python py_services | `investment_screener/backend/tests/py_services/` |
 | Express routes | `investment_screener/backend/tests/api/` |
-| TV CDP | `plugins/tradingview/tests/` |
-| Plugin scripts | `plugins/<plugin>/tests/` |
+| TV CDP | `plugins/tradingview/.apm/skills/*/tests/` (engine tests in `investment_screener/backend/tests/py_services/`) |
+| Plugin scripts | `plugins/<plugin>/.apm/skills/*/tests/` |
 | React | `investment_screener/frontend/tests/` |
 
 **Code quality:** ESLint (frontend), Pyright (Python), `python3 -m py_compile` in T0 gate.  
@@ -363,7 +351,7 @@ pytest plugins/tradingview/tests/            # TV CDP unit tests
 | ADR-dcf-calculator | DCF math lives in `dcf_scenarios.py`, never inlined. One script, one bug surface. |
 | SQLite only (ADR-038) | Portfolio data lives in `domain_model.sqlite`, research in `intelligence.sqlite` (both gitignored, self-creating). No JSON fallback; `test_no_retired_file_access` fails if code or a document reintroduces a retired file. |
 | Standing Decision anchor | `investment.standing_decision_*` is the source of truth. A fresh DCF run never silently overrides it — only material delta (>15% FV change) triggers a conflict flag. |
-| Symlink policy | Cross-plugin file sharing via `symlinks.json` + `symlink_manager.py`. Never raw `ln -s`. |
+| No symlinks | Plugins are APM packages; each skill hub owns its scripts, references, assets and tests as real files. Shared or backend-imported scripts live in `py_services/`. Path ledger: `docs/plans/apm-migration/`. |
 
 ---
 

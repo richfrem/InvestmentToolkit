@@ -1,1 +1,0 @@
-../../../scripts/daily_receipts.py

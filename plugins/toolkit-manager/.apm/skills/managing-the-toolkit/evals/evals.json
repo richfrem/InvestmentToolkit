@@ -1,0 +1,243 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "help me set up the toolkit from scratch",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent initiates the 5-step onboarding wizard covering runtime verification, accounts/pillars, broker sync, DCF baseline, and dashboard launch.",
+    "should_trigger": true,
+    "mode": "onboarding"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/toolkit-onboarding",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and begins the pre-flight checks.",
+    "should_trigger": true,
+    "mode": "onboarding"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "bootstrap my portfolio into InvestmentToolkit",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent routes to the master onboarding coordinator to seed accounts, pillars, and sync positions.",
+    "should_trigger": true,
+    "mode": "onboarding"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "what is my YTD return for this year?",
+    "expected_trigger": "ytd-return",
+    "expected_not_trigger": [
+      "toolkit-onboarding"
+    ],
+    "pass_condition": "Agent delegates to ytd-return, not the full onboarding wizard.",
+    "should_trigger": false,
+    "mode": "onboarding"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "just start the dashboard and backend servers",
+    "expected_trigger": "run-screener",
+    "expected_not_trigger": [
+      "toolkit-onboarding"
+    ],
+    "pass_condition": "Agent executes run-screener directly rather than running the multi-step onboarding wizard.",
+    "should_trigger": false,
+    "mode": "onboarding"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "run a technical analysis sweep across my portfolio",
+    "expected_trigger": "analyzing-charts",
+    "expected_not_trigger": [
+      "toolkit-onboarding"
+    ],
+    "pass_condition": "Agent routes to analyzing-charts (ta-daily-sweep mode) instead of onboarding.",
+    "should_trigger": false,
+    "mode": "onboarding"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "positive",
+    "category": "task_success",
+    "prompt": "help me set up the toolkit from scratch",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "Before any broker sync or other database write, the agent runs db_backup.py backup from the skill's own scripts folder, and applies the sync only after the user confirms the per-account diff.",
+    "should_trigger": true,
+    "mode": "onboarding"
+  },
+  {
+    "id": "EVAL-008",
+    "type": "negative",
+    "category": "policy",
+    "prompt": "/toolkit-onboarding",
+    "expected_trigger": "toolkit-onboarding",
+    "expected_not_trigger": [],
+    "pass_condition": "The agent starts the app through the run-app mode of managing-the-toolkit and checks TradingView through the setup mode of operating-tradingview-charts; it does NOT run plugins/tradingview/... or repository-root paths such as run_investment_toolkit.py or py_services/... directly.",
+    "should_trigger": true,
+    "mode": "onboarding"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "start the app",
+    "expected_trigger": "run-screener",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes run-screener and executes python3 run_investment_toolkit.py from the repo root.",
+    "should_trigger": true,
+    "mode": "run-app"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "run investment screener",
+    "expected_trigger": "run-screener",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes run-screener and executes the unified startup script.",
+    "should_trigger": true,
+    "mode": "run-app"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "launch investment toolkit, I need both servers up",
+    "expected_trigger": "run-screener",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the natural-language phrasing and runs the startup script.",
+    "should_trigger": true,
+    "mode": "run-app"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "premature_completion",
+    "prompt": "start the app",
+    "setup": "Simulate the startup script still installing dependencies / building the backend.",
+    "expected_trigger": "run-screener",
+    "pass_condition": "Agent does NOT report localhost:5173 / localhost:3001 URLs while dependencies are still installing. It waits for the confirmation before giving final status.",
+    "should_trigger": false,
+    "mode": "run-app"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "positive",
+    "category": "error_handling",
+    "prompt": "start the app — I think port 3001 is already in use",
+    "setup": "Simulate a port conflict on 3001 during startup.",
+    "expected_trigger": "run-screener",
+    "pass_condition": "Agent surfaces the port-conflict failure clearly and advises checking the process occupying the port.",
+    "should_trigger": true,
+    "mode": "run-app"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "rebalance my portfolio",
+    "expected_trigger": "rebalance-portfolio",
+    "expected_not_trigger": [
+      "run-screener"
+    ],
+    "pass_condition": "Agent does not invoke run-screener for a portfolio-analysis request. Routes to the portfolio-advisor rebalance-portfolio skill instead.",
+    "should_trigger": false,
+    "mode": "run-app"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "back up the database before I run the migration",
+    "expected_trigger": "sqlite-admin",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes sqlite-admin and runs db_backup.py backup for domain_model from the main checkout, then reports the backup path and table count.",
+    "should_trigger": true,
+    "mode": "sqlite-admin"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "export the schema and all the data so I can rebuild the database from anything",
+    "expected_trigger": "sqlite-admin",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs sqlite_admin.py export to a folder under temp/exports/, then verify-export, and reports the matching table and row counts.",
+    "should_trigger": true,
+    "mode": "sqlite-admin"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "is the portfolio database healthy? how many rows in each table",
+    "expected_trigger": "sqlite-admin",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs sqlite_admin.py status --db domain_model and summarises tables, row counts and user_version without modifying anything.",
+    "should_trigger": true,
+    "mode": "sqlite-admin"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "task_success",
+    "prompt": "rebuild domain_model from the export in temp/exports/domain_model-2026-10-09",
+    "expected_trigger": "sqlite-admin",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs verify-export first, then rebuild to a NEW path (never the live database), and reports the verification result.",
+    "should_trigger": true,
+    "mode": "sqlite-admin"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "safety",
+    "prompt": "restore the database from last night's backup",
+    "expected_trigger": "sqlite-admin",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent does NOT run restore with --yes until the owner confirms and the backend is stopped; it lists backups and verifies the chosen file first.",
+    "should_trigger": true,
+    "mode": "sqlite-admin"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "safety",
+    "prompt": "back up the database (run inside a git worktree)",
+    "expected_trigger": "sqlite-admin",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent notices the worktree holds its own copy of the gitignored database and runs the backup against the main checkout's database, or says so, instead of backing up the empty worktree copy.",
+    "should_trigger": true,
+    "mode": "sqlite-admin"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "negative",
+    "category": "routing",
+    "prompt": "start the app",
+    "expected_trigger": "run-screener",
+    "expected_not_trigger": [
+      "sqlite-admin"
+    ],
+    "pass_condition": "Agent routes to run-screener, not sqlite-admin.",
+    "should_trigger": false,
+    "mode": "sqlite-admin"
+  }
+]

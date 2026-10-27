@@ -1,0 +1,288 @@
+#!/usr/bin/env python3
+"""
+verify_refresh.py — Post-target-change consistency checker.
+
+Checks that ALL data sources are in sync after a target edit:
+  1. domain_model.sqlite    (ground truth: targets and rationale)
+  2. investment_thesis.md   (title; prose only, no frozen blueprint block)
+  3. latest review JSON     (date, thesisName, no stale holdings)
+  4. portfolio actions      (no false ACCUMULATE on DCF-SELL, no false signals)
+
+Run as part of the skill refresh chain:
+  python3 investment_screener/backend/py_services/verify_refresh.py
+
+Exit 0 = all clear. Exit 1 = inconsistencies found (lists every failure).
+"""
+
+import json, re, sys
+from datetime import date
+from pathlib import Path
+
+REPO_ROOT   = Path(__file__).resolve().parents[3]
+THESIS_MD   = REPO_ROOT / "investment_screener/backend/data/theses/investment_thesis.md"
+REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
+DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
+
+# Positions user locked to "no change" — must stay at MAINTAIN while held
+NO_CHANGE = {"GOOG"}
+
+# Known SA LP conviction plays where DCF disagrees — warn, don't fail
+# These are intentional: SA LP holds large positions; user has not explicitly resolved the conflict
+SA_DCF_CONFLICTS = {"CORZ", "LITE", "BE", "INTC", "IONQ", "QBTS", "OKLO", "CEG", "IREN", "EQT"}
+
+sys.path.insert(0, str(Path(__file__).parent))
+from portfolio_action import derive_action
+from recommendation import recommend_all
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import get_latest_projection_by_source  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+from portfolio_io import compute_weights  # noqa: E402
+
+
+def compute_current_from_db(db_path: Path = DB_PATH) -> dict:
+    """Actual-weight equivalent of validate_weights.compute_current(), sourced
+    from domain_model.sqlite.
+
+    Reuses ``portfolio_io.compute_weights`` for the weight-% formula so this
+    never re-derives its own shares*price/total computation.
+    """
+    if not Path(db_path).exists():
+        return {"total": 0.0, "holdings": {}, "total_value": 0.0}
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
+    result = compute_weights(state["shares"], state["prices"], state["total_usd"])
+    return {
+        "total": round(sum(result.values()), 4),
+        "holdings": result,
+        "total_value": round(state["total_usd"], 2),
+    }
+
+
+def _load_holdings_map(db_path: Path = DB_PATH) -> dict:
+    """Return {ticker: {targetWeight, agentRationale}} from investment.
+
+    Reads ``investment.target_weight`` / ``investment.agent_rationale`` via
+    ``list_investments``.
+    """
+    if not Path(db_path).exists():
+        return {}
+    conn = initialize_db(str(db_path))
+    try:
+        return {
+            row["symbol"]: {
+                "targetWeight": row.get("target_weight") or 0,
+                "agentRationale": row.get("agent_rationale") or "",
+            }
+            for row in list_investments(conn)
+        }
+    finally:
+        conn.close()
+
+
+def _load_ai_agent_upside(ticker: str) -> float | None:
+    """Return `(fairValue - price) / price * 100` for the latest AI_AGENT
+    projection, or None if no AI_AGENT row (or no fairValue/price) exists.
+
+    Reads `projection_version` via `domain_model.projection_repository`.
+    Shared by the false-ACCUMULATE and false-INITIATE checks, both of which
+    filter strictly by `source == "AI_AGENT"` with no fallback.
+    """
+    conn = initialize_db(str(DB_PATH))
+    try:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
+            return None
+        entry = get_latest_projection_by_source(conn, row[0], "AI_AGENT")
+        if entry is None:
+            return None
+        fv = entry.get("fair_value")
+        snapshot = json.loads(entry["snapshot_json"]) if entry.get("snapshot_json") else {}
+        price = snapshot.get("price")
+        if not fv or not price:
+            return None
+        return (fv - price) / price * 100
+    finally:
+        conn.close()
+
+
+errors   = []
+warnings = []
+
+def fail(msg): errors.append(f"  ✗ {msg}")
+def warn(msg): warnings.append(f"  ⚠ {msg}")
+def ok(msg):   print(f"  ✓ {msg}")
+
+# ── 1. Load ground-truth domain model ──────────────────────────────────────────
+print("\n── 1. domain_model.sqlite ───────────────────────────────────────────")
+holdings_map = _load_holdings_map()
+non_zero = {t: h for t, h in holdings_map.items() if h.get("targetWeight", 0) > 0}
+exited   = {t: h for t, h in holdings_map.items() if h.get("targetWeight", 0) == 0}
+
+total_tgt = sum(h.get("targetWeight", 0) for h in non_zero.values())
+ok(f"Loaded: domain_model.sqlite (total target weight = {total_tgt:.4f}%)")
+ok(f"Holdings: {len(non_zero)} with targets, {len(exited)} EXIT (0%)")
+
+# Check agentRationale present on all active target holdings
+missing_rationale = [t for t, h in non_zero.items() if not h.get("agentRationale")]
+if missing_rationale:
+    warn(f"agentRationale missing on: {missing_rationale}")
+else:
+    ok("agentRationale present on all active target holdings")
+
+# ── 2. investment_thesis.md ───────────────────────────────────────────────────
+print("\n── 2. investment_thesis.md ────────────────────────────────────────────")
+md_text = THESIS_MD.read_text()
+
+# Title version
+title_match = re.search(r"^# Investment Thesis (v[\d.]+)", md_text, re.MULTILINE)
+md_title = title_match.group(1) if title_match else "MISSING"
+ok(f"Thesis Title: {md_title}")
+
+# The positions tables are live in the web app (shared table over domain_model.sqlite); the
+# document is prose only. A generated blueprint block left in the file would be a frozen copy.
+if "AUTO_UPDATE_START: portfolio_blueprint" in md_text:
+    warn("investment_thesis.md still holds a generated blueprint block: the web app replaces it with live tables, remove the block from the file")
+else:
+    ok("investment_thesis.md is prose only (positions tables are live in the web app)")
+
+today = date.today().isoformat()
+
+# Weights used by the portfolio checks below (sourced from the database, never the document)
+current_data = compute_current_from_db()
+target_data  = {"holdings": {t: h.get("targetWeight", 0) for t, h in non_zero.items()}}
+
+# ── 3. Latest review JSON ─────────────────────────────────────────────────────
+print("\n── 3. Latest review JSON ──────────────────────────────────────────────")
+review_jsons = sorted(
+    [f for f in REVIEWS_DIR.iterdir()
+     if f.suffix == ".json" and re.match(r"\d{4}-\d{2}-\d{2}", f.name)
+     and "patch" not in f.name],
+    reverse=True
+)
+
+if not review_jsons:
+    warn("No review JSON files found in PortfolioAnalysis/strategic-reviews/")
+else:
+    latest_json = review_jsons[0]
+    with open(latest_json) as f:
+        review = json.load(f)
+
+    rdate = review.get("reviewDate", "")
+    rname = review.get("thesisName", "")
+    ok(f"Latest review JSON: {latest_json.name}")
+
+    if rdate == today:
+        ok(f"Review date is today: {rdate}")
+    else:
+        fail(f"Review JSON date is {rdate}, not today ({today}) — generate a new review JSON")
+
+    if rname:
+        ok(f"Review thesisName: {rname}")
+    else:
+        warn("Review thesisName is empty")
+
+    # Check for stale proposed targets (EXITED tickers still showing as INITIATE/ACCUMULATE in review)
+    stale_in_review = []
+    for h in review.get("holdings", []):
+        t = h.get("ticker")
+        if t in exited and h.get("action") in ("INITIATE", "ACCUMULATE"):
+            stale_in_review.append(f"{t}(EXIT in JSON but {h['action']} in review)")
+    if stale_in_review:
+        fail(f"Stale holdings in review JSON: {stale_in_review}")
+    else:
+        ok("No stale INITIATE/ACCUMULATE for exited tickers in review JSON")
+
+# ── 4. Portfolio actions ───────────────────────────────────────────────────────
+print("\n── 4. Portfolio actions ────────────────────────────────────────────────")
+
+false_accumulate = []
+false_initiate   = []
+no_change_broken = []
+_recs = recommend_all(str(DB_PATH))
+
+for ticker, h in holdings_map.items():
+    actual = current_data["holdings"].get(ticker, 0)
+    target = target_data["holdings"].get(ticker, 0)
+    action = derive_action(ticker, actual, target, db_path=str(DB_PATH))
+
+    # No-change positions must be MAINTAIN (respecting confirmed standing decisions / effective stance)
+    rec = _recs.get(ticker)
+    effective_action = rec.get("decision_check", {}).get("effective") if rec else None
+    check_action = effective_action or action
+    if ticker in NO_CHANGE and actual > 0 and check_action != "MAINTAIN":
+        no_change_broken.append(f"{ticker}({check_action})")
+
+    # Check for false ACCUMULATE: target > actual AND DCF is SELL-rated (< -15% upside)
+    if action == "ACCUMULATE":
+        try:
+            upside = _load_ai_agent_upside(ticker)
+            if upside is not None and upside < -15:
+                msg = f"{ticker}(ACCUMULATE but DCF {upside:+.1f}%)"
+                if ticker in SA_DCF_CONFLICTS:
+                    warnings.append(f"  ⚠ Known SA/DCF conflict: {msg}")
+                else:
+                    false_accumulate.append(msg)
+        except Exception:
+            pass
+
+    # Check for false INITIATE: target > 0 but DCF is strongly negative (< -20%)
+    if action == "INITIATE" and target > 0:
+        try:
+            upside = _load_ai_agent_upside(ticker)
+            if upside is not None and upside < -20:
+                msg = f"{ticker}(INITIATE but DCF {upside:+.1f}%)"
+                if ticker in SA_DCF_CONFLICTS:
+                    warn(f"Known SA LP conviction play with DCF conflict: {msg}")
+                else:
+                    false_initiate.append(msg)
+        except Exception:
+            pass
+
+if no_change_broken:
+    fail(f"No-change positions not at MAINTAIN: {no_change_broken}")
+else:
+    ok(f"No-change positions all MAINTAIN: {sorted(NO_CHANGE)}")
+
+if false_accumulate:
+    fail(f"False ACCUMULATE (target > actual, DCF < -15%): {false_accumulate}")
+else:
+    ok("No false ACCUMULATE signals on DCF-negative stocks")
+
+if false_initiate:
+    fail(f"False INITIATE (DCF < -20%): {false_initiate}")
+else:
+    ok("No false INITIATE signals on strongly DCF-negative stocks")
+
+# ── 5. Thesis pages current ───────────────────────────────────────────────────
+print("\n── 5. Thesis pages current ─────────────────────────────────────────────")
+sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+from thesis_currency import stale_documents  # noqa: E402
+
+_stale_pages = stale_documents(DB_PATH, REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite", max_age_days=14)
+if _stale_pages:
+    for _page in _stale_pages:
+        warn(f"Thesis page '{_page['document_id']}' needs a refresh ({_page['reason']}): thesis_currency.py context --document {_page['document_id']}")
+else:
+    ok("Every thesis page has a current note (under 15 days old, no newer events)")
+
+# ── Summary ────────────────────────────────────────────────────────────────────
+print("\n── Summary ─────────────────────────────────────────────────────────────")
+if warnings:
+    for w in warnings:
+        print(w)
+if errors:
+    for e in errors:
+        print(e)
+    print(f"\n✗ {len(errors)} error(s) found — fix before committing\n")
+    sys.exit(1)
+else:
+    print(f"  ✅ All checks passed ({len(warnings)} warning(s))\n")
+    sys.exit(0)

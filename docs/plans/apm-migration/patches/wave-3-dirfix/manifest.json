@@ -1,0 +1,38 @@
+[
+  {
+    "file": "investment_screener/backend/py_services/alert_manager.py"
+  },
+  {
+    "file": "investment_screener/backend/py_services/data_window_validator.py"
+  },
+  {
+    "file": "investment_screener/backend/py_services/fetch_quotes.py"
+  },
+  {
+    "file": "investment_screener/backend/py_services/tv_cdp_health.py"
+  },
+  {
+    "file": "investment_screener/backend/py_services/verify_portfolio_total.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/api/test_tv_client_wrapped_calls_survive_transient_errors.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_build_totals_from_balances.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_canonical_recommendation_consumers.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_fetch_broker_data_persist.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_refresh_exchange_rate_only.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_refresh_prices_tradingview_only.py"
+  },
+  {
+    "file": "plugins/stock-valuation/scripts/persist_valuation.py"
+  }
+]

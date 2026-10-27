@@ -1,1 +1,0 @@
-../../../scripts/validate_etf_analysis.py

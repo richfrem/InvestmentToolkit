@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+"""
+generate_review.py — Bootstrap a dated PortfolioAnalysisRecommendations.md from the
+canonical template, pre-populating header metadata from live portfolio and thesis data.
+
+Purpose:
+    Fills the review header (totals, cash, EXIT and INITIATE counts, thesis version) from
+    domain_model.sqlite and leaves every {{PLACEHOLDER}} needing analysis for the agent.
+    Fails with an error when the database is missing or holds no thesis holdings.
+
+Layer:
+    Plugin script (portfolio-advisor)
+
+Key Input Dependencies:
+    - investment_screener/backend/data/domain_model.sqlite (holdings, prices, targets, change log)
+    - plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/assets/templates/PortfolioAnalysisRecommendations.md
+
+Usage (run from repo root):
+    python3 plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/scripts/generate_review.py [--date YYYY-MM-DD] [--dry-run]
+
+Output:
+    PortfolioAnalysis/strategic-reviews/YYYY-MM-DD-PortfolioAnalysisRecommendations.md
+
+The generated file is a starting point for the /strategic-review agent skill.
+All {{PLACEHOLDER}} tokens that require AI analysis are left as-is for the agent to fill.
+"""
+
+import os
+import sys
+import argparse
+import datetime
+from pathlib import Path
+
+# ── Paths (relative to repo root) ──────────────────────────────────────────────
+REPO_ROOT = next(p for p in Path(__file__).resolve().parents if (p / "investment_screener").is_dir())  # plugins/portfolio-advisor/scripts/ → repo root
+TEMPLATE_PATH = REPO_ROOT / "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/assets/templates/PortfolioAnalysisRecommendations.md"
+DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
+OUTPUT_DIR     = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.portfolio_change_log_repository import list_change_log  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+from portfolio_io import load_thesis_holdings  # noqa: E402
+
+THESIS_NAME = "Investment Thesis"
+
+
+def load_portfolio_holdings_from_db(db_path: Path = DB_PATH) -> list:
+    """Load holdings-shaped rows ([{"symbol", "shares", "price"}, ...]) from domain_model.sqlite.
+
+    Sourced from ``load_portfolio_state_from_db()`` so per-symbol shares/prices
+    stay identical to every other consumer of that function.
+    """
+    if not db_path.exists():
+        return []
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
+    shares = state["shares"]
+    prices = state["prices"]
+    return [
+        {"symbol": sym, "shares": shares[sym], "price": prices.get(sym, 0.0)}
+        for sym in shares
+    ]
+
+def compute_portfolio_summary(portfolio: list) -> dict:
+    """Derive key metrics (total, holding count, cash) from the holdings rows for header population."""
+    holdings = [h for h in portfolio if h.get("symbol") != "USD_CASH"]
+    cash = next((h for h in portfolio if h.get("symbol") == "USD_CASH"), None)
+
+    total_value = sum(h.get("shares", 0) * h.get("price", 0) for h in portfolio)
+    cash_value = cash.get("shares", 0) * cash.get("price", 1) if cash else 0
+    cash_pct = round(cash_value / total_value * 100, 2) if total_value else 0
+
+    return {
+        "total_value": round(total_value, 0),
+        "holding_count": len(holdings),
+        "cash_value": round(cash_value, 0),
+        "cash_pct": cash_pct,
+    }
+
+
+def compute_thesis_summary(portfolio: list, db_path: Path = DB_PATH) -> dict:
+    """Derive EXIT/INITIATE counts and thesis metadata from domain_model.sqlite.
+
+    Per-ticker targets come from ``portfolio_io.load_thesis_holdings`` (rows with a target
+    weight; a NULL weight means no thesis and is never an EXIT). The thesis version is the
+    newest ``portfolio_change_log`` version, or "unversioned" when none is recorded.
+
+    Args:
+        portfolio: Holdings rows ({"symbol", "shares", ...}) used to tell held from unheld.
+        db_path: Database to read.
+
+    Returns:
+        thesis_name, thesis_version, exit_count, initiate_count, exit_tickers, initiate_tickers.
+
+    Raises:
+        ValueError: The database is missing or holds no thesis holdings.
+    """
+    if not Path(db_path).exists():
+        raise ValueError(f"domain_model.sqlite not found: {db_path}")
+    thesis_holdings = load_thesis_holdings(str(db_path))
+    if not thesis_holdings:
+        raise ValueError(f"no thesis holdings in {db_path}; set target weights before generating a review")
+    conn = initialize_db(str(db_path))
+    try:
+        log = list_change_log(conn)
+    finally:
+        conn.close()
+
+    held_tickers = {h["symbol"] for h in portfolio if h.get("shares", 0) > 0}
+    exit_flagged = [h["ticker"] for h in thesis_holdings if h["targetWeight"] == 0 and h["ticker"] in held_tickers]
+    initiate_targets = [h["ticker"] for h in thesis_holdings if h["targetWeight"] > 0 and h["ticker"] not in held_tickers]
+    return {
+        "thesis_name": THESIS_NAME,
+        "thesis_version": max(log, key=lambda e: int(float(e["version"])))["version"] if log else "unversioned",
+        "exit_count": len(exit_flagged),
+        "initiate_count": len(initiate_targets),
+        "exit_tickers": exit_flagged,
+        "initiate_tickers": initiate_targets,
+    }
+
+
+import subprocess
+
+def get_action_subsections() -> str:
+    """Run scan_opportunities.py and return its markdown output."""
+    try:
+        script = str(REPO_ROOT / "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/scripts/scan_opportunities.py")
+        res = subprocess.run(
+            ["python3", script, "--format", "markdown", "--category", "all"],
+            capture_output=True, text=True, check=True
+        )
+        return res.stdout
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️ Error running scan_opportunities.py: {e.stderr}", file=sys.stderr)
+        return "_Error generating action subsections._"
+
+def _days_old(date_str: str) -> int:
+    try:
+        d = datetime.date.fromisoformat(date_str)
+        return (datetime.date.today() - d).days
+    except Exception:
+        return 0
+
+def populate_template(template: str, portfolio_summary: dict, thesis_summary: dict,
+                      action_subsections: str, date_str: str) -> str:
+    """Replace all header-level {{PLACEHOLDERS}} we can fill from data."""
+    total_value = portfolio_summary["total_value"]
+
+    # Calculate capital required for top 5 initiates approximately (if not parsed from action_subsections)
+    top5_capital = round(total_value * 0.02 * 5, 0)
+
+    replacements = {
+        "{{DATE}}":               date_str,
+        "{{THESIS_NAME}}":        thesis_summary["thesis_name"],
+        "{{THESIS_VERSION}}":     str(thesis_summary["thesis_version"]),
+        "{{PORTFOLIO_VALUE_USD}}": f"{total_value:,.0f}",
+        "{{HOLDING_COUNT}}":      str(portfolio_summary["holding_count"]),
+        "{{EXIT_COUNT}}":         str(thesis_summary["exit_count"]),
+        "{{INITIATE_COUNT}}":     str(thesis_summary["initiate_count"]),
+        "{{CASH_VALUE}}":         f"{portfolio_summary['cash_value']:,.0f}",
+        "{{CASH_PCT}}":           str(portfolio_summary["cash_pct"]),
+        "{{TOP5_CAPITAL_REQUIRED}}": f"{top5_capital:,.0f}",
+        # Leave AI-requiring fields for agent to fill:
+        "{{FORMULA_SCORE}}":      "??",
+        "{{FORMULA_STATUS}}":     "PENDING ANALYSIS",
+        "{{ONE_LINE_STATUS}}":    "⏳ Run /strategic-review to populate this review.",
+        "{{OVERALL_ASSESSMENT}}": "_Run /strategic-review to generate the overall assessment._",
+        "{{TOP_CONVICTION_TICKERS}}": "_Pending Phase 3 conviction interview_",
+        "{{LOW_CONVICTION_TICKERS}}": "_Pending Phase 3 conviction interview_",
+        "{{CONVICTION_CHANGES}}": "_Pending Phase 3 conviction interview_",
+        "{{TOTAL_REDEPLOY}}":     "??",
+        "{{REDEPLOY_PCT}}":       "??",
+        "<!-- {{ACTION_SUBSECTIONS}} -->": action_subsections,
+        "<!-- {{THEME_GAP_ROWS}} -->": "_Pending Phase 2 gap analysis_",
+        "<!-- {{PILLAR_AUDIT_ROWS}} -->": "_Pending Step 2 pillar conviction audit_",
+        "<!-- {{CHALLENGED_ROWS}} -->": "_Pending analysis_",
+        "<!-- {{CONFIRMED_ROWS}} -->": "_Pending analysis_",
+        "<!-- {{BREAKER_ROWS}} -->": "_Pending analysis_",
+        "<!-- {{PROPOSAL_BLOCKS}} -->": "_Pending analysis_",
+        "<!-- {{ACTION_LIST}} -->": "_Pending analysis_",
+        "<!-- {{OPEN_QUESTIONS}} -->": "_Pending analysis — agent will populate after Phase 3 interview_",
+        "{{SOURCE_PORTFOLIO}}":   f"✅ Loaded — {portfolio_summary['holding_count']} holdings, ${total_value:,.0f}",
+        "{{SOURCE_THESIS}}":      f"✅ Loaded — v{thesis_summary['thesis_version']}",
+        "{{SOURCE_PROJECTIONS}}": f"✅ Scan opportunities engine successfully ran",
+        "{{SOURCE_MISSING}}":     "⚠️ Run /strategic-review to check",
+        "{{SOURCE_MEMORY}}":      "⚠️ Run /strategic-review to load",
+        "{{SOURCE_WEIGHTS}}":     "⚠️ Run validate_weights.py to verify",
+        "{{SOURCE_PILLARS}}":     "⚠️ Pending analysis",
+        "{{SOURCE_SCORE}}":       "⚠️ Pending analysis",
+    }
+
+    result = template
+    for token, value in replacements.items():
+        result = result.replace(token, value)
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Bootstrap a strategic review from the canonical template.")
+    parser.add_argument("--date", default=datetime.date.today().isoformat(),
+                        help="Review date (YYYY-MM-DD). Defaults to today.")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Print output to stdout instead of writing to file.")
+    args = parser.parse_args()
+
+    # Load data
+    if not TEMPLATE_PATH.exists():
+        print(f"❌ Template not found: {TEMPLATE_PATH}", file=sys.stderr)
+        sys.exit(1)
+    if not DB_PATH.exists():
+        print(f"❌ domain_model.sqlite not found: {DB_PATH}", file=sys.stderr)
+        sys.exit(1)
+
+    template = TEMPLATE_PATH.read_text()
+    portfolio = load_portfolio_holdings_from_db()
+
+    portfolio_summary = compute_portfolio_summary(portfolio)
+    try:
+        thesis_summary = compute_thesis_summary(portfolio)
+    except ValueError as exc:
+        print(f"❌ {exc}", file=sys.stderr)
+        sys.exit(1)
+    action_subsections = get_action_subsections()
+
+    populated = populate_template(template, portfolio_summary, thesis_summary, action_subsections, args.date)
+
+    if args.dry_run:
+        print(populated)
+        return
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = OUTPUT_DIR / f"{args.date}-PortfolioAnalysisRecommendations.md"
+
+    if out_path.exists():
+        print(f"⚠️  File already exists: {out_path}")
+        answer = input("Overwrite? [y/N] ").strip().lower()
+        if answer != "y":
+            print("Aborted.")
+            sys.exit(0)
+
+    out_path.write_text(populated)
+    print(f"✅ Review scaffolded: {out_path}")
+    print(f"   Holdings: {portfolio_summary['holding_count']} | "
+          f"EXIT-flagged: {thesis_summary['exit_count']} | "
+          f"INITIATE targets: {thesis_summary['initiate_count']}")
+    print(f"   Opportunity scan: {thesis_summary['initiate_count']} unowned INITIATE targets surfaced")
+    print(f"\n→ Open the file, then run /strategic-review in Claude Code to populate it.")
+
+
+if __name__ == "__main__":
+    main()

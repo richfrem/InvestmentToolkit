@@ -4,7 +4,7 @@ per-account positions/cash into domain_model.sqlite via _persist_snapshot_to_db(
 
 fetch_broker_data.py is the real target of two symlinks
 (investment_screener/backend/py_services/fetch_broker_data.py and
-plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py) --
+investment_screener/backend/py_services/fetch_broker_data.py) --
 so editing this one real file changes all three access paths together.
 """
 import json
@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-SCRIPT_DIR = REPO_ROOT / "plugins/tradingview/scripts"
+SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 DOMAIN_MODEL_PY_SERVICES_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 sys.path.insert(0, str(DOMAIN_MODEL_PY_SERVICES_DIR))

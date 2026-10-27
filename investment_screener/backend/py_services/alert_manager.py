@@ -24,7 +24,7 @@ integration) — they call create_price_alert() rather than composing
 tv_call() directly.
 
 Key Input Dependencies:
-    - plugins/tradingview/scripts/tv_client.py (Task 5A-8's tv_call())
+    - investment_screener/backend/py_services/tv_client.py (Task 5A-8's tv_call())
 """
 
 import json
@@ -38,9 +38,9 @@ from pydantic import BaseModel, ValidationError
 
 # Cross-directory import of tv_call (Task 5A-8). Follows the exact same
 # sys.path-insert pattern pine_script_manager.py already established —
-# plugins/tradingview/scripts/ is not a package on the default path.
+# investment_screener/backend/py_services/ is not a package on the default path.
 # tv_client.py is not touched; this module only wraps its output.
-_TV_SCRIPTS_DIR = str(Path(__file__).resolve().parents[3] / "plugins" / "tradingview" / "scripts")
+_TV_SCRIPTS_DIR = str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services")
 if _TV_SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, _TV_SCRIPTS_DIR)
 

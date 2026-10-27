@@ -176,7 +176,7 @@ def setup_virtual_env(venv_dir: str, env: Dict[str, str]) -> None:
 # External comment: Run best-effort TradingView launcher script
 def _launch_tradingview() -> None:
     """Delegate to tv_launch.py — single source of truth for TradingView CDP launch."""
-    tv_launcher = os.path.join(ROOT_DIR, "plugins", "tradingview", "scripts", "tv_launch.py")
+    tv_launcher = os.path.join(ROOT_DIR, "investment_screener", "backend", "py_services", "tv_launch.py")
     if not os.path.exists(tv_launcher):
         Colors.print("  TradingView: launcher not found — skipping.", Colors.YELLOW)
         return

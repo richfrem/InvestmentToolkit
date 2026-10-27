@@ -15,7 +15,6 @@ Layer:
 
 Key Input Dependencies:
     - investment_screener/package.json (TypeScript project config)
-    - symlinks.json (Symlink verification rules)
     - plugins/ (Active Python plugins directory)
 
 Usage:
@@ -77,8 +76,13 @@ def t0_python_syntax() -> bool:
     scripts = [
         REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py",
     ]
-    for s in glob.glob(str(REPO_ROOT / "plugins/tradingview/scripts/*.py")):
-        scripts.append(Path(s))
+    # TradingView scripts: per-skill folders plus the shared engine modules in py_services
+    for pattern in ("plugins/tradingview/.apm/skills/*/scripts/*.py",
+                    "investment_screener/backend/py_services/tv_*.py",
+                    "investment_screener/backend/py_services/place_order.py",
+                    "investment_screener/backend/py_services/fetch_broker_data.py"):
+        for s in glob.glob(str(REPO_ROOT / pattern)):
+            scripts.append(Path(s))
         
     ok = True
     for script in scripts:
@@ -109,7 +113,7 @@ def t0_path_regression() -> bool:
     
     ok = True
     for root, _, files in os.walk(str(REPO_ROOT)):
-        if any(p in root for p in [".git", "node_modules", "venv", "temp", ".agents", "docs/superpowers", "tasks/done", ".claude", ".worktrees"]):
+        if any(p in root for p in [".git", "node_modules", "venv", "temp", ".agents", "docs/superpowers", "tasks/done", ".claude", ".worktrees", "docs/plans/apm-migration", "docs/architecture"]):
             continue
         for f in files:
             if f.endswith(".png") or f.endswith(".svg"):
@@ -135,7 +139,7 @@ def t0_path_regression() -> bool:
 def verify_script_health(cwd: Path, label: str) -> bool:
     """Executes the health check script and validates JSON result."""
     result = subprocess.run(
-        ["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"],
+        ["python3", str(REPO_ROOT / "investment_screener/backend/py_services/tv_health_check.py"), "--json"],
         capture_output=True, text=True, cwd=str(cwd)
     )
     try:
@@ -152,9 +156,9 @@ def verify_script_health(cwd: Path, label: str) -> bool:
 
 
 # External comment: Verify scripts behavior across different working directories
-def t0_symlink_cwd_invariance() -> bool:
+def t0_cwd_invariance() -> bool:
     """Validates CWD invariance and path variables override logic."""
-    print(f"\n{HEADER}T0 — CWD / Symlink Invariance{RESET}")
+    print(f"\n{HEADER}T0 — CWD Invariance{RESET}")
     ok = True
     
     # Run from arbitrary cwd
@@ -163,8 +167,8 @@ def t0_symlink_cwd_invariance() -> bool:
     # Run from repo root
     ok &= verify_script_health(REPO_ROOT, "tv_health_check.py from repo root")
     
-    # Run from symlink path
-    skill_dir = REPO_ROOT / "plugins/tradingview/skills/get-orders"
+    # Run from a plugin skill folder
+    skill_dir = REPO_ROOT / "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts"
     if skill_dir.exists():
         ok &= verify_script_health(skill_dir, "tv_health_check.py from skill dir")
     
@@ -172,7 +176,7 @@ def t0_symlink_cwd_invariance() -> bool:
     env = os.environ.copy()
     env["TV_CDP_DIR"] = "/tmp/fake-tradingview-cdp"
     result = subprocess.run(
-        ["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"],
+        ["python3", str(REPO_ROOT / "investment_screener/backend/py_services/tv_health_check.py"), "--json"],
         capture_output=True, text=True, cwd=str(REPO_ROOT), env=env
     )
     combined = result.stdout + result.stderr
@@ -222,32 +226,32 @@ def _seed_bridge_smoke_db(db_path: Path) -> None:
         conn.close()
 
 
-# External comment: Smoke test the python bridge execution via symlink
+# External comment: Smoke test the python bridge execution as a real engine file
 def t0_5_bridge_smoke() -> bool:
     """Validates the portfolio action bridge script runs and outputs valid JSON."""
-    print(f"\n{HEADER}T0.5 — Bridge smoke (portfolio_action.py via symlink){RESET}")
-    symlink = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
+    print(f"\n{HEADER}T0.5 — Bridge smoke (portfolio_action.py as a real engine file){RESET}")
+    script = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
     with tempfile.TemporaryDirectory() as tmp:
         db_path = Path(tmp) / "domain_model.sqlite"
         _seed_bridge_smoke_db(db_path)
         r = subprocess.run(
-            ["python3", str(symlink), "--all", "--db", str(db_path)],
+            ["python3", str(script), "--all", "--db", str(db_path)],
             capture_output=True, text=True, cwd=str(REPO_ROOT),
         )
     if r.returncode != 0:
-        print(f"  {CRITICAL} portfolio_action.py via symlink — non-zero exit")
+        print(f"  {CRITICAL} portfolio_action.py as a real engine file — non-zero exit")
         print(f"    stderr: {r.stderr.strip()}")
         return False
     try:
         data = json.loads(r.stdout)
     except json.JSONDecodeError:
-        print(f"  {CRITICAL} portfolio_action.py via symlink — invalid JSON output")
+        print(f"  {CRITICAL} portfolio_action.py as a real engine file — invalid JSON output")
         print(f"    stdout: {r.stdout[:200]}")
         return False
     if not data:
-        print(f"  {CRITICAL} portfolio_action.py via symlink — empty action map")
+        print(f"  {CRITICAL} portfolio_action.py as a real engine file — empty action map")
         return False
-    print(f"  {OK} portfolio_action.py via symlink — {len(data)} tickers: {list(data)}")
+    print(f"  {OK} portfolio_action.py as a real engine file — {len(data)} tickers: {list(data)}")
     return True
 
 
@@ -256,7 +260,7 @@ def t0_file_dependency_guard() -> bool:
     """Fails when code gains a data-file dependency the register does not list, or keeps a removed one."""
     print(f"\n{HEADER}T0 — File dependency guard{RESET}")
     return run(
-        ["python3", "plugins/toolkit-manager/scripts/audit_file_dependencies.py", "--root", ".", "--check"],
+        ["python3", "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py", "--root", ".", "--check"],
         label="every data-file dependency is registered",
     )
 
@@ -266,7 +270,7 @@ def t0_retired_file_guard() -> bool:
     """Fails when any code reads, writes or stats a retired portfolio data file (ADR-038)."""
     print(f"\n{HEADER}T0 — Retired portfolio file guard{RESET}")
     return run(
-        ["python3", "-m", "pytest", "plugins/toolkit-manager/tests/test_no_retired_file_access.py", "-q"],
+        ["python3", "-m", "pytest", "plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py", "-q"],
         label="no code access to retired portfolio files",
     )
 
@@ -277,11 +281,11 @@ def t1_unit_tests() -> bool:
     print(f"\n{HEADER}T1 — Python Unit Tests (pytest){RESET}")
     cmd = [
         "python3", "-m", "pytest",
-        "plugins/tradingview/tests/test_tv_thesis_overlay.py",
-        "plugins/tradingview/tests/test_tv_alert_reconcile.py",
-        "plugins/tradingview/tests/test_tv_create_alerts.py",
-        "plugins/tradingview/tests/test_ta_sweep_batch.py",
-        "plugins/tradingview/tests/test_tv_manage_indicators.py",
+        "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_thesis_overlay.py",
+        "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_alert_reconcile.py",
+        "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_create_alerts.py",
+        "plugins/tradingview/.apm/skills/analyzing-charts/tests/test_ta_sweep_batch.py",
+        "plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_manage_indicators.py",
         "-q",
     ]
     return run(cmd, label="TradingView Plugin Unit Tests")
@@ -304,7 +308,7 @@ def main() -> None:
         ("T0 Python syntax",  t0_python_syntax),
         ("T0 Node syntax",    t0_node_syntax),
         ("T0 Path regression", t0_path_regression),
-        ("T0 Invariance",      t0_symlink_cwd_invariance),
+        ("T0 Invariance",      t0_cwd_invariance),
         ("T0 Map Debt",        t0_map_debt),
         ("T0 Retired files",   t0_retired_file_guard),
         ("T0 File dependencies", t0_file_dependency_guard),

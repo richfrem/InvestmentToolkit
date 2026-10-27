@@ -21,7 +21,7 @@ Welcome to **InvestmentToolkit**. This is the single setup guide for both human 
 If working with an AI assistant in chat, paste this directive:
 
 ```text
-Please read INIT_AGENTS.md and work through it in order: prerequisites, .env, plugin install (ask me which plugin contribution mode I prefer: fork-and-pr, local-patch-and-issue, or domain-override), the runtime and database setup in Step 4, then run /toolkit-onboarding.
+Please read INIT_AGENTS.md and work through it in order: prerequisites, .env, APM plugin install (ask me which plugin contribution mode I prefer: fork-and-pr, local-patch-and-issue, or domain-override), the runtime and database setup in Step 4, then run /toolkit-onboarding.
 ```
 
 ### Core Agent Commands Reference
@@ -66,7 +66,7 @@ The launcher only prints a note when `.env` is missing, so do this first. Defaul
 
 ## Step 2: Plugins and Ecosystem
 
-InvestmentToolkit relies on shared ecosystem skills and plugins (from `agent-plugins-skills`) alongside domain-specific investment tools.
+InvestmentToolkit relies on shared ecosystem skills and plugins (from `agent-plugins-skills`, installed globally with APM) alongside domain-specific investment tools.
 
 ### 1. Choose Your Plugin Maintenance & Contribution Mode
 
@@ -78,62 +78,72 @@ When an agent encounters a bug, deprecated selector, or friction in an upstream 
 | **Local Patch & Issue** | `local-patch-and-issue` | You want rapid local resolution without maintaining a full git clone of the plugin repo. | Patches installed files directly in `.agents/skills/`. Generates an issue reproduction report to submit to upstream maintainers. |
 | **Domain Override** | `domain-override` | Strict production consumer. Upstream plugins remain 100% vanilla. | Never alters upstream skills. Overrides logic using `.agent/rules/local-*` or dedicated `plugins/` in this repository. |
 
-### 2. Upstream Dependency Alignment (Local Checkout vs. Remote Clone)
+### 2. Install with APM
 
-- **For Maintainers / Authors (if `agent-plugins-skills` is already cloned locally)**:
-  Use your existing local sibling checkout directly without cloning from GitHub:
-  ```bash
-  # Fast local install using adjacent checkout:
-  python3 ../agent-plugins-skills/plugins/plugin-manager/scripts/plugin_add.py ../agent-plugins-skills/plugins/ --all -y
-  ```
-- **For External Users / Fresh Machines (remote GitHub clone)**:
-  If opting for **`fork-and-pr`**, clone upstream adjacent to this repository:
-  ```bash
-  cd ..
-  git clone https://github.com/richfrem/agent-plugins-skills.git
-  cd agent-plugins-skills && python3 run_tests.py && cd ../InvestmentToolkit
-  ```
-  *(Or install universally via uvx: `uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills`)*
+Plugins install with [APM](https://github.com/microsoft/apm) (Agent Package Manager). There is no `uvx` or `plugin_add.py` step. The shared library's own guide, `../agent-plugins-skills/INSTALL.md`, is the authority for its installation; the steps below are the short version for this repository. Do them in order.
+
+**a. Install APM.** This repository is verified with APM 0.33.0; the library's guide recommends 0.35.0 or newer (the `agy` target needs it).
+
+```bash
+# macOS / Linux
+curl -sSL https://aka.ms/apm-unix | sh -s -- @v0.35.0
+# Windows (PowerShell)
+irm https://aka.ms/apm-windows | iex
+
+apm --version
+```
+
+**b. The shared library is a global prerequisite, not a dependency of this repo.** `agent-plugins-skills` (`agent-agentic-os`, `agent-memory`, `agent-orchestration`, `agent-extension-authoring`, `agent-exploration-cycle`, `dev-utils`) is maintained in its own clone and installed **globally**, so it is not listed in this repo's `apm.yml`. It supplies the Agentic OS substrate and the authoring and packaging skills (`packaging-with-apm`, `authoring-skills` and the rest) that this guide and `AGENTS.md` refer to. Install each plugin in one scope only: a plugin installed globally must not also be listed in a project `apm.yml`, or it installs twice.
+
+Check what is already installed:
+
+```bash
+apm deps list --global                         # expect the six agent-* / dev-utils plugins, source "local"
+ls ~/.claude/skills/packaging-with-apm ~/.claude/skills/authoring-skills >/dev/null && echo "global skills present"
+```
+
+If they are missing, install from a clone pinned to a release tag or commit. Global installs need the **absolute path**; a relative path is rejected:
+
+```bash
+git clone https://github.com/richfrem/agent-plugins-skills.git ~/Projects/agent-plugins-skills
+cd ~/Projects/agent-plugins-skills && git checkout <tag-or-commit>
+apm install --global "$PWD" --target claude,copilot,codex,agy        # all six plugins, via the clone's root apm.yml
+# Windows (PowerShell): add --parallel-downloads 0, and use a short clone path such as C:\src\agent-plugins-skills
+```
+
+Skills land in `~/.claude/skills/`, `~/.agents/skills/` (Copilot, Codex) and `~/.gemini/antigravity-cli/skills/`; APM state is in `~/.apm/`. To update, check out the new tag and run `apm install --global`. To undo, use `python3 <clone>/plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py list-backups` and `... rollback`. For single plugins, `--skill` selection, Windows troubleshooting and the full detail, read the library's `INSTALL.md`.
+
+If a machine was set up with the older `plugin-add` installer (it has `.agents/ownership/` and `plugin-sources.json`), remove that installation of a plugin before installing it with APM, or skill names are duplicated.
+
+**c. This repository's four plugins** (`portfolio-advisor`, `tradingview`, `toolkit-manager`, `questrade`). The root `apm.yml` lists them, so from the repository root:
+
+```bash
+apm install --target agent-skills
+```
+
+This deploys the skill hubs into `.agents/skills/` and writes `apm.lock.yaml`; commit the lockfile with any change and use `apm install --frozen` to reproduce it exactly. `.agents/` and `apm_modules/` are gitignored. Never edit the deployed copies: change the plugin source under `plugins/<plugin>/.apm/` and reinstall. To remove one, run `apm uninstall ./plugins/<plugin>`. APM prints that questrade's MCP server cannot be configured for the `agent-skills` target; the skills still install, and `/questrade-setup` connects the server.
+
+> The files `plugin-sources.json` and `plugin-retention.json` belong to the legacy `plugin-syncer` and cover only library plugins still deployed that way. They go away once every library plugin is installed with APM.
 
 ### 3. Run Agentic OS Initialization & Retrofit
 
-Run the installation probe preflight first, then initialize or retrofit targeting this workspace:
+This uses the globally installed `setting-up-agentic-os` skill (`init` mode), which depends on `running-control-plane` being installed beside it (Step 2b). Ask your agent to "set up the Agentic OS in this repository (retrofit, contribution mode `<your choice>`)" so it follows the skill's `init` workflow, or run the scripts yourself from the repository root:
 
 ```bash
-# 1. Check current substrate state (read-only diagnostic):
-python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/control_plane/installation_probe.py --target .
+# 1. Read-only preflight: classifies the repository
+python3 ~/.agents/skills/running-control-plane/scripts/control_plane/installation_probe.py --target .
 
-# 2. Run retrofit (if agent-plugins-skills is local):
-python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/init_agentic_os.py \
-  --target . \
-  --retrofit \
-  --contribution-mode fork-and-pr
-
-# 3. Ensure control plane schema migration is current:
-python3 -c "
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path('../agent-plugins-skills/plugins/agent-agentic-os/scripts').resolve()))
-from agent_control import ControlPlane
-ControlPlane(db_path=Path('context/control_plane.db')).init_db()
-"
+# 2. Retrofit (add --dry-run first to preview)
+python3 ~/.agents/skills/setting-up-agentic-os/scripts/init_agentic_os.py \
+  --target . --retrofit --contribution-mode fork-and-pr
 ```
-*(Replace `fork-and-pr` with `local-patch-and-issue` or `domain-override` based on your choice).*
+*(Replace `fork-and-pr` with `local-patch-and-issue` or `domain-override` based on your choice.)*
 
-### 4. Claude Code only: register the project plugins
+The approval signing key is created by **you** in your own terminal (the skill's `signing-setup` mode walks you through it); an agent never creates or enrolls keys.
 
-Skip this if you do not use Claude Code. The plugin sync above deploys skills into `.agents/`; Claude Code also needs the plugins registered before `/tv-*` and the other plugin commands appear:
+### 4. Claude Code
 
-```text
-/plugin marketplace add richfrem/InvestmentToolkit
-/plugin install tradingview@investment-toolkit-plugins
-/plugin install portfolio-advisor@investment-toolkit-plugins
-/plugin install stock-valuation@investment-toolkit-plugins
-/plugin install toolkit-manager@investment-toolkit-plugins
-/plugin install etf-analysis@investment-toolkit-plugins
-```
-
-Questrade users also install `questrade@investment-toolkit-plugins`; see [Optional: Questrade](#optional-questrade-pluginsquestrade).
+The project's skills deploy to `.agents/skills/`, which `AGENTS.md` points every agent to. The old Claude Code marketplace (`investment-toolkit-plugins`) is retired: its catalog is empty and the `/plugin install ...@investment-toolkit-plugins` commands no longer apply. If you want the skills in `.claude/skills/` as well, install with `--target claude` instead of `agent-skills`. Use one target, not both, or skills are listed twice.
 
 > [!IMPORTANT]
 > **Single Instruction File (`AGENTS.md`) & Handling `.bak` Files**:
@@ -145,11 +155,11 @@ Questrade users also install `questrade@investment-toolkit-plugins`; see [Option
 
 ## Step 3: Core Substrate Health Check
 
-Confirm that the local agentic runtime substrate is operational. These commands use tools installed by Step 2, so run Step 2 first (`.agents/` does not exist on a fresh clone):
+Confirm that the local agentic runtime substrate is operational. These commands use the globally installed `agent-plugins-skills` skills (Step 2b); the project's own `.agents/skills/` appears after Step 2c:
 
 ```bash
 # 1. Installation probe verification
-python3 ../agent-plugins-skills/plugins/agent-agentic-os/scripts/control_plane/installation_probe.py --target .
+python3 ~/.agents/skills/running-control-plane/scripts/control_plane/installation_probe.py --target .
 
 # 2. Control plane, hooks, and evolution CI gate
 test -f context/control_plane.db && echo "✅ control_plane.db active" || echo "❌ Missing control_plane.db"
@@ -157,19 +167,18 @@ test -f .claude/hooks/hooks.json && echo "✅ Claude hooks active" || echo "❌ 
 test -f .git/hooks/pre-commit-evolution-guard && echo "✅ Evolution guard active" || echo "❌ Missing evolution guard"
 test -f .github/workflows/verify-evolution-integrity.yml && echo "✅ CI integrity gate active" || echo "❌ Missing CI gate"
 
-# 3. Cryptographic signing identity readiness (read-only)
-python3 .agents/skills/os-control-health/scripts/setup_ciba_identity.py --check
+# 3. Cryptographic signing identity readiness (read-only status check)
+python3 ~/.agents/skills/setting-up-agentic-os/scripts/setup_ciba_identity.py --check
 
-# 4. Symlink integrity
-python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+# 4. Is control-plane gating on?
+python3 ~/.agents/skills/running-control-plane/scripts/control_plane_mode.py status
 
 # 5. Core test suites
 python3 run_tests.py --t0-only
 python3 run_tests.py --unit
-
-# 6. Run full OS health check loop
-python3 .agents/skills/os-control-health/scripts/kernel.py emit_event --agent os-control-health --type intent --action scan_metrics
 ```
+
+For the full liveness check (event bus, locks, memory, metrics), ask your agent to "run health check"; that is the `health` mode of `running-control-plane`.
 
 ---
 
@@ -199,7 +208,7 @@ On a fresh clone the migrator creates `investment_screener/backend/data/domain_m
 
 ```bash
 python3 investment_screener/backend/py_services/domain_model/schema_migrator.py --status
-python3 plugins/toolkit-manager/scripts/sqlite_admin.py status --db domain_model
+python3 plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py status --db domain_model
 ```
 
 `status` lists every table with its row count and the schema `user_version`. Right after step 2 only `schema_migrations` has rows.
@@ -209,16 +218,16 @@ python3 plugins/toolkit-manager/scripts/sqlite_admin.py status --db domain_model
 Do this before any bulk write (syncs, imports, migrations) and after onboarding:
 
 ```bash
-python3 plugins/toolkit-manager/scripts/db_backup.py backup --db domain_model
-python3 plugins/toolkit-manager/scripts/sqlite_admin.py export --db domain_model --out temp/exports/domain_model-$(date +%F)
-python3 plugins/toolkit-manager/scripts/sqlite_admin.py verify-export temp/exports/domain_model-$(date +%F)
+python3 investment_screener/backend/py_services/domain_model/db_backup.py backup --db domain_model
+python3 plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py export --db domain_model --out temp/exports/domain_model-$(date +%F)
+python3 plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py verify-export temp/exports/domain_model-$(date +%F)
 ```
 
-The `sqlite-admin` skill documents restore and rebuild. Worktrees hold their own empty copies of the gitignored databases; real backups are taken from the main checkout.
+The `sqlite-admin` mode of the `managing-the-toolkit` skill documents restore and rebuild. Worktrees hold their own empty copies of the gitignored databases; real backups are taken from the main checkout.
 
 ### 5. TradingView, then load holdings
 
-1. `/tv-setup` (or `python3 plugins/tradingview/scripts/tv_health_check.py`) confirms port 9222 and the CDP dependencies. `/tv-onboarding` is the longer walkthrough.
+1. `/tv-setup` (or `python3 investment_screener/backend/py_services/tv_health_check.py`) confirms port 9222 and the CDP dependencies. `/tv-onboarding` is the longer walkthrough.
 2. Log in to your broker in TradingView's broker panel.
 3. `/tv-portfolio-sync`. The accounts (TFSA, RRSP, CASH) and positions are created by this first sync; there is no separate account seeding command. The skill shows a per-account diff and asks for your go-ahead before writing.
 4. Strategy pillars and sub-strategies are **not seeded** by any step yet (known gap, `references/map-debt.md` DEBT-20260930-02). They are created as theses are written.
@@ -261,7 +270,7 @@ Questrade support is an optional add-on for people who have a Questrade account.
 
 ### Setup
 
-1. **Install the plugin.** Claude Code: `/plugin install questrade@investment-toolkit-plugins` (the marketplace was added in Step 2, step 4). Other clients: the plugin sync from Step 2 deploys it with the others.
+1. **Install the plugin.** It is already deployed by `apm install --target agent-skills` (Step 2c) with the other three plugins.
 2. **Run `/questrade-setup`.** It adds the server (Claude Code: `claude mcp add questrade --url https://mcp.questrade.com/v1/brokerage/mcp`; Codex CLI: `codex mcp add questrade --url ...`; Cursor and VS Code: add a server entry with that URL).
 3. **Sign in.** You must complete the browser sign-in yourself; an agent cannot. If the page afterwards shows a connection error, paste the full address-bar URL back to the agent. No token is stored in the repository.
 4. **Verify.** The agent calls `List Accounts`; it should return your account IDs. The sign-in lasts one session, so every Questrade skill re-checks it and sends you back to `/questrade-setup` when it has expired.
@@ -291,7 +300,7 @@ Once Steps 1–4 are done, trigger the portfolio-side coordinator:
 /toolkit-onboarding
 ```
 
-It does not install anything itself. It checks the runtime, backs up the database before the first write, asks whether you use Questrade, delegates to `/tv-portfolio-sync` and `/stock-intake` for holdings, builds DCF baselines, takes a verified export, and launches the suite through `run-screener`.
+It does not install anything itself. It checks the runtime, backs up the database before the first write, asks whether you use Questrade, delegates to `/tv-portfolio-sync` and `/stock-intake` for holdings, builds DCF baselines, takes a verified export, and launches the suite through the `run-app` mode of `managing-the-toolkit`.
 
 ---
 

@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-UPDATE_THESIS_DIR = REPO_ROOT / "plugins/portfolio-advisor/scripts"
+UPDATE_THESIS_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(UPDATE_THESIS_DIR))
 
 from update_thesis import (  # noqa: E402

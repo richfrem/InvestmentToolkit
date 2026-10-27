@@ -1,1 +1,0 @@
-../../../scripts/apply_catalyst.py

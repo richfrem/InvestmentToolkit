@@ -54,9 +54,9 @@ const router = express.Router();
 
 const REPO_ROOT = path.resolve(__dirname, '../../../..');
 const PLACE_ORDER_PY = path.join(REPO_ROOT, 'investment_screener/backend/py_services/place_order.py');
-const GET_ORDERS_PY  = path.join(REPO_ROOT, 'plugins/tradingview/scripts/tv_get_orders.py');
-const TV_QUOTE_PY    = path.join(REPO_ROOT, 'plugins/tradingview/scripts/tv_quote.py');
-const TV_TRADES_IMPORT_PY = path.join(REPO_ROOT, 'plugins/tradingview/scripts/tv_trades_import.py');
+const GET_ORDERS_PY  = path.join(REPO_ROOT, 'plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_get_orders.py');
+const TV_QUOTE_PY    = path.join(REPO_ROOT, 'plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/tv_quote.py');
+const TV_TRADES_IMPORT_PY = path.join(REPO_ROOT, 'plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_trades_import.py');
 const BROKER_SOURCES_PY   = path.join(REPO_ROOT, 'investment_screener/backend/py_services/broker_sources.py');
 
 // ── Session State Machine ────────────────────────────────────────────────────

@@ -1,1 +1,0 @@
-../../../scripts/daily_brief.py

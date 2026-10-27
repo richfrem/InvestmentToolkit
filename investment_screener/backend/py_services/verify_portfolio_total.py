@@ -53,7 +53,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 # Walk up to repo root (investment_screener/backend/py_services → repo root = 3 levels up)
 REPO_ROOT  = SCRIPT_DIR.parents[2]
-TV_CLIENT_DIR = REPO_ROOT / "plugins" / "tradingview" / "scripts"
+TV_CLIENT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(TV_CLIENT_DIR))
 from tv_client import run_node_module
 

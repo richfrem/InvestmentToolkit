@@ -31,7 +31,7 @@ timestamp-age comparison, and extract_data_window() retries with
 exponential backoff on that condition.
 
 Key Input Dependencies:
-    - plugins/tradingview/scripts/tv_client.py (Task 5A-8's tv_call())
+    - investment_screener/backend/py_services/tv_client.py (Task 5A-8's tv_call())
 """
 
 import logging
@@ -45,10 +45,10 @@ from typing import Any, Callable, Dict, List, Optional
 
 # Cross-directory import of tv_call (Task 5A-8). Follows the exact same
 # sys.path-insert pattern pine_script_manager.py/alert_manager.py already
-# established — plugins/tradingview/scripts/ is not a package on the
+# established — investment_screener/backend/py_services/ is not a package on the
 # default path. tv_client.py is not touched; this module only wraps its
 # output.
-_TV_SCRIPTS_DIR = str(Path(__file__).resolve().parents[3] / "plugins" / "tradingview" / "scripts")
+_TV_SCRIPTS_DIR = str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services")
 if _TV_SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, _TV_SCRIPTS_DIR)
 

@@ -1,0 +1,588 @@
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Analyse Apple stock and give me a valuation with bear, base, and bull cases",
+    "expected_trigger": "update-stock-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes update-stock-analysis skill and runs full pipeline",
+    "should_trigger": true,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/update-stock-analysis NVDA",
+    "expected_trigger": "update-stock-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises slash command and begins stock valuation workflow",
+    "should_trigger": true,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Run a valuation for MSFT and save the projection",
+    "expected_trigger": "update-stock-analysis",
+    "pass_condition": "Output JSON has: weight sum in [0.99,1.01], bear.growthRate < base.growthRate < bull.growthRate, all numeric fields are numbers not strings, Source Transparency block present",
+    "should_trigger": true,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "standalone_degradation",
+    "prompt": "Value TSLA — backend is down",
+    "setup": "Backend health check fails (simulate by providing no backend)",
+    "expected_trigger": "update-stock-analysis",
+    "pass_condition": "Agent announces degraded mode, requests raw JSON from user, completes analysis and writes report to /tmp/, does NOT crash",
+    "should_trigger": true,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "What is the fair value of XYZ Inc? Just estimate it without data.",
+    "expected_trigger": "update-stock-analysis",
+    "pass_condition": "Agent refuses to fabricate inputs. Either fetches real data, requests user paste data, or explicitly states it cannot produce a reliable valuation without data.",
+    "should_trigger": false,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "irrelevant_task",
+    "prompt": "Can you check my git status and list uncommitted files in this directory?",
+    "expected_trigger": null,
+    "expected_not_trigger": [
+      "update-stock-analysis"
+    ],
+    "pass_condition": "Agent routes to git commands or general tools, not stock valuation.",
+    "should_trigger": false,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "Can you balance my portfolio and check which stocks are overvalued?",
+    "expected_trigger": "portfolio-health",
+    "expected_not_trigger": [
+      "update-stock-analysis"
+    ],
+    "pass_condition": "Agent routes to portfolio-advisor, not update-stock-analysis. Portfolio-level analysis is a different skill.",
+    "should_trigger": false,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-008",
+    "type": "positive",
+    "category": "schema_type_error",
+    "prompt": "Generate a projection for GOOG where all weights are expressed as percentages like 25, 55, 20",
+    "expected_trigger": "update-stock-analysis",
+    "pass_condition": "Agent corrects weights to decimal (0.25, 0.55, 0.20) and notes the correction. Does NOT use integer percentages in the persisted JSON.",
+    "should_trigger": true,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-009",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review MU for this workflow: the valuation was saved today but only models HBM. New guidance and agentic AI context-storage demand may affect server DDR/LPDDR and NAND/enterprise SSD. Is the stored TRIM ready to act on?",
+    "expected_trigger": "update-stock-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Checks dated guidance and forward revenue/EPS, DDR/LPDDR and NAND/SSD alongside HBM, KV-cache tier substitution, pricing/capacity and capex/working capital. Flags NEEDS_REVALUATION if material drivers are missing, preserves the canonical action and standing decision, and routes or performs revaluation within this workflow without assuming a bullish result.",
+    "should_trigger": true,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-010",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review BE for this workflow: a hypothetical announcement says up to 2.8 GW framework capacity, with 1.2 GW initially firm contracted. Grid connections are delayed. Can the full framework be treated as next-year revenue or a bear-case valuation floor?",
+    "expected_trigger": "update-stock-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
+    "should_trigger": true,
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-011",
+    "type": "positive",
+    "category": "method_rate_contract",
+    "prompt": "Update APLD after earnings. Its existing model discounts year-five EPS times P/E at an inherited 12.77% WACC whose source inputs are missing. Do not change the model without explaining it.",
+    "expected_trigger": "update-stock-analysis",
+    "should_trigger": true,
+    "pass_condition": "Identifies terminal common-equity earnings requiring cost of equity, labels the inherited rate not reproducible, reconstructs dated evidence without inventing a CAPM explanation, and presents a concrete comparison before any method migration. Does not replace the model with FCFF or publish a changed central value with missing project financing inputs. Saves an explicit rate audit only with consistent recalculated values through canonical persistence.",
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-012",
+    "type": "positive",
+    "category": "rate_evidence",
+    "prompt": "Value an AI data-center builder: debt data is unavailable, the company has tax losses, and the live WACC script hits its 14% cap. Can we just use 14% and zero debt?",
+    "expected_trigger": "update-stock-analysis",
+    "should_trigger": true,
+    "pass_condition": "Distinguishes unavailable debt from confirmed zero, researches financing and usable tax shields, rejects the legacy capped rate as a validated estimate, retains raw Ke/WACC and dated input sources through explicit-input calculation, and reports diagnostic sensitivity with NEEDS_REVALUATION if material capital claims remain unresolved. No decision-ready SQLite replacement based on fabricated debt or automatic 21% tax shield.",
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-013",
+    "type": "positive",
+    "category": "forward_build_before_rate",
+    "prompt": "APLD just reported $342M for the quarter. Refresh the valuation — I think revenue hits $2B in two years. Just fix the discount rate.",
+    "expected_trigger": "update-stock-analysis",
+    "should_trigger": true,
+    "pass_condition": "Before selecting any rate, splits recurring rent from fit-out revenue, derives revenue per MW from contracted revenue and term, builds a dated capacity ladder (energized, funded, signed-unfunded, unsigned, targets), reconciles the near-term path with consensus and the terminal year with the contracted floor, and translates to common earnings after interest, dilution and partner claims. Does not annualize total quarterly revenue or tune the rate to offset stale scenarios. Rate inputs include a plain-language rationale that names the beta source and the rejected alternative; unresolved margin or ownership gaps keep NEEDS_REVALUATION.",
+    "mode": "update-analysis"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/research-stock NVDA",
+    "expected_trigger": "stock-research",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and begins the prior-analysis load + research sweep, not a full DCF re-run.",
+    "should_trigger": true,
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "AMD just reported earnings, can you tell me what changed and whether it impacts our thesis?",
+    "expected_trigger": "stock-research",
+    "expected_not_trigger": [
+      "update-stock-analysis"
+    ],
+    "pass_condition": "Agent recognises 'something happened' framing and runs the research sweep first, deferring any DCF re-run until the decision gate recommends it.",
+    "should_trigger": true,
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "There's no prior valuation for PLTR yet — can you build me a full DCF with bear/base/bull cases?",
+    "expected_trigger": "update-stock-analysis",
+    "expected_not_trigger": [
+      "stock-research"
+    ],
+    "pass_condition": "No prior valuation exists so the agent routes directly to update-stock-analysis instead of running a research sweep first.",
+    "should_trigger": false,
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "workflow_gate",
+    "prompt": "/research-stock BE — Bloom Energy just announced a new $2B utility contract",
+    "expected_trigger": "stock-research",
+    "pass_condition": "Agent classifies the finding, reaches the Re-Valuation Decision Gate, and explicitly waits for user confirmation before chaining into update-stock-analysis.",
+    "should_trigger": true,
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "positive",
+    "category": "chaining",
+    "prompt": "/research-stock ORCL — Oracle raised FY guidance 8% and beat revenue by 12% on cloud/AI bookings. Yes, please proceed with the full re-valuation.",
+    "expected_trigger": "stock-research",
+    "pass_condition": "Agent classifies the guidance raise + beat as Class A, writes research context, then invokes the update-stock-analysis skill.",
+    "should_trigger": true,
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "/research-stock ZZZQ — a ticker that doesn't exist in our projections or on any exchange",
+    "expected_trigger": "stock-research",
+    "pass_condition": "Agent explicitly declares the fetch failure rather than fabricating a research sweep.",
+    "should_trigger": false,
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review MU for this workflow: the valuation was saved today but only models HBM. New guidance and agentic AI context-storage demand may affect server DDR/LPDDR and NAND/enterprise SSD. Is the stored TRIM ready to act on?",
+    "expected_trigger": "stock-research",
+    "expected_not_trigger": [],
+    "pass_condition": "Checks dated guidance and forward revenue/EPS, DDR/LPDDR and NAND/SSD alongside HBM, KV-cache tier substitution, pricing/capacity and capex/working capital. Flags NEEDS_REVALUATION if material drivers are missing, preserves the canonical action and standing decision, and routes or performs revaluation within this workflow without assuming a bullish result.",
+    "should_trigger": true,
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-008",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review BE for this workflow: a hypothetical announcement says up to 2.8 GW framework capacity, with 1.2 GW initially firm contracted. Grid connections are delayed. Can the full framework be treated as next-year revenue or a bear-case valuation floor?",
+    "expected_trigger": "stock-research",
+    "expected_not_trigger": [],
+    "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
+    "should_trigger": true,
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-009",
+    "type": "positive",
+    "category": "method_rate_contract",
+    "prompt": "Research APLD's earnings and explain the saved 12.77% discount rate. The saved model uses future EPS times P/E, the rate is labeled WACC, and historical inputs cannot be located.",
+    "expected_trigger": "stock-research",
+    "should_trigger": true,
+    "pass_condition": "Labels historical rate not reproducible instead of inventing inputs, flags equity-versus-firm rate mismatch, records dated guidance and financing gaps, and presents a structured revaluation card with method/rate basis and sensitivity needs. Preserves active valuation and standing decision until explicitly authorized; does not silently switch to FCFF.",
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-010",
+    "type": "positive",
+    "category": "authorized_chaining",
+    "prompt": "Research MSFT's earnings and then update the existing annual-FCFF valuation; I authorize that revaluation. Keep the existing method and save the selected rate and its evidence so the web app reads it from SQLite.",
+    "expected_trigger": "stock-research",
+    "should_trigger": true,
+    "pass_condition": "Presents the decision card and continues under existing authorization without asking again, chains to update-stock-analysis, uses dated explicit WACC inputs appropriate to FCFF, and persists the consistent rate audit and scenario results via the supported Python workflow. Explains that JSON artifacts are inputs while SQLite is the app's source; no per-view rate recomputation.",
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-011",
+    "type": "positive",
+    "category": "forward_build_before_rate",
+    "prompt": "Research the AI data-center builder's latest quarter and tell me if the valuation needs redoing.",
+    "expected_trigger": "stock-research",
+    "should_trigger": true,
+    "pass_condition": "Completes the capacity-to-earnings build (recurring versus one-time revenue, revenue per MW, dated capacity ladder with funding status, contracted floor, common-earnings claims) before proposing a rate or re-valuation, and reports which scenario assumptions the evidence contradicts.",
+    "mode": "research-sweep"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Run a forward valuation challenge for Bloom Energy (BE) — fuel cell power for AI data centers",
+    "expected_trigger": "forward-valuation-challenge",
+    "expected_not_trigger": [],
+    "pass_condition": "Skill activates for an AI data center power provider, testing firm annual deliveries and forward capex without treating backlog as an unconditional revenue or valuation floor.",
+    "should_trigger": true,
+    "mode": "forward-challenge"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Challenge Vertiv (VRT) valuation — data center cooling and electrical infrastructure",
+    "expected_trigger": "forward-valuation-challenge",
+    "expected_not_trigger": [],
+    "pass_condition": "Skill activates to stress-test data center cooling infrastructure multiples against forward hyperscaler demand.",
+    "should_trigger": true,
+    "mode": "forward-challenge"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "Value Procter & Gamble (PG) — a consumer staples company with no AI infrastructure or data center exposure",
+    "expected_trigger": null,
+    "expected_not_trigger": [
+      "forward-valuation-challenge"
+    ],
+    "pass_condition": "Skill does not activate for non-infrastructure consumer staples companies.",
+    "should_trigger": false,
+    "mode": "forward-challenge"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "rule_enforcement",
+    "prompt": "Value Bloom Energy: TTM revenue ~$2B, product backlog ~$6B, service backlog ~$14B, and the raw model wants to set bear case target price to $4 with 35% base CAGR",
+    "expected_trigger": "forward-valuation-challenge",
+    "pass_condition": "Challenges unsupported bear assumptions against firm contract enforceability, delivery timing, margins, cash conversion and financing. Does not reject a low equity value solely because gross backlog is large or invent a guaranteed price floor.",
+    "should_trigger": true,
+    "mode": "forward-challenge"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "Calculate the YTD simple and time-weighted return of my portfolio",
+    "expected_trigger": "ytd-return",
+    "expected_not_trigger": [
+      "forward-valuation-challenge"
+    ],
+    "pass_condition": "Agent routes to portfolio-advisor ytd-return, not forward-valuation-challenge.",
+    "should_trigger": false,
+    "mode": "forward-challenge"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_conflict",
+    "prompt": "Sync broker orders from TradingView via CDP",
+    "expected_trigger": "tv-portfolio-sync",
+    "expected_not_trigger": [
+      "forward-valuation-challenge"
+    ],
+    "pass_condition": "Agent routes to tv-portfolio-sync, not forward-valuation-challenge.",
+    "should_trigger": false,
+    "mode": "forward-challenge"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review MU for this workflow: the valuation was saved today but only models HBM. New guidance and agentic AI context-storage demand may affect server DDR/LPDDR and NAND/enterprise SSD. Is the stored TRIM ready to act on?",
+    "expected_trigger": "forward-valuation-challenge",
+    "expected_not_trigger": [],
+    "pass_condition": "Checks dated guidance and forward revenue/EPS, DDR/LPDDR and NAND/SSD alongside HBM, KV-cache tier substitution, pricing/capacity and capex/working capital. Flags NEEDS_REVALUATION if material drivers are missing, preserves the canonical action and standing decision, and routes or performs revaluation within this workflow without assuming a bullish result.",
+    "should_trigger": true,
+    "mode": "forward-challenge"
+  },
+  {
+    "id": "EVAL-008",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review BE for this workflow: a hypothetical announcement says up to 2.8 GW framework capacity, with 1.2 GW initially firm contracted. Grid connections are delayed. Can the full framework be treated as next-year revenue or a bear-case valuation floor?",
+    "expected_trigger": "forward-valuation-challenge",
+    "expected_not_trigger": [],
+    "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
+    "should_trigger": true,
+    "mode": "forward-challenge"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Run valuation math validation for a regulated utility company",
+    "expected_trigger": "valuation-math-validation",
+    "expected_not_trigger": [],
+    "pass_condition": "Skill activates as the post-computation validation gate.",
+    "should_trigger": true,
+    "mode": "math-validation"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Validate valuation math on NVDA bear/base/bull scenarios",
+    "expected_trigger": "valuation-math-validation",
+    "expected_not_trigger": [],
+    "pass_condition": "Skill activates unconditionally as the mandatory post-computation gate.",
+    "should_trigger": true,
+    "mode": "math-validation"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "rule_enforcement",
+    "prompt": "Validate a scenario where netMargin was entered as 10 instead of 0.10, and discountRate was entered as 10",
+    "expected_trigger": "valuation-math-validation",
+    "pass_condition": "Detects percent format error and halts.",
+    "should_trigger": true,
+    "mode": "math-validation"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "Show me active alerts on TradingView Desktop",
+    "expected_trigger": "tv-alert-list",
+    "expected_not_trigger": [
+      "valuation-math-validation"
+    ],
+    "pass_condition": "Agent routes to TradingView alert listing, not DCF math validation.",
+    "should_trigger": false,
+    "mode": "math-validation"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "Fetch Questrade account cash balances",
+    "expected_trigger": "questrade-get-balances",
+    "expected_not_trigger": [
+      "valuation-math-validation"
+    ],
+    "pass_condition": "Agent routes to Questrade skill, not valuation math validation.",
+    "should_trigger": false,
+    "mode": "math-validation"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "trigger_exclusion",
+    "prompt": "Deploy the application servers using run_investment_toolkit.py",
+    "expected_trigger": "run-screener",
+    "expected_not_trigger": [
+      "valuation-math-validation"
+    ],
+    "pass_condition": "Agent routes to run-screener, not valuation math validation.",
+    "should_trigger": false,
+    "mode": "math-validation"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Analyze KOID and tell me if the holdings still align with my thesis",
+    "expected_trigger": "etf-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes etf-analysis skill, fetches fund data via fetch_fund_data.py, classifies fund type (THEMATIC_ETF), and runs the holdings-alignment workflow rather than a DCF pipeline",
+    "should_trigger": true,
+    "mode": "fund-analysis"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/analyze-etf DXYZ",
+    "expected_trigger": "etf-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command, classifies DXYZ as CLOSED_END (no NAV on yfinance), and begins the NAV premium analysis workflow",
+    "should_trigger": true,
+    "mode": "fund-analysis"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Evaluate HUMN ETF and save the analysis",
+    "expected_trigger": "etf-analysis",
+    "pass_condition": "Output is persisted to BOTH investment_screener/backend/data/etf_analysis/HUMN.json AND domain_model.sqlite projection_version; the action field is one of BUY, ACCUMULATE, HOLD, TRIM, AVOID; validate_etf_analysis.py is run before persistence",
+    "should_trigger": true,
+    "mode": "fund-analysis"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Analyze the fictional ticker ZZFAKE ETF — just estimate the holdings and NAV without pulling real data, I need this fast",
+    "expected_trigger": "etf-analysis",
+    "pass_condition": "Agent refuses to fabricate holdings, NAV premium, or expense ratio for a ticker it cannot fetch real data for via fetch_fund_data.py.",
+    "should_trigger": false,
+    "mode": "fund-analysis"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Analyze NVDA and give me a valuation with bear, base, and bull cases",
+    "expected_trigger": "update-stock-analysis",
+    "expected_not_trigger": [
+      "etf-analysis"
+    ],
+    "pass_condition": "Agent routes to update-stock-analysis (individual equity DCF valuation), not etf-analysis. NVDA is a single stock, not a fund/ETF.",
+    "should_trigger": false,
+    "mode": "fund-analysis"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "KOID holds NVDA and CRDO as top positions — can you value NVDA specifically for me while you're at it?",
+    "expected_trigger": "etf-analysis",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent completes the KOID (THEMATIC_ETF) holdings/overlap analysis under etf-analysis, but for the embedded ask to 'value NVDA specifically' it either declines DCF work within this skill or explicitly hands off to update-stock-analysis for NVDA.",
+    "should_trigger": true,
+    "mode": "fund-analysis"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "negative",
+    "category": "hard_rule_violation",
+    "prompt": "Analyze DXYZ — just run a quick DCF on it, that'll be more reliable than a NAV premium estimate",
+    "expected_trigger": "etf-analysis",
+    "pass_condition": "Agent refuses to run DCF on DXYZ (Hard Rule 1: never use DCF for fund analysis) and instead produces the NAV premium analysis with a cited NAV estimate source.",
+    "should_trigger": false,
+    "mode": "fund-analysis"
+  },
+  {
+    "id": "EVAL-008",
+    "type": "positive",
+    "category": "hard_rule_compliance",
+    "prompt": "Evaluate HUMN as a thematic ETF for my portfolio",
+    "expected_trigger": "etf-analysis",
+    "pass_condition": "Agent's analysis explicitly states the expense ratio drag at target weight and flags any top-10 holdings that duplicate existing individual stock positions already held directly before recommending an action.",
+    "should_trigger": true,
+    "mode": "fund-analysis"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/stock-intake PLTR",
+    "expected_trigger": "stock_intake",
+    "should_trigger": true,
+    "mode": "stock-intake"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Onboard PLTR into our portfolio and run baseline valuation",
+    "expected_trigger": "stock_intake",
+    "should_trigger": true,
+    "mode": "stock-intake"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Run an automated stock intake for new watchlist ticker NET",
+    "expected_trigger": "stock_intake",
+    "should_trigger": true,
+    "mode": "stock-intake"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Update the DCF valuation model for our existing core holding AAPL",
+    "expected_trigger": "update_stock_analysis",
+    "should_trigger": false,
+    "mode": "stock-intake"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Conduct a qualitative research sweep on recent news and earnings for AMZN",
+    "expected_trigger": "stock_research",
+    "should_trigger": false,
+    "mode": "stock-intake"
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Calibrate target weights across all existing holdings one by one",
+    "expected_trigger": "calibrate_targets",
+    "should_trigger": false,
+    "mode": "stock-intake"
+  },
+  {
+    "id": "EVAL-007",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review MU for this workflow: the valuation was saved today but only models HBM. New guidance and agentic AI context-storage demand may affect server DDR/LPDDR and NAND/enterprise SSD. Is the stored TRIM ready to act on?",
+    "expected_trigger": "stock_intake",
+    "expected_not_trigger": [],
+    "pass_condition": "Checks dated guidance and forward revenue/EPS, DDR/LPDDR and NAND/SSD alongside HBM, KV-cache tier substitution, pricing/capacity and capex/working capital. Flags NEEDS_REVALUATION if material drivers are missing, preserves the canonical action and standing decision, and routes or performs revaluation within this workflow without assuming a bullish result.",
+    "should_trigger": true,
+    "mode": "stock-intake"
+  },
+  {
+    "id": "EVAL-008",
+    "type": "positive",
+    "category": "forward_evidence",
+    "prompt": "Review BE for this workflow: a hypothetical announcement says up to 2.8 GW framework capacity, with 1.2 GW initially firm contracted. Grid connections are delayed. Can the full framework be treated as next-year revenue or a bear-case valuation floor?",
+    "expected_trigger": "stock_intake",
+    "expected_not_trigger": [],
+    "pass_condition": "Separates framework maximum from firm orders and annual deliveries; checks primary sources, cancellation terms, manufacturing/fuel/commissioning capacity and cash conversion. Rejects a guaranteed annual revenue/equity floor, flags unsupported assumptions for revaluation, and preserves the canonical action and standing decision without forcing a higher fair value.",
+    "should_trigger": true,
+    "mode": "stock-intake"
+  }
+]

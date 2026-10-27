@@ -59,9 +59,7 @@ def _load_tv_prices(tickers: list[str]) -> None:
         return
     _tv_loaded = True
     try:
-        tv_scripts = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/scripts")
-        if tv_scripts not in sys.path:
-            sys.path.insert(0, tv_scripts)
+        # tv_batch_quotes is a sibling engine module in this folder
         from tv_batch_quotes import batch_quotes  # type: ignore[import]
         result = batch_quotes(tickers)
         for sym, q in result.get("quotes", {}).items():

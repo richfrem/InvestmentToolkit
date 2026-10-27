@@ -30,7 +30,7 @@ import re
 from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "domain_model.sqlite"
-INDICATOR = Path(__file__).resolve().parents[3] / "plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine"
+INDICATOR = Path(__file__).resolve().parents[3] / "plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/ai-ta-levels.pine"
 INDICATOR_NAME = "AI TA Levels"   # matches the chart study name of the saved script (any version suffix)
 LEVEL_INPUTS = ("target_fair", "target_buy1", "target_buy", "target_buy3",
                 "target_trim1", "target_trim2", "target_trim3", "target_stop")

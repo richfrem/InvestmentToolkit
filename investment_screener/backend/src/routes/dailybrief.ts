@@ -73,7 +73,7 @@ router.get('/latest', async (_req, res) => {
     try {
         const brief = await queryLatestBriefFromLedger(undefined, DOMAIN_MODEL_DB_FILE);
         if (!brief) {
-            res.status(404).json({ error: 'No daily brief found. Run: python3 plugins/portfolio-advisor/scripts/daily_brief.py' });
+            res.status(404).json({ error: 'No daily brief found. Run: python3 investment_screener/backend/py_services/daily_brief.py' });
             return;
         }
         res.json(brief);

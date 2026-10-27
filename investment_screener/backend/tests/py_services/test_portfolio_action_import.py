@@ -14,7 +14,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SYMLINK_PATH = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
-CANONICAL_PATH = REPO_ROOT / "plugins/portfolio-advisor/scripts/portfolio_action.py"
+CANONICAL_PATH = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402

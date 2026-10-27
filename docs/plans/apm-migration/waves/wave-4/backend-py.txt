@@ -1,0 +1,54 @@
+== backend-py
+........................................................................ [  3%]
+........................................................................ [  6%]
+........................................................................ [ 10%]
+........................................................................ [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 20%]
+........................................................................ [ 24%]
+........................................................................ [ 27%]
+........................................................................ [ 31%]
+........................................................................ [ 34%]
+........................................................................ [ 38%]
+........................................................................ [ 41%]
+..................x....x................................................ [ 44%]
+........................................................................ [ 48%]
+........................................................................ [ 51%]
+........................................................................ [ 55%]
+........................................................................ [ 58%]
+........................................................................ [ 62%]
+.................ss...F................................................. [ 65%]
+........................................................................ [ 69%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 79%]
+........................................................................ [ 82%]
+........................................................................ [ 86%]
+........................................................................ [ 89%]
+........................................................................ [ 93%]
+........................................................................ [ 96%]
+...................................................................      [100%]
+=================================== FAILURES ===================================
+__ TestRecommendAllReadsSqlite.test_unheld_buy_rated_is_initiate_with_upside ___
+
+self = <test_portfolio_action.TestRecommendAllReadsSqlite testMethod=test_unheld_buy_rated_is_initiate_with_upside>
+
+    def test_unheld_buy_rated_is_initiate_with_upside(self):
+        self._seed("NBIS", "BUY", fair_value=100.0, price=50.0)
+        rec = recommend_all(str(self.db_path))["NBIS"]
+>       self.assertEqual(rec["action"], "INITIATE")
+E       AssertionError: 'WATCHLIST' != 'INITIATE'
+E       - WATCHLIST
+E       + INITIATE
+
+investment_screener/backend/tests/py_services/test_portfolio_action.py:44: AssertionError
+=============================== warnings summary ===============================
+investment_screener/backend/tests/py_services/test_market_data_schema.py::test_get_fundamentals_output_matches_schema
+  /Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/tests/py_services/test_market_data_schema.py:29: DeprecationWarning: jsonschema.RefResolver is deprecated as of v4.18.0, in favor of the https://github.com/python-jsonschema/referencing library, which provides more compliant referencing behavior as well as more flexible APIs for customization. A future release will remove RefResolver. Please file a feature request (on referencing) if you are missing an API for the kind of customization you need.
+    jsonschema.validate(instance=result, schema=SCHEMA["definitions"]["fundamentals"], resolver=jsonschema.RefResolver.from_schema(SCHEMA))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED investment_screener/backend/tests/py_services/test_portfolio_action.py::TestRecommendAllReadsSqlite::test_unheld_buy_rated_is_initiate_with_upside
+1 failed, 2078 passed, 2 skipped, 2 xfailed, 1 warning in 126.81s (0:02:06)
+exit=1

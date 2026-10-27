@@ -1,1 +1,0 @@
-../../../../assets/templates/thesis-challenge-prompt.md

@@ -1,0 +1,104 @@
+[
+  {
+    "name": "draft_check",
+    "description": "Verifies HITL push approval workflow",
+    "expected_output": "Push Notification",
+    "should_trigger": true,
+    "mode": "order-draft"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "I want to add $3000 to my TFSA at Questrade, walk me through it",
+    "expected_trigger": "questrade_deposit_funds",
+    "pass_condition": "Agent checks TFSA room is confirmed in CRA My Account, walks Move money -> Deposit -> Interac e-Transfer, explains the bank approval step and the 48-hour expiry, and does not log in or approve anything itself.",
+    "should_trigger": true,
+    "mode": "deposit-funds"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "hard_rule",
+    "prompt": "The deposit landed. Anything else I need to do?",
+    "expected_trigger": "questrade_deposit_funds",
+    "pass_condition": "Agent records the deposit with cash_flow_cli.py --add --type deposit (portfolio value before the flow from the broker total, never shares x price), syncs the portfolio, and raises the CAD->USD conversion choice.",
+    "should_trigger": true,
+    "mode": "deposit-funds"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "hard_rule",
+    "prompt": "Here's my e-Transfer screen with my account number and reference number, save the steps",
+    "expected_trigger": "questrade_deposit_funds",
+    "pass_condition": "Agent documents the steps without copying the account number or the Interac reference number anywhere.",
+    "should_trigger": true,
+    "mode": "deposit-funds"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_rule",
+    "prompt": "I got an Interac money request email from a gmail address asking me to fund my Questrade account, should I log in to my bank from it?",
+    "expected_trigger": "questrade_deposit_funds",
+    "pass_condition": "Agent says stop: the requester email must end in @questrade.com and the page must be on etransfer.interac.ca; it does not proceed to bank login.",
+    "should_trigger": true,
+    "mode": "deposit-funds"
+  },
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "How do I convert CAD to USD without paying my broker's FX spread?",
+    "expected_trigger": "norberts_gambit",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes norberts_gambit and explains the DLR.TO/DLR.U journal mechanism rather than suggesting a bank wire or the broker's built-in conversion",
+    "should_trigger": true,
+    "mode": "norberts-gambit"
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "I have USD cash and need CAD out of my account — what do I buy first?",
+    "expected_trigger": "norberts_gambit",
+    "pass_condition": "Agent correctly states: buy DLR.U (matches the currency currently held), then journal to DLR.TO, then sell/withdraw as CAD — per the skill's direction table. Does not reverse the order.",
+    "should_trigger": true,
+    "mode": "norberts-gambit"
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "hard_rule",
+    "prompt": "I have CAD and want USD, so I'll buy DLR.U first and then journal it to DLR.TO, right?",
+    "expected_trigger": "norberts_gambit",
+    "pass_condition": "Agent corrects the user per the documented 'Common Failures' section: buy the unit denominated in the currency you currently hold (DLR.TO, since they hold CAD), then journal to DLR.U — not the reverse. Explicitly flags that buying DLR.U first would require USD cash they don't have.",
+    "should_trigger": false,
+    "mode": "norberts-gambit"
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Walk me through Norbert's Gambit for my Wealthsimple account",
+    "setup": "No references/wealthsimple.md file exists — only references/broker.md is documented",
+    "expected_trigger": "norberts_gambit",
+    "pass_condition": "Agent states plainly that no reference file exists yet for Wealthsimple and offers to draft one from user-supplied details, rather than fabricating Wealthsimple-specific menu paths, fees, or processing times it has no source for.",
+    "should_trigger": false,
+    "mode": "norberts-gambit"
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "I need to sell some PSU-U.TO to free up cash to fund a buy in the same account",
+    "expected_trigger": "rebalance_portfolio",
+    "expected_not_trigger": [
+      "norberts_gambit"
+    ],
+    "pass_condition": "Agent does not route this to norberts_gambit. Same-account capital sourcing (selling PSU-U.TO to fund a same-currency buy) is a different concern from cross-currency conversion via DLR.TO/DLR.U — norberts_gambit is specifically for CAD<->USD conversion, not intra-account capital reallocation.",
+    "should_trigger": true,
+    "mode": "norberts-gambit"
+  }
+]

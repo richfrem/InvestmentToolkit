@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 REAL_DB_PATH = REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
-sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
 pytestmark = pytest.mark.skipif(
     not REAL_DB_PATH.exists(),

@@ -48,7 +48,7 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from risk_reward import refresh_advice  # noqa: E402
 from standing_decision_check import decision_condition  # noqa: E402
 

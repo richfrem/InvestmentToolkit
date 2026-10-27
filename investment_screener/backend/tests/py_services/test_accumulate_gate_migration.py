@@ -4,7 +4,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
-PLUGIN_SCRIPTS_DIR = REPO_ROOT / "plugins/stock-valuation/scripts"
+PLUGIN_SCRIPTS_DIR = REPO_ROOT / "plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts"
 PROJECTIONS_DIR = REPO_ROOT / "investment_screener/backend/data/projections"
 sys.path.insert(0, str(SCRIPT_DIR))
 sys.path.insert(0, str(PLUGIN_SCRIPTS_DIR))

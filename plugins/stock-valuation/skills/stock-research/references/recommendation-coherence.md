@@ -1,1 +1,0 @@
-../../../../portfolio-advisor/references/recommendation-coherence.md

@@ -3,7 +3,7 @@ Pine Script Manager — Registry Schema & Storage (Task 5B-1)
 
 Provides the central JSON-backed registry for tracked Pine Script
 indicators living under
-plugins/tradingview/assets/pinescript-indicators/. Each entry records the
+plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/. Each entry records the
 script's relative path, semantic version, human description, last
 injection timestamp, and a content/commit hash for change detection.
 
@@ -14,7 +14,7 @@ load_registry() / save_registry() / register_script() rather than
 touching registry.json directly.
 
 Key Input Dependencies:
-    - plugins/tradingview/assets/pinescript-indicators/registry.json
+    - plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json
       (the real, tracked registry file this module manages)
 """
 
@@ -33,12 +33,9 @@ logger = logging.getLogger(__name__)
 
 # Cross-directory import of the real PineLinter (Task 5B-2) and tv_call
 # (Task 5A-8). Follows the same sys.path-insert pattern as
-# tv_cdp_health.py's import of tv_client.py — plugins/tradingview/scripts/
+# tv_cdp_health.py's import of tv_client.py — investment_screener/backend/py_services/
 # is not a package on the default path. Neither pine_linter.py nor
-# tv_client.py is touched; this module only wraps their output.
-_TV_SCRIPTS_DIR = str(Path(__file__).resolve().parents[3] / "plugins" / "tradingview" / "scripts")
-if _TV_SCRIPTS_DIR not in sys.path:
-    sys.path.insert(0, _TV_SCRIPTS_DIR)
+# tv_client.py (both siblings in this folder) is touched; this module only wraps their output.
 
 from pine_linter import PineLinter  # noqa: E402
 from tv_client import tv_call  # noqa: E402
@@ -48,10 +45,7 @@ from tv_client import tv_call  # noqa: E402
 # Real path per the brief's Global Constraints (exact location).
 PINE_REGISTRY_PATH = (
     Path(__file__).resolve().parents[3]
-    / "plugins"
-    / "tradingview"
-    / "assets"
-    / "pinescript-indicators"
+    / "plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators"
     / "registry.json"
 )
 
@@ -61,7 +55,7 @@ class PineScriptEntry(BaseModel):
 
     Attributes:
         path: Path to the .pine file, relative to
-            plugins/tradingview/assets/pinescript-indicators/.
+            plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/.
         version: Semantic version string for this script.
         description: Human-readable summary of what the indicator does.
         last_injected: ISO 8601 timestamp of the last successful
@@ -196,7 +190,7 @@ def register_script(
     Args:
         name: Script name to register/update (registry key).
         path: Path to the .pine file, relative to
-            plugins/tradingview/assets/pinescript-indicators/.
+            plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/.
         description: Human-readable summary of the indicator.
         version: Semantic version string (default "1.0.0").
         category: Free-text style/purpose tag (e.g. "level",
@@ -271,7 +265,7 @@ def _missing_file_errors(file_path: str, linter_errors: List[str], is_valid: boo
 def validate_pine_script(file_path: str) -> dict:
     """Validate a Pine Script file using the existing PineLinter.
 
-    Wraps plugins/tradingview/scripts/pine_linter.py's PineLinter class,
+    Wraps plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/pine_linter.py's PineLinter class,
     translating its bool-return-plus-printed-report interface into a
     structured result for programmatic callers (registry, injection,
     rollback in later 5B tasks). No lint rules are reimplemented here —
@@ -312,7 +306,7 @@ def _resolve_script_path(entry: PineScriptEntry) -> Path:
     """Resolve a registry entry's `path` to a full filesystem path.
 
     Entry paths are relative to
-    plugins/tradingview/assets/pinescript-indicators/, i.e. the parent
+    plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/, i.e. the parent
     directory of PINE_REGISTRY_PATH itself (read live off the module
     global so tests that monkeypatch PINE_REGISTRY_PATH resolve
     correctly against their temp registry's own directory).
@@ -806,7 +800,7 @@ def _versions_dir(script_name: str) -> Path:
         script_name: Registry key of the script.
 
     Returns:
-        Path to plugins/tradingview/assets/pinescript-indicators/
+        Path to plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/
         versions/<script_name>/ (or the monkeypatched temp equivalent).
     """
     return PINE_REGISTRY_PATH.parent / "versions" / script_name

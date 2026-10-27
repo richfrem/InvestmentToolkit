@@ -1,0 +1,131 @@
+[
+  {
+    "file": "investment_screener/backend/py_services/brief_recommendations.py"
+  },
+  {
+    "file": "investment_screener/backend/py_services/repo_root.py"
+  },
+  {
+    "file": "investment_screener/backend/py_services/system_health.py"
+  },
+  {
+    "file": "investment_screener/backend/py_services/verify_refresh.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_accumulate_gate_migration.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_canonical_recommendation_consumers.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_coherent_price_levels.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_comps_valuation_plugin.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_daily_brief_load_yesterday.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_daily_brief_prediction_harvest.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_daily_brief_render.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_daily_brief_ta_sweep_delegates.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_discount_rate_audit.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_fetch_financials_performance.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_generate_news_prompt.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_generate_portfolio_blueprint.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_generate_portfolio_blueprint_sqlite.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_generate_reports.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_generate_reports_load_latest_brief.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_generate_review_json.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_generate_review_json_overwrite.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_portfolio_state_consumers.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_price_changes.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_refresh_all.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_repo_root.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_reverse_dcf_plugin.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_set_cash_flow_baseline.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_sync_portfolio_roles.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_ta_sweep_real_data_live_path.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_thesis_currency.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_update_price_levels.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_update_price_levels_snapshot_from_db.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_update_targets.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_update_thesis_breakers.py"
+  },
+  {
+    "file": "investment_screener/backend/tests/py_services/test_ytd_return_cash_flow_sqlite.py"
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_record_news_sweep.py"
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_weekly_review.py"
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/tests/test_generate_review.py"
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/tests/test_scan_opportunities.py"
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_consolidate_research.py"
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_rebase_equity_valuations.py"
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py"
+  },
+  {
+    "file": "plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_validate_projection.py"
+  }
+]

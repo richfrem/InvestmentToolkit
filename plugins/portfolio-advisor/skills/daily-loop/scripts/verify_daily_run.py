@@ -1,1 +1,0 @@
-../../../scripts/verify_daily_run.py

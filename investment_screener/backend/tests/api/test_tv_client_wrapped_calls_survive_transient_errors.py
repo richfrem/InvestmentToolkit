@@ -2,7 +2,7 @@
 Task 5A-8: Integration into tv_client.py
 
 Tests for the resilience-wrapped tv_call() in
-plugins/tradingview/scripts/tv_client.py — the final integration point
+investment_screener/backend/py_services/tv_client.py — the final integration point
 that composes retry (5A-3), circuit breaker (5A-6), structural
 validation (5A-4 scope-boundary, see below), and disk cache fallback
 (5A-7) around the single-attempt TV CLI call, with every failure logged
@@ -38,7 +38,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-TV_SCRIPTS_DIR = REPO_ROOT / "plugins/tradingview/scripts"
+TV_SCRIPTS_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 HEALTH_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(TV_SCRIPTS_DIR))
 sys.path.insert(0, str(HEALTH_DIR))

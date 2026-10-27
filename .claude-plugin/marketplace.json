@@ -1,46 +1,9 @@
 {
     "name": "investment-toolkit-plugins",
-    "description": "Investment Toolkit plugins: AI stock valuation, portfolio advisor (health, rebalancing, strategy review), and suite orchestration.",
+    "description": "Investment Toolkit plugins are packaged with APM (see plugins/*/apm.yml).",
     "owner": {
         "name": "richfrem",
         "email": "connect.richfrem@gmail.com"
     },
-    "plugins": [
-        {
-            "name": "stock-valuation",
-            "description": "AI-driven autonomous stock valuation and research engine. Skills: /update-stock-analysis (Bear/Base/Bull DCF projections with analyticsLog), /research-stock (qualitative sweep with Class A/B/C/D change classification and decision gate before re-valuation), /forward-valuation-challenge (stress-test valuations against trailing financials), /valuation-math-validation (deterministic DCF math and spread checks).",
-            "source": "./plugins/stock-valuation",
-            "strict": true
-        },
-        {
-            "name": "portfolio-advisor",
-            "description": "Investment portfolio advisor suite. Flagship /daily interactive loop. Skills: /stock-intake, /portfolio-coverage-audit, /weekly-review, /data-quality-audit, /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /news-sweep, /adversarial-review, /bundle-thesis-review, /13f-tracker, /13f-analyze, /ytd-return, /set-thesis-breakers. Agents: portfolio-advisor-orchestrator, red-team-agent, risk-officer-agent.",
-            "source": "./plugins/portfolio-advisor",
-            "strict": true
-        },
-        {
-            "name": "toolkit-manager",
-            "description": "Master orchestrator plugin for InvestmentToolkit. Features /toolkit-onboarding (Master Portfolio Bootstrap Wizard — guides zero-config installation, account & pillar architecture, broker ingestion, automated DCF baseline, and live TradingView visual sync) and /start-screener.",
-            "source": "./plugins/toolkit-manager",
-            "strict": true
-        },
-        {
-            "name": "etf-analysis",
-            "description": "AI-driven ETF and fund analysis engine. Three fund types: CLOSED_END, THEMATIC_ETF, CASH_FUND. Trigger: /analyze-etf {TICKER}.",
-            "source": "./plugins/etf-analysis",
-            "strict": true
-        },
-        {
-            "name": "tradingview",
-            "description": "TradingView Desktop integration via CDP. Skills: /tv-portfolio-sync, /tv-indicators, /tv-thesis-overlay, /tv-alert-reconcile, /tv-ta, /tv-ta-deep, /tv-ta-daily-sweep, /tv-snapshot, /tv-price-refresh, /tv-alert-sync, /tv-pine-inject, /tv-author-pine, /tv-chart-setup, /tv-change-symbol, /tv-change-type, /tv-draw, /tv-manage-watchlists, /tv-place-order, /tv-modify-order, /tv-cancel-order, /tv-get-orders, /tv-setup, /tv-onboarding. Agents: ta-guide. Requires TV Desktop with --remote-debugging-port=9222.",
-            "source": "./plugins/tradingview",
-            "strict": true
-        },
-        {
-            "name": "questrade",
-            "description": "Questrade Brokerage Model Context Protocol (MCP) integration. Skills: /questrade-setup (interactive OAuth setup), /questrade-get-balances, /questrade-get-positions, /questrade-sync-portfolio (multi-account balances, holdings and executed trades into SQLite), /questrade-refresh-prices, /questrade-order-draft (Human-in-the-Loop draft orders with phone push approval), /questrade-activities (dividend and cash flow ledger), /questrade-deposit-funds (Interac e-Transfer deposits recorded as contributions), /norberts-gambit (CAD/USD conversion via DLR.TO/DLR.U journaling).",
-            "source": "./plugins/questrade",
-            "strict": true
-        }
-    ]
+    "plugins": []
 }

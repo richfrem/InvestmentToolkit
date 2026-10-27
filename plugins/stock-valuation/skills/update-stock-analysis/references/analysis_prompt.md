@@ -1,1 +1,0 @@
-../../../references/analysis_prompt.md

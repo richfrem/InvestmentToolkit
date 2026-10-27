@@ -1,103 +1,62 @@
-# Portfolio Advisor Plugin
+# Portfolio Advisor
 
-> Investment portfolio advisor suite. Adversarial thesis challenge, drift monitoring, valuation-gated rebalancing, and target calibration. Detects drift, flags Thesis Breaker conditions, resolves Strategic Conflicts against AI valuations, proposes formula improvements, and generates trade recommendations.
+> Investment portfolio advisor suite: AI stock valuation, ETF and fund analysis, the daily and weekly review loops, news and 13F sweeps, target calibration and valuation-gated rebalancing, and the data audits that guard them. Detects drift, flags thesis breakers and keeps every call in the SQLite record.
 >
-> **Maturity**: L5 — Meta-capable (tested + connectors + evals + fallback trees)  
-> **Architecture**: Supercharged (standalone-capable; enhanced with portfolio API)
-
----
-
-## File Tree
-
-```
-portfolio-advisor/
-├── plugin.json                               # Plugin manifest (L5)
-├── CONNECTORS.md                             # Tool connector abstractions
-├── README.md                                 # This file
-├── commands/
-│   └── review-portfolio.md                  # /review-portfolio command
-├── references/
-│   ├── investment_thesis.md                  # Living thesis document
-│   ├── thesis_alignment_sequence.mmd         # Architecture sequence diagram
-│   └── tool_b_implementation_brief.md        # Implementation reference
-└── skills/
-    ├── portfolio-health/                     # /review-portfolio — drift monitor + health score
-    │   ├── SKILL.md
-    │   ├── evals/
-    │   │   └── evals.json
-    │   └── references/
-    │       ├── acceptance-criteria.md
-    │       ├── fallback-tree.md
-    │       ├── rebalance_prompt.md
-    │       └── strategic_review_prompt.md
-    ├── strategic-review/                     # /strategic-review — adversarial thesis challenger
-    │   └── SKILL.md
-    ├── rebalance-portfolio/                  # /rebalance — valuation-gated trade optimizer
-    │   └── SKILL.md
-    ├── calibrate-targets/                    # /calibrate-targets — interactive target negotiation
-    │   └── SKILL.md
-    └── update-portfolio-targets/             # apply formula changes — mechanical target writer
-        └── SKILL.md
-```
-
----
+> Packaged as an APM-native package (`apm.yml`, primitives under `.apm/`). This plugin absorbed the former `stock-valuation` and `etf-analysis` plugins; slash commands are unchanged.
 
 ## Skills
 
-| Trigger | Skill | Purpose |
-|:---|:---|:---|
-| `/daily` | `daily-loop` | The one daily command: portfolio sync, morning brief, triage cards, order execution, evolution log |
-| `/adversarial-review` | `adversarial-review` | Prepares a comprehensive adversarial review bundle of the thesis, targets, and daily recommendations |
-| `/external-review` | `external-review` | Packages the thesis and DCF projections for a general external review (renamed 2026-08-28 from `thesis-challenge-bundler`; `/bundle-thesis-review` still works as an alias) |
-| `/review-portfolio` | `portfolio-health` | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
-| `/strategic-review` | `strategic-review` | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
-| `/rebalance` | `rebalance-portfolio` | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |
-| `/calibrate-targets` | `calibrate-targets` | Interactive target-weight negotiation per sub-strategy |
-| `/news-sweep` | `news-sweep` | Multi-model news sweep (Grok, Claude, ChatGPT, Gemini) to surface catalysts and sentiment |
-| `/13f-tracker` | `13f-tracker` | Polls and diffs SEC 13F EDGAR filings for super-investors |
-| `/13f-analyze` | `13f-analyze` | Cross-references super-investor 13F changes against target portfolio |
-| `apply formula changes` | `update-portfolio-targets` | Mechanical write of agreed target changes (chains from strategic-review or calibrate-targets) |
+| Skill | Modes (slash commands) |
+|---|---|
+| `valuing-investments` | `update-analysis` (`/update-stock-analysis`), `research-sweep` (`/research-stock`), `forward-challenge` (`/forward-valuation-challenge`), `math-validation` (`/valuation-math-validation`), `fund-analysis` (`/analyze-etf`), `stock-intake` |
+| `running-portfolio-reviews` | `daily-loop` (`/daily`), `weekly-review`, `news-sweep` (`/news-sweep`), `external-review` (`/adversarial-review`, `/external-review`) |
+| `setting-portfolio-targets` | `update-targets`, `calibrate-targets` (`/calibrate-targets`), `rebalance` (`/rebalance`), `strategic-review` (`/strategic-review`), `portfolio-health` (`/review-portfolio`), `thesis-review`, `set-thesis-breakers`, `pre-trade-analysis`, `ytd-return` |
+| `tracking-13f-filings` | `track` (`/13f-tracker`), `analyze` (`/13f-analyze`) |
+| `auditing-portfolio-data` | `data-quality`, `coverage`, `screener-integrity` |
 
-### `portfolio-health` — Quick Health Check
+Agents (`.apm/agents/`): `portfolio-advisor-orchestrator`, `red-team-agent`, `risk-officer-agent`, `thesis-review-agent`.
 
-Runs a 5-phase drift review:
-1. **Select & Load Thesis** — from API or manual paste in standalone mode
-2. **Run Health Check** — via portfolio API
-3. **Strategic Analysis** — drift classification, conflict detection, thesis breaker checks
-4. **Report & Recommendations** — structured findings with drift table and action suggestions
-5. **Thesis Evolution** — redirect to `/strategic-review` for formula improvement proposals
+## Layout
 
-**Standalone Mode**: If backend API is unavailable, skill requests portfolio + thesis data as JSON paste and computes drift manually. See `CONNECTORS.md` and `references/fallback-tree.md`.
+```
+apm.yml                      manifest (includes: auto)
+CONNECTORS.md                tool connector abstractions and degradation contract
+.apm/skills/<skill>/         SKILL.md (hub), references/modes/, references/, scripts/, assets/, tests/, evals/
+.apm/agents/                 the four agents and their evals
+docs/                        governance, attribution, lifecycle
+```
 
----
+The shared portfolio and valuation engine (`recommendation.py`, `update_targets.py`, `refresh_all.py`, `dcf_scenarios.py`, `wacc.py`, `fetch_financials.py`, and the rest) lives in `investment_screener/backend/py_services/` because the backend imports it; skills call it by repository path. Each skill keeps only its own scripts, templates, references and tests.
 
-## External Dependencies (Web App APIs)
+## How the valuation pipeline works (`update-analysis`)
 
-> **This plugin does NOT own these endpoints.** They are served by the Investment Screener backend.
+1. Fetch financials (`fetch_financials.py`, yfinance) and consensus metrics.
+2. Build the scenario inputs; run the peer comparison (`comps_valuation.py`) and the market-implied growth check (`reverse_dcf.py`).
+3. Construct Bear/Base/Bull scenarios with the rate basis chosen under the valuation protocol (`wacc.py`, `leverage.py`, `dcf_scenarios.py`).
+4. Adversarial review, then validate (`validate_projection.py`) and persist (`persist_valuation.py`) to `domain_model.sqlite`.
+5. Publish the research report to the ledger, refresh price levels, mark the name reviewed, and run the closing refresh.
 
-| Endpoint | Purpose |
+**Standalone mode**: if the backend or the data fetcher is unavailable, the skills ask for the raw data as JSON and still complete the analysis; persistence is skipped with an explicit notice (see `CONNECTORS.md`).
+
+## External dependencies (web app)
+
+This plugin does **not** own these; they are served by the Investment Screener backend.
+
+| Dependency | Purpose |
 |:---|:---|
-| `GET /api/theses` | Lists all available investment theses |
-| `GET /api/theses/:id/health` | Returns per-holding drift scores, alerts, and overall status |
+| `GET /api/theses`, `GET /api/theses/:id/health` | Thesis list and per-holding drift and health |
+| `investment_screener/backend/data/domain_model.sqlite` | The single source of truth for holdings, targets, valuations and decisions |
+| `investment_screener/backend/data/intelligence.sqlite` | Research ledger |
+| `yfinance` (Python) | Financial data for valuations |
 
----
+## Install and test
 
-## Key Reference Files
+`apm install ./plugins/portfolio-advisor --target agent-skills` from the repository root deploys the skills to `.agents/skills/` (generated and gitignored; edit the sources under `.apm/`).
 
-| File | Purpose |
-|:---|:---|
-| `references/acceptance-criteria.md` | 8 testable AC definitions with pass/fail conditions |
-| `references/fallback-tree.md` | Step-by-step fallbacks for all 4 brittle operations |
-| `references/rebalance_prompt.md` | Trade generation prompt for rebalancing suggestions |
-| `references/strategic_review_prompt.md` | Strategic dialogue prompt for conviction assessment |
-| `evals/evals.json` | 8-case eval suite for trigger + logic + robustness |
+Tests live under each skill's `tests/` and, for engine modules, in `investment_screener/backend/tests/py_services/`. Pytest skips dot-directories, so pass the paths explicitly, for example `python3 -m pytest plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests`.
 
----
+## Related plugins
 
-## Dependencies
-
-- Backend server running on `localhost:3001` *(supercharged; not required in standalone mode)*
-
-## Related Plugins
-
-- [`stock-valuation`](../stock-valuation/) — AI stock valuations used for Strategic Conflict detection
+- `tradingview`: broker, price and chart integration (the default broker source).
+- `questrade`: optional second broker source.
+- `toolkit-manager`: running, backing up and auditing the toolkit itself.

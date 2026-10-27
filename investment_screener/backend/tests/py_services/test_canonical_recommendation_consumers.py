@@ -79,7 +79,7 @@ def test_owner_facing_text_uses_the_stance(tmp_path):
     """News prompts, reviews and blueprints show the stance the app shows (decision_check.effective),
     not the raw valuation action, so a held-back name never reads as a buy."""
     from datetime import date
-    sys.path.insert(0, str(ROOT / "plugins/portfolio-advisor/scripts"))
+    sys.path.insert(0, str(ROOT / "investment_screener/backend/py_services"))
     from portfolio_action import derive_action, derive_stance
     db = seed_domain(tmp_path)
     conn = initialize_db(str(db))
@@ -89,7 +89,7 @@ def test_owner_facing_text_uses_the_stance(tmp_path):
     assert derive_action("SHAZ", 0, db_path=str(db)) == "ACCUMULATE"
     assert derive_stance("SHAZ", db_path=str(db)) == "MAINTAIN"
     for name in ("generate_news_prompt", "generate_review_json", "generate_sub_strategy_blocks", "generate_portfolio_blueprint"):
-        text = (ROOT / "plugins/portfolio-advisor/scripts" / f"{name}.py").read_text()
+        text = (ROOT / "investment_screener/backend/py_services" / f"{name}.py").read_text()
         assert "derive_stance" in text and "derive_action(" not in text, f"{name} must show the stance"
 
 
@@ -97,7 +97,7 @@ def test_relabel_cli_delegates_without_target_override(tmp_path):
     db = seed_domain(tmp_path)
     recs = tmp_path / "recs.json"
     recs.write_text(json.dumps({"holdings": [{"ticker": "BE", "action": "ACCUMULATE", "recommendedTarget": 90}]}))
-    result = subprocess.run([sys.executable, str(ROOT / "plugins/portfolio-advisor/scripts/relabel_actions.py"),
+    result = subprocess.run([sys.executable, str(ROOT / "investment_screener/backend/py_services/relabel_actions.py"),
                              "--recs", str(recs), "--db", str(db)], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert json.loads(recs.read_text())["holdings"][0]["action"] == "TRIM"
@@ -147,7 +147,8 @@ def test_unheld_initiate_survives_macro_gate():
 
 
 def test_ta_sweep_uses_canonical_action_even_when_oversold(tmp_path, monkeypatch):
-    sys.path.insert(0, str(ROOT / "plugins/tradingview/scripts"))
+    sys.path.insert(0, str(ROOT / "plugins/tradingview/.apm/skills/analyzing-charts/scripts"))
+    sys.path.insert(0, str(ROOT / "plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts"))
     import ta_sweep_batch
     db = seed_domain(tmp_path)
     monkeypatch.setattr(ta_sweep_batch, "DB_PATH", db)
@@ -222,7 +223,11 @@ def test_rebalancer_does_not_propose_a_trade_against_canonical_action(tmp_path):
 
 
 def test_generated_thesis_overlay_uses_canonical_action(tmp_path):
-    from plugins.tradingview.scripts.tv_thesis_overlay import resolve_ticker_levels
+    import sys
+    from pathlib import Path
+    root = next(p for p in Path(__file__).resolve().parents if (p / "investment_screener").is_dir())
+    sys.path.insert(0, str(root / "plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts"))
+    from tv_thesis_overlay import resolve_ticker_levels
     db = seed_domain(tmp_path)
     assert resolve_ticker_levels("BE", str(db))["action"] == "TRIM"
 

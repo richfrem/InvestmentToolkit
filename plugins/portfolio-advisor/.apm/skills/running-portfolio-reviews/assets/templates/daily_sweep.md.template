@@ -1,0 +1,110 @@
+# Portfolio News Sweep — {{DATE}}
+**Thesis:** {{THESIS_NAME}}  |  **Portfolio value:** ~${{PORTFOLIO_VALUE}}  |  **Date:** {{DATE}}
+
+## Core Portfolio Thesis Background
+You are analyzing a highly concentrated, institutional-grade AI infrastructure portfolio focused on key civilizational-scale macro pillars:
+
+1. **The ASI Race (Primary: Infrastructure & Compute Buildout)**:
+   - **GPU Cloud & Neoclouds**: Captures GPU infrastructure supply and sovereign compute capacity. Tickers include `CRWV` (CoreWeave), `NBIS` (Nebius), and `SHAZ` (SharonAI).
+   - **HBM & Memory Scarcity**: Critical silicon storage bottlenecks for AI training and inference. Tickers include `MU` (Micron), `SNDK` (Sandisk, a separate company from WDC since February 2025), and `SKHY` (SK hynix ADR, listed on Nasdaq in July 2026).
+   - **Foundries, Lithography & EDA**: Foundations of silicon design and manufacturing. Tickers include `TSM` (TSMC), `ASML`, `AMAT` (Applied Materials), `TSEM` (Tower Semi), `SNPS` (Synopsys), and `CDNS` (Cadence).
+   - **High-Speed Networking & Optical Interconnects**: Chip-to-chip, server-to-server 800G/1.6T fabrics. Tickers include `CRDO` (Credo), `LITE` (Lumentum), `COHR` (Coherent), `CIEN` (Ciena), and `VIAV` (Viavi).
+   - **AI Power Infrastructure**: Baseload power generation, nuclear, fuel cells, and micro-grid prime power for massive gigawatt-scale clusters. Tickers include `VST` (Vistra), `BE` (Bloom Energy), `PSIX` (Power Solutions Intl), `CEG`, and `OKLO`.
+   - **AI Data Center Infrastructure (Bitcoin Miner Pivot)**: Power landlords converting energized substation capacity into high-performance compute (HPC) colocation. Tickers include `CORZ` (Core Scientific), `IREN` (Iris Energy), `APLD` (Applied Digital), `BTDR` (Bitdeer), and `CLSK` (CleanSpark).
+
+2. **Ontological AI & Operating Systems**:
+   - Institutional ontologies, enterprise AI agent platforms, and operational data execution layers. Core Holding: `PLTR` (Palantir AIP).
+
+3. **Space Infrastructure & Defense AI**:
+   - Government modernization, tactical edge intelligence, and orbital communications. Tickers include `SPCX` (SpaceX common stock, public since its June 2026 IPO), `CACI` (Defense IT/SIGINT), and `RKLB` (Rocket Lab).
+
+4. **Sovereign Finance & Digital Rails**:
+   - Institutional infrastructure for automated machine-to-machine settlement. Tickers include `COIN` and `CRCL`.
+
+5. **Legacy / Non-Core Watchlist (Consumer & Discretionary)**:
+   - Names on observation or legacy holdover outside the primary thesis: `CAKE`, `CELH`, `NFLX`, `SHOP`.
+
+---
+
+## Instructions for the Model (Grok / Claude / ChatGPT / Gemini)
+Please review SEC filings, earnings releases, financial news, X posts, and analyst notes for **material updates only** from the **last 7–14 days**.
+
+> **NOTE:** This is Round 1 of our interaction. After analyzing your response, I will send up to 3 rounds of detailed, clarifying follow-up questions to flush out quantitative metrics, deal specifics, and technical values. Please structure your answers clearly to facilitate this process.
+
+
+### ⚠️ STRICT COMPLIANCE MANDATE:
+- **FOR EVERY SINGLE TICKER** listed below, you **MUST** provide a detailed row in the table.
+- **DO NOT group tickers** together.
+- **DO NOT write lazy placeholder text** (e.g., "Noise", "Neutral", "N/A").
+- **DO NOT write ultra-short fragments** (e.g. "Limited. Niche. Sector. WATCH"). Every row must have a full, descriptive analysis.
+- **ANSWER TARGETED THESIS INQUIRIES:** For each ticker, address the specific *Targeted Inquiries & Key Thesis Vulnerabilities* provided in the table below (e.g., customer concentration, debt service, specific contract execution, or regulatory approval timeline).
+- **REQUIRE QUANTITATIVE DETAILS:** Provide specific figures where applicable—such as contract values ($), power capacities (MW/GW for nuclear/utilities), computing hash rates (EH/s for miners), GPU counts (H100/H200/B200 orders), chip delivery timelines, or specific broker upgrades/downgrades with price targets.
+- **DETAILED CATALYSTS:** Explain *exactly* what the news or catalyst entails (e.g. Palantir AIP sovereign deploy, Constellation nuclear power purchase agreement size).
+- **IF A TICKER HAS NO SPECIFIC COMPANY NEWS**, you must analyze and explicitly write 2-3 sentences explaining the sector-level flows, industry rotation (e.g. AI capex sentiment, treasury yields, semiconductor rotation) that drove the price action for that ticker this week.
+- **EVIDENCE STANDARD:** For every claim that could change a trade, give a **source link and its date**. Label each item **FRESH** (published in the last 14 days) or **BACKGROUND** (older context). State plainly what you **could not verify** — never fill a gap with a plausible-sounding figure, and never say a claim was "corroborated" unless you actually retrieved the source.
+- **MACRO FIGURES:** Quote the US 10-year yield and VIX with the **date and time of the reading**, not a range from memory.
+- **CHALLENGE THIS PROMPT:** The figures and anchor text in this prompt (prices, share counts, last-quarter results, weights) can be stale or wrong. If any conflicts with your sources, say so explicitly in a "Prompt corrections" list at the end of Part {{QUESTIONS_PART}} and use your sourced figure. Also flag any held position you think is missing from the tables.
+- **IMPROVE THIS PROMPT:** After the corrections list, add a "Prompt improvements" list with at most 3 concrete changes to this prompt that would have made your answer more accurate or more useful (a missing question, an ambiguous instruction, a section to drop). For each, quote the text to change, give the replacement, and say in one sentence why. Write "None" if you have no suggestion.
+
+
+Return your response in **{{NUM_PARTS}} parts**:
+
+---
+
+### Part 1 — Sweep Table (every position)
+
+| Ticker | Current% | Target% | Key Catalyst/News & Resolution of Targeted Inquiry (Address specific thesis pressure-points. **NO PLACEHOLDERS**.) | Thesis Impact | Conviction (1–10) | Action | Target Change | Deep Dive? |
+|--------|----------|---------|-------------------------------------------------------------------------------------------------------------------------|---------------|-------------------|--------|---------------|------------|
+
+**Conviction scale**: 1–3 = bearish / thesis challenged, 4–6 = neutral / hold, 7–10 = high conviction / add.
+Mark `[DD]` only for: earnings beat/miss >10%, major contract, regulatory shift, SA LP position change, or thesis breaker.
+For target changes give a specific % (e.g. `↑ to 5.5%`) — not just 'add more'.
+
+---
+
+{{INITIATE_SECTION}}
+
+---
+
+### Part {{DEEP_DIVE_PART}} — Active Holdings Deep Dives (only [DD]-flagged)
+
+For each `[DD]` position: catalyst + thesis impact + conviction change + sizing recommendation.
+Include current valuation context (price vs. analyst PT range) where available.
+
+---
+
+### Part {{QUESTIONS_PART}} — Portfolio-Level Questions & Themes
+
+Answer these for the portfolio as a whole:
+1. **Biggest risk right now** — what single development could most damage this portfolio?
+2. **Customer Concentration Risk** — for our top AI infrastructure / compute / power names, what % of revenue relies on the top 1-2 hyperscalers or customers, and are there contract renegotiation risks?
+3. **Supply Chain & Single-Source Dependencies** — are there sole-source component bottlenecks (e.g. CoWoS packaging, specialized high-voltage transformers, SiC substrate wafer supplies) creating delivery risks?
+4. **Most mispriced position** — which holding looks most over- or under-valued vs. current thesis?
+5. **Top trim / add priorities this month** — 2–3 highest-conviction actions.
+6. **Macro & Sector Regime** — Is the market in a risk-on or risk-off stance? Cite VIX, yields, and overall AI capex sentiment.
+7. **Strategy sectors (scan sectors, not ETFs)** — Cover each strategy below with sector-level news and the owned or watchlisted names that sit in it. Do not scan thematic ETFs (KOID, HUMN, FOTO) as tickers. For each sector, say whether it moved on company news or on rates and sentiment.
+   - **Robotics & Physical AI**: humanoids, embodied AI, automation (Tesla Optimus, Figure, Unitree, Symbotic and similar). Watchlist names: SYM, TSLA.
+   - **Memory, Storage & Advanced Packaging**: HBM, DRAM, NAND/SSD, CoWoS and packaging capacity (MU, SNDK, SKHY, and similar).
+   - **Photonics / Optical Interconnect**: transceivers, lasers, co-packaged optics, AI-datacenter optical demand (LITE, COHR, CIEN, GLW, APH, VIAV).
+   - **Quantum Computing**: IONQ, RGTI, QBTS, QUBT.
+   - **Power / Energy Infrastructure**: gas turbines, fuel cells, transformers, grid and datacenter power (GEV, BE, VST, VRT).
+   - **AI Infrastructure / neoclouds and miners**: GPU cloud financing, datacenter build-outs, power-pivot miners (CRWV, NBIS, APLD, CORZ, IREN, BTDR, RIOT).
+   - **Defense AI & Space**: defense software and space infrastructure (PLTR, SPCX, KRMN, RDW).
+   - **Cybersecurity / Data OS**: platform consolidation and AI disruption (PANW, ZS, CRWD, FTNT).
+   - **Sovereign Finance / Digital** and **Healthcare AI / Life Science**: the sector drivers only, plus any watchlist names (TEM, CELH, CAKE).
+   Also answer the watchlist question: for each name marked watchlist or accumulate, flag fresh company news in the last 14 days, and say "no company news" when there is none.
+8. **Cash & rates (`PSU-U.TO`, USD cash)** — USD/CAD and its move, Bank of Canada / Fed expectations, short-term USD yields, and any change to the `PSU-U.TO` distribution or ex-dividend date. Flag Canadian market holidays (the TSX is closed even when US markets are open).
+
+For any dated, material, sourced fact, you may add it at the very end under a `## TICKER` heading (only tickers in the table), `## MACRO`, or `## SECTOR:<strategy name>` for theme 7 (for example `## SECTOR:Photonics`) or `## PSU-U.TO` (theme 8): one factual sentence with its source, `(unverified)` if you could not confirm it from a primary source.
+
+---
+
+{{ACTIVE_HOLDINGS_TABLE}}
+
+{{INITIATE_HOLDINGS_SECTION}}
+
+{{EXIT_HOLDINGS_SECTION}}
+
+
+## AI forward-evidence gate
+For AI-exposed tickers, identify dated primary-source changes to forward revenue and forward EPS, not just price moves. Cover HBM **and** DDR/server DRAM, NAND/SSD, long-context KV-cache and persistent agent storage where relevant. For power names assess time-to-power, manufacturing output, grid/turbine lead times, fuel/permitting and actual commissioning schedules. Separate firm non-cancellable orders from frameworks/options/LOIs. Explain the effect on annual revenue, margins, capex, working capital and cash flow; include contrary evidence on supply additions, pricing and execution. Distinguish verified facts, consensus estimates and assumptions. If a material driver is missing from the stored model, flag **NEEDS_REVALUATION** before any action proposal; a recent save date alone is insufficient. This is a review-readiness flag, not a replacement recommendation.

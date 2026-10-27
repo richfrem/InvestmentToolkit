@@ -1,1 +1,0 @@
-../../../scripts/place_order.py

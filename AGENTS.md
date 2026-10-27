@@ -11,7 +11,7 @@ Complete repository structure, data flows, and subsystem architecture live in [`
 **npm commands** — run from `investment_screener/` (workspace root): `npm run dev -w backend | frontend`, `npm run build -w backend | frontend`, `npm run lint -w frontend`. (Never use `--prefix investment_screener` from inside `investment_screener/`).
 
 ## On-Demand Skills (Enable / Disable)
-Plugin skills, agents, rules and hooks are on demand. Look for them in `.agents/` first (`.agents/skills/<name>/SKILL.md`, `.agents/agents/`); read `SKILL.md` directly and don't copy assets into `.claude/`. Desired state lives in `.agents/ownership/<plugin>.json` (one JSON line per component with a `should_install` flag).
+The four project plugins (`plugins/*`) install with `apm install --target agent-skills` (root `apm.yml`, `apm.lock.yaml`); never edit the deployed copies. Library plugin skills, agents, rules and hooks are on demand. Look for them in `.agents/` first (`.agents/skills/<name>/SKILL.md`, `.agents/agents/`); read `SKILL.md` directly and don't copy assets into `.claude/`. Desired state lives in `.agents/ownership/<plugin>.json` (one JSON line per component with a `should_install` flag).
 
 When the user asks to enable or disable a skill or plugin:
 1. Read `.agents/ownership/<plugin>.json`, find the matching component(s); if several match or none, confirm first.
@@ -60,7 +60,7 @@ These guidelines bias toward caution over speed. For trivial tasks, use judgment
 The full, ordered setup and core command reference (`/toolkit-onboarding`, `/daily`, `/weekly-review`, `/strategic-review`, `/tv-portfolio-sync`) live in [`INIT_AGENTS.md`](INIT_AGENTS.md). Follow it in order on any fresh clone; this file (`AGENTS.md`) holds behavioral rules and invariants.
 
 ## TradingView Skills & CDP Engine
-- **Use the skills for TradingView work.** The `tv-*` skills (`.agents/skills/tv-*/SKILL.md`, e.g. `tv-portfolio-sync`, `tv-place-order`, `tv-ta-daily-sweep`, `tv-pine-inject`, `tv-get-orders`, `tv-alert-sync`) hold the documented workflow, constraints and verification steps. Read the matching `SKILL.md` and follow it; don't improvise a script run from memory.
+- **Use the skills for TradingView work.** The TradingView skills (`operating-tradingview-charts`, `trading-via-tradingview` and `analyzing-charts` under `.agents/skills/`; slash commands such as `/tv-portfolio-sync`, `/place-order`, `/tv-ta-daily-sweep`, `/tv-pine-inject`, `/tv-get-orders` and `/tv-alert-sync` are unchanged and name a mode) hold the documented workflow, constraints and verification steps. Read the skill's `SKILL.md`, then the mode file for the command, and follow it; don't improvise a script run from memory.
 - **All TradingView access goes through the CDP engine in `tradingview-cdp/`** (`node tradingview-cdp/cli.js status|quote|chart|pine|alert|watchlist|sweep`, or `tv_client.py` from Python). Check connectivity first with `node tradingview-cdp/cli.js status`; port 9222 must be reachable.
 - **Per-account broker reads**: `--positions` and `--accounts` reflect only the account currently selected in the broker panel. For all accounts, use `getPortfolio()` from `tradingview-cdp/core/broker_data.js` (via `tv_client.run_node_module`), which switches through each account and returns one snapshot per account. Compare against the stored per-account holdings (`account_investment` joined to `account`) before any commit. A `--positions` read that matches one account's share counts (about a third of the stored total for RRSP) is not a full sync.
 - **Account switching**: `switchAccount` checks whether the dropdown is open before toggling it and retries on a miss (`switchWithRetry`). If a sync still reports "Account not found in dropdown", that account was not read and its stored rows are unchanged; re-run rather than asking the owner to click. The CASH account has no positions but holds real cash, so its balance must still be read; `--allow-partial` skips it and leaves the stored balance stale.
@@ -73,8 +73,8 @@ Detailed policy documents and invariants are governed in [`.agent/rules/`](file:
 2. **No Inline Python**: MUST extract all calculations to versioned scripts in `py_services/`. (details: [`.agent/rules/local-data-pipeline.md`](file:///.agent/rules/local-data-pipeline.md))
 3. **Coding Conventions**: MUST follow naming standards and file headers. (details: [`.agent/rules/coding-conventions.md`](file:///.agent/rules/coding-conventions.md))
 4. **Dependency Management**: MUST use `pip-compile`; manual `pip install` is PROHIBITED. (details: [`.agent/rules/dependency-management.md`](file:///.agent/rules/dependency-management.md))
-5. **Plugin Architecture**: MUST use `symlink_manager.py`; raw `ln -s` is PROHIBITED. (details: [`.agent/rules/plugin-architecture-policy.md`](file:///.agent/rules/plugin-architecture-policy.md))
-6. **Evolution Log**: MUST record each fixed friction or failure in `plugins/<plugin>/references/evolution-log.md` (the commit hook enforces it for logic files).
+5. **Plugin Architecture**: plugins are APM packages (`plugins/<plugin>/.apm/skills/<hub>/` with its own scripts, references, assets, tests); symlinks are PROHIBITED; backend-imported or multi-hub scripts live in `py_services/`. (details: [`.agent/rules/plugin-architecture-policy.md`](file:///.agent/rules/plugin-architecture-policy.md))
+6. **Evolution Log**: MUST record each fixed friction or failure in the hub's `references/evolution-log.md` under `plugins/<plugin>/.apm/skills/` (the commit hook enforces it for logic files).
 7. **Destructive Action Guards**: File and skill deletions are strictly PROHIBITED without explicit user approval. (details: [`.agent/rules/destructive-action-guard.md`](file:///.agent/rules/destructive-action-guard.md))
 8. **Self-Healing**: MUST fix broken snippets inline and re-run silently; NEVER leave broken output visible.
 9. **Standing Decision is Anchor**: NEVER override standing decisions without material delta (>15% FV variance). (details: [`.agent/rules/local-standing-decision-policy.md`](file:///.agent/rules/local-standing-decision-policy.md))
@@ -99,13 +99,13 @@ Detailed policy documents and invariants are governed in [`.agent/rules/`](file:
 |--------|---------|
 | `py_services/fetch_financials.py {TICKER}` | Raw yfinance data |
 | `py_services/dcf_scenarios.py --raw FILE --scenarios FILE` | DCF scenario math |
-| `plugins/stock-valuation/.../validate_projection.py` | Schema validation |
-| `plugins/stock-valuation/scripts/price_changes.py` (`period_changes`) | The only 1D/1W/1M/3M/YTD/1Y/5Y % change calculation (heatmap, tables, Stock Analysis) |
+| `py_services/validate_projection.py` | Schema validation |
+| `investment_screener/backend/py_services/price_changes.py` (`period_changes`) | The only 1D/1W/1M/3M/YTD/1Y/5Y % change calculation (heatmap, tables, Stock Analysis) |
 
 Create a new canonical script + ADR in `docs/architecture/` whenever you'd compute the same formula twice (see rule 19).
 
 ## Test Locations
-Python: `investment_screener/backend/tests/py_services/`; Express: `investment_screener/backend/tests/api/`; TV CDP: `plugins/tradingview/tests/tv_test_harness.py`; plugin scripts: `plugins/<plugin>/tests/`; React: `investment_screener/frontend/tests/`.
+Python: `investment_screener/backend/tests/py_services/`; Express: `investment_screener/backend/tests/api/`; TV CDP: `investment_screener/backend/tests/py_services/tv_test_harness.py`; plugin scripts: `plugins/<plugin>/.apm/skills/<hub>/tests/` (pass the path to pytest explicitly; it skips dot-directories); React: `investment_screener/frontend/tests/`.
 
 **Frontend type check:** run `npx tsc -b` in `investment_screener/frontend` (what `npm run build` runs). `tsc -p .` checks nothing: the root `tsconfig.json` has `"files": []` and only references `tsconfig.app.json` / `tsconfig.node.json`. Under `verbatimModuleSyntax`, import types with `import type`.
 

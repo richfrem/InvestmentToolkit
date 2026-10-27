@@ -1,1 +1,0 @@
-../../../scripts/tv_manage_indicators.py

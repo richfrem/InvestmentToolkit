@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "questrade": {
-      "url": "https://mcp.questrade.com/v1/brokerage/mcp",
-      "transport": "http",
-      "description": "Questrade official Brokerage Model Context Protocol endpoint for accounts, positions, and HITL orders."
-    }
-  }
-}

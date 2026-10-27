@@ -1,1 +1,0 @@
-../../../references/strategic_review_prompt.md

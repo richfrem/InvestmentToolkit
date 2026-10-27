@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def test_daily_brief_does_not_write_ta_sweep_path_directly():
-    source = Path("plugins/portfolio-advisor/scripts/daily_brief.py").read_text()
+    source = Path("investment_screener/backend/py_services/daily_brief.py").read_text()
     tree = ast.parse(source)
     # daily_brief.py must never open TA_SWEEP_PATH itself in write mode — only
     # ta_sweep_batch.py's save_sweep_results() is allowed to write that file.
@@ -35,7 +35,7 @@ def test_ta_age_hours_reads_from_database(tmp_path):
     repo_root = Path(__file__).resolve().parents[4]
     py_services = repo_root / "investment_screener/backend/py_services"
     sys.path.insert(0, str(py_services))
-    sys.path.insert(0, str(repo_root / "plugins/portfolio-advisor/scripts"))
+    sys.path.insert(0, str(repo_root / "investment_screener/backend/py_services"))
     
     from daily_brief import _ta_age_hours  # noqa: PLC0415
     from intelligence.db_client import initialize_db  # noqa: E402
@@ -79,7 +79,7 @@ def test_load_latest_ta_sweep_count_reads_from_database(tmp_path):
     from pathlib import Path
     repo_root = Path(__file__).resolve().parents[4]
     sys.path.insert(0, str(repo_root / "investment_screener/backend/py_services"))
-    sys.path.insert(0, str(repo_root / "plugins/portfolio-advisor/scripts"))
+    sys.path.insert(0, str(repo_root / "investment_screener/backend/py_services"))
 
     from daily_brief import _load_latest_ta_sweep_count  # noqa: PLC0415
     from intelligence.db_client import initialize_db  # noqa: E402
@@ -113,7 +113,7 @@ def test_load_latest_ta_sweep_count_returns_none_when_no_events(tmp_path):
     from pathlib import Path
     repo_root = Path(__file__).resolve().parents[4]
     sys.path.insert(0, str(repo_root / "investment_screener/backend/py_services"))
-    sys.path.insert(0, str(repo_root / "plugins/portfolio-advisor/scripts"))
+    sys.path.insert(0, str(repo_root / "investment_screener/backend/py_services"))
     from daily_brief import _load_latest_ta_sweep_count  # noqa: PLC0415
     from intelligence.db_client import initialize_db  # noqa: E402
 
@@ -129,7 +129,7 @@ def test_pillar_summary_reads_sub_strategy_from_thesis_holdings_not_json(tmp_pat
     import sys
     from pathlib import Path
     repo_root = Path(__file__).resolve().parents[4]
-    sys.path.insert(0, str(repo_root / "plugins/portfolio-advisor/scripts"))
+    sys.path.insert(0, str(repo_root / "investment_screener/backend/py_services"))
     from daily_brief import _pillar_summary  # noqa: PLC0415
 
     scores = [
@@ -155,7 +155,7 @@ def test_ta_age_hours_returns_none_on_missing_db_no_json_fallback(tmp_path):
     import sys
     from pathlib import Path
     repo_root = Path(__file__).resolve().parents[4]
-    sys.path.insert(0, str(repo_root / "plugins/portfolio-advisor/scripts"))
+    sys.path.insert(0, str(repo_root / "investment_screener/backend/py_services"))
     from daily_brief import _ta_age_hours  # noqa: PLC0415
 
     missing_db = tmp_path / "does-not-exist.sqlite"

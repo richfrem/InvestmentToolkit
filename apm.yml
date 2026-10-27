@@ -1,0 +1,10 @@
+name: investment-toolkit
+version: 1.0.0
+description: Local APM consumer manifest for the Investment Toolkit plugins (skills deploy to .agents/skills/).
+target: agent-skills
+dependencies:
+  apm:
+    - ./plugins/questrade
+    - ./plugins/toolkit-manager
+    - ./plugins/tradingview
+    - ./plugins/portfolio-advisor

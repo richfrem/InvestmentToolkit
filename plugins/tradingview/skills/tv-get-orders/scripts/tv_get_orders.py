@@ -1,1 +1,0 @@
-../../../scripts/tv_get_orders.py

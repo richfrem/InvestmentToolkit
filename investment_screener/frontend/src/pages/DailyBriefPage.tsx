@@ -6,7 +6,7 @@
  *     holdings (INITIATE / ACCUMULATE / MAINTAIN / TRIM / EXIT / WATCHLIST), earnings calendar
  *     binary event flags, pillar health aggregation, and score delta vs. yesterday.
  *     Reads from /api/daily-brief/latest which serves the JSON snapshot produced by
- *     plugins/portfolio-advisor/scripts/daily_brief.py.
+ *     investment_screener/backend/py_services/daily_brief.py.
  *
  * Layer: Frontend / Pages
  * Key Functions: DailyBriefPage, ScoreBadge, DeltaBadge.
@@ -197,7 +197,7 @@ export default function DailyBriefPage() {
                     Run the daily brief script to generate today's analysis:
                 </p>
                 <code className="block bg-zinc-800 rounded px-4 py-2 text-emerald-300 text-sm font-mono">
-                    python3 plugins/portfolio-advisor/scripts/daily_brief.py
+                    python3 investment_screener/backend/py_services/daily_brief.py
                 </code>
                 {error && <p className="text-red-400 text-xs mt-3">{error}</p>}
             </div>

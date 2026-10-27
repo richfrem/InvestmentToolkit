@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
 from domain_model.db_client import initialize_db  # noqa: E402
@@ -18,7 +18,7 @@ from domain_model.projection_repository import add_projection_scenario, save_pro
 import chart_levels  # noqa: E402
 from update_price_levels import derive_and_write, derive_tiers_combined  # noqa: E402
 
-PINE = REPO_ROOT / "plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine"
+PINE = REPO_ROOT / "plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/ai-ta-levels.pine"
 
 
 def _bars():

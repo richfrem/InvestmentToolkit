@@ -130,11 +130,11 @@ def test_classify_file_recognizes_plugin_manifest():
 
 def test_classify_file_recognizes_eval_fixtures():
     assert classify_file("plugins/portfolio-advisor/skills/daily-brief/evals/evals.json", references=[]) == "ALLOWED_TEST_FIXTURE_JSON"
-    assert classify_file("plugins/tradingview/agents/evals/ta-guide.json", references=[]) == "ALLOWED_TEST_FIXTURE_JSON"
+    assert classify_file("plugins/tradingview/.apm/agents/evals/ta-guide.json", references=[]) == "ALLOWED_TEST_FIXTURE_JSON"
 
 
 def test_classify_file_recognizes_templates_and_examples():
-    assert classify_file("plugins/portfolio-advisor/assets/templates/target_portfolio_template.json", references=[]) == "ALLOWED_CONFIGURATION_JSON"
+    assert classify_file("plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/assets/templates/target_portfolio_template.json", references=[]) == "ALLOWED_CONFIGURATION_JSON"
     assert classify_file("plugins/stock-valuation/skills/stock_valuation/references/examples/example_NVDA_2026-05-02.json", references=[]) == "ALLOWED_TEST_FIXTURE_JSON"
 
 
