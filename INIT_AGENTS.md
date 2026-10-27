@@ -115,14 +115,8 @@ python3 ~/.agents/skills/setting-up-agentic-os/scripts/init_agentic_os.py \
   --retrofit \
   --contribution-mode fork-and-pr
 
-# 3. Ensure control plane schema migration is current:
-python3 -c "
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path('~/.agents/skills/running-control-plane/scripts').expanduser()))
-from agent_control import ControlPlane
-ControlPlane(db_path=Path('context/control_plane.db')).init_db()
-"
+# 3. Re-run the probe to confirm the control plane, hooks and rules are in place:
+python3 ~/.agents/skills/running-control-plane/scripts/control_plane/installation_probe.py --target .
 ```
 *(Replace `fork-and-pr` with `local-patch-and-issue` or `domain-override` based on your choice).*
 
