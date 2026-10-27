@@ -103,22 +103,19 @@ If it is missing, clone it next to this repository (`cd .. && git clone https://
 
 ### 3. Run Agentic OS Initialization & Retrofit
 
-Run the installation probe preflight first, then initialize or retrofit targeting this workspace:
+This uses the globally installed `setting-up-agentic-os` skill (`init` mode), which depends on `running-control-plane` being installed beside it (Step 2b). Ask your agent to "set up the Agentic OS in this repository (retrofit, contribution mode `<your choice>`)" so it follows the skill's `init` workflow, or run the scripts yourself from the repository root:
 
 ```bash
-# 1. Check current substrate state (read-only diagnostic):
+# 1. Read-only preflight: classifies the repository
 python3 ~/.agents/skills/running-control-plane/scripts/control_plane/installation_probe.py --target .
 
-# 2. Run retrofit (uses the globally installed skills; add --dry-run first to preview):
+# 2. Retrofit (add --dry-run first to preview)
 python3 ~/.agents/skills/setting-up-agentic-os/scripts/init_agentic_os.py \
-  --target . \
-  --retrofit \
-  --contribution-mode fork-and-pr
-
-# 3. Re-run the probe to confirm the control plane, hooks and rules are in place:
-python3 ~/.agents/skills/running-control-plane/scripts/control_plane/installation_probe.py --target .
+  --target . --retrofit --contribution-mode fork-and-pr
 ```
-*(Replace `fork-and-pr` with `local-patch-and-issue` or `domain-override` based on your choice).*
+*(Replace `fork-and-pr` with `local-patch-and-issue` or `domain-override` based on your choice.)*
+
+The approval signing key is created by **you** in your own terminal (the skill's `signing-setup` mode walks you through it); an agent never creates or enrolls keys.
 
 ### 4. Claude Code only: register the project plugins
 
@@ -155,16 +152,18 @@ test -f .claude/hooks/hooks.json && echo "✅ Claude hooks active" || echo "❌ 
 test -f .git/hooks/pre-commit-evolution-guard && echo "✅ Evolution guard active" || echo "❌ Missing evolution guard"
 test -f .github/workflows/verify-evolution-integrity.yml && echo "✅ CI integrity gate active" || echo "❌ Missing CI gate"
 
-# 3. Cryptographic signing identity readiness (read-only)
+# 3. Cryptographic signing identity readiness (read-only status check)
 python3 ~/.agents/skills/setting-up-agentic-os/scripts/setup_ciba_identity.py --check
 
-# 4. Core test suites
+# 4. Is control-plane gating on?
+python3 ~/.agents/skills/running-control-plane/scripts/control_plane_mode.py status
+
+# 5. Core test suites
 python3 run_tests.py --t0-only
 python3 run_tests.py --unit
-
-# 5. Run full OS health check loop
-python3 ~/.agents/skills/running-control-plane/scripts/kernel.py emit_event --agent running-control-plane --type intent --action scan_metrics
 ```
+
+For the full liveness check (event bus, locks, memory, metrics), ask your agent to "run health check"; that is the `health` mode of `running-control-plane`.
 
 ---
 
