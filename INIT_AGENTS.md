@@ -21,7 +21,7 @@ Welcome to **InvestmentToolkit**. This is the single setup guide for both human 
 If working with an AI assistant in chat, paste this directive:
 
 ```text
-Please read INIT_AGENTS.md and work through it in order: prerequisites, .env, plugin install (ask me which plugin contribution mode I prefer: fork-and-pr, local-patch-and-issue, or domain-override), the runtime and database setup in Step 4, then run /toolkit-onboarding.
+Please read INIT_AGENTS.md and work through it in order: prerequisites, .env, APM plugin install (ask me which plugin contribution mode I prefer: fork-and-pr, local-patch-and-issue, or domain-override), the runtime and database setup in Step 4, then run /toolkit-onboarding.
 ```
 
 ### Core Agent Commands Reference
@@ -78,22 +78,35 @@ When an agent encounters a bug, deprecated selector, or friction in an upstream 
 | **Local Patch & Issue** | `local-patch-and-issue` | You want rapid local resolution without maintaining a full git clone of the plugin repo. | Patches installed files directly in `.agents/skills/`. Generates an issue reproduction report to submit to upstream maintainers. |
 | **Domain Override** | `domain-override` | Strict production consumer. Upstream plugins remain 100% vanilla. | Never alters upstream skills. Overrides logic using `.agent/rules/local-*` or dedicated `plugins/` in this repository. |
 
-### 2. Upstream Dependency Alignment (Local Checkout vs. Remote Clone)
+### 2. Install with APM (project plugins and shared library)
 
-- **For Maintainers / Authors (if `agent-plugins-skills` is already cloned locally)**:
-  Use your existing local sibling checkout directly without cloning from GitHub:
-  ```bash
-  # Fast local install using adjacent checkout:
-  python3 ../agent-plugins-skills/plugins/plugin-manager/scripts/plugin_add.py ../agent-plugins-skills/plugins/ --all -y
-  ```
-- **For External Users / Fresh Machines (remote GitHub clone)**:
-  If opting for **`fork-and-pr`**, clone upstream adjacent to this repository:
-  ```bash
-  cd ..
-  git clone https://github.com/richfrem/agent-plugins-skills.git
-  cd agent-plugins-skills && python3 run_tests.py && cd ../InvestmentToolkit
-  ```
-  *(Or install universally via uvx: `uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills`)*
+Everything installs with [APM](https://github.com/microsoft/apm), pinned to `apm-cli==0.33.0` (`pip install apm-cli==0.33.0`, then `apm --version`). There is no `uvx` or `plugin_add.py` step. Install each plugin with one installer only; installing it twice gives duplicate skill names.
+
+**a. This repository's four plugins** (`portfolio-advisor`, `tradingview`, `toolkit-manager`, `questrade`). The root `apm.yml` lists them, so from the repository root:
+
+```bash
+apm install --target agent-skills
+```
+
+This deploys the skill hubs into `.agents/skills/` and writes `apm.lock.yaml` (commit it with any change; use `apm install --frozen` to reproduce exactly). `.agents/` and `apm_modules/` are gitignored. Never edit the deployed copies; change the plugin source under `plugins/<plugin>/.apm/` and reinstall. APM prints that questrade's MCP server cannot be configured for the `agent-skills` target; the skills still install, and `/questrade-setup` connects the server.
+
+**b. The shared library** (`agent-plugins-skills`: Agentic OS substrate, developer skills, hooks). Install it pinned to a tag or commit, using the installer script from the `packaging-with-apm` skill (it backs up the APM state first and supports rollback):
+
+```bash
+python3 <packaging-with-apm>/scripts/apm_consumer.py install --plugins agent-agentic-os,dev-utils --ref <tag-or-sha> --global
+python3 <packaging-with-apm>/scripts/apm_consumer.py list-backups
+python3 <packaging-with-apm>/scripts/apm_consumer.py rollback        # undo the last install
+```
+
+Install only universal infrastructure globally. Domain plugins stay project-local (step a).
+
+**c. Maintainers with a local `agent-plugins-skills` checkout** (sibling folder `../agent-plugins-skills`): install from the checkout by absolute path, for example `apm install /absolute/path/to/agent-plugins-skills/plugins/agent-agentic-os --target agent-skills`, or clone it for `fork-and-pr` work:
+
+```bash
+cd .. && git clone https://github.com/richfrem/agent-plugins-skills.git && cd InvestmentToolkit
+```
+
+> The files `plugin-sources.json` and `plugin-retention.json` belong to the legacy `plugin-syncer` and cover only library plugins still deployed that way. They go away once every library plugin is installed with APM.
 
 ### 3. Run Agentic OS Initialization & Retrofit
 
@@ -122,7 +135,7 @@ ControlPlane(db_path=Path('context/control_plane.db')).init_db()
 
 ### 4. Claude Code only: register the project plugins
 
-Skip this if you do not use Claude Code. The plugin sync above deploys the shared library skills into `.agents/`; the four project plugins install separately with `apm install --target agent-skills` from the repository root (see README, "How to Install Plugins"). Claude Code also needs the plugins registered before `/tv-*` and the other plugin commands appear:
+Skip this if you do not use Claude Code. The APM install above deploys the skills into `.agents/`. Claude Code also needs the plugins registered before `/tv-*` and the other plugin commands appear:
 
 ```text
 /plugin marketplace add richfrem/InvestmentToolkit
@@ -162,7 +175,7 @@ python3 .agents/skills/os-control-health/scripts/setup_ciba_identity.py --check
 python3 run_tests.py --t0-only
 python3 run_tests.py --unit
 
-# 6. Run full OS health check loop
+# 5. Run full OS health check loop
 python3 .agents/skills/os-control-health/scripts/kernel.py emit_event --agent os-control-health --type intent --action scan_metrics
 ```
 
@@ -256,7 +269,7 @@ Questrade support is an optional add-on for people who have a Questrade account.
 
 ### Setup
 
-1. **Install the plugin.** Claude Code: `/plugin install questrade@investment-toolkit-plugins` (the marketplace was added in Step 2, step 4). Other clients: the plugin sync from Step 2 deploys it with the others.
+1. **Install the plugin.** Claude Code: `/plugin install questrade@investment-toolkit-plugins` (the marketplace was added in Step 2, step 4). Other clients: `apm install --target agent-skills` (Step 2a) deploys it with the others.
 2. **Run `/questrade-setup`.** It adds the server (Claude Code: `claude mcp add questrade --url https://mcp.questrade.com/v1/brokerage/mcp`; Codex CLI: `codex mcp add questrade --url ...`; Cursor and VS Code: add a server entry with that URL).
 3. **Sign in.** You must complete the browser sign-in yourself; an agent cannot. If the page afterwards shows a connection error, paste the full address-bar URL back to the agent. No token is stored in the repository.
 4. **Verify.** The agent calls `List Accounts`; it should return your account IDs. The sign-in lasts one session, so every Questrade skill re-checks it and sends you back to `/questrade-setup` when it has expired.
