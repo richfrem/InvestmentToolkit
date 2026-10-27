@@ -37,6 +37,7 @@ from tv_client import tv_call, is_tv_running
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
+from ticker_aliases import normalize_ticker  # noqa: E402
 from domain_model.projection_repository import list_symbols_with_projections  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
 from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
@@ -77,10 +78,19 @@ def _load_watchlisted_symbols(db_path: Path | None = None) -> List[str]:
     return [row["symbol"].upper() for row in rows if row.get("symbol") and row["symbol"] != _CASH_SYMBOL]
 
 
-# External comment: Normalizes Purpose HISA convention
+# External comment: One spelling per ticker, so the database form and TradingView's form compare equal
 def normalize_symbol(s: str) -> str:
-    """Standardizes mutual fund aliases for consistency."""
-    return "PSU-U" if s in ("PSU-U.TO", "PSU.U.TO") else s
+    """Return the database spelling of a symbol (broker aliases such as PSU.U become PSU-U.TO)."""
+    return normalize_ticker(s.upper())
+
+
+# TradingView spells the Purpose HISA fund PSU.U; the database spells it PSU-U.TO.
+_TV_SPELLING = {"PSU-U.TO": "PSU.U"}
+
+
+def to_tv_symbol(s: str) -> str:
+    """Return the symbol as TradingView's symbol search expects it."""
+    return _TV_SPELLING.get(s, s)
 
 
 # External comment: Retrieve researched symbols from watchlisted investments or projections
@@ -139,15 +149,16 @@ def execute_cdp_sync(actions: Dict[str, Any]) -> None:
         # Get current symbols in watchlist
         tv_get = tv_call("watchlist", "get")
         _raise_if_tv_error(tv_get, f"get symbols for list '{list_name}'")
-        current_symbols = [normalize_symbol(item["symbol"].upper()) for item in tv_get.get("items", [])]
+        raw_by_symbol = {normalize_symbol(item["symbol"]): item["symbol"] for item in tv_get.get("items", [])}
+        current_symbols = list(raw_by_symbol)
 
         # Sync entries
         for ticker in meta["tickers"]:
             if ticker not in current_symbols:
-                _raise_if_tv_error(tv_call("watchlist", "add", list_name, ticker), f"add {ticker} to '{list_name}'")
+                _raise_if_tv_error(tv_call("watchlist", "add", list_name, to_tv_symbol(ticker)), f"add {ticker} to '{list_name}'")
         for ticker in current_symbols:
             if ticker not in meta["tickers"]:
-                _raise_if_tv_error(tv_call("watchlist", "remove", list_name, ticker), f"remove {ticker} from '{list_name}'")
+                _raise_if_tv_error(tv_call("watchlist", "remove", list_name, raw_by_symbol[ticker]), f"remove {ticker} from '{list_name}'")
 
 
 # External comment: Run sync calculations and orchestrate updates
@@ -156,8 +167,10 @@ def run_sync(dry_run: bool = False) -> Dict[str, Any]:
     researched_list = load_researched_watchlist()
     holdings_list = load_holdings_watchlist()
 
-    researched_list = sorted(list(set(normalize_symbol(s) for s in researched_list)))
-    holdings_list = sorted(list(set(normalize_symbol(s) for s in holdings_list)))
+    holdings_list = sorted(set(normalize_symbol(s) for s in holdings_list))
+    # TV-Full must cover everything the price refresh quotes (held plus watchlisted); a held
+    # ticker that is not flagged watchlisted would otherwise be removed and go unpriced.
+    researched_list = sorted(set(normalize_symbol(s) for s in researched_list) | set(holdings_list))
 
     actions = {
         "TV-Full Watchlist": {
