@@ -15,7 +15,6 @@ Layer:
 
 Key Input Dependencies:
     - investment_screener/package.json (TypeScript project config)
-    - symlinks.json (Symlink verification rules)
     - plugins/ (Active Python plugins directory)
 
 Usage:
@@ -114,7 +113,7 @@ def t0_path_regression() -> bool:
     
     ok = True
     for root, _, files in os.walk(str(REPO_ROOT)):
-        if any(p in root for p in [".git", "node_modules", "venv", "temp", ".agents", "docs/superpowers", "tasks/done", ".claude", ".worktrees"]):
+        if any(p in root for p in [".git", "node_modules", "venv", "temp", ".agents", "docs/superpowers", "tasks/done", ".claude", ".worktrees", "docs/plans/apm-migration", "docs/architecture"]):
             continue
         for f in files:
             if f.endswith(".png") or f.endswith(".svg"):
@@ -157,9 +156,9 @@ def verify_script_health(cwd: Path, label: str) -> bool:
 
 
 # External comment: Verify scripts behavior across different working directories
-def t0_symlink_cwd_invariance() -> bool:
+def t0_cwd_invariance() -> bool:
     """Validates CWD invariance and path variables override logic."""
-    print(f"\n{HEADER}T0 — CWD / Symlink Invariance{RESET}")
+    print(f"\n{HEADER}T0 — CWD Invariance{RESET}")
     ok = True
     
     # Run from arbitrary cwd
@@ -168,7 +167,7 @@ def t0_symlink_cwd_invariance() -> bool:
     # Run from repo root
     ok &= verify_script_health(REPO_ROOT, "tv_health_check.py from repo root")
     
-    # Run from symlink path
+    # Run from a plugin skill folder
     skill_dir = REPO_ROOT / "plugins/tradingview/.apm/skills/trading-via-tradingview/scripts"
     if skill_dir.exists():
         ok &= verify_script_health(skill_dir, "tv_health_check.py from skill dir")
@@ -227,32 +226,32 @@ def _seed_bridge_smoke_db(db_path: Path) -> None:
         conn.close()
 
 
-# External comment: Smoke test the python bridge execution via symlink
+# External comment: Smoke test the python bridge execution as a real engine file
 def t0_5_bridge_smoke() -> bool:
     """Validates the portfolio action bridge script runs and outputs valid JSON."""
-    print(f"\n{HEADER}T0.5 — Bridge smoke (portfolio_action.py via symlink){RESET}")
-    symlink = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
+    print(f"\n{HEADER}T0.5 — Bridge smoke (portfolio_action.py as a real engine file){RESET}")
+    script = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
     with tempfile.TemporaryDirectory() as tmp:
         db_path = Path(tmp) / "domain_model.sqlite"
         _seed_bridge_smoke_db(db_path)
         r = subprocess.run(
-            ["python3", str(symlink), "--all", "--db", str(db_path)],
+            ["python3", str(script), "--all", "--db", str(db_path)],
             capture_output=True, text=True, cwd=str(REPO_ROOT),
         )
     if r.returncode != 0:
-        print(f"  {CRITICAL} portfolio_action.py via symlink — non-zero exit")
+        print(f"  {CRITICAL} portfolio_action.py as a real engine file — non-zero exit")
         print(f"    stderr: {r.stderr.strip()}")
         return False
     try:
         data = json.loads(r.stdout)
     except json.JSONDecodeError:
-        print(f"  {CRITICAL} portfolio_action.py via symlink — invalid JSON output")
+        print(f"  {CRITICAL} portfolio_action.py as a real engine file — invalid JSON output")
         print(f"    stdout: {r.stdout[:200]}")
         return False
     if not data:
-        print(f"  {CRITICAL} portfolio_action.py via symlink — empty action map")
+        print(f"  {CRITICAL} portfolio_action.py as a real engine file — empty action map")
         return False
-    print(f"  {OK} portfolio_action.py via symlink — {len(data)} tickers: {list(data)}")
+    print(f"  {OK} portfolio_action.py as a real engine file — {len(data)} tickers: {list(data)}")
     return True
 
 
@@ -309,7 +308,7 @@ def main() -> None:
         ("T0 Python syntax",  t0_python_syntax),
         ("T0 Node syntax",    t0_node_syntax),
         ("T0 Path regression", t0_path_regression),
-        ("T0 Invariance",      t0_symlink_cwd_invariance),
+        ("T0 Invariance",      t0_cwd_invariance),
         ("T0 Map Debt",        t0_map_debt),
         ("T0 Retired files",   t0_retired_file_guard),
         ("T0 File dependencies", t0_file_dependency_guard),

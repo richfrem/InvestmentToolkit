@@ -4,27 +4,27 @@
 
 | Category | Count |
 |---|---:|
-| JSON files discovered | 1970 |
+| JSON files discovered | 1911 |
 | JSONL files discovered | 31 |
 | Files classified RETIRED_PORTFOLIO_DATA | 8 |
-| Files classified ALLOWED_CONFIGURATION_JSON | 38 |
+| Files classified ALLOWED_CONFIGURATION_JSON | 32 |
 | Files classified ALLOWED_MODEL_ARTIFACT_JSON | 22 |
 | Files classified ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL | 1 |
-| Files classified ALLOWED_TEST_FIXTURE_JSON | 139 |
+| Files classified ALLOWED_TEST_FIXTURE_JSON | 85 |
 | Files classified ALLOWED_GENERATED_CACHE_JSON | 364 |
 | Files classified MIGRATE_TO_INTELLIGENCE_LEDGER | 32 |
 | Files classified GENERATE_FROM_LEDGER_OR_SQLITE | 0 |
 | Files classified ARCHIVE_LEGACY_READ_ONLY | 2 |
 | Files classified DELETE_AFTER_VERIFIED_ARCHIVE | 0 |
 | Files classified OUT_OF_SCOPE_FOR_THIS_PHASE | 16 |
-| Files classified UNKNOWN_REQUIRES_REVIEW | 1379 |
+| Files classified UNKNOWN_REQUIRES_REVIEW | 1380 |
 
 ## High-Risk Findings
 
 - **Nothing has been migrated to SQLite/the intelligence ledger yet.** Phase 3 (the tasks that would actually move JSON data into `intelligence.sqlite` and retire the JSON source) has not started. Every file classified `MIGRATE_TO_INTELLIGENCE_LEDGER` below is still the sole, authoritative copy of its data — none are safe to remove.
 - **2 Vite dev-server cache file(s) are git-tracked and not gitignored** (e.g. `investment_screener/frontend/.vite/deps/_metadata.json`). This is a build tool artifact that should never be committed — worth adding to `.gitignore` and removing from git tracking (a separate, low-risk cleanup task, not part of this discovery pass).
 - **1029 JSON/JSONL file(s) found under `temp/`** — see the Temp Folder Analysis section below.
-- **1379 file(s) remain `UNKNOWN_REQUIRES_REVIEW`** after heuristic classification — see 'Files Requiring Human Review' below.
+- **1380 file(s) remain `UNKNOWN_REQUIRES_REVIEW`** after heuristic classification — see 'Files Requiring Human Review' below.
 
 ## Files That Should Legitimately Exist
 
@@ -32,7 +32,6 @@
 |---|---|---|
 | `skills-lock.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `plugin-sources.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
-| `symlinks.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `context/events.jsonl` | ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL | Its own append-only ledger for a different domain (predictions, agent telemetry) — not merged into observations.jsonl without a separate ADR. |
 | `schemas/market_data_response.schema.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `schemas/prediction.schema.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
@@ -435,49 +434,27 @@
 | `investment_screener/backend/tests/fixtures/BROKEN_projection.test.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `docs/architecture/json-discovery-audit.json` | ALLOWED_GENERATED_CACHE_JSON | Regenerable cache — safe to exist as long as its generating source is known. |
 | `docs/architecture/allowed-json-register.json` | ALLOWED_GENERATED_CACHE_JSON | Regenerable cache — safe to exist as long as its generating source is known. |
-| `docs/plans/apm-migration/patches/wave-1/orig/symlinks.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
-| `docs/plans/apm-migration/patches/wave-4/orig/symlinks.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/assets/templates/portfolio_analysis_recommendations_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
-| `docs/plans/apm-migration/patches/wave-3/orig/symlinks.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `docs/plans/apm-migration/patches/wave-3/orig/plugins/tradingview/.apm/skills/analyzing-charts/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `docs/plans/apm-migration/patches/wave-3/orig/plugins/tradingview/.apm/skills/operating-tradingview-charts/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `docs/plans/apm-migration/patches/wave-2/orig/symlinks.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
-| `.agents/skills/tv-draw/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/questrade-activities/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/valuation-math-validation/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/questrade-get-positions/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-thesis-overlay/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/create-hook/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-get-orders/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-author-pine-script/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-chart-snapshot/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-alert-sync/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/trading-via-tradingview/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/os-control-health/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/codex-cli-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/toolkit-onboarding/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/13f-tracker/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/syncing-questrade-accounts/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/manage-marketplace/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/thesis-review/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/thesis-review/assets/templates/target_portfolio_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `.agents/skills/github-issue-prioritizer/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/analyzing-charts/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/audit-sub-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/graph-planner/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/forward-valuation-challenge/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-save-indicator/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/strategic-review/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/strategic-review/assets/templates/portfolio_analysis_recommendations_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `.agents/skills/audit-skill/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/github-issue-pr-lifecycle-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/dependency-management/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/questrade-get-balances/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/portfolio-health/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-place-order/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-add-indicator/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/rebalance-portfolio/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/running-portfolio-reviews/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/plugin-remover/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-alert-list/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/create-rule/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/auditing-portfolio-data/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/create-skill/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/create-skill/evals/experiments/2026-03-13_194300/timing.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/create-skill/evals/experiments/2026-03-13_194300/results.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
@@ -488,70 +465,39 @@
 | `.agents/skills/create-skill/evals/experiments/2026-03-13_194300/logs/improve_iter_7.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/create-skill/evals/experiments/2026-03-13_194300/logs/improve_iter_6.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/create-skill/evals/experiments/2026-03-13_194300/logs/improve_iter_1.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/data-quality-audit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/tracking-13f-filings/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/project-setup/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/external-review/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/questrade-sync-portfolio/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/setting-portfolio-targets/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/setting-portfolio-targets/assets/templates/target_portfolio_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
+| `.agents/skills/setting-portfolio-targets/assets/templates/portfolio_analysis_recommendations_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
+| `.agents/skills/setting-portfolio-targets/assets/templates/ytd_performance_report_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `.agents/skills/update-cli-models/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/plugin-syncer/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/stock-intake/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/questrade-order-draft/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/trading-with-questrade/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/os-control-worktree/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/adr-management/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-alert-reconcile/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/set-thesis-breakers/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/sqlite-admin/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-setup/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/adversarial-review/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-change-symbol/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/valuing-investments/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/valuing-investments/assets/templates/projection_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
+| `.agents/skills/valuing-investments/assets/templates/etf_analysis_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `.agents/skills/os-control-mode/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/calibrate-targets/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/claude-cli-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/github-issue-backlog-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/norberts-gambit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/questrade-deposit-funds/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-pine-inject/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-change-type/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/symlink-manager/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/run-screener/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/select-loop-strategy/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/audit-agents-md/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/daily-loop/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/daily-loop/evals/playbook-evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-price-refresh/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-technical-analysis-expert/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/plugin-installer/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/os-control-init/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/os-control-init/assets/templates/HOOKS_JSON.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `.agents/skills/os-control-init/assets/templates/OS_STATE_JSON.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `.agents/skills/os-control-init/assets/templates/EVENTS_JSONL.jsonl` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
-| `.agents/skills/questrade-refresh-prices/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/managing-the-toolkit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/github-issue-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/graph-execution/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/screener-integrity-audit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/context-bundler/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/weekly-review/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-ta-daily-sweep/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/audit-plugin/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/update-stock-analysis/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/update-stock-analysis/assets/templates/projection_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
 | `.agents/skills/coding-conventions-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/etf-analysis/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/etf-analysis/assets/templates/etf_analysis_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
-| `.agents/skills/tv-ta-snapshot/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/stock-research/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-modify-order/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/questrade-setup/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/pre-trade-analysis/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-manage-watchlists/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/news-sweep/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-onboarding/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/agy-cli-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/update-portfolio-targets/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/update-portfolio-targets/assets/templates/target_portfolio_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
-| `.agents/skills/tv-chart-setup/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/audit-rule/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/portfolio-coverage-audit/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/copilot-cli-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/copilot-cli-agent/evals/experiments/2026-03-13_183028/timing.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/copilot-cli-agent/evals/experiments/2026-03-13_183028/results.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
@@ -562,14 +508,8 @@
 | `.agents/skills/copilot-cli-agent/evals/experiments/2026-03-13_183006/timing.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/copilot-cli-agent/evals/experiments/2026-03-13_183006/results.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/copilot-cli-agent/evals/experiments/2026-03-13_183345/logs/improve_iter_1.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/ytd-return/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/ytd-return/assets/templates/ytd_performance_report_template.json` | ALLOWED_CONFIGURATION_JSON | Static configuration/manifest/schema/template — not durable observation data. |
-| `.agents/skills/tv-manage-indicators/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-ta-red-team/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-cancel-order/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/tv-portfolio-sync/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
+| `.agents/skills/operating-tradingview-charts/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `.agents/skills/github-issue-worktree-agent/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
-| `.agents/skills/13f-analyze/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/.apm/skills/auditing-portfolio-data/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
 | `plugins/portfolio-advisor/.apm/skills/tracking-13f-filings/evals/evals.json` | ALLOWED_TEST_FIXTURE_JSON | Test/eval fixture or prompt reference example, not application state. |
@@ -1065,29 +1005,27 @@
 | `docs/plans/apm-migration/patches/wave-4-dirfix/manifest.json` | No known heuristic match | INVESTIGATE |
 | `docs/plans/apm-migration/patches/wave-3-dirfix/manifest.json` | No known heuristic match | INVESTIGATE |
 | `docs/plans/apm-migration/patches/wave-1/manifest.json` | No known heuristic match | INVESTIGATE |
+| `docs/plans/apm-migration/patches/wave-1/orig/symlinks.json` | No known heuristic match | INVESTIGATE |
+| `docs/plans/apm-migration/patches/wave-4/orig/symlinks.json` | No known heuristic match | INVESTIGATE |
 | `docs/plans/apm-migration/patches/wave-4/orig/docs/architecture/file-dependency-register.json` | No known heuristic match | INVESTIGATE |
+| `docs/plans/apm-migration/patches/wave-3/orig/symlinks.json` | No known heuristic match | INVESTIGATE |
+| `docs/plans/apm-migration/patches/wave-2/orig/symlinks.json` | No known heuristic match | INVESTIGATE |
 | `docs/plans/apm-migration/patches/wave-2/orig/docs/architecture/file-dependency-register.json` | No known heuristic match | INVESTIGATE |
 | `.claude/hooks/hooks.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership-backup-agentic-os-rename/agent-agentic-os.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership-backup-agentic-os-rename/cli-agents.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership-backup-agentic-os-rename/dev-utils.json` | No known heuristic match | INVESTIGATE |
-| `.agents/ownership/portfolio-advisor.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/obsidian-wiki-engine.json` | No known heuristic match | INVESTIGATE |
-| `.agents/ownership/tradingview.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/agent-scaffolders.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/agent-orchestration.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/agent-agentic-os.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/exploration-cycle-plugin.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/cli-agents.json` | No known heuristic match | INVESTIGATE |
-| `.agents/ownership/stock-valuation.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/plugin-manager.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/dev-utils.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/dependency-management.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/superpowers.json` | No known heuristic match | INVESTIGATE |
 | `.agents/ownership/agent-memory.json` | No known heuristic match | INVESTIGATE |
-| `.agents/ownership/questrade.json` | No known heuristic match | INVESTIGATE |
-| `.agents/ownership/toolkit-manager.json` | No known heuristic match | INVESTIGATE |
-| `.agents/ownership/etf-analysis.json` | No known heuristic match | INVESTIGATE |
 | `.agents/hooks/agent-orchestration-hooks.json` | No known heuristic match | INVESTIGATE |
 | `.agents/hooks/agent-agentic-os-hooks.json` | No known heuristic match | INVESTIGATE |
 | `.agents/skills/codex-cli-agent/references/cheapest_models.json` | No known heuristic match | INVESTIGATE |
@@ -1102,6 +1040,8 @@
 | `.agents/skills/update-cli-models/references/claude-models.json` | No known heuristic match | INVESTIGATE |
 | `.agents/skills/update-cli-models/references/codex-models.json` | No known heuristic match | INVESTIGATE |
 | `.agents/skills/update-cli-models/references/agy-models.json` | No known heuristic match | INVESTIGATE |
+| `.agents/skills/valuing-investments/references/forward-valuation-reviews/2026-10-06/BE/valuation.json` | No known heuristic match | INVESTIGATE |
+| `.agents/skills/valuing-investments/references/forward-valuation-reviews/2026-10-06/MU/valuation.json` | No known heuristic match | INVESTIGATE |
 | `.agents/skills/os-control-mode/references/control-plane.manifest.json` | No known heuristic match | INVESTIGATE |
 | `.agents/skills/claude-cli-agent/references/cheapest_models.json` | No known heuristic match | INVESTIGATE |
 | `.agents/skills/claude-cli-agent/references/claude-models.json` | No known heuristic match | INVESTIGATE |
@@ -1117,6 +1057,7 @@
 | `.agents/skills/agy-cli-agent/references/agy-models.json` | No known heuristic match | INVESTIGATE |
 | `.agents/skills/copilot-cli-agent/references/cheapest_models.json` | No known heuristic match | INVESTIGATE |
 | `.agents/skills/copilot-cli-agent/references/copilot-models.json` | No known heuristic match | INVESTIGATE |
+| `.agents/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json` | No known heuristic match | INVESTIGATE |
 | `PortfolioAnalysis/strategic-reviews/2026-10-04-PortfolioAnalysisRecommendations.json` | No known heuristic match | INVESTIGATE |
 | `PortfolioAnalysis/strategic-reviews/2026-10-06-PortfolioAnalysisRecommendations.json` | No known heuristic match | INVESTIGATE |
 | `PortfolioAnalysis/strategic-reviews/2026-10-07-PortfolioAnalysisRecommendations.json` | No known heuristic match | INVESTIGATE |
@@ -3066,7 +3007,6 @@
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:400
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:401
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:404
-- .agents/skills/plugin-remover/scripts/plugin_remove.py:412
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:470
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:471
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:474
@@ -3137,6 +3077,7 @@
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:7
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:12
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:118
+- .agents/skills/plugin-remover/scripts/plugin_remove.py:412
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:423
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:426
 - .agents/skills/plugin-remover/scripts/plugin_remove.py:439
@@ -3172,38 +3113,6 @@
 - .agents/skills/plugin-installer/scripts/plugin_add.py:925
 - .agents/skills/plugin-installer/scripts/plugin_add.py:943
 - .agents/skills/plugin-installer/scripts/plugin_add.py:1046
-
-### symlinks.json
-
-**Classification:** ALLOWED_CONFIGURATION_JSON
-
-**Known producers:**
-- temp/update_symlinks.py:40
-- temp/add_symlink.py:16
-- docs/plans/apm-migration/tools/test_rewrite_references.py:64
-
-**Known consumers:**
-- run_tests.py:18
-- temp/update_symlinks.py:3
-- temp/update_symlinks.py:42
-- temp/add_symlink.py:3
-- temp/add_symlink.py:19
-- docs/plans/apm-migration/tools/test_rewrite_references.py:138
-- docs/plans/apm-migration/tools/test_rewrite_references.py:140
-- docs/plans/apm-migration/tools/test_rewrite_references.py:145
-- docs/plans/apm-migration/tools/test_rewrite_references.py:158
-- docs/plans/apm-migration/tools/rewrite_references.py:254
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/tests/test_recommendation_coherence_contract.py:4
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/tests/test_recommendation_coherence_contract.py:27
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:33
-- docs/plans/apm-migration/patches/wave-3/orig/run_tests.py:18
-- docs/plans/apm-migration/patches/wave-2/orig/run_tests.py:18
-- .agents/skills/symlink-manager/scripts/symlink_manager.py:13
-- .agents/skills/symlink-manager/scripts/symlink_manager.py:18
-- .agents/skills/symlink-manager/scripts/symlink_manager.py:19
-- .agents/skills/symlink-manager/scripts/symlink_manager.py:20
-- .agents/skills/symlink-manager/scripts/symlink_manager.py:61
-- .agents/skills/symlink-manager/scripts/symlink_manager.py:625
 
 ### temp/mp_intake_payload.json
 
@@ -4059,8 +3968,6 @@
 
 **Known consumers:**
 - investment_screener/backend/py_services/update_thesis.py:19
-- .agents/skills/calibrate-targets/scripts/update_thesis.py:19
-- .agents/skills/update-portfolio-targets/scripts/update_thesis.py:19
 
 ### temp/spcx_intake.json
 
@@ -4410,12 +4317,7 @@
 - (none detected)
 
 **Known consumers:**
-- docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
-- docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
-- .agents/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py:17
-- .agents/skills/questrade-sync-portfolio/scripts/questrade_trades_import.py:20
-- plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
-- plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
+- (none detected)
 
 ### temp/amat_tech.json
 
@@ -4765,6 +4667,7 @@
 - (none detected)
 
 **Known consumers:**
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:23
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_archive_temp_json.py:23
 
 ### temp/amat_wacc.json
@@ -5051,6 +4954,9 @@
 - .agents/skills/os-control-health/scripts/kernel.py:273
 - .agents/skills/os-control-health/scripts/kernel.py:294
 - .agents/skills/os-control-health/scripts/kernel.py:303
+- .agents/skills/valuing-investments/scripts/research_parity_report.py:7
+- .agents/skills/valuing-investments/scripts/research_parity_report.py:24
+- .agents/skills/valuing-investments/scripts/research_parity_report.py:35
 - .agents/skills/os-control-init/scripts/init_agentic_os.py:642
 - .agents/skills/os-control-init/scripts/init_agentic_os.py:1042
 - .agents/skills/os-control-init/templates/kernel.py:33
@@ -5061,6 +4967,7 @@
 - .agents/skills/os-control-init/templates/kernel.py:273
 - .agents/skills/os-control-init/templates/kernel.py:294
 - .agents/skills/os-control-init/templates/kernel.py:303
+- .agents/skills/managing-the-toolkit/tests/test_file_dependency_guard.py:46
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py:7
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py:24
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py:35
@@ -5289,6 +5196,8 @@
 **Known consumers:**
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py:183
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py:54
+- .agents/skills/valuing-investments/scripts/research_parity_report.py:183
+- .agents/skills/managing-the-toolkit/scripts/app_smoke_test.py:54
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py:183
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py:54
 
@@ -5298,6 +5207,7 @@
 
 **Known producers:**
 - docs/plans/apm-migration/patches/wave-4-dirfix/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:60
+- .agents/skills/valuing-investments/tests/test_research_parity_report.py:60
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:60
 
 **Known consumers:**
@@ -5305,6 +5215,7 @@
 - investment_screener/backend/py_services/import_ledger_jsonl.py:6
 - investment_screener/backend/py_services/audit_json_usage.py:550
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py:182
+- .agents/skills/valuing-investments/scripts/research_parity_report.py:182
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/research_parity_report.py:182
 
 ### investment_screener/backend/data/tv_cdp_responses_cache.jsonl
@@ -5335,6 +5246,8 @@
 - docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/data_window_validator.py:577
 - docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/data_window_validator.py:593
 - docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/tests/api/test_tv_client_wrapped_calls_survive_transient_errors.py:62
+- .agents/skills/operating-tradingview-charts/tests/test_tv_pine_manager.py:14
+- .agents/skills/operating-tradingview-charts/tests/test_tv_pine_manager.py:47
 - plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_pine_manager.py:14
 - plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_pine_manager.py:47
 
@@ -5348,6 +5261,7 @@
 **Known consumers:**
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:81
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:81
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:81
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:81
 - temp/evaluations/audit_sqlite_usage.py:72
 
@@ -5381,6 +5295,7 @@
 - docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/tests/api/test_tv_client_wrapped_calls_survive_transient_errors.py:61
 - docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/tests/api/test_tv_client_wrapped_calls_survive_transient_errors.py:148
 - docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/tests/api/test_tv_client_wrapped_calls_survive_transient_errors.py:151
+- .agents/skills/operating-tradingview-charts/tests/test_tv_pine_manager.py:46
 - plugins/tradingview/.apm/skills/operating-tradingview-charts/tests/test_tv_pine_manager.py:46
 
 ### investment_screener/backend/data/cache/ohlcv_SYM2y1d.json
@@ -9401,6 +9316,8 @@
 **Known consumers:**
 - docs/plans/apm-migration/patches/wave-4-dirfix/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:69
 - docs/plans/apm-migration/patches/wave-4-dirfix/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:83
+- .agents/skills/valuing-investments/tests/test_research_parity_report.py:69
+- .agents/skills/valuing-investments/tests/test_research_parity_report.py:83
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:69
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:83
 
@@ -9676,7 +9593,7 @@
 - (none detected)
 
 **Known consumers:**
-- investment_screener/backend/tests/py_services/test_harvest_predictions.py:32
+- (none detected)
 
 ### investment_screener/backend/py_services/cache/RGTI.json
 
@@ -9917,6 +9834,7 @@
 
 **Known consumers:**
 - docs/plans/apm-migration/patches/wave-4-dirfix/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:73
+- .agents/skills/valuing-investments/tests/test_research_parity_report.py:73
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:73
 
 ### investment_screener/backend/py_services/cache/HOOD_info.json
@@ -11670,7 +11588,7 @@
 - (none detected)
 
 **Known consumers:**
-- (none detected)
+- investment_screener/backend/tests/py_services/test_harvest_predictions.py:32
 
 ### investment_screener/backend/py_services/cache/CASI.json
 
@@ -11742,6 +11660,8 @@
 **Known consumers:**
 - docs/plans/apm-migration/patches/wave-4-dirfix/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:72
 - docs/plans/apm-migration/patches/wave-4-dirfix/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:84
+- .agents/skills/valuing-investments/tests/test_research_parity_report.py:72
+- .agents/skills/valuing-investments/tests/test_research_parity_report.py:84
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:72
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_research_parity_report.py:84
 
@@ -11992,7 +11912,6 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:83
 
 **Known consumers:**
-- temp/build_adoption_matrix.py:73
 - investment_screener/backend/py_services/audit_json_usage.py:387
 - investment_screener/backend/py_services/build_consumer_inventory.py:5
 - investment_screener/backend/py_services/build_consumer_inventory.py:16
@@ -12039,6 +11958,7 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:334
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:553
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:553
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:553
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:553
 
 ### docs/architecture/file-dependency-register.json
@@ -12055,6 +11975,10 @@
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:9
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:40
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:57
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:555
+- .agents/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:9
+- .agents/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:40
+- .agents/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:57
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:555
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:9
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:40
@@ -12068,6 +11992,7 @@
 - investment_screener/backend/py_services/audit_json_usage.py:676
 
 **Known consumers:**
+- temp/build_adoption_matrix.py:73
 - investment_screener/backend/py_services/audit_json_usage.py:388
 - investment_screener/backend/tests/py_services/test_audit_json_usage.py:318
 - investment_screener/backend/tests/py_services/test_audit_json_usage.py:351
@@ -12075,6 +12000,7 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:351
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:554
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:554
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:554
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:554
 
 ### docs/plans/apm-migration/patches/wave-2/manifest.json
@@ -12084,8 +12010,7 @@
 **Known producers:**
 - docs/plans/apm-migration/tools/rewrite_references.py:292
 - docs/plans/apm-migration/tools/rewrite_references.py:395
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:154
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:154
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 
 **Known consumers:**
@@ -12097,28 +12022,24 @@
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-health/scripts/control_plane/snapshot.py:140
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:23
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:36
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:114
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:159
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:160
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:162
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:163
 - .agents/skills/graph-planner/scripts/validate_manifest.py:6
 - .agents/skills/graph-planner/scripts/validate_manifest.py:406
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:23
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:36
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:114
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:159
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:160
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:162
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:163
 - .agents/skills/os-control-mode/scripts/control_plane_mode.py:8
 - .agents/skills/select-loop-strategy/scripts/select_strategy.py:93
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:781
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-init/scripts/control_plane/snapshot.py:140
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:68
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:109
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:212
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:23
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:36
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:121
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:166
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:167
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:169
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:170
 - .agents/skills/graph-execution/scripts/validate_manifest.py:6
 - .agents/skills/graph-execution/scripts/validate_manifest.py:406
 - .agents/skills/graph-execution/scripts/graph_runner.py:6
@@ -12152,8 +12073,7 @@
 **Known producers:**
 - docs/plans/apm-migration/tools/rewrite_references.py:292
 - docs/plans/apm-migration/tools/rewrite_references.py:395
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:154
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:154
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 
 **Known consumers:**
@@ -12165,28 +12085,24 @@
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-health/scripts/control_plane/snapshot.py:140
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:23
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:36
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:114
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:159
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:160
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:162
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:163
 - .agents/skills/graph-planner/scripts/validate_manifest.py:6
 - .agents/skills/graph-planner/scripts/validate_manifest.py:406
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:23
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:36
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:114
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:159
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:160
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:162
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:163
 - .agents/skills/os-control-mode/scripts/control_plane_mode.py:8
 - .agents/skills/select-loop-strategy/scripts/select_strategy.py:93
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:781
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-init/scripts/control_plane/snapshot.py:140
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:68
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:109
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:212
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:23
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:36
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:121
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:166
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:167
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:169
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:170
 - .agents/skills/graph-execution/scripts/validate_manifest.py:6
 - .agents/skills/graph-execution/scripts/validate_manifest.py:406
 - .agents/skills/graph-execution/scripts/graph_runner.py:6
@@ -12220,8 +12136,7 @@
 **Known producers:**
 - docs/plans/apm-migration/tools/rewrite_references.py:292
 - docs/plans/apm-migration/tools/rewrite_references.py:395
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:154
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:154
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 
 **Known consumers:**
@@ -12233,28 +12148,24 @@
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-health/scripts/control_plane/snapshot.py:140
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:23
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:36
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:114
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:159
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:160
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:162
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:163
 - .agents/skills/graph-planner/scripts/validate_manifest.py:6
 - .agents/skills/graph-planner/scripts/validate_manifest.py:406
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:23
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:36
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:114
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:159
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:160
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:162
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:163
 - .agents/skills/os-control-mode/scripts/control_plane_mode.py:8
 - .agents/skills/select-loop-strategy/scripts/select_strategy.py:93
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:781
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-init/scripts/control_plane/snapshot.py:140
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:68
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:109
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:212
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:23
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:36
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:121
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:166
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:167
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:169
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:170
 - .agents/skills/graph-execution/scripts/validate_manifest.py:6
 - .agents/skills/graph-execution/scripts/validate_manifest.py:406
 - .agents/skills/graph-execution/scripts/graph_runner.py:6
@@ -12288,8 +12199,7 @@
 **Known producers:**
 - docs/plans/apm-migration/tools/rewrite_references.py:292
 - docs/plans/apm-migration/tools/rewrite_references.py:395
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:154
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:154
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 
 **Known consumers:**
@@ -12301,28 +12211,24 @@
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-health/scripts/control_plane/snapshot.py:140
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:23
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:36
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:114
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:159
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:160
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:162
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:163
 - .agents/skills/graph-planner/scripts/validate_manifest.py:6
 - .agents/skills/graph-planner/scripts/validate_manifest.py:406
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:23
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:36
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:114
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:159
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:160
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:162
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:163
 - .agents/skills/os-control-mode/scripts/control_plane_mode.py:8
 - .agents/skills/select-loop-strategy/scripts/select_strategy.py:93
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:781
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-init/scripts/control_plane/snapshot.py:140
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:68
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:109
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:212
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:23
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:36
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:121
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:166
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:167
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:169
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:170
 - .agents/skills/graph-execution/scripts/validate_manifest.py:6
 - .agents/skills/graph-execution/scripts/validate_manifest.py:406
 - .agents/skills/graph-execution/scripts/graph_runner.py:6
@@ -12356,8 +12262,7 @@
 **Known producers:**
 - docs/plans/apm-migration/tools/rewrite_references.py:292
 - docs/plans/apm-migration/tools/rewrite_references.py:395
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:154
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:154
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 
 **Known consumers:**
@@ -12369,28 +12274,24 @@
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-health/scripts/control_plane/snapshot.py:140
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:23
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:36
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:114
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:159
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:160
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:162
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:163
 - .agents/skills/graph-planner/scripts/validate_manifest.py:6
 - .agents/skills/graph-planner/scripts/validate_manifest.py:406
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:23
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:36
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:114
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:159
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:160
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:162
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:163
 - .agents/skills/os-control-mode/scripts/control_plane_mode.py:8
 - .agents/skills/select-loop-strategy/scripts/select_strategy.py:93
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:781
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-init/scripts/control_plane/snapshot.py:140
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:68
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:109
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:212
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:23
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:36
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:121
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:166
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:167
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:169
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:170
 - .agents/skills/graph-execution/scripts/validate_manifest.py:6
 - .agents/skills/graph-execution/scripts/validate_manifest.py:406
 - .agents/skills/graph-execution/scripts/graph_runner.py:6
@@ -12424,8 +12325,7 @@
 **Known producers:**
 - docs/plans/apm-migration/tools/rewrite_references.py:292
 - docs/plans/apm-migration/tools/rewrite_references.py:395
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:154
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:154
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/sqlite_admin.py:161
 
 **Known consumers:**
@@ -12437,28 +12337,24 @@
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-health/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-health/scripts/control_plane/snapshot.py:140
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:23
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:36
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:114
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:159
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:160
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:162
-- .agents/skills/toolkit-onboarding/scripts/sqlite_admin.py:163
 - .agents/skills/graph-planner/scripts/validate_manifest.py:6
 - .agents/skills/graph-planner/scripts/validate_manifest.py:406
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:23
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:36
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:114
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:159
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:160
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:162
-- .agents/skills/sqlite-admin/scripts/sqlite_admin.py:163
 - .agents/skills/os-control-mode/scripts/control_plane_mode.py:8
 - .agents/skills/select-loop-strategy/scripts/select_strategy.py:93
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:781
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:867
 - .agents/skills/os-control-init/scripts/control_plane/coordinator.py:868
 - .agents/skills/os-control-init/scripts/control_plane/snapshot.py:140
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:68
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:109
+- .agents/skills/managing-the-toolkit/tests/test_sqlite_admin.py:212
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:23
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:36
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:121
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:166
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:167
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:169
+- .agents/skills/managing-the-toolkit/scripts/sqlite_admin.py:170
 - .agents/skills/graph-execution/scripts/validate_manifest.py:6
 - .agents/skills/graph-execution/scripts/validate_manifest.py:406
 - .agents/skills/graph-execution/scripts/graph_runner.py:6
@@ -12487,7 +12383,7 @@
 
 ### docs/plans/apm-migration/patches/wave-1/orig/symlinks.json
 
-**Classification:** ALLOWED_CONFIGURATION_JSON
+**Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
 - temp/update_symlinks.py:40
@@ -12495,7 +12391,6 @@
 - docs/plans/apm-migration/tools/test_rewrite_references.py:64
 
 **Known consumers:**
-- run_tests.py:18
 - temp/update_symlinks.py:3
 - temp/update_symlinks.py:42
 - temp/add_symlink.py:3
@@ -12519,7 +12414,7 @@
 
 ### docs/plans/apm-migration/patches/wave-4/orig/symlinks.json
 
-**Classification:** ALLOWED_CONFIGURATION_JSON
+**Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
 - temp/update_symlinks.py:40
@@ -12527,7 +12422,6 @@
 - docs/plans/apm-migration/tools/test_rewrite_references.py:64
 
 **Known consumers:**
-- run_tests.py:18
 - temp/update_symlinks.py:3
 - temp/update_symlinks.py:42
 - temp/add_symlink.py:3
@@ -12563,6 +12457,10 @@
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:9
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:40
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:57
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:555
+- .agents/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:9
+- .agents/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:40
+- .agents/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:57
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:555
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:9
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:40
@@ -12593,6 +12491,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -12601,6 +12500,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/assets/templates/portfolio_analysis_recommendations_template.json
 
@@ -12610,11 +12542,14 @@
 - (none detected)
 
 **Known consumers:**
+- apm.lock.yaml:46
+- apm.lock.yaml:157
+- apm.lock.yaml:1615
 - docs/plans/apm-migration/mapping.yaml:205
 
 ### docs/plans/apm-migration/patches/wave-3/orig/symlinks.json
 
-**Classification:** ALLOWED_CONFIGURATION_JSON
+**Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
 - temp/update_symlinks.py:40
@@ -12622,7 +12557,6 @@
 - docs/plans/apm-migration/tools/test_rewrite_references.py:64
 
 **Known consumers:**
-- run_tests.py:18
 - temp/update_symlinks.py:3
 - temp/update_symlinks.py:42
 - temp/add_symlink.py:3
@@ -12669,6 +12603,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -12677,6 +12612,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### docs/plans/apm-migration/patches/wave-3/orig/plugins/tradingview/.apm/skills/operating-tradingview-charts/evals/evals.json
 
@@ -12703,6 +12671,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -12711,10 +12680,43 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### docs/plans/apm-migration/patches/wave-2/orig/symlinks.json
 
-**Classification:** ALLOWED_CONFIGURATION_JSON
+**Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
 - temp/update_symlinks.py:40
@@ -12722,7 +12724,6 @@
 - docs/plans/apm-migration/tools/test_rewrite_references.py:64
 
 **Known consumers:**
-- run_tests.py:18
 - temp/update_symlinks.py:3
 - temp/update_symlinks.py:42
 - temp/add_symlink.py:3
@@ -12758,6 +12759,10 @@
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:9
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:40
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:57
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:555
+- .agents/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:9
+- .agents/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:40
+- .agents/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:57
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:555
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:9
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_file_dependencies.py:40
@@ -12774,12 +12779,14 @@
 - .agents/skills/create-skill/scripts/scaffold.py:321
 
 **Known consumers:**
+- .agents/skills/create-hook/scripts/scaffold.py:71
 - .agents/skills/create-hook/scripts/scaffold.py:116
 - .agents/skills/create-hook/scripts/scaffold.py:292
 - .agents/skills/create-hook/scripts/scaffold.py:298
 - .agents/skills/create-hook/scripts/scaffold.py:302
 - .agents/skills/os-control-health/scripts/control_plane/installation_probe.py:7
 - .agents/skills/os-control-health/scripts/control_plane/installation_probe.py:50
+- .agents/skills/create-skill/scripts/scaffold.py:71
 - .agents/skills/create-skill/scripts/scaffold.py:116
 - .agents/skills/create-skill/scripts/scaffold.py:292
 - .agents/skills/create-skill/scripts/scaffold.py:298
@@ -12824,27 +12831,7 @@
 **Known consumers:**
 - (none detected)
 
-### .agents/ownership/portfolio-advisor.json
-
-**Classification:** UNKNOWN_REQUIRES_REVIEW
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- (none detected)
-
 ### .agents/ownership/obsidian-wiki-engine.json
-
-**Classification:** UNKNOWN_REQUIRES_REVIEW
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- (none detected)
-
-### .agents/ownership/tradingview.json
 
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
@@ -12904,16 +12891,6 @@
 **Known consumers:**
 - (none detected)
 
-### .agents/ownership/stock-valuation.json
-
-**Classification:** UNKNOWN_REQUIRES_REVIEW
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- (none detected)
-
 ### .agents/ownership/plugin-manager.json
 
 **Classification:** UNKNOWN_REQUIRES_REVIEW
@@ -12964,36 +12941,6 @@
 **Known consumers:**
 - (none detected)
 
-### .agents/ownership/questrade.json
-
-**Classification:** UNKNOWN_REQUIRES_REVIEW
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- (none detected)
-
-### .agents/ownership/toolkit-manager.json
-
-**Classification:** UNKNOWN_REQUIRES_REVIEW
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- (none detected)
-
-### .agents/ownership/etf-analysis.json
-
-**Classification:** UNKNOWN_REQUIRES_REVIEW
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- (none detected)
-
 ### .agents/hooks/agent-orchestration-hooks.json
 
 **Classification:** UNKNOWN_REQUIRES_REVIEW
@@ -13013,176 +12960,6 @@
 
 **Known consumers:**
 - (none detected)
-
-### .agents/skills/tv-draw/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/questrade-activities/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/valuation-math-validation/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/questrade-get-positions/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-thesis-overlay/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 
 ### .agents/skills/create-hook/evals/evals.json
 
@@ -13209,6 +12986,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13217,8 +12995,41 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
-### .agents/skills/tv-get-orders/evals/evals.json
+### .agents/skills/trading-via-tradingview/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
@@ -13243,6 +13054,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13251,108 +13063,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-author-pine-script/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-chart-snapshot/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-alert-sync/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/os-control-health/evals/evals.json
 
@@ -13379,6 +13122,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13387,6 +13131,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/codex-cli-agent/evals/evals.json
 
@@ -13413,6 +13190,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13421,6 +13199,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/codex-cli-agent/references/cheapest_models.json
 
@@ -13495,7 +13306,7 @@
 - .agents/skills/os-control-init/scripts/control_plane/constants.py:202
 - .agents/skills/os-control-init/scripts/control_plane/constants.py:203
 
-### .agents/skills/toolkit-onboarding/evals/evals.json
+### .agents/skills/syncing-questrade-accounts/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
@@ -13520,6 +13331,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13528,40 +13340,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/13f-tracker/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/manage-marketplace/evals/evals.json
 
@@ -13588,6 +13399,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13596,6 +13408,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/manage-marketplace/examples/marketplace.json
 
@@ -13617,52 +13462,6 @@
 - .agents/skills/audit-plugin/scripts/audit_marketplace_sources.py:36
 - .agents/skills/audit-plugin/scripts/audit_marketplace_sources.py:57
 - .agents/skills/audit-plugin/scripts/audit_marketplace_sources.py:67
-
-### .agents/skills/thesis-review/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/thesis-review/assets/templates/target_portfolio_template.json
-
-**Classification:** ALLOWED_CONFIGURATION_JSON
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:137
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:137
-- docs/plans/apm-migration/mapping.yaml:206
 
 ### .agents/skills/github-issue-prioritizer/evals/evals.json
 
@@ -13689,6 +13488,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13697,6 +13497,107 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
+
+### .agents/skills/analyzing-charts/evals/evals.json
+
+**Classification:** ALLOWED_TEST_FIXTURE_JSON
+
+**Known producers:**
+- docs/plans/apm-migration/tools/build_mode_files.py:233
+- .agents/skills/create-hook/scripts/scaffold.py:200
+- .agents/skills/create-skill/scripts/scaffold.py:200
+
+**Known consumers:**
+- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
+- docs/plans/apm-migration/tools/build_mode_files.py:4
+- docs/plans/apm-migration/tools/build_mode_files.py:19
+- docs/plans/apm-migration/tools/build_mode_files.py:222
+- docs/plans/apm-migration/tools/build_mode_files.py:225
+- docs/plans/apm-migration/tools/build_mode_files.py:231
+- docs/plans/apm-migration/tools/build_ledger.py:79
+- docs/plans/apm-migration/tools/build_ledger.py:80
+- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
+- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
+- .agents/skills/create-hook/scripts/scaffold.py:192
+- .agents/skills/audit-skill/scripts/audit_skill.py:207
+- .agents/skills/audit-skill/scripts/audit_skill.py:210
+- .agents/skills/audit-skill/scripts/audit_skill.py:211
+- .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- .agents/skills/plugin-installer/scripts/plugin_add.py:538
+- .agents/skills/plugin-installer/scripts/plugin_add.py:582
+- .agents/skills/plugin-installer/scripts/plugin_add.py:588
+- .agents/skills/plugin-installer/scripts/plugin_add.py:593
+- .agents/skills/audit-plugin/scripts/audit_skill.py:207
+- .agents/skills/audit-plugin/scripts/audit_skill.py:210
+- .agents/skills/audit-plugin/scripts/audit_skill.py:211
+- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/audit-sub-agent/evals/evals.json
 
@@ -13723,6 +13624,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13731,6 +13633,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/graph-planner/evals/evals.json
 
@@ -13757,6 +13692,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13765,6 +13701,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/graph-planner/references/graph-manifest-schema.json
 
@@ -13795,118 +13764,6 @@
 - .agents/skills/graph-execution/scripts/validate_manifest.py:160
 - .agents/skills/graph-execution/scripts/validate_manifest.py:407
 
-### .agents/skills/forward-valuation-challenge/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-save-indicator/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/strategic-review/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/strategic-review/assets/templates/portfolio_analysis_recommendations_template.json
-
-**Classification:** ALLOWED_CONFIGURATION_JSON
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- docs/plans/apm-migration/mapping.yaml:205
-
 ### .agents/skills/audit-skill/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
@@ -13932,6 +13789,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13940,6 +13798,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/audit-skill/references/skill-authoring-contract.json
 
@@ -13985,6 +13876,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -13993,6 +13885,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/dependency-management/evals/evals.json
 
@@ -14019,6 +13944,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14027,8 +13953,41 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
-### .agents/skills/questrade-get-balances/evals/evals.json
+### .agents/skills/running-portfolio-reviews/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
@@ -14053,6 +14012,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14061,142 +14021,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/portfolio-health/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-place-order/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-add-indicator/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/rebalance-portfolio/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/plugin-remover/evals/evals.json
 
@@ -14223,6 +14080,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14231,40 +14089,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-alert-list/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/create-rule/evals/evals.json
 
@@ -14291,6 +14148,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14299,6 +14157,107 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
+
+### .agents/skills/auditing-portfolio-data/evals/evals.json
+
+**Classification:** ALLOWED_TEST_FIXTURE_JSON
+
+**Known producers:**
+- docs/plans/apm-migration/tools/build_mode_files.py:233
+- .agents/skills/create-hook/scripts/scaffold.py:200
+- .agents/skills/create-skill/scripts/scaffold.py:200
+
+**Known consumers:**
+- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
+- docs/plans/apm-migration/tools/build_mode_files.py:4
+- docs/plans/apm-migration/tools/build_mode_files.py:19
+- docs/plans/apm-migration/tools/build_mode_files.py:222
+- docs/plans/apm-migration/tools/build_mode_files.py:225
+- docs/plans/apm-migration/tools/build_mode_files.py:231
+- docs/plans/apm-migration/tools/build_ledger.py:79
+- docs/plans/apm-migration/tools/build_ledger.py:80
+- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
+- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
+- .agents/skills/create-hook/scripts/scaffold.py:192
+- .agents/skills/audit-skill/scripts/audit_skill.py:207
+- .agents/skills/audit-skill/scripts/audit_skill.py:210
+- .agents/skills/audit-skill/scripts/audit_skill.py:211
+- .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- .agents/skills/plugin-installer/scripts/plugin_add.py:538
+- .agents/skills/plugin-installer/scripts/plugin_add.py:582
+- .agents/skills/plugin-installer/scripts/plugin_add.py:588
+- .agents/skills/plugin-installer/scripts/plugin_add.py:593
+- .agents/skills/audit-plugin/scripts/audit_skill.py:207
+- .agents/skills/audit-plugin/scripts/audit_skill.py:210
+- .agents/skills/audit-plugin/scripts/audit_skill.py:211
+- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/create-skill/evals/evals.json
 
@@ -14325,6 +14284,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14333,6 +14293,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/create-skill/references/evals.json
 
@@ -14359,6 +14352,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14367,6 +14361,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/create-skill/references/skill-authoring-contract.json
 
@@ -14449,7 +14476,6 @@
 - .agents/skills/create-skill/scripts/improve_description.py:28
 - .agents/skills/create-skill/scripts/run_loop.py:701
 - .agents/skills/create-skill/scripts/run_loop.py:753
-- .agents/skills/daily-loop/scripts/daily_brief.py:91
 - .agents/skills/audit-plugin/scripts/improve_description.py:12
 - .agents/skills/audit-plugin/scripts/improve_description.py:13
 - .agents/skills/audit-plugin/scripts/improve_description.py:27
@@ -14526,7 +14552,7 @@
 **Known consumers:**
 - (none detected)
 
-### .agents/skills/data-quality-audit/evals/evals.json
+### .agents/skills/tracking-13f-filings/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
@@ -14551,6 +14577,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14559,6 +14586,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/project-setup/evals/evals.json
 
@@ -14585,6 +14645,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14593,8 +14654,41 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
-### .agents/skills/external-review/evals/evals.json
+### .agents/skills/setting-portfolio-targets/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
@@ -14619,6 +14713,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14627,40 +14722,80 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
-### .agents/skills/questrade-sync-portfolio/evals/evals.json
+### .agents/skills/setting-portfolio-targets/assets/templates/target_portfolio_template.json
 
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
+**Classification:** ALLOWED_CONFIGURATION_JSON
 
 **Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
+- (none detected)
 
 **Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- investment_screener/backend/tests/py_services/test_audit_json_usage.py:137
+- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:137
+- apm.lock.yaml:47
+- apm.lock.yaml:158
+- apm.lock.yaml:1624
+- docs/plans/apm-migration/mapping.yaml:206
+
+### .agents/skills/setting-portfolio-targets/assets/templates/portfolio_analysis_recommendations_template.json
+
+**Classification:** ALLOWED_CONFIGURATION_JSON
+
+**Known producers:**
+- (none detected)
+
+**Known consumers:**
+- apm.lock.yaml:46
+- apm.lock.yaml:157
+- apm.lock.yaml:1615
+- docs/plans/apm-migration/mapping.yaml:205
+
+### .agents/skills/setting-portfolio-targets/assets/templates/ytd_performance_report_template.json
+
+**Classification:** ALLOWED_CONFIGURATION_JSON
+
+**Known producers:**
+- (none detected)
+
+**Known consumers:**
+- apm.lock.yaml:49
+- apm.lock.yaml:160
+- apm.lock.yaml:1642
+- docs/plans/apm-migration/mapping.yaml:208
 
 ### .agents/skills/update-cli-models/evals/evals.json
 
@@ -14687,6 +14822,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14695,6 +14831,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/update-cli-models/references/cheapest_models.json
 
@@ -14837,6 +15006,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14845,8 +15015,41 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
-### .agents/skills/stock-intake/evals/evals.json
+### .agents/skills/trading-with-questrade/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
@@ -14871,6 +15074,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14879,40 +15083,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/questrade-order-draft/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/os-control-worktree/evals/evals.json
 
@@ -14939,6 +15142,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14947,6 +15151,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/adr-management/evals/evals.json
 
@@ -14973,6 +15210,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -14981,8 +15219,41 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
-### .agents/skills/tv-alert-reconcile/evals/evals.json
+### .agents/skills/valuing-investments/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
@@ -15007,6 +15278,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15015,176 +15287,108 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
-### .agents/skills/set-thesis-breakers/evals/evals.json
+### .agents/skills/valuing-investments/assets/templates/projection_template.json
 
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
+**Classification:** ALLOWED_CONFIGURATION_JSON
 
 **Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
+- (none detected)
 
 **Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- investment_screener/backend/py_services/validate_projection.py:131
+- apm.lock.yaml:80
+- apm.lock.yaml:189
+- apm.lock.yaml:2317
+- docs/plans/apm-migration/mapping.yaml:214
 
-### .agents/skills/sqlite-admin/evals/evals.json
+### .agents/skills/valuing-investments/assets/templates/etf_analysis_template.json
 
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
+**Classification:** ALLOWED_CONFIGURATION_JSON
 
 **Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
+- (none detected)
 
 **Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:79
+- apm.lock.yaml:188
+- apm.lock.yaml:2308
+- docs/plans/apm-migration/mapping.yaml:215
 
-### .agents/skills/tv-setup/evals/evals.json
+### .agents/skills/valuing-investments/references/forward-valuation-reviews/2026-10-06/BE/valuation.json
 
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
+**Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
+- (none detected)
 
 **Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- investment_screener/backend/tests/py_services/test_forward_recalculation.py:22
+- investment_screener/backend/tests/py_services/test_forward_recalculation.py:26
+- investment_screener/backend/tests/py_services/test_forward_recalculation.py:64
+- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:22
+- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:26
+- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:64
+- apm.lock.yaml:93
+- apm.lock.yaml:95
+- apm.lock.yaml:202
+- apm.lock.yaml:204
+- apm.lock.yaml:2434
+- apm.lock.yaml:2452
 
-### .agents/skills/adversarial-review/evals/evals.json
+### .agents/skills/valuing-investments/references/forward-valuation-reviews/2026-10-06/MU/valuation.json
 
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
+**Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
+- (none detected)
 
 **Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-change-symbol/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- investment_screener/backend/tests/py_services/test_forward_recalculation.py:22
+- investment_screener/backend/tests/py_services/test_forward_recalculation.py:26
+- investment_screener/backend/tests/py_services/test_forward_recalculation.py:64
+- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:22
+- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:26
+- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:64
+- apm.lock.yaml:93
+- apm.lock.yaml:95
+- apm.lock.yaml:202
+- apm.lock.yaml:204
+- apm.lock.yaml:2434
+- apm.lock.yaml:2452
 
 ### .agents/skills/os-control-mode/evals/evals.json
 
@@ -15211,6 +15415,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15219,6 +15424,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/os-control-mode/references/control-plane.manifest.json
 
@@ -15232,40 +15470,6 @@
 - .agents/skills/os-control-mode/scripts/control_plane_mode.py:56
 - .agents/skills/os-control-mode/scripts/control_plane_mode.py:57
 - .agents/skills/os-control-mode/scripts/control_plane_mode.py:58
-
-### .agents/skills/calibrate-targets/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 
 ### .agents/skills/claude-cli-agent/evals/evals.json
 
@@ -15292,6 +15496,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15300,6 +15505,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/claude-cli-agent/references/cheapest_models.json
 
@@ -15399,6 +15637,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15407,142 +15646,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/norberts-gambit/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/questrade-deposit-funds/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-pine-inject/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-change-type/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/symlink-manager/evals/evals.json
 
@@ -15569,6 +15705,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15577,40 +15714,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/run-screener/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/select-loop-strategy/evals/evals.json
 
@@ -15637,6 +15773,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15645,6 +15782,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/select-loop-strategy/references/patterns.json
 
@@ -15682,6 +15852,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15690,118 +15861,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/daily-loop/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/daily-loop/evals/playbook-evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- (none detected)
-
-### .agents/skills/tv-price-refresh/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-technical-analysis-expert/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/plugin-installer/evals/evals.json
 
@@ -15828,6 +15920,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15836,6 +15929,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/os-control-init/evals/evals.json
 
@@ -15862,6 +15988,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15870,6 +15997,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/os-control-init/templates/agents.json
 
@@ -15917,7 +16077,7 @@
 **Known consumers:**
 - .agents/skills/os-control-init/scripts/init_agentic_os.py:643
 
-### .agents/skills/questrade-refresh-prices/evals/evals.json
+### .agents/skills/managing-the-toolkit/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
@@ -15942,6 +16102,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15950,6 +16111,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/github-issue-agent/evals/evals.json
 
@@ -15976,6 +16170,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -15984,6 +16179,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/github-issue-agent/references/issue-taxonomy.json
 
@@ -16049,6 +16277,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -16057,6 +16286,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/graph-execution/references/graph-manifest-schema.json
 
@@ -16087,40 +16349,6 @@
 - .agents/skills/graph-execution/scripts/validate_manifest.py:160
 - .agents/skills/graph-execution/scripts/validate_manifest.py:407
 
-### .agents/skills/screener-integrity-audit/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
 ### .agents/skills/context-bundler/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
@@ -16146,6 +16374,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -16154,6 +16383,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/context-bundler/assets/resources/file-manifest-schema.json
 
@@ -16175,74 +16437,6 @@
 **Known consumers:**
 - .agents/skills/context-bundler/scripts/manifest_manager.py:129
 - .agents/skills/context-bundler/scripts/manifest_manager.py:135
-
-### .agents/skills/weekly-review/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-ta-daily-sweep/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 
 ### .agents/skills/audit-plugin/evals/evals.json
 
@@ -16269,6 +16463,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -16277,6 +16472,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/audit-plugin/references/skill-authoring-contract.json
 
@@ -16322,6 +16550,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -16330,52 +16559,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/update-stock-analysis/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/update-stock-analysis/assets/templates/projection_template.json
-
-**Classification:** ALLOWED_CONFIGURATION_JSON
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- investment_screener/backend/py_services/validate_projection.py:131
-- .agents/skills/update-stock-analysis/scripts/validate_projection.py:131
-- docs/plans/apm-migration/mapping.yaml:214
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/coding-conventions-agent/evals/evals.json
 
@@ -16402,6 +16618,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -16410,322 +16627,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/etf-analysis/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/etf-analysis/assets/templates/etf_analysis_template.json
-
-**Classification:** ALLOWED_CONFIGURATION_JSON
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- docs/plans/apm-migration/mapping.yaml:215
-
-### .agents/skills/tv-ta-snapshot/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/stock-research/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-modify-order/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/questrade-setup/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/pre-trade-analysis/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-manage-watchlists/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/news-sweep/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-onboarding/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/agy-cli-agent/evals/evals.json
 
@@ -16752,6 +16686,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -16760,6 +16695,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/agy-cli-agent/references/cheapest_models.json
 
@@ -16836,86 +16804,6 @@
 - .agents/skills/os-control-init/scripts/control_plane/constants.py:200
 - .agents/skills/os-control-init/scripts/control_plane/constants.py:201
 
-### .agents/skills/update-portfolio-targets/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/update-portfolio-targets/assets/templates/target_portfolio_template.json
-
-**Classification:** ALLOWED_CONFIGURATION_JSON
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:137
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:137
-- docs/plans/apm-migration/mapping.yaml:206
-
-### .agents/skills/tv-chart-setup/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
 ### .agents/skills/audit-rule/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
@@ -16941,6 +16829,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -16949,40 +16838,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/portfolio-coverage-audit/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/copilot-cli-agent/evals/evals.json
 
@@ -17009,6 +16897,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -17017,6 +16906,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### .agents/skills/copilot-cli-agent/references/cheapest_models.json
 
@@ -17155,7 +17077,6 @@
 - .agents/skills/create-skill/scripts/improve_description.py:28
 - .agents/skills/create-skill/scripts/run_loop.py:701
 - .agents/skills/create-skill/scripts/run_loop.py:753
-- .agents/skills/daily-loop/scripts/daily_brief.py:91
 - .agents/skills/audit-plugin/scripts/improve_description.py:12
 - .agents/skills/audit-plugin/scripts/improve_description.py:13
 - .agents/skills/audit-plugin/scripts/improve_description.py:27
@@ -17224,7 +17145,6 @@
 - .agents/skills/create-skill/scripts/improve_description.py:28
 - .agents/skills/create-skill/scripts/run_loop.py:701
 - .agents/skills/create-skill/scripts/run_loop.py:753
-- .agents/skills/daily-loop/scripts/daily_brief.py:91
 - .agents/skills/audit-plugin/scripts/improve_description.py:12
 - .agents/skills/audit-plugin/scripts/improve_description.py:13
 - .agents/skills/audit-plugin/scripts/improve_description.py:27
@@ -17293,7 +17213,6 @@
 - .agents/skills/create-skill/scripts/improve_description.py:28
 - .agents/skills/create-skill/scripts/run_loop.py:701
 - .agents/skills/create-skill/scripts/run_loop.py:753
-- .agents/skills/daily-loop/scripts/daily_brief.py:91
 - .agents/skills/audit-plugin/scripts/improve_description.py:12
 - .agents/skills/audit-plugin/scripts/improve_description.py:13
 - .agents/skills/audit-plugin/scripts/improve_description.py:27
@@ -17362,7 +17281,6 @@
 - .agents/skills/create-skill/scripts/improve_description.py:28
 - .agents/skills/create-skill/scripts/run_loop.py:701
 - .agents/skills/create-skill/scripts/run_loop.py:753
-- .agents/skills/daily-loop/scripts/daily_brief.py:91
 - .agents/skills/audit-plugin/scripts/improve_description.py:12
 - .agents/skills/audit-plugin/scripts/improve_description.py:13
 - .agents/skills/audit-plugin/scripts/improve_description.py:27
@@ -17379,7 +17297,7 @@
 **Known consumers:**
 - (none detected)
 
-### .agents/skills/ytd-return/evals/evals.json
+### .agents/skills/operating-tradingview-charts/evals/evals.json
 
 **Classification:** ALLOWED_TEST_FIXTURE_JSON
 
@@ -17404,6 +17322,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -17412,152 +17331,94 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
-### .agents/skills/ytd-return/assets/templates/ytd_performance_report_template.json
+### .agents/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json
 
-**Classification:** ALLOWED_CONFIGURATION_JSON
-
-**Known producers:**
-- (none detected)
-
-**Known consumers:**
-- docs/plans/apm-migration/mapping.yaml:208
-
-### .agents/skills/tv-manage-indicators/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-ta-red-team/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
+**Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:75
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:198
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:214
+- investment_screener/backend/tests/py_services/test_pine_rollback_on_error.py:115
 
 **Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-cancel-order/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/tv-portfolio-sync/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- investment_screener/backend/py_services/pine_script_manager.py:14
+- investment_screener/backend/py_services/pine_script_manager.py:17
+- investment_screener/backend/py_services/pine_script_manager.py:49
+- investment_screener/backend/py_services/pine_script_manager.py:106
+- investment_screener/backend/py_services/pine_script_manager.py:544
+- investment_screener/backend/py_services/pine_script_manager.py:564
+- investment_screener/backend/py_services/pine_script_manager.py:680
+- investment_screener/backend/py_services/pine_script_manager.py:709
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:5
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:14
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:82
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:85
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:186
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:192
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:213
+- investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py:268
+- investment_screener/backend/tests/py_services/test_pine_auto_discovery_registers_scripts.py:18
+- investment_screener/backend/tests/py_services/test_pine_auto_discovery_registers_scripts.py:101
+- investment_screener/backend/tests/py_services/test_pine_auto_discovery_registers_scripts.py:106
+- investment_screener/backend/tests/py_services/test_pine_auto_discovery_registers_scripts.py:205
+- investment_screener/backend/tests/py_services/test_pine_auto_discovery_registers_scripts.py:239
+- investment_screener/backend/tests/py_services/test_pine_rollback_on_error.py:98
+- investment_screener/backend/tests/py_services/test_pine_rollback_on_error.py:123
+- investment_screener/backend/tests/py_services/test_pine_rollback_on_error.py:126
+- investment_screener/backend/tests/py_services/test_pine_rollback_on_error.py:164
+- investment_screener/backend/tests/py_services/test_pine_library_manages_multiple_scripts.py:51
+- investment_screener/backend/tests/py_services/test_pine_registry_reads_writes_json.py:12
+- investment_screener/backend/tests/py_services/test_pine_registry_reads_writes_json.py:38
+- investment_screener/backend/tests/py_services/test_pine_registry_reads_writes_json.py:59
+- investment_screener/backend/tests/py_services/test_pine_registry_reads_writes_json.py:192
+- investment_screener/backend/tests/py_services/test_pine_registry_reads_writes_json.py:200
+- investment_screener/backend/tests/py_services/test_pine_injection_auto_clicks.py:52
+- docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:14
+- docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:17
+- docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:55
+- docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:112
+- docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:550
+- docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:570
+- docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:686
+- docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:715
+- apm.lock.yaml:371
+- apm.lock.yaml:451
+- apm.lock.yaml:976
 
 ### .agents/skills/github-issue-worktree-agent/evals/evals.json
 
@@ -17584,6 +17445,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -17592,40 +17454,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
-
-### .agents/skills/13f-analyze/evals/evals.json
-
-**Classification:** ALLOWED_TEST_FIXTURE_JSON
-
-**Known producers:**
-- docs/plans/apm-migration/tools/build_mode_files.py:233
-- .agents/skills/create-hook/scripts/scaffold.py:200
-- .agents/skills/create-skill/scripts/scaffold.py:200
-
-**Known consumers:**
-- investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/tools/build_mode_files.py:4
-- docs/plans/apm-migration/tools/build_mode_files.py:19
-- docs/plans/apm-migration/tools/build_mode_files.py:222
-- docs/plans/apm-migration/tools/build_mode_files.py:225
-- docs/plans/apm-migration/tools/build_mode_files.py:231
-- docs/plans/apm-migration/tools/build_ledger.py:79
-- docs/plans/apm-migration/tools/build_ledger.py:80
-- docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:132
-- docs/plans/apm-migration/patches/wave-4/orig/plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:35
-- .agents/skills/create-hook/scripts/scaffold.py:192
-- .agents/skills/audit-skill/scripts/audit_skill.py:207
-- .agents/skills/audit-skill/scripts/audit_skill.py:210
-- .agents/skills/audit-skill/scripts/audit_skill.py:211
-- .agents/skills/create-skill/scripts/scaffold.py:192
-- .agents/skills/plugin-installer/scripts/plugin_add.py:538
-- .agents/skills/plugin-installer/scripts/plugin_add.py:582
-- .agents/skills/plugin-installer/scripts/plugin_add.py:588
-- .agents/skills/plugin-installer/scripts/plugin_add.py:593
-- .agents/skills/audit-plugin/scripts/audit_skill.py:207
-- .agents/skills/audit-plugin/scripts/audit_skill.py:210
-- .agents/skills/audit-plugin/scripts/audit_skill.py:211
-- plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### PortfolioAnalysis/strategic-reviews/2026-10-04-PortfolioAnalysisRecommendations.json
 
@@ -17858,6 +17719,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -17866,6 +17728,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/portfolio-advisor/.apm/skills/auditing-portfolio-data/evals/evals.json
 
@@ -17892,6 +17787,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -17900,6 +17796,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/portfolio-advisor/.apm/skills/tracking-13f-filings/evals/evals.json
 
@@ -17926,6 +17855,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -17934,6 +17864,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/evals/evals.json
 
@@ -17960,6 +17923,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -17968,6 +17932,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/assets/templates/target_portfolio_template.json
 
@@ -17979,6 +17976,9 @@
 **Known consumers:**
 - investment_screener/backend/tests/py_services/test_audit_json_usage.py:137
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:137
+- apm.lock.yaml:47
+- apm.lock.yaml:158
+- apm.lock.yaml:1624
 - docs/plans/apm-migration/mapping.yaml:206
 
 ### plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/assets/templates/portfolio_analysis_recommendations_template.json
@@ -17989,6 +17989,9 @@
 - (none detected)
 
 **Known consumers:**
+- apm.lock.yaml:46
+- apm.lock.yaml:157
+- apm.lock.yaml:1615
 - docs/plans/apm-migration/mapping.yaml:205
 
 ### plugins/portfolio-advisor/.apm/skills/setting-portfolio-targets/assets/templates/ytd_performance_report_template.json
@@ -17999,6 +18002,9 @@
 - (none detected)
 
 **Known consumers:**
+- apm.lock.yaml:49
+- apm.lock.yaml:160
+- apm.lock.yaml:1642
 - docs/plans/apm-migration/mapping.yaml:208
 
 ### plugins/portfolio-advisor/.apm/skills/valuing-investments/evals/evals.json
@@ -18026,6 +18032,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -18034,6 +18041,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/portfolio-advisor/.apm/skills/valuing-investments/assets/templates/projection_template.json
 
@@ -18044,7 +18084,9 @@
 
 **Known consumers:**
 - investment_screener/backend/py_services/validate_projection.py:131
-- .agents/skills/update-stock-analysis/scripts/validate_projection.py:131
+- apm.lock.yaml:80
+- apm.lock.yaml:189
+- apm.lock.yaml:2317
 - docs/plans/apm-migration/mapping.yaml:214
 
 ### plugins/portfolio-advisor/.apm/skills/valuing-investments/assets/templates/etf_analysis_template.json
@@ -18055,6 +18097,9 @@
 - (none detected)
 
 **Known consumers:**
+- apm.lock.yaml:79
+- apm.lock.yaml:188
+- apm.lock.yaml:2308
 - docs/plans/apm-migration/mapping.yaml:215
 
 ### plugins/portfolio-advisor/.apm/skills/valuing-investments/references/forward-valuation-reviews/2026-10-06/BE/valuation.json
@@ -18071,6 +18116,12 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:22
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:26
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:64
+- apm.lock.yaml:93
+- apm.lock.yaml:95
+- apm.lock.yaml:202
+- apm.lock.yaml:204
+- apm.lock.yaml:2434
+- apm.lock.yaml:2452
 
 ### plugins/portfolio-advisor/.apm/skills/valuing-investments/references/forward-valuation-reviews/2026-10-06/MU/valuation.json
 
@@ -18086,6 +18137,12 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:22
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:26
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:64
+- apm.lock.yaml:93
+- apm.lock.yaml:95
+- apm.lock.yaml:202
+- apm.lock.yaml:204
+- apm.lock.yaml:2434
+- apm.lock.yaml:2452
 
 ### plugins/portfolio-advisor/.apm/agents/evals/thesis-review-agent.json
 
@@ -18152,6 +18209,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -18160,6 +18218,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/tradingview/audit/orders-2026-05-27.jsonl
 
@@ -18416,6 +18507,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -18424,6 +18516,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/tradingview/.apm/skills/analyzing-charts/evals/evals.json
 
@@ -18450,6 +18575,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -18458,6 +18584,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/tradingview/.apm/skills/operating-tradingview-charts/evals/evals.json
 
@@ -18484,6 +18643,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -18492,6 +18652,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/registry.json
 
@@ -18544,6 +18737,9 @@
 - docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:570
 - docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:686
 - docs/plans/apm-migration/patches/wave-3/orig/investment_screener/backend/py_services/pine_script_manager.py:715
+- apm.lock.yaml:371
+- apm.lock.yaml:451
+- apm.lock.yaml:976
 
 ### plugins/tradingview/.apm/agents/evals/ta-guide.json
 
@@ -18581,6 +18777,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -18589,6 +18786,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### plugins/questrade/.apm/skills/trading-with-questrade/evals/evals.json
 
@@ -18615,6 +18845,7 @@
 - .agents/skills/audit-skill/scripts/audit_skill.py:210
 - .agents/skills/audit-skill/scripts/audit_skill.py:211
 - .agents/skills/create-skill/scripts/scaffold.py:192
+- .agents/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
 - .agents/skills/plugin-installer/scripts/plugin_add.py:538
 - .agents/skills/plugin-installer/scripts/plugin_add.py:582
 - .agents/skills/plugin-installer/scripts/plugin_add.py:588
@@ -18623,6 +18854,39 @@
 - .agents/skills/audit-plugin/scripts/audit_skill.py:210
 - .agents/skills/audit-plugin/scripts/audit_skill.py:211
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/tests/test_ai_forward_skill_contract.py:47
+- apm.lock.yaml:11
+- apm.lock.yaml:24
+- apm.lock.yaml:50
+- apm.lock.yaml:73
+- apm.lock.yaml:81
+- apm.lock.yaml:124
+- apm.lock.yaml:136
+- apm.lock.yaml:161
+- apm.lock.yaml:183
+- apm.lock.yaml:190
+- apm.lock.yaml:241
+- apm.lock.yaml:259
+- apm.lock.yaml:266
+- apm.lock.yaml:283
+- apm.lock.yaml:298
+- apm.lock.yaml:322
+- apm.lock.yaml:355
+- apm.lock.yaml:374
+- apm.lock.yaml:415
+- apm.lock.yaml:435
+- apm.lock.yaml:454
+- apm.lock.yaml:494
+- apm.lock.yaml:544
+- apm.lock.yaml:634
+- apm.lock.yaml:706
+- apm.lock.yaml:1003
+- apm.lock.yaml:1417
+- apm.lock.yaml:1651
+- apm.lock.yaml:1858
+- apm.lock.yaml:2020
+- apm.lock.yaml:2074
+- apm.lock.yaml:2245
+- apm.lock.yaml:2326
 
 ### ARCHIVE/retired-2026-10-10/investment_screener/backend/data/portfolio.json
 
@@ -18631,6 +18895,7 @@
 **Known producers:**
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
 - temp/evaluations/audit_sqlite_usage.py:483
 
@@ -18701,6 +18966,39 @@
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:657
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:658
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py:52
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:52
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:53
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:55
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:63
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:64
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:44
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:51
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:56
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:57
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:58
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:68
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:66
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:634
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:635
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:638
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:639
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:640
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:641
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:642
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:643
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:644
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:645
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:646
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:647
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:649
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:650
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:651
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:652
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:654
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:656
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:657
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:658
+- .agents/skills/managing-the-toolkit/scripts/app_smoke_test.py:52
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:52
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:53
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:55
@@ -18778,6 +19076,8 @@
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:78
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:78
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py:53
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:78
+- .agents/skills/managing-the-toolkit/scripts/app_smoke_test.py:53
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:78
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py:53
 - temp/evaluations/audit_sqlite_usage.py:69
@@ -18790,6 +19090,7 @@
 - (none detected)
 
 **Known consumers:**
+- investment_screener/backend/py_services/order_risk_gates.py:184
 - investment_screener/backend/py_services/order_risk_gates.py:1226
 - investment_screener/backend/py_services/execution_quality_scorecard.py:7
 - investment_screener/backend/py_services/execution_quality_scorecard.py:29
@@ -18798,14 +19099,18 @@
 - investment_screener/backend/tests/py_services/test_execution_quality_scorecard.py:5
 - investment_screener/backend/tests/py_services/test_migrate_wave4_to_sqlite.py:88
 - investment_screener/backend/tests/py_services/test_audit_json_usage.py:362
+- investment_screener/backend/tests/py_services/test_order_risk_gates_trade_log_sqlite.py:3
 - investment_screener/backend/tests/py_services/test_order_execution_audit_trail.py:5
+- investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:1
 - investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:16
+- investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:62
 - investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:230
 - investment_screener/backend/py_services/domain_model/order_execution_repository.py:2
 - investment_screener/backend/py_services/domain_model/order_execution_repository.py:16
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:362
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:69
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:69
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:69
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:69
 - temp/evaluations/audit_sqlite_usage.py:60
 
@@ -18824,9 +19129,7 @@
 - investment_screener/backend/tests/py_services/test_migrate_wave4_to_sqlite.py:89
 - investment_screener/backend/tests/py_services/test_ytd_return_cash_flow_sqlite.py:2
 - investment_screener/backend/tests/py_services/test_ytd_return.py:17
-- investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:1
 - investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:22
-- investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:62
 - investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:232
 - investment_screener/backend/py_services/domain_model/cash_flow_repository.py:4
 - investment_screener/backend/py_services/domain_model/cash_flow_repository.py:18
@@ -18837,8 +19140,8 @@
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:637
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:70
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:637
-- .agents/skills/ytd-return/scripts/ytd_return.py:63
-- .agents/skills/ytd-return/scripts/ytd_return.py:73
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:70
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:637
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:70
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:637
 - temp/evaluations/audit_sqlite_usage.py:61
@@ -18852,23 +19155,23 @@
 - investment_screener/backend/tests/py_services/test_migrate_wave4_to_sqlite.py:91
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:636
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:636
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:636
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:636
 - temp/evaluations/audit_sqlite_usage.py:471
 
 **Known consumers:**
 - investment_screener/backend/py_services/order_risk_gates.py:83
 - investment_screener/backend/py_services/order_risk_gates.py:149
-- investment_screener/backend/py_services/order_risk_gates.py:184
 - investment_screener/backend/py_services/order_risk_gates.py:983
 - investment_screener/backend/py_services/generate_track_record_report.py:17
 - investment_screener/backend/tests/py_services/test_migrate_wave4_to_sqlite.py:87
 - investment_screener/backend/tests/py_services/test_post_trade_validation_matches_shares.py:5
-- investment_screener/backend/tests/py_services/test_order_risk_gates_trade_log_sqlite.py:3
 - investment_screener/backend/py_services/domain_model/trade_log_entry_repository.py:11
 - investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:9
 - investment_screener/backend/py_services/domain_model/migrate_wave4_to_sqlite.py:228
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:68
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:68
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:68
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:68
 - temp/evaluations/audit_sqlite_usage.py:59
 - investment_screener/backend/tests/api/tradingTradeLogSqlite.spec.ts:6
@@ -18880,6 +19183,7 @@
 **Known producers:**
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
 - temp/evaluations/audit_sqlite_usage.py:483
 
@@ -18950,6 +19254,39 @@
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:657
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:658
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py:52
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:52
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:53
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:55
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:63
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:64
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:44
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:51
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:56
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:57
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:58
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:68
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:66
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:634
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:635
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:638
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:639
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:640
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:641
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:642
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:643
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:644
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:645
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:646
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:647
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:649
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:650
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:651
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:652
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:654
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:656
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:657
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:658
+- .agents/skills/managing-the-toolkit/scripts/app_smoke_test.py:52
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:52
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:53
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:55
@@ -19024,6 +19361,7 @@
 **Known producers:**
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:648
 - temp/evaluations/audit_sqlite_usage.py:483
 
@@ -19094,6 +19432,39 @@
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:657
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:658
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py:52
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:52
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:53
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:55
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:63
+- .agents/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:64
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:44
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:51
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:56
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:57
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:58
+- .agents/skills/managing-the-toolkit/tests/test_audit_sqlite_usage.py:68
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:66
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:634
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:635
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:638
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:639
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:640
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:641
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:642
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:643
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:644
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:645
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:646
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:647
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:649
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:650
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:651
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:652
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:654
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:656
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:657
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:658
+- .agents/skills/managing-the-toolkit/scripts/app_smoke_test.py:52
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:52
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:53
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_no_retired_file_access.py:55
@@ -19317,16 +19688,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -19966,7 +20341,7 @@
 - (none detected)
 
 **Known consumers:**
-- (none detected)
+- investment_screener/backend/py_services/dcf_scenarios.py:14
 
 ### temp/evaluations/CDNS_scenarios.json
 
@@ -20126,8 +20501,8 @@
 - (none detected)
 
 **Known consumers:**
-- .agents/skills/etf-analysis/scripts/persist_etf_analysis.py:11
-- .agents/skills/etf-analysis/scripts/validate_etf_analysis.py:10
+- .agents/skills/valuing-investments/scripts/persist_etf_analysis.py:11
+- .agents/skills/valuing-investments/scripts/validate_etf_analysis.py:10
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_etf_analysis.py:11
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/validate_etf_analysis.py:10
 
@@ -21749,6 +22124,7 @@
 - (none detected)
 
 **Known consumers:**
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:24
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/tests/test_archive_temp_json.py:24
 
 ### temp/evaluations/CRSP_dcf_0.10.json
@@ -21789,7 +22165,7 @@
 - (none detected)
 
 **Known consumers:**
-- .agents/skills/etf-analysis/scripts/persist_etf_analysis.py:12
+- .agents/skills/valuing-investments/scripts/persist_etf_analysis.py:12
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_etf_analysis.py:12
 
 ### temp/evaluations/LBRT_projection.json
@@ -22131,7 +22507,6 @@
 
 **Known consumers:**
 - investment_screener/backend/py_services/dcf_scenarios.py:17
-- .agents/skills/update-stock-analysis/scripts/dcf_scenarios.py:17
 
 ### temp/evaluations/KRMN_montecarlo.json
 
@@ -24711,10 +25086,7 @@
 - (none detected)
 
 **Known consumers:**
-- investment_screener/backend/py_services/dcf_scenarios.py:14
 - investment_screener/backend/py_services/dcf_scenarios.py:20
-- .agents/skills/update-stock-analysis/scripts/dcf_scenarios.py:14
-- .agents/skills/update-stock-analysis/scripts/dcf_scenarios.py:20
 
 ### temp/evaluations/VIAV_rate_inputs.json
 
@@ -27591,16 +27963,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27617,16 +27993,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27643,16 +28023,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27669,16 +28053,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27719,16 +28107,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27745,16 +28137,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27771,16 +28167,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27807,16 +28207,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27833,16 +28237,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27859,16 +28267,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27885,16 +28297,20 @@
 **Classification:** UNKNOWN_REQUIRES_REVIEW
 
 **Known producers:**
-- .agents/skills/daily-loop/scripts/run_daily.py:122
+- .agents/skills/running-portfolio-reviews/scripts/run_daily.py:127
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/scripts/run_daily.py:127
 
 **Known consumers:**
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:135
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:137
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:168
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:170
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:208
-- .agents/skills/daily-loop/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
+- .agents/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:140
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:142
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:173
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:175
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:213
+- .agents/skills/running-portfolio-reviews/scripts/verify_daily_run.py:218
+- .agents/skills/managing-the-toolkit/tests/test_archive_temp_json.py:26
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:136
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:159
 - plugins/portfolio-advisor/.apm/skills/running-portfolio-reviews/tests/test_daily_loop_receipts.py:192
@@ -27931,9 +28347,7 @@
 - docs/plans/apm-migration/tools/build_inventory.py:83
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:126
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_audit_json_usage.py:127
-- .agents/skills/create-hook/scripts/scaffold.py:71
 - .agents/skills/create-hook/scripts/scaffold.py:112
-- .agents/skills/create-skill/scripts/scaffold.py:71
 - .agents/skills/create-skill/scripts/scaffold.py:112
 - .agents/skills/plugin-installer/scripts/plugin_installer.py:44
 - .agents/skills/plugin-installer/scripts/plugin_installer.py:1093
@@ -27984,6 +28398,8 @@
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:78
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:78
 - docs/plans/apm-migration/patches/wave-2/orig/plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py:53
+- .agents/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:78
+- .agents/skills/managing-the-toolkit/scripts/app_smoke_test.py:53
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/audit_sqlite_usage.py:78
 - plugins/toolkit-manager/.apm/skills/managing-the-toolkit/scripts/app_smoke_test.py:53
 - temp/evaluations/audit_sqlite_usage.py:69
@@ -28007,7 +28423,6 @@
 
 **Known consumers:**
 - investment_screener/backend/py_services/validate_projection.py:10
-- .agents/skills/update-stock-analysis/scripts/validate_projection.py:10
 
 ### temp/evaluations/APLD_2026-10-07/valuation.json
 
@@ -28023,6 +28438,12 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:22
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:26
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:64
+- apm.lock.yaml:93
+- apm.lock.yaml:95
+- apm.lock.yaml:202
+- apm.lock.yaml:204
+- apm.lock.yaml:2434
+- apm.lock.yaml:2452
 
 ### temp/evaluations/APLD_2026-10-07/payload.json
 
@@ -28031,6 +28452,8 @@
 **Known producers:**
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:156
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:236
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:156
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:236
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:156
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:236
 
@@ -28040,6 +28463,8 @@
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:235
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:18
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:21
+- docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
+- docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
 - docs/plans/apm-migration/patches/wave-3-dirfix/orig/plugins/stock-valuation/scripts/persist_valuation.py:16
@@ -28047,18 +28472,24 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:27
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
-- .agents/skills/questrade-sync-portfolio/scripts/questrade_sync.py:15
-- .agents/skills/questrade-sync-portfolio/scripts/questrade_sync.py:18
-- .agents/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py:18
-- .agents/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py:21
-- .agents/skills/update-stock-analysis/scripts/persist_valuation.py:16
-- .agents/skills/update-stock-analysis/scripts/persist_valuation.py:17
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:155
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:235
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:18
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:21
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
+- .agents/skills/valuing-investments/scripts/persist_valuation.py:16
+- .agents/skills/valuing-investments/scripts/persist_valuation.py:17
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_valuation.py:16
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_valuation.py:17
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:155
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:235
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:18
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:21
+- plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
+- plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
 
@@ -28071,7 +28502,6 @@
 
 **Known consumers:**
 - investment_screener/backend/py_services/validate_projection.py:10
-- .agents/skills/update-stock-analysis/scripts/validate_projection.py:10
 
 ### temp/evaluations/ZS_forward_2026-10-06/valuation.json
 
@@ -28087,6 +28517,12 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:22
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:26
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:64
+- apm.lock.yaml:93
+- apm.lock.yaml:95
+- apm.lock.yaml:202
+- apm.lock.yaml:204
+- apm.lock.yaml:2434
+- apm.lock.yaml:2452
 
 ### temp/evaluations/ZS_forward_2026-10-06/payload.json
 
@@ -28095,6 +28531,8 @@
 **Known producers:**
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:156
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:236
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:156
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:236
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:156
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:236
 
@@ -28104,6 +28542,8 @@
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:235
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:18
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:21
+- docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
+- docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
 - docs/plans/apm-migration/patches/wave-3-dirfix/orig/plugins/stock-valuation/scripts/persist_valuation.py:16
@@ -28111,18 +28551,24 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:27
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
-- .agents/skills/questrade-sync-portfolio/scripts/questrade_sync.py:15
-- .agents/skills/questrade-sync-portfolio/scripts/questrade_sync.py:18
-- .agents/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py:18
-- .agents/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py:21
-- .agents/skills/update-stock-analysis/scripts/persist_valuation.py:16
-- .agents/skills/update-stock-analysis/scripts/persist_valuation.py:17
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:155
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:235
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:18
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:21
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
+- .agents/skills/valuing-investments/scripts/persist_valuation.py:16
+- .agents/skills/valuing-investments/scripts/persist_valuation.py:17
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_valuation.py:16
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_valuation.py:17
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:155
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:235
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:18
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:21
+- plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
+- plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
 
@@ -28135,7 +28581,6 @@
 
 **Known consumers:**
 - investment_screener/backend/py_services/validate_projection.py:10
-- .agents/skills/update-stock-analysis/scripts/validate_projection.py:10
 
 ### temp/evaluations/ZS_bear_sensitivity_2026-10-06/valuation.json
 
@@ -28151,6 +28596,12 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:22
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:26
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:64
+- apm.lock.yaml:93
+- apm.lock.yaml:95
+- apm.lock.yaml:202
+- apm.lock.yaml:204
+- apm.lock.yaml:2434
+- apm.lock.yaml:2452
 
 ### temp/evaluations/ZS_bear_sensitivity_2026-10-06/payload.json
 
@@ -28159,6 +28610,8 @@
 **Known producers:**
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:156
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:236
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:156
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:236
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:156
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:236
 
@@ -28168,6 +28621,8 @@
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:235
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:18
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:21
+- docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
+- docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
 - docs/plans/apm-migration/patches/wave-1/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
 - docs/plans/apm-migration/patches/wave-3-dirfix/orig/plugins/stock-valuation/scripts/persist_valuation.py:16
@@ -28175,18 +28630,24 @@
 - docs/plans/apm-migration/patches/wave-4/orig/investment_screener/backend/tests/py_services/test_forward_recalculation.py:27
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
 - docs/plans/apm-migration/patches/wave-4/orig/plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
-- .agents/skills/questrade-sync-portfolio/scripts/questrade_sync.py:15
-- .agents/skills/questrade-sync-portfolio/scripts/questrade_sync.py:18
-- .agents/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py:18
-- .agents/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py:21
-- .agents/skills/update-stock-analysis/scripts/persist_valuation.py:16
-- .agents/skills/update-stock-analysis/scripts/persist_valuation.py:17
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:155
+- .agents/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:235
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:18
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:21
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
+- .agents/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
+- .agents/skills/valuing-investments/scripts/persist_valuation.py:16
+- .agents/skills/valuing-investments/scripts/persist_valuation.py:17
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_valuation.py:16
 - plugins/portfolio-advisor/.apm/skills/valuing-investments/scripts/persist_valuation.py:17
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:155
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/tests/test_questrade_trades_import.py:235
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:18
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_price_refresh.py:21
+- plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:17
+- plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_trades_import.py:20
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:15
 - plugins/questrade/.apm/skills/syncing-questrade-accounts/scripts/questrade_sync.py:18
 

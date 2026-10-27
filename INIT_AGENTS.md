@@ -122,15 +122,13 @@ ControlPlane(db_path=Path('context/control_plane.db')).init_db()
 
 ### 4. Claude Code only: register the project plugins
 
-Skip this if you do not use Claude Code. The plugin sync above deploys skills into `.agents/`; Claude Code also needs the plugins registered before `/tv-*` and the other plugin commands appear:
+Skip this if you do not use Claude Code. The plugin sync above deploys the shared library skills into `.agents/`; the four project plugins install separately with `apm install --target agent-skills` from the repository root (see README, "How to Install Plugins"). Claude Code also needs the plugins registered before `/tv-*` and the other plugin commands appear:
 
 ```text
 /plugin marketplace add richfrem/InvestmentToolkit
 /plugin install tradingview@investment-toolkit-plugins
 /plugin install portfolio-advisor@investment-toolkit-plugins
-/plugin install stock-valuation@investment-toolkit-plugins
 /plugin install toolkit-manager@investment-toolkit-plugins
-/plugin install etf-analysis@investment-toolkit-plugins
 ```
 
 Questrade users also install `questrade@investment-toolkit-plugins`; see [Optional: Questrade](#optional-questrade-pluginsquestrade).
@@ -160,10 +158,7 @@ test -f .github/workflows/verify-evolution-integrity.yml && echo "✅ CI integri
 # 3. Cryptographic signing identity readiness (read-only)
 python3 .agents/skills/os-control-health/scripts/setup_ciba_identity.py --check
 
-# 4. Symlink integrity
-python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
-
-# 5. Core test suites
+# 4. Core test suites
 python3 run_tests.py --t0-only
 python3 run_tests.py --unit
 

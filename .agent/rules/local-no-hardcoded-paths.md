@@ -11,7 +11,7 @@ Hardcoding absolute local user or machine filesystem paths (such as home directo
 - Source code (TypeScript, Python, JavaScript, Shell scripts)
 - Indicator definitions (Pine Script)
 - Rules and documentation (`.agent/rules/`, `AGENTS.md`, `README.md`, `architecture.md`)
-- Configuration and lock files (`marketplace.json`, `plugin.json`, `symlinks.json`)
+- Configuration and lock files (`marketplace.json`, `plugin.json`, `apm.lock.yaml`)
 
 ---
 

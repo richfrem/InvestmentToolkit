@@ -92,44 +92,43 @@ Then, ask your agent to run: `/tv-portfolio-sync` or `/daily`
 
 ## 🧩 AI Agent Plugins & Skills
 
-All agent tooling is organized as portable plugins inside the `plugins/` directory and loaded natively as on-demand skills in `.agents/skills/`.
+Agent tooling is packaged as four [APM](https://github.com/microsoft/apm) plugins under `plugins/`. Each plugin keeps its skills and agents in `.apm/` and each skill ("hub") carries its own scripts, references, assets and tests, with one `references/modes/<mode>.md` file per mode. There are no symlinks. Slash commands are unchanged; each one selects a mode of a hub. The old-path to new-path ledger is in `docs/plans/apm-migration/`.
+
+| Plugin | Hubs (skills) |
+| :--- | :--- |
+| `plugins/portfolio-advisor` | `valuing-investments`, `running-portfolio-reviews`, `setting-portfolio-targets`, `tracking-13f-filings`, `auditing-portfolio-data` |
+| `plugins/tradingview` | `operating-tradingview-charts`, `trading-via-tradingview`, `analyzing-charts` |
+| `plugins/toolkit-manager` | `managing-the-toolkit` |
+| `plugins/questrade` (optional) | `syncing-questrade-accounts`, `trading-with-questrade` |
+
+Scripts that the backend imports, or that more than one hub uses, live in `investment_screener/backend/py_services/`; scripts used by one hub live in that hub's `scripts/`.
 
 ### 1. Portfolio Advisor (`plugins/portfolio-advisor`)
 
-An adversarial suite that acts as a hedge fund auditor. It challenges your bull cases, flags failing investment pillars, and proposes weight changes based on real-time drift.
+An adversarial suite that acts as a hedge fund auditor, now also holding the stock valuation and ETF analysis skills. It challenges your bull cases, flags failing investment pillars, and proposes weight changes based on real-time drift.
 
-* **Daily command**: `/daily` — one interactive loop: portfolio sync → morning brief (macro + TA + DCF + earnings) → ranked triage cards → trade execution → self-evolution log.
-* **Intake & Audit**: `/stock-intake` (automated 5-in-1 discovery & intake), `/portfolio-coverage-audit` (audit analysis gaps across watchlist), `/data-quality-audit` (database integrity checks).
-* **Research & Rebalancing**: `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/news-sweep`, `/weekly-review`, `/bundle-thesis-review`, `/13f-tracker`, `/13f-analyze`, `/ytd-return`, `/run-advisor` (post-catalyst orchestrator).
+* **Daily command**: `/daily`: one interactive loop: portfolio sync → morning brief (macro + TA + DCF + earnings) → ranked triage cards → trade execution → self-evolution log.
+* **Valuation and intake** (`valuing-investments`): `/update-stock-analysis`, `/research-stock`, `/forward-valuation-challenge`, `/valuation-math-validation`, `/analyze-etf`, `/stock-intake`.
+* **Reviews** (`running-portfolio-reviews`): `/daily`, `/weekly-review`, `/news-sweep`, `/adversarial-review`, `/bundle-thesis-review`, `/run-advisor` (post-catalyst orchestrator).
+* **Targets** (`setting-portfolio-targets`): `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/ytd-return`, `/set-thesis-breakers`.
+* **13F** (`tracking-13f-filings`): `/13f-tracker`, `/13f-analyze`.
+* **Audits** (`auditing-portfolio-data`): `/portfolio-coverage-audit`, `/data-quality-audit`, screener integrity.
+* **Agents**: `portfolio-advisor-orchestrator`, `red-team-agent`, `risk-officer-agent`, `thesis-review-agent`.
 
-### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
-
-An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Base/Bull DCF scenarios, and generates fair value recommendations.
-
-* **Skills**: `/update-stock-analysis`, `/research-stock`, `/forward-valuation-challenge`, `/valuation-math-validation`
-
-### 3. ETF Analysis (`plugins/etf-analysis`)
-
-Purpose-built for thematic, closed-end, and cash fund ETFs.
-
-* **Skills**: `/analyze-etf`
-
-### 4. TradingView Integration (`plugins/tradingview` + `tradingview-cdp/`)
+### 2. TradingView Integration (`plugins/tradingview` + `tradingview-cdp/`)
 
 TradingView Desktop is the primary layer for live prices, portfolio sync, order execution, Pine Script authoring, and deep technical analysis via CDP (Chrome DevTools Protocol) automation.
 
 * **Skills**: `/tv-setup`, `/tv-onboarding`, `/tv-portfolio-sync`, `/tv-indicators`, `/tv-thesis-overlay`, `/tv-alert-reconcile`, `/tv-ta`, `/tv-ta-deep`, `/tv-ta-daily-sweep`, `/tv-snapshot`, `/tv-price-refresh`, `/tv-alert-sync`, `/tv-alert-list`, `/tv-pine-inject`, `/tv-author-pine`, `/tv-chart-setup`, `/tv-change-symbol`, `/tv-change-type`, `/tv-place-order`, `/tv-modify-order`, `/tv-cancel-order`, `/tv-get-orders`, `/tv-watchlist-sync`
-* **Agents**: `ta-guide` — interactive TA tutor and Pine Script architect; walks users through live chart analysis step-by-step and builds custom indicator views.
+* **Agents**: `ta-guide`: interactive TA tutor and Pine Script architect; walks users through live chart analysis step-by-step and builds custom indicator views.
 
-### 5. Toolkit Manager (`plugins/toolkit-manager`)
+### 3. Toolkit Manager (`plugins/toolkit-manager`)
 
-Orchestrator for managing server startup and onboarding.
+Orchestrator for managing server startup, onboarding, SQLite administration and maintenance audits.
 
 * **Skills**: `/start-screener`, `/toolkit-onboarding`
 
-
-
-### 6. Questrade (`plugins/questrade`, optional)
+### 4. Questrade (`plugins/questrade`, optional)
 
 Questrade brokerage connection through the Questrade MCP server: an optional second source for positions and trades (TradingView stays the default), plus deposits and currency conversion in your Questrade accounts.
 
@@ -225,21 +224,15 @@ file in place of these databases.
 
 ## 🔌 How to Install Plugins
 
-Plugins are self-contained. To link or reinstall them into your local agent environment:
-
-**1. Install Project-Specific Plugins (Local):**
+The four project plugins install with [APM](https://github.com/microsoft/apm) (`apm-cli==0.33.0`). The root `apm.yml` lists them, so from the repository root:
 
 ```bash
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins
-
+apm install --target agent-skills
 ```
 
-**2. Install Core Library Plugins (Remote):**
+This deploys the skills into `.agents/skills/` and writes `apm.lock.yaml`. Questrade also declares an MCP server; `apm` reports that the `agent-skills` target cannot configure it (the skills still install), so set the Questrade MCP up with `/questrade-setup`. Never edit the deployed copies; change the plugin source and reinstall.
 
-```bash
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-
-```
+Shared library plugins from `richfrem/agent-plugins-skills` (Agentic OS substrate, developer skills) are still installed with the legacy sync; see `INIT_AGENTS.md` and `plugin-sources.json`.
 
 ---
 

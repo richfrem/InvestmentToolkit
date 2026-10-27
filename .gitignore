@@ -177,6 +177,9 @@ docs/superpowers/
 # os-control-intake task artifacts (spec/plan/outline/reviews) - ephemeral per-task agent state
 docs/plans/work-tasks/
 
+docs/plans/
+docs/handovers/
+
 # Local personal overrides & heartbeat
 CLAUDE.local.md
 *.local.md

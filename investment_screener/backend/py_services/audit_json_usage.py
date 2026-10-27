@@ -430,7 +430,7 @@ def classify_file(path: str, references: list) -> str:
 
     config_names = {
         "package.json", "package-lock.json", "tsconfig.json", "tsconfig.node.json",
-        "tsconfig.app.json", "symlinks.json", "skills-lock.json", "plugin-sources.json",
+        "tsconfig.app.json", "skills-lock.json", "plugin-sources.json",
     }
     if name in config_names:
         return "ALLOWED_CONFIGURATION_JSON"
