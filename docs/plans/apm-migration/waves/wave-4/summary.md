@@ -15,3 +15,9 @@ Findings
 - Deleted: 18 ignored cache files (untracked, re-fetchable) under the old `stock-valuation/scripts/cache/`. Not recoverable, regenerated on demand.
 - Left as is: `references/triage-history.json` (ignored runtime data), `external-review` mode still names a `bundle.py` that never existed in the repository (pre-existing).
 - Marketplace entries removed; the catalog is now empty because the plugins install through APM.
+
+## Web app Refresh bug (diagnosis)
+- Not caused by the plugin move: `tv_batch_quotes` and the heatmap import resolve correctly after Waves 3 and 4.
+- Cause found live on 2026-10-27: TradingView Desktop reported `document.hidden = true`; 24 of the 43 rows in "TV-Full Watchlist" stayed `data-status="pending"` with empty price cells, so only 19 had a price and the refresh wrote 19 and left 69 of 88 symbols stale. Held tickers APLD, CBRS, GOOG, MP, NBIS, RIOT, SPCX and STM are also not on that watchlist at all. KOID is still on it.
+- Changes: the heatmap no longer swallows a failed TradingView overlay (logs to stderr) and the Refresh message now lists symbols that were not quoted. Scrolling the list and `Page.bringToFront` did not make pending rows resolve, so that attempt was reverted.
+- Open: keep TradingView visible during Refresh, add the eight held tickers to the watchlist, remove KOID.

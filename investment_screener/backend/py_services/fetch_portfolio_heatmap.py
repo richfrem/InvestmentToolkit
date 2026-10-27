@@ -278,8 +278,9 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False, tradingview_only
                 if sym in info_map:
                     info_map[sym]["_fastLastPrice"] = q["price"]
                     info_map[sym]["_fastChangePct"] = q.get("changePercent")
-    except Exception:
-        pass
+    except Exception as exc:
+        # Never silent: with --tradingview-only a failed overlay leaves every price stale.
+        print(f"TradingView price overlay failed: {exc!r}", file=sys.stderr)
     missing_prices: list[str] = []
     if to_fetch:
         prefetch_history(to_fetch, history)

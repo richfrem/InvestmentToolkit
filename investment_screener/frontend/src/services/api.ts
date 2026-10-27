@@ -288,7 +288,7 @@ export const syncPortfolio = async (): Promise<{ success: boolean; dataSource: s
     return data;
 };
 
-export const refreshPrices = async (): Promise<{ success: boolean; updated: number; heatmap: any }> => {
+export const refreshPrices = async (): Promise<{ success: boolean; updated: number; missingPrices?: string[]; heatmap: any }> => {
     const response = await fetch('/api/portfolio/refresh-prices', {
         method: 'POST',
     });
@@ -333,6 +333,9 @@ export const syncAndRefreshPortfolio = async (): Promise<{ success: boolean; dat
         const refreshResult = await refreshPrices();
         refreshOk = refreshResult.success;
         refreshMessage = `prices: ${refreshResult.updated} updated`;
+        const missing = refreshResult.missingPrices ?? [];
+        // TradingView leaves watchlist rows "pending" (no quote) while its window is hidden or minimised, and the refresh only reads that watchlist; those symbols keep their old price.
+        if (missing.length > 0) refreshMessage += ` · ${missing.length} not quoted, still stale (${missing.join(', ')}): keep TradingView Desktop open and visible, then refresh again`;
     } catch (e) {
         console.warn('Price refresh failed', e);
     }
