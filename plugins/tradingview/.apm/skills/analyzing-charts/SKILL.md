@@ -34,6 +34,7 @@ Paths starting with `scripts/` or `assets/` are relative to this skill's folder.
 ## Constraints
 
 - **Data Window authority**: levels come from actual Data Window values (21/50/200 EMAs, RSI, volume), not visual guesswork.
+- **Stored tiers are the levels**: buy, trim and stop levels come from `price_level_tier`, never from what the chart or its legend shows. The AI TA Levels inputs stay on the chart when the symbol changes, so a chart can show another stock's levels; see [chart levels per symbol](../operating-tradingview-charts/references/chart-levels-per-symbol.md).
 - **Multi-timeframe**: 1W for the macro trend, 1D for tactical execution.
 - **Red-team before finalizing**: the reviewer answers `[APPROVED]` or `[REJECTED]` with at least three falsifiable counter-arguments and never proposes or places trades.
 - **Screenshots** are saved under `PortfolioAnalysis/screenshots/{YYYY-MM-DD}/{TICKER}.png`.

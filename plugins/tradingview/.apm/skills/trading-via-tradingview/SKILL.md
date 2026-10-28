@@ -65,5 +65,6 @@ Paths starting with `scripts/` are relative to this skill's folder; the shared b
 
 ## References
 
+- [Reading and driving TradingView lists reliably](references/tradingview-ui-reading.md): visible-rows-only reads, hashed selectors, one copy per list, symbol spelling, validation order. Read before changing code that reads a list or positions table.
 - The `operating-tradingview-charts` skill: connection setup, indicators, alerts.
 - The `analyzing-charts` skill: technical-analysis sweeps and the red-team reviewer.
