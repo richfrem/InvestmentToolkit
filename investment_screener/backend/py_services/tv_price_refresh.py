@@ -12,11 +12,11 @@ Purpose:
     is reported as failed/stale. It needs neither the Express backend nor a running web server.
 
 Layer:
-    Plugins / TradingView / Scripts
+    Backend / Python Services (shared by the app's Refresh and the tv-price-refresh skill mode)
 
 Usage Examples:
-    python3 plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_price_refresh.py
-    python3 plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_price_refresh.py --db /path/to/domain_model.sqlite --skip-fx
+    python3 investment_screener/backend/py_services/tv_price_refresh.py
+    python3 investment_screener/backend/py_services/tv_price_refresh.py --db /path/to/domain_model.sqlite --skip-fx
 
 Key Functions (Index):
     - refresh_scope(): symbols to refresh (held + watchlisted, aliases normalised)
@@ -43,7 +43,6 @@ REPO_ROOT = next(p for p in Path(__file__).resolve().parents if (p / "investment
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 DEFAULT_DB = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 sys.path.insert(0, str(PY_SERVICES))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from domain_model.account_investment_repository import list_account_investments  # noqa: E402
 from domain_model.investment_price_repository import get_investment_price, upsert_investment_price  # noqa: E402
@@ -115,6 +114,8 @@ def _refresh_exchange_rate() -> bool:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Refresh investment_price for held and watchlisted symbols.")
     parser.add_argument("--db", default=str(DEFAULT_DB), help="Path to domain_model.sqlite")
+    parser.add_argument("--exit-zero", action="store_true",
+                        help="Exit 0 when some symbols have no quote (the app reads the JSON report instead of the exit code)")
     parser.add_argument("--skip-fx", action="store_true", help="Do not refresh the USD->CAD exchange rate")
     args = parser.parse_args(argv)
     if not Path(args.db).exists():
@@ -129,7 +130,7 @@ def main(argv: list[str] | None = None) -> int:
         conn.close()
     result["exchange_rate_refreshed"] = None if args.skip_fx else _refresh_exchange_rate()
     print(json.dumps(result, indent=2))
-    return 1 if result["failed"] else 0
+    return 0 if args.exit_zero or not result["failed"] else 1
 
 
 if __name__ == "__main__":

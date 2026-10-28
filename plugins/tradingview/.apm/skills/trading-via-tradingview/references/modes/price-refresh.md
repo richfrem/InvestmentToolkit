@@ -13,12 +13,12 @@ Pulls real-time prices for portfolio positions from TradingView Desktop. Prices 
 - Show each quote's source (always TradingView) with a count of quoted and unquoted tickers. Mark a ticker TradingView cannot quote `ERROR` and keep its previous stored price (listed as stale); never fabricate a price.
 - Positions, share counts and book cost are never changed here; route those requests to `/tv-portfolio-sync`.
 - Quotes are read from the "TV-Full Watchlist" watchlist; a held or watchlisted ticker that is not on it is reported as unquoted. Add it to that watchlist (`/tv-manage-watchlists`) rather than falling back.
-- Database update: `scripts/tv_price_refresh.py` (in this skill's `scripts/` folder) is the only price writer. It reads held and watchlisted symbols from `domain_model.sqlite`, resolves prices from TradingView quotes only and writes through the investment repositories; it needs no backend. `tv_batch_quotes.py` prints quotes and writes nothing. Never write prices with ad-hoc SQL.
+- Database update: `investment_screener/backend/py_services/tv_price_refresh.py` is the only price writer, and the app's Refresh button runs the same script. It reads held and watchlisted symbols from `domain_model.sqlite`, resolves prices from TradingView quotes only and writes through the investment repositories; it needs no backend. `tv_batch_quotes.py` prints quotes and writes nothing. Never write prices with ad-hoc SQL.
 
 ## Quick start
 
 ```bash
-python3 scripts/tv_price_refresh.py
+python3 investment_screener/backend/py_services/tv_price_refresh.py
 python3 investment_screener/backend/py_services/tv_batch_quotes.py '["NVDA","AAPL"]'
 ```
 The first command saves prices and also refreshes the USD->CAD rate (`--skip-fx` to skip). Exit 0: every symbol written; 1: some symbols had no usable quote and keep their old price (listed under `stale`); 2: database not found.

@@ -1,34 +1,33 @@
 /**
  * portfolioRoutePriceRefresh.spec.ts
  *
- * Purpose: proves routes/portfolio.ts's /refresh-prices persistence path is now
- * SQLite-only. The previously-missing capability was that a live price refresh had
- * NO path to persist freshly-fetched prices into `investment_price` — only the
- * one-time migrate_portfolio_to_sqlite.py ever wrote that table, so SQLite prices
- * went permanently stale after the initial migration.
+ * Purpose: guards the /refresh-prices route. Every refresh in the app and in the
+ * tv-price-refresh skill mode is one implementation: investment_screener/backend/py_services/
+ * tv_price_refresh.py (scope from SQLite, TradingView quotes, repository writes). The route only
+ * runs it and reports; it must not carry a second price writer or a second price source.
+ * The script itself is covered by tests/py_services/test_tv_price_refresh.py.
  *
- * `persistRefreshedPricesToDb(items, dbPath)` is the exported unit that closes this
- * gap: given the flat `updatedItems` array /refresh-prices builds (fresh live
- * prices per symbol), it upserts one `investment_price` row per symbol so a
- * subsequent getPortfolioTotalValue()/getAccountMarketValues() reflects the fresh
- * price, not a stale migration-era one.
- *
- * All state is tmp_path-scoped SQLite seeded via the real repository functions —
- * never the real domain_model.sqlite, never a live TradingView/yfinance call.
+ * All state is tmp_path-scoped SQLite seeded via the real repository functions, never the real
+ * domain_model.sqlite, never a live TradingView call.
  */
 import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {
-    persistRefreshedPricesToDb,
-    getPortfolioTotalUsdFromDb,
-    getWatchlistTickersForRefresh,
-} from '../../src/routes/portfolio';
+import { getPortfolioTotalUsdFromDb } from '../../src/routes/portfolio';
 import { PortfolioRepository } from '../../src/services/PortfolioRepository';
 import { InvestmentRepository } from '../../src/services/InvestmentRepository';
 
-describe('routes/portfolio.ts /refresh-prices -> SQLite-only price persistence', () => {
+function handlerSource(): string {
+    const routeSrc = fs.readFileSync(path.resolve(__dirname, '../../src/routes/portfolio.ts'), 'utf-8');
+    const start = routeSrc.indexOf("router.post('/refresh-prices'");
+    expect(start).to.be.greaterThan(-1);
+    const rest = routeSrc.slice(start + 1);
+    const end = rest.indexOf('router.post(');
+    return end === -1 ? rest : rest.slice(0, end);
+}
+
+describe('routes/portfolio.ts /refresh-prices -> the shared Python refresh', () => {
     let dbPath: string;
 
     beforeEach(() => {
@@ -42,64 +41,17 @@ describe('routes/portfolio.ts /refresh-prices -> SQLite-only price persistence',
         }
     });
 
-    /** Seed a held position with a STALE migration-era price, mimicking the real
-     * post-migrate_portfolio_to_sqlite.py state /refresh-prices must update. */
-    function seedStale() {
-        const investmentRepo = new InvestmentRepository(dbPath);
-        const portfolioRepo = new PortfolioRepository(dbPath);
-        const nvdaId = investmentRepo.resolveInvestmentId('NVDA', 'EQUITY', 'USD');
-        const now = new Date().toISOString();
-        portfolioRepo.upsertAccount('TFSA', 'TFSA', 'TFSA');
-        portfolioRepo.upsertAccountInvestment('TFSA', nvdaId, 4, 800, 3200, 'USD', now);
-        portfolioRepo.upsertInvestmentPrice(nvdaId, 800, 'USD', now); // stale
-        investmentRepo.close();
-        portfolioRepo.close();
-    }
-
-    it('persists a freshly-refreshed price into investment_price (not the stale one)', () => {
-        seedStale();
-        // Before refresh: 4 NVDA @ 800 = 3200
-        expect(getPortfolioTotalUsdFromDb(dbPath)).to.equal(3200);
-
-        // /refresh-prices-shaped flat items array (fresh live price)
-        const updatedItems = [
-            { symbol: 'NVDA', shares: 4, book_price: 800, price: 950, last_updated: new Date().toISOString() },
-        ];
-        const count = persistRefreshedPricesToDb(updatedItems, dbPath);
-        expect(count).to.equal(1);
-
-        // After refresh: 4 NVDA @ 950 = 3800 — proves the fresh price is now the
-        // one SQLite reads, closing the "prices go stale forever" gap.
-        expect(getPortfolioTotalUsdFromDb(dbPath)).to.equal(3800);
-    });
-
-    it('the /refresh-prices handler is SQLite-only: it writes no file', () => {
-        // Static guard (the full route can't be exercised here — it spawns live
-        // python/yfinance, forbidden in this worktree). The handler must persist
-        // via persistRefreshedPricesToDb and must not write files directly.
-        const routeSrc = fs.readFileSync(
-            path.resolve(__dirname, '../../src/routes/portfolio.ts'),
-            'utf-8'
-        );
-        const marker = "router.post('/refresh-prices'";
-        const start = routeSrc.indexOf(marker);
-        expect(start).to.be.greaterThan(-1);
-        // Handler body runs until the next route registration.
-        const rest = routeSrc.slice(start + marker.length);
-        const end = rest.indexOf('router.post(');
-        const handler = end === -1 ? rest : rest.slice(0, end);
-        expect(handler).to.contain('persistRefreshedPricesToDb');
+    it('the handler runs tv_price_refresh.py and writes nothing itself', () => {
+        const handler = handlerSource();
+        expect(handler).to.contain("spawnPythonScript('tv_price_refresh.py'");
+        expect(handler).to.not.contain('fetch_portfolio_heatmap');
         expect(handler).to.not.contain('persistPortfolioWithSnapshot');
         expect(handler).to.not.contain('writeFileSync');
+        expect(handler).to.not.match(/upsertInvestmentPrice|Repository\(/);
     });
 
-    it('the /refresh-prices handler takes prices from TradingView only and does not clear stored prices', () => {
-        const routeSrc = fs.readFileSync(path.resolve(__dirname, '../../src/routes/portfolio.ts'), 'utf-8');
-        const start = routeSrc.indexOf("router.post('/refresh-prices'");
-        const rest = routeSrc.slice(start + 1);
-        const end = rest.indexOf('router.post(');
-        const handler = rest.slice(0, end === -1 ? undefined : end);
-        expect(handler).to.contain("'--tradingview-only'");
+    it('prices come from TradingView only, and an unquoted symbol is reported not cleared', () => {
+        const handler = handlerSource();
         expect(handler).to.contain('isTradingViewConnected');
         expect(handler).to.contain('503');
         expect(handler).to.contain('missingPrices');
@@ -107,43 +59,24 @@ describe('routes/portfolio.ts /refresh-prices -> SQLite-only price persistence',
         expect(handler).to.not.contain('clearPricesBeforeRefresh');
     });
 
-    it('skips USD_CASH and non-numeric/non-positive prices without throwing', () => {
-        seedStale();
-        const count = persistRefreshedPricesToDb(
-            [
-                { symbol: 'USD_CASH', shares: 100, price: 1 },
-                { symbol: 'AMD', shares: 5, price: null },
-                { symbol: 'INTC', shares: 5, price: 0 },
-                { symbol: 'NVDA', shares: 4, price: 950 },
-            ],
-            dbPath
-        );
-        expect(count).to.equal(1); // only NVDA had a usable fresh price
+    it('a stale cached bridge result is an error, never reported as a refresh', () => {
+        const handler = handlerSource();
+        expect(handler).to.contain('result.stale');
+        expect(handler).to.contain('502');
     });
 
-    // Regression coverage for the 2026-07-27 bug: /refresh-prices only ever
-    // refreshed held positions, so watchlist-only tickers (is_watchlisted=1,
-    // no shares) went stale indefinitely. getWatchlistTickersForRefresh()
-    // must surface them, shaped so fetch_portfolio_heatmap.py and
-    // persistRefreshedPricesToDb can process them like any other item.
-    describe('getWatchlistTickersForRefresh', () => {
-        it('returns watchlist-only tickers as shares:0 refresh items', () => {
-            const investmentRepo = new InvestmentRepository(dbPath);
-            investmentRepo.setWatchlisted('OKLO', true, new Date().toISOString());
-            investmentRepo.setWatchlisted('CEG', true, new Date().toISOString());
-            investmentRepo.close();
-
-            const items = getWatchlistTickersForRefresh(dbPath);
-            const symbols = items.map((i) => i.symbol).sort();
-            expect(symbols).to.deep.equal(['CEG', 'OKLO']);
-            expect(items.every((i) => i.shares === 0)).to.equal(true);
-        });
-
-        it('returns an empty array when nothing is watchlisted', () => {
-            // Touch the DB so the investment table exists, then assert empty.
-            const investmentRepo = new InvestmentRepository(dbPath);
-            investmentRepo.close();
-            expect(getWatchlistTickersForRefresh(dbPath)).to.deep.equal([]);
-        });
+    it('portfolio totals read the price row the refresh wrote', () => {
+        const investmentRepo = new InvestmentRepository(dbPath);
+        const portfolioRepo = new PortfolioRepository(dbPath);
+        const nvdaId = investmentRepo.resolveInvestmentId('NVDA', 'EQUITY', 'USD');
+        const now = new Date().toISOString();
+        portfolioRepo.upsertAccount('TFSA', 'TFSA', 'TFSA');
+        portfolioRepo.upsertAccountInvestment('TFSA', nvdaId, 4, 800, 3200, 'USD', now);
+        portfolioRepo.upsertInvestmentPrice(nvdaId, 800, 'USD', now);
+        expect(getPortfolioTotalUsdFromDb(dbPath)).to.equal(3200);
+        portfolioRepo.upsertInvestmentPrice(nvdaId, 950, 'USD', now);
+        expect(getPortfolioTotalUsdFromDb(dbPath)).to.equal(3800);
+        investmentRepo.close();
+        portfolioRepo.close();
     });
 });

@@ -13,10 +13,7 @@ import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {
-    getHoldingsForDisplayFromDb,
-    persistRefreshedPricesToDb,
-} from '../../src/routes/portfolio';
+import { getHoldingsForDisplayFromDb } from '../../src/routes/portfolio';
 import { PortfolioRepository } from '../../src/services/PortfolioRepository';
 import { InvestmentRepository } from '../../src/services/InvestmentRepository';
 
@@ -55,11 +52,10 @@ describe('routes/portfolio.ts GET / display holdings (Wave 3 completion)', () =>
 
     it('sources shares/price and enriched metadata from SQLite once populated', () => {
         seed();
-        // Persist real sector/industry via the same path /refresh-prices uses.
-        persistRefreshedPricesToDb(
-            [{ symbol: 'NVDA', price: 900, sector: 'Technology', industry: 'Semiconductors' }],
-            dbPath
-        );
+        // Sector/industry as the Python refresh (tv_price_refresh.py) stores them.
+        const repo = new InvestmentRepository(dbPath);
+        repo.updateSectorIndustry('NVDA', 'Technology', 'Semiconductors');
+        repo.close();
         const items = getHoldingsForDisplayFromDb(dbPath)!;
         expect(items).to.have.length(1);
         const nvda = items.find(i => i.symbol === 'NVDA')!;
@@ -76,30 +72,6 @@ describe('routes/portfolio.ts GET / display holdings (Wave 3 completion)', () =>
         const nvda = items.find(i => i.symbol === 'NVDA')!;
         expect(nvda.sector).to.equal('Unknown');
         expect(nvda.industry).to.equal('Unknown');
-    });
-
-    it('persistRefreshedPricesToDb writes sector/industry into investment.*', () => {
-        seed();
-        persistRefreshedPricesToDb(
-            [{ symbol: 'NVDA', price: 950, sector: 'Technology', industry: 'Semiconductors' }],
-            dbPath
-        );
-        const investmentRepo = new InvestmentRepository(dbPath);
-        const row = investmentRepo.getInvestment('NVDA')!;
-        investmentRepo.close();
-        expect(row.sector).to.equal('Technology');
-        expect(row.industry).to.equal('Semiconductors');
-    });
-
-    it('a price-only item (no sector/industry keys) never blanks resolved metadata', () => {
-        seed();
-        persistRefreshedPricesToDb([{ symbol: 'NVDA', price: 900, sector: 'Technology', industry: 'Semiconductors' }], dbPath);
-        // Second refresh carries only a price — sector/industry must be preserved.
-        persistRefreshedPricesToDb([{ symbol: 'NVDA', price: 910 }], dbPath);
-        const investmentRepo = new InvestmentRepository(dbPath);
-        const row = investmentRepo.getInvestment('NVDA')!;
-        investmentRepo.close();
-        expect(row.sector).to.equal('Technology');
     });
 
     it('static guard: /sync-tv/promote and /sync-tv/apply persist only via persistSnapshotToDb', () => {
