@@ -324,14 +324,18 @@ export async function removeWatchlistItem(client, watchlistName, symbol) {
     const getRemoveCoords = await client.Runtime.evaluate({
       expression: `(function() {
         var targetSymbol = ${safeSymbol};
-        var rows = Array.from(document.querySelectorAll('[class*="symbol-RsFlttSS"]'));
+        // data-symbol-short is TradingView's stable row attribute; the hashed class suffix
+        // (symbol-XXXXXXXX) changes with every TradingView release and silently matched nothing.
+        var rows = Array.from(document.querySelectorAll('[data-symbol-short]'));
         var match = rows.find(function(el) {
           var symText = el.querySelector('[class*="symbolNameText-"]');
           var s = symText ? symText.textContent.trim() : el.getAttribute('data-symbol-short') || '';
           return s.toUpperCase() === targetSymbol;
         });
         if (!match) return null;
-        
+        // TradingView draws only the visible rows; bring this one into view so its button has real coordinates.
+        match.scrollIntoView({ block: 'center' });
+
         var removeBtn = match.querySelector('[class*="removeButton-"]');
         if (removeBtn) {
           var r = removeBtn.getBoundingClientRect();
