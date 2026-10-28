@@ -70,4 +70,49 @@ describe('syncAndRefreshPortfolio', () => {
         expect(result.success).toBe(false);
         expect(result.dataSource).toBe('none');
     });
+
+    it('says prices were not updated when only the position sync worked, and why', async () => {
+        const fetchMock = vi.fn(async (url: string) => {
+            if (url === '/api/portfolio/sync-tv/apply') {
+                return { ok: true, json: async () => ({ success: true, positionCount: 28 }) } as Response;
+            }
+            return { ok: false, json: async () => ({ error: 'TradingView Desktop is not connected' }) } as Response;
+        });
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await syncAndRefreshPortfolio();
+
+        expect(result.success).toBe(true);        // positions did sync
+        expect(result.pricesOk).toBe(false);      // but the total did not refresh
+        expect(result.message).toContain('price refresh failed: TradingView Desktop is not connected');
+    });
+
+    it('lists the tickers that could not be quoted and does not call the prices ok', async () => {
+        const fetchMock = vi.fn(async (url: string) => {
+            if (url === '/api/portfolio/sync-tv/apply') {
+                return { ok: true, json: async () => ({ success: true, positionCount: 28 }) } as Response;
+            }
+            return { ok: true, json: async () => ({ success: true, updated: 80, missingPrices: ['NBIS', 'MU'], heatmap: {} }) } as Response;
+        });
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await syncAndRefreshPortfolio();
+
+        expect(result.pricesOk).toBe(false);
+        expect(result.missing).toEqual(['NBIS', 'MU']);
+        expect(result.message).toContain('2 not quoted');
+    });
+
+    it('calls the prices ok only when every ticker was quoted', async () => {
+        const fetchMock = vi.fn(async (url: string) => {
+            if (url === '/api/portfolio/sync-tv/apply') {
+                return { ok: true, json: async () => ({ success: true, positionCount: 28 }) } as Response;
+            }
+            return { ok: true, json: async () => ({ success: true, updated: 88, missingPrices: [], heatmap: {} }) } as Response;
+        });
+        vi.stubGlobal('fetch', fetchMock);
+
+        expect((await syncAndRefreshPortfolio()).pricesOk).toBe(true);
+    });
 });
+

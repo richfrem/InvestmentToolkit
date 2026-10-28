@@ -100,6 +100,16 @@ export function getPortfolioTotalUsdFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE
     }
 }
 
+/** The time the stalest held price was fetched: the honest "as of" time for the portfolio value. */
+export function getOldestPositionPriceAtFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): string | null {
+    const repo = new PortfolioRepository(dbPath);
+    try {
+        return repo.getOldestPositionPriceAt();
+    } finally {
+        repo.close();
+    }
+}
+
 /** The real, current "last synced" timestamp — `MAX(account_investment.last_synced_at)`,
  * which updates on every real sync. */
 export function getLastSyncedAtFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): string | null {
@@ -408,7 +418,9 @@ router.get('/summary', async (_req, res) => {
 
         // The real "last synced" time is MAX(account_investment.last_synced_at), updated on every
         // sync; with nothing synced yet it is the current time.
-        const lastUpdated = getLastSyncedAtFromDb() ?? new Date().toISOString();
+        // "As of" is the oldest held price, not the position sync: a sync can succeed while the price
+        // refresh fails, and the page must not look current when the prices are not.
+        const lastUpdated = getOldestPositionPriceAtFromDb() ?? getLastSyncedAtFromDb() ?? new Date().toISOString();
 
         // Fetch time-weighted performance metrics from report
         const twrReport = await loadYtdPerformanceReport();

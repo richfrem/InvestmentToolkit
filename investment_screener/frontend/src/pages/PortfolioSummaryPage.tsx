@@ -89,6 +89,7 @@ export default function PortfolioSummaryPage() {
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
     const [priceSource, setPriceSource] = useState<string | null>(null);
     const [syncing, setSyncing] = useState(false);
+    const [refreshNote, setRefreshNote] = useState<{ text: string; ok: boolean } | null>(null);
 
     function loadAll() {
         setLoading(true);
@@ -110,10 +111,13 @@ export default function PortfolioSummaryPage() {
 
     async function syncAndRefresh() {
         setSyncing(true);
+        setRefreshNote(null);
         try {
-            await syncAndRefreshPortfolio();
+            const result = await syncAndRefreshPortfolio();
+            setRefreshNote({ text: result.message, ok: result.pricesOk });
         } catch (e) {
             console.error('Unified sync failed', e);
+            setRefreshNote({ text: `Refresh failed: ${e instanceof Error ? e.message : String(e)}`, ok: false });
         } finally {
             setSyncing(false);
             loadAll();
@@ -167,6 +171,12 @@ export default function PortfolioSummaryPage() {
                     <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={lastRefreshedAt} />
                 </div>
             </div>
+
+            {refreshNote && (
+                <p className={`text-xs ${refreshNote.ok ? 'text-emerald-400' : 'text-amber-400'}`} role="status">
+                    {refreshNote.ok ? 'Refreshed: ' : 'Not fully refreshed: '}{refreshNote.text}
+                </p>
+            )}
 
             {/* Row 1: Original 4 summary cards */}
             <PortfolioSummaryCards data={summary} />

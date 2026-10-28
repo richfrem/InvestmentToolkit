@@ -38,6 +38,7 @@
  *     portfolio_repository.py::get_account_market_values (Wave 3 Task 6)
  *   - getPortfolioTotalValue() - sum of getAccountMarketValues()'s own values, never
  *     an independent flat query, mirrors portfolio_repository.py::get_portfolio_total_value
+ *   - getOldestPositionPriceAt() - the stalest price behind the portfolio value (the "as of" time)
  *   - listPositionsBySymbol() - per-symbol aggregate (quantity summed across accounts,
  *     latest average_cost, price) for weights/strategy-allocation call sites
  *   - getPerAccountPositions(symbol) - per-account quantity/average_cost for one
@@ -289,6 +290,22 @@ export class PortfolioRepository {
      * every real sync because `upsertAccountInvestment` always writes a fresh
      * `last_synced_at`. Returns null when there are no rows yet
      * (matches `getPortfolioTotalUsdFromDb`'s null-not-zero convention). */
+    /** The age of the stalest price behind the portfolio value: the oldest `investment_price.fetched_at`
+     * across held, non-cash positions. This (not the position-sync time) tells whether the total is
+     * current, since a sync can succeed while the price refresh fails. Null with no priced position. */
+    getOldestPositionPriceAt(): string | null {
+        const row = this.db
+            .prepare(
+                `SELECT MIN(ip.fetched_at) AS oldest
+                 FROM account_investment ai
+                 JOIN investment_price ip ON ip.investment_id = ai.investment_id
+                 JOIN investment i ON i.investment_id = ai.investment_id
+                 WHERE ai.quantity > 0 AND i.asset_class != 'CASH'`
+            )
+            .get() as { oldest: string | null } | undefined;
+        return row?.oldest ?? null;
+    }
+
     getLastSyncedAt(): string | null {
         const row = this.db
             .prepare('SELECT MAX(last_synced_at) AS latest FROM account_investment')
