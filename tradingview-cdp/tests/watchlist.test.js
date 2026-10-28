@@ -122,6 +122,7 @@ describe('Watchlist Automation Core (CDP)', () => {
           evaluate: jest.fn()
             .mockResolvedValueOnce({ result: { value: 'true' } }) // sidebar active
             .mockResolvedValueOnce({ result: { value: 'true' } }) // dropdown click
+            .mockResolvedValueOnce({ result: { value: JSON.stringify({ exists: false, copies: 0 }) } }) // existence probe
             .mockResolvedValueOnce({ result: { value: JSON.stringify({ cx: 100, cy: 100 }) } }) // getCreateCoords
             .mockResolvedValueOnce({ result: { value: 'true' } }) // fill input
             .mockResolvedValueOnce({ result: { value: 'true' } }), // confirm enter
@@ -132,6 +133,26 @@ describe('Watchlist Automation Core (CDP)', () => {
       };
       const result = await createWatchlist(mockClient, 'IT_New');
       expect(result.success).toBe(true);
+    });
+
+    it('should reuse a list that already exists and never create a second copy', async () => {
+      const mockClient = {
+        Runtime: {
+          evaluate: jest.fn()
+            .mockResolvedValueOnce({ result: { value: 'true' } }) // sidebar active
+            .mockResolvedValueOnce({ result: { value: 'true' } }) // dropdown click
+            .mockResolvedValueOnce({ result: { value: JSON.stringify({ exists: true, copies: 1 }) } }) // existence probe
+            .mockResolvedValueOnce({ result: { value: 'true' } }), // close menu
+        },
+        Input: {
+          dispatchMouseEvent: jest.fn().mockResolvedValue({})
+        }
+      };
+      const result = await createWatchlist(mockClient, 'TV-Full Watchlist');
+      expect(result.success).toBe(true);
+      expect(result.existed).toBe(true);
+      // No click on "Create new list...", so no new list is made.
+      expect(mockClient.Input.dispatchMouseEvent).not.toHaveBeenCalled();
     });
   });
 

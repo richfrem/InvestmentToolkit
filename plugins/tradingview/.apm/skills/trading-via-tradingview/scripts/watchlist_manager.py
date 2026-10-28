@@ -79,8 +79,13 @@ def _load_watchlisted_symbols(db_path: Path | None = None) -> List[str]:
 
 # External comment: Normalizes Purpose HISA convention
 def normalize_symbol(s: str) -> str:
-    """Standardizes mutual fund aliases for consistency."""
-    return "PSU-U" if s in ("PSU-U.TO", "PSU.U.TO") else s
+    """Canonical form for comparing TradingView rows with SQLite symbols.
+
+    Delegates to the one shared alias map (ticker_aliases.normalize_ticker), so PSU.U,
+    PSU.U.TO, PSU-U and PSU-U.TO all compare equal.
+    """
+    from ticker_aliases import normalize_ticker
+    return normalize_ticker(s)
 
 
 # External comment: Retrieve researched symbols from watchlisted investments or projections
@@ -128,13 +133,29 @@ def _raise_if_tv_error(result: Any, action: str) -> None:
         raise RuntimeError(f"TV CDP call failed while trying to {action}: {result['error']}")
 
 
+# External comment: One copy per list name, never silently picking one of several
+def _raise_if_duplicate_lists(open_result: Any, list_name: str) -> None:
+    """Raise when TradingView holds more than one list called `list_name`.
+
+    TradingView accepts duplicate list names, so the extra copies must be deleted by hand;
+    syncing into whichever copy opens first would leave the others stale.
+    """
+    copies = open_result.get("matches", 1) if isinstance(open_result, dict) else 1
+    if isinstance(copies, int) and copies > 1:
+        raise RuntimeError(
+            f"TradingView has {copies} lists named '{list_name}'. Delete the extra copies so exactly one remains, then sync again."
+        )
+
+
 # External comment: Execute the actual Node.js CDP sync commands
 def execute_cdp_sync(actions: Dict[str, Any]) -> None:
     """Communicates with TradingView Desktop via CDP to create and populate lists."""
     for list_name, meta in actions.items():
         # Create and open list
         _raise_if_tv_error(tv_call("watchlist", "create", list_name), f"create list '{list_name}'")
-        _raise_if_tv_error(tv_call("watchlist", "open", list_name), f"open list '{list_name}'")
+        opened = tv_call("watchlist", "open", list_name)
+        _raise_if_tv_error(opened, f"open list '{list_name}'")
+        _raise_if_duplicate_lists(opened, list_name)
 
         # Get current symbols in watchlist
         tv_get = tv_call("watchlist", "get")

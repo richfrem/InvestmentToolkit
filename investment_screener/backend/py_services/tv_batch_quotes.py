@@ -105,6 +105,7 @@ def _tv_watchlist_prices() -> dict[str, dict]:
     """
     sys.path.insert(0, str(_find_scripts_dir()))
     from tv_client import tv_call, is_tv_running  # type: ignore[import]
+    from ticker_aliases import normalize_ticker  # type: ignore[import]
 
     if not is_tv_running():
         return {}
@@ -113,6 +114,8 @@ def _tv_watchlist_prices() -> dict[str, dict]:
         open_res = tv_call("watchlist", "open", TV_WATCHLIST_NAME)
         if not open_res.get("success"):
             return {}
+        if open_res.get("matches", 1) > 1:
+            print(f"WARNING: TradingView has {open_res['matches']} lists named '{TV_WATCHLIST_NAME}'; prices may come from a stale copy. Delete the extras.", file=sys.stderr)
 
         get_res = tv_call("watchlist", "get")
         if not get_res.get("success"):
@@ -126,7 +129,9 @@ def _tv_watchlist_prices() -> dict[str, dict]:
             price = item.get("price", 0.0)
             change_pct = item.get("changePercent", 0.0)
             if sym and price:
-                prices[sym] = _select_effective_price(
+                # TradingView spells PSU as "PSU.U"; key every quote by the canonical ticker
+                # so a held PSU-U.TO is found instead of reported as unquoted.
+                prices[normalize_ticker(sym)] = _select_effective_price(
                     regular_price=price,
                     regular_change_pct=change_pct,
                     extended_change_pct=item.get("extendedChangePercent"),
