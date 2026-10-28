@@ -50,8 +50,41 @@ def test_draw_levels_sets_the_ticker_with_the_levels(monkeypatch):
     import types
     monkeypatch.setitem(sys.modules, "pine_script_manager", types.SimpleNamespace(tv_call=fake_tv_call))
     monkeypatch.setattr(pine_level_inputs, "level_inputs", lambda symbol, db_path=None: {"target_buy1": 85.64})
+    monkeypatch.setattr(pine_level_inputs, "known_symbol", lambda symbol, db_path=None: True)
     pine_level_inputs.draw_levels("HOOD")
     set_inputs = next(c for c in calls if c[1] == "setInputs")
     values = json.loads(set_inputs[2][set_inputs[2].index("--values") + 1])
     assert values["Levels for ticker"] == "HOOD"
     assert values["🟢 Buy Tier 1"] == 85.64
+
+
+def test_follow_step_draws_only_when_the_symbol_changes():
+    drawn = []
+    draw = lambda symbol: drawn.append(symbol) or {"success": True}
+    last = pine_level_inputs.follow_step("HOOD", None, draw)
+    assert last == "HOOD" and drawn == ["HOOD"]
+    assert pine_level_inputs.follow_step("HOOD", last, draw) == "HOOD" and drawn == ["HOOD"]   # unchanged: no redraw
+    assert pine_level_inputs.follow_step("AAPL", last, draw) == "AAPL" and drawn == ["HOOD", "AAPL"]
+
+
+def test_follow_step_ignores_an_unreadable_symbol_and_retries_a_failed_draw():
+    assert pine_level_inputs.follow_step(None, "HOOD", lambda s: {"success": True}) == "HOOD"
+    failing = lambda symbol: {"success": False, "error": "no indicator"}
+    assert pine_level_inputs.follow_step("AAPL", "HOOD", failing) == "HOOD", "a failed draw must be retried on the next poll"
+
+
+def test_known_symbol_never_creates_a_stock(tmp_path):
+    import sqlite3
+    db = tmp_path / "t.sqlite"
+    conn = sqlite3.connect(db)
+    conn.execute("CREATE TABLE investment (symbol TEXT)")
+    conn.execute("INSERT INTO investment VALUES ('HOOD')")
+    conn.commit()
+    conn.close()
+    assert pine_level_inputs.known_symbol("HOOD", db) is True
+    assert pine_level_inputs.known_symbol("ZZZZ", db) is False
+    conn = sqlite3.connect(db)
+    assert conn.execute("SELECT COUNT(*) FROM investment").fetchone()[0] == 1
+    conn.close()
+    assert pine_level_inputs.known_symbol("HOOD", tmp_path / "missing.sqlite") is False
+

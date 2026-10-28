@@ -272,6 +272,14 @@ register('chart', {
         return chart.removeIndicator(client, name);
       },
     }],
+    ['getSymbol', {
+      description: 'Read the symbol the active chart is showing',
+      handler: async () => {
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.getSymbol(client);
+      },
+    }],
     ['setInputs', {
       description: 'Set an indicator\'s inputs by title — e.g. chart setInputs --name "AI TA Levels" --values \'{"🟢 Buy Tier 1": 187.45}\'',
       options: {

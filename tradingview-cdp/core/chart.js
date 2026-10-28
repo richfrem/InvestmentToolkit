@@ -559,6 +559,28 @@ export async function changeChartType(client, type) {
 }
 
 /**
+ * Read the symbol the active chart is showing (the text of the toolbar symbol box).
+ *
+ * @param {object} client - CDP client instance
+ * @returns {Promise<object>} {success, symbol} or {success: false, error}
+ */
+export async function getSymbol(client) {
+  try {
+    const result = await client.Runtime.evaluate({
+      expression: `(function() {
+        var el = document.querySelector('#header-toolbar-symbol-search');
+        return JSON.stringify({ symbol: el ? (el.innerText || el.textContent || '').trim() : null });
+      })()`,
+      returnByValue: true, awaitPromise: false
+    });
+    const symbol = JSON.parse(result.result.value).symbol;
+    return symbol ? { success: true, symbol } : { success: false, error: 'Symbol box not found on the chart toolbar' };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
  * Change the active chart symbol.
  * 
  * Strategy: click the "Change symbol" button in the chart header, type the
