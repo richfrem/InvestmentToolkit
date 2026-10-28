@@ -16,6 +16,7 @@ How the buy, trim and stop levels reach a TradingView chart, why a chart can sho
 
 - Inputs stay as they are when the chart symbol changes. A chart switched from stock A to stock B keeps A's levels until someone redraws for B, so B shows A's buy tiers, often far above or below B's price.
 - A chart is therefore right only for the ticker it was last drawn for.
+- Indicator v4.0.0 adds a "Levels for ticker" input: levels are drawn only when it matches the chart symbol, and the indicator shows a red warning otherwise. The guard is live only once the indicator is re-saved in TradingView; a chart still running an older saved copy keeps the old behaviour.
 - The indicator's own plausibility check (a level must be between 0.2 and 5 times the close) does not catch it: another stock's levels fall inside that range often.
 - Drawing levels for every stock in the database does not fix it. It writes the database; the chart still shows one set of inputs.
 
@@ -29,8 +30,8 @@ How the buy, trim and stop levels reach a TradingView chart, why a chart can sho
 
 | Design | How it works | Cost |
 |---|---|---|
-| Inputs only (the default) | One set of inputs, redrawn per ticker | Right for one ticker at a time; silently wrong after any symbol change |
-| Ticker-tagged inputs | The inputs carry the ticker they were drawn for; the indicator draws nothing, and warns, on any other ticker | A wrong chart is visible, not misleading; still one ticker at a time, and the indicator must be re-saved in TradingView |
+| Inputs only (before v4.0.0) | One set of inputs, redrawn per ticker | Right for one ticker at a time; silently wrong after any symbol change |
+| Ticker-tagged inputs (current, v4.0.0) | The inputs carry the ticker they were drawn for; the indicator draws nothing, and warns, on any other ticker. `pine_level_inputs.py --draw TICKER` redraws after a symbol change | A wrong chart is visible, not misleading; still one ticker at a time, and the indicator must be re-saved in TradingView |
 | Per-symbol drawings | Horizontal lines drawn on each stock's own chart (drawings belong to the symbol they were drawn on; confirm on the layout first) | Static: every level refresh means clearing and redrawing each chart; clearing must remove only the lines this tool drew, never the owner's own drawings or alert markers |
 | Embedded table | The indicator holds every stock's levels and picks the rows for the chart's ticker | Every chart right with no redraw; Pine cannot read SQLite, so each refresh regenerates and re-injects the script |
 
