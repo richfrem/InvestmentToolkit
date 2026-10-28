@@ -23,3 +23,18 @@ globs: ["investment_screener/**/*", "plugins/**/*"]
 ## 4. Cash Invariant for Portfolio Totals
 - Portfolio total USD MUST strictly compute: `sum(Held Equities Market Value) + sum(Account Cash USD)`.
 - NEVER calculate portfolio value from stock market value alone without uninvested cash.
+
+## 5. One Price Refresh
+- Exactly one function writes `investment_price`: `tv_price_refresh.py` in the `trading-via-tradingview` skill. The web route, the Refresh button, `/daily` and the weekly review call it; no other price writer may exist (a test MUST fail if one appears; not yet written).
+- Order: (1) validate every account's held positions and share counts against the broker; (2) validate the full watchlist against SQLite (every ticker present, none extra); (3) read prices from the watchlist; (4) report every ticker that has no quote by name and exit non-zero.
+- The page MUST show unpriced or stale tickers and the oldest price time, never only the position-sync time.
+
+## 6. One Copy Per TradingView List
+- Lists are `TV-Full Watchlist` (everything in SQLite that is held or watchlisted) and `TV-Portfolio` (held positions). One copy each.
+- Sync updates the existing list. Creating a list whose name already exists is PROHIBITED; when more than one copy of a name exists, stop and report it. Deleting extra copies is a user action.
+- Readers MUST scroll the list (TradingView renders only visible rows) and check the row count; an unscrolled read is NEVER evidence that a ticker is missing.
+
+## 7. Ticker Aliases
+- `PSU.U`, `PSU.U.TO`, `PSU-U` and `PSU-U.TO` are one fund. Normalize only through `ticker_aliases.normalize_ticker`; a second alias map (such as a local `normalize_symbol`) is PROHIBITED.
+- Compare TradingView rows and SQLite symbols in canonical form, and use the TradingView spelling only when talking to TradingView.
+

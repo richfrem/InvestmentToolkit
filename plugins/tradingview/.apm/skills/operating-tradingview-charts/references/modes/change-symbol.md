@@ -28,3 +28,8 @@ node tradingview-cdp/cli.js chart symbol {TICKER}
 
 - Confirm active chart header matches requested ticker.
 - Validate routing cases against `evals/evals.json`.
+
+## Levels follow the symbol
+
+The AI TA Levels indicator keeps its levels as inputs, which stay on the chart when the symbol changes, and it draws them only on the ticker named in its "Levels for ticker" input. After switching a chart to a ticker, draw that ticker's stored levels: `python3 investment_screener/backend/py_services/pine_level_inputs.py --draw TICKER` (it switches the chart and sets the levels and the ticker together). To have every stock you open show its own levels with no command, leave `python3 investment_screener/backend/py_services/pine_level_inputs.py --follow` running: it polls the chart's symbol (`chart getSymbol`) and redraws when it changes; a symbol the database does not know is drawn with no levels, and nothing is ever created in the database. Without it the chart shows a red "Levels are for X, not Y" warning and no levels.
+

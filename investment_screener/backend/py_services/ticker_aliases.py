@@ -34,6 +34,7 @@ Key Output Dependencies:
 TICKER_ALIASES: dict[str, str] = {
     "PSU.U": "PSU-U.TO",
     "PSU.U.TO": "PSU-U.TO",
+    "PSU-U": "PSU-U.TO",
     # Questrade's activity feed reports the Purpose US Cash Fund under this symbol.
     "PSUCF": "PSU-U.TO",
 }

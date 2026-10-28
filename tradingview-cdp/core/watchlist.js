@@ -76,20 +76,21 @@ export async function openWatchlist(client, name) {
       expression: `(function() {
         var name = ${safeName}.toLowerCase();
         var items = Array.from(document.querySelectorAll('[class*="menuBox"] [class*="buttonContent-"]'));
-        var match = items.find(function(el) {
+        var matches = items.filter(function(el) {
           return el.textContent.trim().toLowerCase() === name;
         });
+        var match = matches[0];
         if (match) {
           var clickEl = match;
           while(clickEl) {
             if (clickEl.getAttribute('role') === 'menuitem' || clickEl.className.includes('medium-OxBZfgw8')) {
               clickEl.click();
-              return JSON.stringify({ success: true });
+              return JSON.stringify({ success: true, matches: matches.length });
             }
             clickEl = clickEl.parentElement;
           }
           match.click();
-          return JSON.stringify({ success: true });
+          return JSON.stringify({ success: true, matches: matches.length });
         }
         return JSON.stringify({ success: false, error: 'Watchlist name not found in dropdown: ' + ${safeName} });
       })()`,
@@ -103,7 +104,7 @@ export async function openWatchlist(client, name) {
       return { success: false, error: parsed.error };
     }
     await sleep(1000); // Wait for list to load
-    return { success: true, name: name };
+    return { success: true, name: name, matches: parsed.matches || 1 };
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -129,12 +130,6 @@ export async function getWatchlist(client) {
           currentWatchlist = activeBtn.textContent.trim();
         }
 
-        function collectRows() {
-          var found = Array.from(document.querySelectorAll('[class*="symbol-RsFlttSS"]'));
-          // TradingView renames its hashed classes; the data attribute is stable.
-          return found.length ? found : Array.from(document.querySelectorAll('[data-symbol-short]'));
-        }
-
         function parsePercentText(text) {
           var cText = text.trim().replace(/[%\\u2212\\s]/g, function(m) {
             return m === '\\u2212' ? '-' : '';
@@ -143,13 +138,22 @@ export async function getWatchlist(client) {
           return isNaN(v) ? null : v;
         }
 
-        function readRow(el) {
+        function visibleRows() {
+          var rows = Array.from(document.querySelectorAll('[data-symbol-short]'));
+          if (rows.length === 0) {
+            // Fallback for an older TradingView build that lacks the data attribute
+            rows = Array.from(document.querySelectorAll('[class*="symbol-"][class*="common-tooltip-html"]'));
+          }
+          return rows;
+        }
+
+        function parseRow(el) {
           var symText = el.querySelector('[class*="symbolNameText-"]');
           var priceEl = el.querySelector('[class*="cell-"][class*="last-"]') || el.querySelector('[class*="last-"]');
           var chgEl = el.querySelector('[class*="changeInPercents-"]');
-          // Extended/overnight session cell — rendered whenever the symbol is
-          // outside regular trading hours (class name kept by TradingView even
-          // when it *does* carry a value, e.g. "prePostMarketNoPrice-...").
+          // Extended/overnight session cell: rendered whenever the symbol is outside
+          // regular trading hours (class name kept by TradingView even when it does
+          // carry a value, e.g. "prePostMarketNoPrice-...").
           var extEl = el.querySelector('[class*="prePostMarket"]');
           // TradingView's own session classifier badge, e.g. "Overnight via BOATS",
           // "Pre-market", "Post-market". Absent during regular trading hours.
@@ -160,54 +164,47 @@ export async function getWatchlist(client) {
             var pText = priceEl.textContent.trim().replace(/[$,\\s]/g, '');
             priceVal = parseFloat(pText) || 0.0;
           }
-
-          var chgVal = chgEl ? (parsePercentText(chgEl.textContent) || 0.0) : 0.0;
-          var extChgVal = extEl ? parsePercentText(extEl.textContent) : null;
-          var sessionLabel = sessionEl ? sessionEl.textContent.trim() : null;
-
           return {
             symbol: symText ? symText.textContent.trim() : el.getAttribute('data-symbol-short') || '',
             price: priceVal,
-            changePercent: chgVal,
-            extendedChangePercent: extChgVal,
-            sessionLabel: sessionLabel
+            changePercent: chgEl ? (parsePercentText(chgEl.textContent) || 0.0) : 0.0,
+            extendedChangePercent: extEl ? parsePercentText(extEl.textContent) : null,
+            sessionLabel: sessionEl ? sessionEl.textContent.trim() : null
           };
-        }\n
+        }
 
-        // The panel is virtualized: only the rows near the viewport (about 43) are in the DOM,
-        // so a single read misses the rest of a long list. Scroll through the whole list and
-        // keep the best reading seen for each symbol.
-        var bySymbol = {};
-        var order = [];
-        function harvest() {
-          collectRows().forEach(function(el) {
-            var item = readRow(el);
+        // TradingView draws only the rows in view, so a single read returns a fraction
+        // of a long list. Scroll the list container top to bottom and merge the rows by
+        // their position in the list so every symbol is read exactly once.
+        var container = document.querySelector('[class*="listContainer-"]');
+        var byPosition = new Map();
+        function collect() {
+          var base = container ? container.getBoundingClientRect().top - container.scrollTop : 0;
+          visibleRows().forEach(function(el) {
+            var item = parseRow(el);
             if (item.symbol === '') return;
-            if (!(item.symbol in bySymbol)) order.push(item.symbol);
-            if (!(item.symbol in bySymbol) || (item.price && !bySymbol[item.symbol].price)) bySymbol[item.symbol] = item;
+            byPosition.set(Math.round(el.getBoundingClientRect().top - base), item);
           });
         }
-        function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
-        var first = collectRows()[0];
-        var scroller = first ? first.parentElement : null;
-        while (scroller && !(scroller.scrollHeight > scroller.clientHeight + 4 && getComputedStyle(scroller).overflowY !== 'visible')) {
-          scroller = scroller.parentElement;
-        }
-        harvest();
-        if (scroller) {
-          var start = scroller.scrollTop;
-          scroller.scrollTop = 0;
-          await sleep(400);
-          harvest();
-          var guard = 0;
-          while (guard++ < 60 && scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 2) {
-            scroller.scrollTop += Math.max(60, Math.floor(scroller.clientHeight * 0.6));
-            await sleep(400);
-            harvest();
+
+        if (!container) {
+          collect();
+        } else {
+          var originalTop = container.scrollTop;
+          container.scrollTop = 0;
+          await new Promise(function(r) { setTimeout(r, 400); });
+          for (var step = 0; step < 200; step++) {
+            collect();
+            if (container.scrollTop + container.clientHeight >= container.scrollHeight - 2) break;
+            container.scrollTop += Math.max(100, container.clientHeight - 40);
+            await new Promise(function(r) { setTimeout(r, 400); });
           }
-          scroller.scrollTop = start;
+          container.scrollTop = originalTop;
         }
-        var items = order.map(function(sym) { return bySymbol[sym]; });
+
+        var items = Array.from(byPosition.entries())
+          .sort(function(a, b) { return a[0] - b[0]; })
+          .map(function(e) { return e[1]; });
 
         return JSON.stringify({
           success: true,
@@ -391,6 +388,26 @@ export async function createWatchlist(client, name) {
       expression: `document.querySelector('[data-name="watchlists-button"]')?.click()`
     });
     await sleep(800);
+
+    // 2b. One copy per name: TradingView accepts duplicate list names, so creating
+    // blindly adds another "TV-Full Watchlist" on every sync. If a list with this
+    // name is already the active list or in the menu, close the menu and reuse it.
+    const probe = await client.Runtime.evaluate({
+      expression: `(function() {
+        var name = ${JSON.stringify(name)}.toLowerCase();
+        var active = document.querySelector('[data-name="watchlists-button"] [class*="titleRow-"]');
+        var isActive = !!active && active.textContent.trim().toLowerCase() === name;
+        var listed = Array.from(document.querySelectorAll('[class*="menuBox"] [class*="buttonContent-"]'))
+          .filter(function(el) { return el.textContent.trim().toLowerCase() === name; }).length;
+        return JSON.stringify({ exists: isActive || listed > 0, copies: listed + (isActive ? 1 : 0) });
+      })()`,
+      returnByValue: true, awaitPromise: false
+    });
+    const found = JSON.parse(probe.result.value);
+    if (found.exists) {
+      await client.Runtime.evaluate({ expression: 'document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))' });
+      return { success: true, name: name, existed: true, copies: found.copies };
+    }
 
     // 3. Get coordinates for "Create new list..." option
     const getCreateCoords = await client.Runtime.evaluate({
