@@ -166,3 +166,39 @@ class TestNoRetiredWatchlistFile(unittest.TestCase):
     def test_no_watchlist_json_constant(self):
         self.assertFalse(hasattr(watchlist_manager, "TARGET_WATCHLIST_PATH"))
         self.assertNotIn("watchlist.json", Path(watchlist_manager.__file__).read_text())
+
+
+class TestOneCopyPerList(unittest.TestCase):
+    """Exactly two lists exist (TV-Full Watchlist, TV-Portfolio), one copy each."""
+
+    def _run(self, matches):
+        calls = []
+
+        def fake_tv_call(group, action, *args):
+            calls.append((action, args))
+            if action == "open":
+                return {"success": True, "name": args[0], "matches": matches}
+            if action == "get":
+                return {"success": True, "items": []}
+            return {"success": True}
+
+        original = watchlist_manager.tv_call
+        watchlist_manager.tv_call = fake_tv_call
+        try:
+            watchlist_manager.execute_cdp_sync({
+                "TV-Full Watchlist": {"tickers": ["AAPL"]},
+                "TV-Portfolio": {"tickers": ["AAPL"]},
+            })
+        finally:
+            watchlist_manager.tv_call = original
+        return calls
+
+    def test_sync_only_touches_the_two_named_lists(self):
+        calls = self._run(matches=1)
+        names = {args[0] for action, args in calls if action in ("create", "open")}
+        self.assertEqual(names, {"TV-Full Watchlist", "TV-Portfolio"})
+
+    def test_duplicate_copies_fail_loudly(self):
+        with self.assertRaises(RuntimeError) as ctx:
+            self._run(matches=2)
+        self.assertIn("2 lists named 'TV-Full Watchlist'", str(ctx.exception))
