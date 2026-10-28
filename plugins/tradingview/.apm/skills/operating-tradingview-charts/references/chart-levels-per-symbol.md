@@ -31,7 +31,7 @@ How the buy, trim and stop levels reach a TradingView chart, why a chart can sho
 | Design | How it works | Cost |
 |---|---|---|
 | Inputs only (before v4.0.0) | One set of inputs, redrawn per ticker | Right for one ticker at a time; silently wrong after any symbol change |
-| Ticker-tagged inputs (current, v4.0.0) | The inputs carry the ticker they were drawn for; the indicator draws nothing, and warns, on any other ticker. `pine_level_inputs.py --draw TICKER` redraws after a symbol change | A wrong chart is visible, not misleading; still one ticker at a time, and the indicator must be re-saved in TradingView |
+| Ticker-tagged inputs with a follower (current) | The inputs carry the ticker they were drawn for; the indicator draws nothing, and warns, on any other ticker. `pine_level_inputs.py --draw TICKER` redraws one stock; `pine_level_inputs.py --follow` redraws whichever stock the chart shows each time the symbol changes | A wrong chart is visible, not misleading; still one ticker at a time, and the indicator must be re-saved in TradingView |
 | Per-symbol drawings | Horizontal lines drawn on each stock's own chart (drawings belong to the symbol they were drawn on; confirm on the layout first) | Static: every level refresh means clearing and redrawing each chart; clearing must remove only the lines this tool drew, never the owner's own drawings or alert markers |
 | Embedded table | The indicator holds every stock's levels and picks the rows for the chart's ticker | Every chart right with no redraw; Pine cannot read SQLite, so each refresh regenerates and re-injects the script |
 

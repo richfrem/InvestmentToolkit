@@ -14,13 +14,16 @@ Usage Examples:
     from pine_level_inputs import fill_level_inputs
     source = fill_level_inputs(pine_source, "VRT")
     python3 pine_level_inputs.py --draw HOOD     # switch the chart to HOOD and draw its stored levels
+    python3 pine_level_inputs.py --follow        # keep running: redraw the levels of whichever stock the chart shows
 
 Key Functions (Index):
     - level_inputs(): {pine input name: price} for a ticker from domain_model.sqlite
     - fill_level_inputs(): the indicator source with those values as input defaults
     - input_titles(): {pine input name: input title}, read from the indicator source
     - ticker_input_title(): title of the input that names the ticker the levels belong to
+    - known_symbol(): True when the database already has the symbol (so drawing never creates one)
     - draw_levels(): set the chart indicator's inputs, and its ticker tag, to a ticker's stored levels (no Pine Editor)
+    - follow_step() / follow(): redraw the levels whenever the chart's symbol changes
 
 Key Input Dependencies:
     - domain_model.sqlite: price_level_set / price_level_tier, projection_version
@@ -29,6 +32,9 @@ from __future__ import annotations
 
 import json
 import re
+import sqlite3
+import sys
+import time
 from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "domain_model.sqlite"
@@ -94,34 +100,93 @@ def ticker_input_title(source: str | None = None) -> str | None:
     return m.group(1) if m else None
 
 
-def draw_levels(symbol: str, db_path: str | Path | None = None) -> dict:
-    """Switch the active chart to `symbol` and set the AI TA Levels indicator's inputs to its
-    stored levels; levels that are not stored are set to 0 so stale lines disappear.
+def known_symbol(symbol: str, db_path: str | Path | None = None) -> bool:
+    """True when the database already has `symbol` (read-only: drawing a chart must never create a stock)."""
+    try:
+        conn = sqlite3.connect(f"file:{db_path or DB_PATH}?mode=ro", uri=True)
+    except sqlite3.Error:
+        return False
+    try:
+        return conn.execute("SELECT 1 FROM investment WHERE symbol = ?", (symbol,)).fetchone() is not None
+    except sqlite3.Error:
+        return False
+    finally:
+        conn.close()
+
+
+def draw_levels(symbol: str, db_path: str | Path | None = None, switch: bool = True) -> dict:
+    """Set the AI TA Levels indicator's inputs to `symbol`'s stored levels (and tag them with it).
+
+    With `switch` (the default) the chart is first switched to `symbol`; the follower passes
+    switch=False because the chart is already showing it. Levels that are not stored, and
+    symbols the database does not know, are set to 0 so stale lines disappear.
 
     Returns the CDP result: {success, study, set, missing} or {success: False, error}.
     The indicator must already be on the chart layout (Indicators -> My scripts); it stays
     there across symbol changes.
     """
     from pine_script_manager import tv_call
+    from ticker_aliases import normalize_ticker
 
-    values = level_inputs(symbol, db_path)
+    stored = normalize_ticker(symbol.upper())   # PSU.U, PSU-U and PSU-U.TO are one fund
+    values = level_inputs(stored, db_path) if known_symbol(stored, db_path) else {}
     by_title: dict[str, float | str] = {title: round(values.get(name, 0.0), 2) for name, title in input_titles().items()}
     tag_title = ticker_input_title()
     if tag_title:
         by_title[tag_title] = symbol.upper()   # the indicator draws these levels only on this ticker
-    switched = tv_call("chart", "symbol", symbol.upper())
-    if not (isinstance(switched, dict) and switched.get("success")):
-        return {"success": False, "error": f"chart switch failed: {switched}"}
+    if switch:
+        switched = tv_call("chart", "symbol", symbol.upper())
+        if not (isinstance(switched, dict) and switched.get("success")):
+            return {"success": False, "error": f"chart switch failed: {switched}"}
     return tv_call("chart", "setInputs", "--name", INDICATOR_NAME, "--values", json.dumps(by_title, ensure_ascii=False))
+
+
+def follow_step(current: str | None, last: str | None, draw=None) -> str | None:
+    """One poll of the follower: draw when the chart's symbol changed, return the symbol now drawn.
+
+    A failed draw returns `last` unchanged so the next poll retries it.
+    """
+    if not current or current == last:
+        return last
+    draw = draw or (lambda symbol: draw_levels(symbol, switch=False))
+    result = draw(current)
+    if isinstance(result, dict) and result.get("success"):
+        return current
+    print(f"levels not drawn for {current}: {result}", file=sys.stderr)
+    return last
+
+
+def follow(interval: float = 1.5, db_path: str | Path | None = None) -> None:
+    """Redraw the stored levels of whichever stock the chart shows, until interrupted."""
+    from pine_script_manager import tv_call
+
+    last: str | None = None
+    print("Following the chart symbol; Ctrl+C to stop.", flush=True)
+    while True:
+        shown = tv_call("chart", "getSymbol")
+        current = shown.get("symbol") if isinstance(shown, dict) and shown.get("success") else None
+        drawn = follow_step(current, last, lambda symbol: draw_levels(symbol, db_path, switch=False))
+        if drawn != last:
+            print(f"levels drawn for {drawn}", flush=True)
+        last = drawn
+        time.sleep(interval)
 
 
 def main() -> int:
     import argparse
 
-    parser = argparse.ArgumentParser(description="Draw a ticker's stored levels on the AI TA Levels indicator.")
-    parser.add_argument("--draw", metavar="TICKER", required=True, help="Switch the chart to TICKER and draw its stored levels")
+    parser = argparse.ArgumentParser(description="Draw stored levels on the AI TA Levels indicator.")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--draw", metavar="TICKER", help="Switch the chart to TICKER and draw its stored levels")
+    group.add_argument("--follow", action="store_true", help="Keep running and redraw the levels whenever the chart's symbol changes")
+    parser.add_argument("--db", default=None, help="Path to domain_model.sqlite (default: the real database)")
     args = parser.parse_args()
-    result = draw_levels(args.draw)
+    if args.follow:
+        try:
+            follow(db_path=args.db)
+        except KeyboardInterrupt:
+            return 0
+    result = draw_levels(args.draw, args.db)
     print(json.dumps(result, ensure_ascii=False))
     return 0 if isinstance(result, dict) and result.get("success") else 1
 
