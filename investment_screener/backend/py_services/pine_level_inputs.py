@@ -13,12 +13,14 @@ Layer: Backend / Python Services
 Usage Examples:
     from pine_level_inputs import fill_level_inputs
     source = fill_level_inputs(pine_source, "VRT")
+    python3 pine_level_inputs.py --draw HOOD     # switch the chart to HOOD and draw its stored levels
 
 Key Functions (Index):
     - level_inputs(): {pine input name: price} for a ticker from domain_model.sqlite
     - fill_level_inputs(): the indicator source with those values as input defaults
     - input_titles(): {pine input name: input title}, read from the indicator source
-    - draw_levels(): set the chart indicator's inputs to a ticker's stored levels (no Pine Editor)
+    - ticker_input_title(): title of the input that names the ticker the levels belong to
+    - draw_levels(): set the chart indicator's inputs, and its ticker tag, to a ticker's stored levels (no Pine Editor)
 
 Key Input Dependencies:
     - domain_model.sqlite: price_level_set / price_level_tier, projection_version
@@ -32,6 +34,7 @@ from pathlib import Path
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "domain_model.sqlite"
 INDICATOR = Path(__file__).resolve().parents[3] / "plugins/tradingview/.apm/skills/operating-tradingview-charts/assets/pinescript-indicators/ai-ta-levels.pine"
 INDICATOR_NAME = "AI TA Levels"   # matches the chart study name of the saved script (any version suffix)
+TICKER_INPUT = "levels_for"       # the string input naming the ticker the levels belong to
 LEVEL_INPUTS = ("target_fair", "target_buy1", "target_buy", "target_buy3",
                 "target_trim1", "target_trim2", "target_trim3", "target_stop")
 
@@ -70,7 +73,7 @@ def fill_level_inputs(source: str, symbol: str, db_path: str | Path | None = Non
     """Return `source` with each `target_* = input.float(0.0, ...)` default set from storage."""
     for name, value in level_inputs(symbol, db_path).items():
         source = re.sub(rf"^({name}\s*=\s*input\.float\()\s*[0-9.]+", rf"\g<1>{value:.2f}", source, count=1, flags=re.M)
-    return source
+    return re.sub(rf'^({TICKER_INPUT}\s*=\s*input\.string\()"[^"]*"', rf'\g<1>"{symbol.upper()}"', source, count=1, flags=re.M)
 
 
 def input_titles(source: str | None = None) -> dict[str, str]:
@@ -84,6 +87,13 @@ def input_titles(source: str | None = None) -> dict[str, str]:
     return out
 
 
+def ticker_input_title(source: str | None = None) -> str | None:
+    """The title of the "levels for ticker" input, read from the indicator source."""
+    source = source if source is not None else INDICATOR.read_text()
+    m = re.search(rf'^{TICKER_INPUT}\s*=\s*input\.string\([^,]+,\s*"([^"]+)"', source, flags=re.M)
+    return m.group(1) if m else None
+
+
 def draw_levels(symbol: str, db_path: str | Path | None = None) -> dict:
     """Switch the active chart to `symbol` and set the AI TA Levels indicator's inputs to its
     stored levels; levels that are not stored are set to 0 so stale lines disappear.
@@ -95,8 +105,26 @@ def draw_levels(symbol: str, db_path: str | Path | None = None) -> dict:
     from pine_script_manager import tv_call
 
     values = level_inputs(symbol, db_path)
-    by_title = {title: round(values.get(name, 0.0), 2) for name, title in input_titles().items()}
+    by_title: dict[str, float | str] = {title: round(values.get(name, 0.0), 2) for name, title in input_titles().items()}
+    tag_title = ticker_input_title()
+    if tag_title:
+        by_title[tag_title] = symbol.upper()   # the indicator draws these levels only on this ticker
     switched = tv_call("chart", "symbol", symbol.upper())
     if not (isinstance(switched, dict) and switched.get("success")):
         return {"success": False, "error": f"chart switch failed: {switched}"}
     return tv_call("chart", "setInputs", "--name", INDICATOR_NAME, "--values", json.dumps(by_title, ensure_ascii=False))
+
+
+def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Draw a ticker's stored levels on the AI TA Levels indicator.")
+    parser.add_argument("--draw", metavar="TICKER", required=True, help="Switch the chart to TICKER and draw its stored levels")
+    args = parser.parse_args()
+    result = draw_levels(args.draw)
+    print(json.dumps(result, ensure_ascii=False))
+    return 0 if isinstance(result, dict) and result.get("success") else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
