@@ -53,7 +53,7 @@ export default function Sidebar() {
             const result = await syncAndRefreshPortfolio();
             const { lastSync: ts } = await fetchSyncStatus();
             setLastSync(ts);
-            setSyncFeedback(result.success ? 'Synced' : 'Failed');
+            setSyncFeedback(!result.success ? 'Failed' : result.pricesOk ? 'Synced' : 'Prices not updated');
         } catch {
             setSyncFeedback('Failed');
         } finally {

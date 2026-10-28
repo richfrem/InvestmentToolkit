@@ -288,7 +288,7 @@ export const syncPortfolio = async (): Promise<{ success: boolean; dataSource: s
     return data;
 };
 
-export const refreshPrices = async (): Promise<{ success: boolean; updated: number; missingPrices?: string[]; heatmap: any }> => {
+export const refreshPrices = async (): Promise<{ success: boolean; updated: number; missingPrices?: string[]; stale?: Array<{ symbol: string; fetched_at: string | null }> }> => {
     const response = await fetch('/api/portfolio/refresh-prices', {
         method: 'POST',
     });
@@ -316,7 +316,7 @@ export const refreshPrices = async (): Promise<{ success: boolean; updated: numb
  * `_select_effective_price()`-backed pipeline every page relies on) that
  * actually updates prices, called unconditionally by every refresh path.
  */
-export const syncAndRefreshPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string }> => {
+export const syncAndRefreshPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string; pricesOk: boolean; missing: string[] }> => {
     let syncOk = false;
     let syncMessage = 'TV position sync failed';
     try {
@@ -325,25 +325,31 @@ export const syncAndRefreshPortfolio = async (): Promise<{ success: boolean; dat
         syncMessage = `TV sync: ${syncResult.positionCount ?? ''} positions`;
     } catch (e) {
         console.warn('TradingView CDP position sync failed', e);
+        syncMessage = `TV position sync failed: ${e instanceof Error ? e.message : String(e)}`;
     }
 
     let refreshOk = false;
     let refreshMessage = 'price refresh failed';
+    let missing: string[] = [];
     try {
         const refreshResult = await refreshPrices();
         refreshOk = refreshResult.success;
         refreshMessage = `prices: ${refreshResult.updated} updated`;
-        const missing = refreshResult.missingPrices ?? [];
+        missing = refreshResult.missingPrices ?? [];
         // TradingView leaves watchlist rows "pending" (no quote) while its window is hidden or minimised, and the refresh only reads that watchlist; those symbols keep their old price.
         if (missing.length > 0) refreshMessage += ` · ${missing.length} not quoted, still stale (${missing.join(', ')}): keep TradingView Desktop open and visible, then refresh again`;
     } catch (e) {
         console.warn('Price refresh failed', e);
+        refreshMessage = `price refresh failed: ${e instanceof Error ? e.message : String(e)}`;
     }
 
     return {
         success: syncOk || refreshOk,
         dataSource: syncOk ? 'tradingview-cdp' : (refreshOk ? 'yfinance' : 'none'),
         message: `${syncMessage} · ${refreshMessage}`,
+        // The total only changes when prices do: a position sync alone is not a refresh.
+        pricesOk: refreshOk && missing.length === 0,
+        missing,
     };
 };
 

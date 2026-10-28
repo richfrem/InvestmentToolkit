@@ -12,7 +12,6 @@
  *   - loadYtdPerformanceReport() - Executes time-weighted returns script and reads generated report
  *   - verifyPortfolioTotals(holdings, tvSnapshot) - Reconciliation gate comparing computed vs broker total
  *   - getHoldingsForDisplayFromDb() - SQLite-sourced enriched holdings for GET /
- *   - persistRefreshedPricesToDb(items) - Persist fresh prices + sector/industry into SQLite
  *
  * Routes Index:
  *   - GET / - Reads and returns aggregate portfolio holdings and the data source (domain_model_sqlite or empty)
@@ -95,6 +94,16 @@ export function getPortfolioTotalUsdFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE
     try {
         const total = repo.getPortfolioTotalValue();
         return total > 0 ? total : null;
+    } finally {
+        repo.close();
+    }
+}
+
+/** The time the stalest held price was fetched: the honest "as of" time for the portfolio value. */
+export function getOldestPositionPriceAtFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): string | null {
+    const repo = new PortfolioRepository(dbPath);
+    try {
+        return repo.getOldestPositionPriceAt();
     } finally {
         repo.close();
     }
@@ -251,80 +260,6 @@ export function getPositionPriceFromDb(ticker: string, dbPath: string = DOMAIN_M
 }
 
 /**
- * Watchlist-only tickers (`investment.is_watchlisted = 1`, no shares in
- * `account_investment`) as shares:0 refresh items — shaped so they slot into
- * the same `itemsForFetch`/`persistRefreshedPricesToDb` pipeline as held
- * positions. Closes a 2026-07-27 gap: `/refresh-prices` sourced its ticker
- * list from held positions only, so watchlist tickers (fed to the watchlist
- * heatmap, thesis review, etc.) never got refreshed and went stale
- * indefinitely with no visible signal.
- */
-export function getWatchlistTickersForRefresh(dbPath: string = DOMAIN_MODEL_DB_FILE): Array<{ symbol: string; shares: number }> {
-    const investmentRepo = new InvestmentRepository(dbPath);
-    try {
-        return investmentRepo.listWatchlisted().map(w => ({ symbol: w.ticker, shares: 0 }));
-    } finally {
-        investmentRepo.close();
-    }
-}
-
-/**
- * Wave 3 (completion): persist freshly-refreshed live prices into
- * `investment_price`, closing the gap that previously left SQLite prices
- * permanently stale after the one-time migrate_portfolio_to_sqlite.py run.
- *
- * `/refresh-prices` builds a FLAT, cross-account-aggregated `items` array (fresh
- * yfinance/TV price per symbol, no per-account attribution). `investment_price`
- * is keyed per-investment (not per-account), so it is the one table this flat
- * shape can safely write — `account_investment` quantities are deliberately NOT
- * touched here (they carry per-account attribution this array lacks and are
- * maintained only by the sync-tv → persistSnapshotToDb path). Symbols are
- * normalized through the same broker alias map persistSnapshotToDb uses so the
- * `investment_id` resolved here matches the account_investment rows those prices
- * are joined against.
- *
- * Also persists the sector/industry each `item` carries (resolved by
- * fetch_portfolio_heatmap.py's yfinance/SECTOR_OVERRIDES lookup — the SAME real
- * code path, no duplicated logic) into investment.sector/investment.industry via
- * InvestmentRepository.updateSectorIndustry, so GET /api/portfolio can serve
- * enriched holding metadata from SQLite. A "Unknown"/absent sector is written
- * through as-is (never fabricated); readers fall back to "Unknown".
- *
- * Returns the number of prices written. Exported for tmp_path-scoped tests.
- */
-export function persistRefreshedPricesToDb(items: any[], dbPath: string = DOMAIN_MODEL_DB_FILE): number {
-    const investmentRepo = new InvestmentRepository(dbPath);
-    const portfolioRepo = new PortfolioRepository(dbPath);
-    try {
-        const now = new Date().toISOString();
-        let count = 0;
-        for (const item of items) {
-            const rawSymbol: string = item?.symbol ?? item?.ticker;
-            if (!rawSymbol || rawSymbol === 'USD_CASH') continue;
-            const price = item?.price;
-            if (typeof price !== 'number' || !Number.isFinite(price) || price <= 0) continue;
-            const symbol = normalizeTicker(rawSymbol);
-            const investmentId = investmentRepo.resolveInvestmentId(symbol, 'EQUITY', 'USD');
-            portfolioRepo.upsertInvestmentPrice(investmentId, price, 'USD', now);
-            // Persist sector/industry when the heatmap payload resolved them
-            // (present on every fetch_portfolio_heatmap.py stock row). Skip only
-            // when neither field is present at all, so a plain price-only item
-            // (e.g. a test) never blanks an already-resolved sector.
-            const sector = item?.sector;
-            const industry = item?.industry;
-            if (sector != null || industry != null) {
-                investmentRepo.updateSectorIndustry(symbol, sector ?? null, industry ?? null);
-            }
-            count++;
-        }
-        return count;
-    } finally {
-        investmentRepo.close();
-        portfolioRepo.close();
-    }
-}
-
-/**
  * Reconciliation gate: compare our computed portfolio value vs TV broker total.
  * holdings = the merged positions (with stored prices)
  * tvSnapshot = raw TV snapshot object (has snapshots[].balances)
@@ -408,7 +343,9 @@ router.get('/summary', async (_req, res) => {
 
         // The real "last synced" time is MAX(account_investment.last_synced_at), updated on every
         // sync; with nothing synced yet it is the current time.
-        const lastUpdated = getLastSyncedAtFromDb() ?? new Date().toISOString();
+        // "As of" is the oldest held price, not the position sync: a sync can succeed while the price
+        // refresh fails, and the page must not look current when the prices are not.
+        const lastUpdated = getOldestPositionPriceAtFromDb() ?? getLastSyncedAtFromDb() ?? new Date().toISOString();
 
         // Fetch time-weighted performance metrics from report
         const twrReport = await loadYtdPerformanceReport();
@@ -540,55 +477,21 @@ router.post('/refresh-prices', async (_req, res) => {
             res.status(503).json({ error: 'TradingView Desktop is not connected, so prices were not refreshed. Start TradingView with the debugging port open and try again.' });
             return;
         }
-        // The ticker list to refresh comes live from account_investment.
-        const portfolioData = getHoldingsForDisplayFromDb() ?? [];
-        // Refresh scope = held positions PLUS watchlist-only tickers (is_watchlisted=1,
-        // no shares). Previously this only covered held positions, so watchlist tickers
-        // (fed to the watchlist heatmap, thesis review, etc.) went stale indefinitely —
-        // found via a direct investment_price.fetched_at audit on 2026-07-27. Watchlist
-        // items carry shares:0 so fetch_portfolio_heatmap.py's math (position_value =
-        // shares*price) is a harmless 0, and persistRefreshedPricesToDb still writes
-        // their price (it doesn't gate on shares).
-        const watchlistData = getWatchlistTickersForRefresh();
-        const portfolioDataForRefresh = [...portfolioData, ...watchlistData];
-        // Strip stored price so fetch_portfolio_heatmap.py uses only the live TradingView quote
-        const itemsForFetch = portfolioDataForRefresh.map((item: any) => { const { price, ...rest } = item; return rest; });
+        // One implementation for every refresh: the same Python script the tv-price-refresh skill
+        // mode runs. It reads the scope (held + watchlisted) from SQLite, quotes it from
+        // TradingView, writes investment_price through the repositories and refreshes USD->CAD.
         // A symbol TradingView cannot quote keeps its previous price (a zero would corrupt the
-        // totals) and is listed under `missingPrices` in the response so the staleness is visible.
-        // Wave 3 Task 8: a price-only refresh never triggers a full broker sync, so the
-        // stored USD->CAD rate could go stale relative to freshly-refreshed USD prices.
-        // fetch_broker_data.py --refresh-exchange-rate does a lightweight balances-only
-        // CDP fetch (no full position sync) and persists the rate directly, run here in
-        // parallel with the price fetch so the two numbers never drift apart. Best-effort:
-        // its failure must not block the price refresh this endpoint exists to perform.
-        const [data, exchangeRate] = await Promise.all([
-            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(itemsForFetch), '--bust-cache', '--tradingview-only']),
-            getLiveUsdCadRate(getJan1UsdCadRateFromDb() ?? 1),
-            spawnPythonScript('fetch_broker_data.py', ['--refresh-exchange-rate']).catch((err: Error) => {
-                console.warn(`[API] Exchange rate refresh during price refresh failed: `, err.message);
-                return null;
-            }),
-        ]);
-        if (data.error) { res.status(400).json({ error: data.error }); return; }
-        const updatedItems = portfolioDataForRefresh.map((item: any) => {
-            const stockData = data.stocks.find((s: any) => s.symbol === item.symbol);
-            // Carry the heatmap-resolved sector/industry through so
-            // persistRefreshedPricesToDb can persist them into investment.* (the
-            // enriched metadata GET /api/portfolio now serves from SQLite).
-            return stockData
-                ? { ...item, price: stockData.price, sector: stockData.sector, industry: stockData.industry, last_updated: new Date().toISOString() }
-                : item;
-        });
-        // The freshly-fetched live prices are persisted into `investment_price`, which is what
-        // /summary, /weights, and /strategy-allocation read their market values from. The flat
-        // `updatedItems` array carries no per-account attribution, so account_investment
-        // quantities are intentionally left untouched (owned by the sync-tv path). The
-        // fresh heatmap prices are still returned inline in this response for the caller.
-        const pricesWritten = persistRefreshedPricesToDb(updatedItems);
-        console.log(`[Portfolio] refresh-prices: wrote ${pricesWritten} fresh prices to investment_price (SQLite-only).`);
+        // totals) and is listed under `missingPrices` so the staleness is visible.
+        const result = await spawnPythonScript('tv_price_refresh.py', ['--exit-zero']);
+        if (!result || result.error || result.stale) {
+            res.status(502).json({ error: result?.error ?? result?.staleReason ?? 'Price refresh did not run' });
+            return;
+        }
+        const written: string[] = result.written ?? [];
+        console.log(`[Portfolio] refresh-prices: wrote ${written.length} fresh prices to investment_price (tv_price_refresh.py).`);
         res.json({
-            success: true, updated: pricesWritten, missingPrices: data.missing_prices ?? [],
-            heatmap: { ...data, exchange_rate: exchangeRate },
+            success: true, updated: written.length, missingPrices: result.failed ?? [],
+            stale: result.stale ?? [], exchangeRateRefreshed: result.exchange_rate_refreshed ?? null,
         });
     } catch (error) {
         console.error(`[API] Error refreshing prices: `, error);

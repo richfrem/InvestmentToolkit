@@ -136,10 +136,10 @@ dependencies:
     .agents/skills/running-portfolio-reviews/evals/evals.json: sha256:d79e5e3f37412c1e5213f6a383320480a872aa21c7a430a6cdb5cc178cae3377
     .agents/skills/running-portfolio-reviews/references/daily-brief-methodology.md: sha256:24d62f723c99e6db64be1ccc36ae3d35ac531f9cb287e252f74b79e19e0f406d
     .agents/skills/running-portfolio-reviews/references/evolution-log.md: sha256:d7083312a73f394a875981aaf6401e85472848c9cd173d5eebb263767f5243f2
-    .agents/skills/running-portfolio-reviews/references/modes/daily-loop.md: sha256:055b9e0f6cf45a8428a8e5440a6c9fa3993ef240899159e0dc89ac5c0b68d55c
+    .agents/skills/running-portfolio-reviews/references/modes/daily-loop.md: sha256:89ae9bba9ec238434aa24e1de64b893686730ad2da0857e8ae33184845c8e3c9
     .agents/skills/running-portfolio-reviews/references/modes/external-review.md: sha256:85e6fb73551dfe5d2fe3eab5cbd98042ce02ffc9d20e285b2ba2aee614e37e63
     .agents/skills/running-portfolio-reviews/references/modes/news-sweep.md: sha256:b854ca9c3efa90e5e1e05fcf57923d708e6f85e85d30eef20415fbf5595f0a1f
-    .agents/skills/running-portfolio-reviews/references/modes/weekly-review.md: sha256:4d67e3622238bb8e5465337873d89dd6f4aa5b665daabdc6e7981fd6265bf6e2
+    .agents/skills/running-portfolio-reviews/references/modes/weekly-review.md: sha256:ec8ad194b73b404953c76513a9268ec7e7a80a0881ef785ca8722312671f87b5
     .agents/skills/running-portfolio-reviews/references/news-sweep-model-assessment.md: sha256:788e7a04ef473f290c1a57978feb25c74355eb24f02d7025748cce67bdd82bd0
     .agents/skills/running-portfolio-reviews/scripts/daily_receipts.py: sha256:095a30c3a344ba013b51c90d13ed0583cb89c7b1375f7a4c614317fb816286a1
     .agents/skills/running-portfolio-reviews/scripts/news_sweep.py: sha256:a76947d00c12c674e648e620f3b6bb872b3cc1196b810162ecbe7d3f9b119982
@@ -423,10 +423,8 @@ dependencies:
   - .agents/skills/trading-via-tradingview/scripts/tv_cancel_order.py
   - .agents/skills/trading-via-tradingview/scripts/tv_get_orders.py
   - .agents/skills/trading-via-tradingview/scripts/tv_modify_order.py
-  - .agents/skills/trading-via-tradingview/scripts/tv_price_refresh.py
   - .agents/skills/trading-via-tradingview/scripts/tv_trades_import.py
   - .agents/skills/trading-via-tradingview/scripts/watchlist_manager.py
-  - .agents/skills/trading-via-tradingview/tests/test_tv_price_refresh.py
   - .agents/skills/trading-via-tradingview/tests/test_tv_trades_import.py
   - .agents/skills/trading-via-tradingview/tests/test_watchlist_manager.py
   deployed_file_hashes:
@@ -455,7 +453,7 @@ dependencies:
     .agents/skills/operating-tradingview-charts/references/PineScript_Agent_Skill_Rules.md: sha256:44bfb73ee0ac891b58d7e2fa6fa65d493cf27e85789dedda21609c3540f14f7a
     .agents/skills/operating-tradingview-charts/references/Top_TradingView_Indicators_Reference.md: sha256:eb89eb9ab4e5ef4535817d9ba1a002b04d646340f5a1eca72dfef58cdd272f8e
     .agents/skills/operating-tradingview-charts/references/chart-types-reference.md: sha256:61a4f448fd895bf4ee425d0ce09cace2d9426cbec1adf0e121c04c37a06e1e2a
-    .agents/skills/operating-tradingview-charts/references/evolution-log.md: sha256:7c5f84e8a13e6dc1ff7fb3b9265b537756f82f1f607be30c95e290be8223af4f
+    .agents/skills/operating-tradingview-charts/references/evolution-log.md: sha256:bb8c21bebeb5f69efb9e487dd1e3cebf18895c1170dc0e5ef1c4bdb78771843e
     .agents/skills/operating-tradingview-charts/references/modes/add-indicator.md: sha256:aeaf313becc2e95bd08dfa5965d1cf5b52e6f457349573b004eeb70d7e5099bd
     .agents/skills/operating-tradingview-charts/references/modes/alert-list.md: sha256:784ec7c972486c43d36da47d349bab619090d8d6208687aa654da4630c94b490
     .agents/skills/operating-tradingview-charts/references/modes/alert-reconcile.md: sha256:6732478b12c49f1bd8504ab24649aa1de1528a51fbc2f736ce5dc6f055a6450a
@@ -490,7 +488,7 @@ dependencies:
     .agents/skills/operating-tradingview-charts/tests/test_tv_manage_indicators.py: sha256:6e1b64febc263f00c7d9c1dbe9550a8de52b95711f4385e1b87101a7cba23c25
     .agents/skills/operating-tradingview-charts/tests/test_tv_pine_manager.py: sha256:f780d6eb5c1effc181346a60b21ba702c8e3ab145eea4777551e3f7134fd2b11
     .agents/skills/operating-tradingview-charts/tests/test_tv_thesis_overlay.py: sha256:92f57688dadf962beda9d32ed650cb034180d907cc6470f08b86c4dbbfa8e6ea
-    .agents/skills/trading-via-tradingview/SKILL.md: sha256:13f31cee63968e2d092aa8c08d4e21f40b630601602575cb819894bf6709cc9e
+    .agents/skills/trading-via-tradingview/SKILL.md: sha256:f0ae94ab5df90241250a8cdff552e9f6030ab264f8b9a69b5503c865311f4dfa
     .agents/skills/trading-via-tradingview/evals/evals.json: sha256:c28ec6f2fb7a10eb0dce6f87fdb03946d6c94aae04930125054a3e271ddf1edd
     .agents/skills/trading-via-tradingview/references/modes/cancel-order.md: sha256:a54f60821ab32a1be2275d0bba5ceb5cd265ccd6ccdbddbf4754e3dc2e574133
     .agents/skills/trading-via-tradingview/references/modes/get-orders.md: sha256:c8d389dd0dabfa1c16e2f64c6fa908716392959c8b14e42587d471915a4d5232
@@ -498,14 +496,12 @@ dependencies:
     .agents/skills/trading-via-tradingview/references/modes/modify-order.md: sha256:2805192c79280f4971fac2d90fdf25010b6ec26c132c65866473cdffe7c43cec
     .agents/skills/trading-via-tradingview/references/modes/place-order.md: sha256:f6efd65434c442cdb00ece86916c7ac66f2a6b9b5ebd412dc3354e2f925f2ce8
     .agents/skills/trading-via-tradingview/references/modes/portfolio-sync.md: sha256:7a95aec3a64c85568222ef791a044b8fa214f2da9d1dce483e67d7f1bf80dd3f
-    .agents/skills/trading-via-tradingview/references/modes/price-refresh.md: sha256:3a93dae0bc56dd034d6e0abec4e25d7916a2d6e88b1dd5d55245e7894b113db9
+    .agents/skills/trading-via-tradingview/references/modes/price-refresh.md: sha256:370eaef5a4dc755a118e5e66ced0e5844b5c25bd8d7dfb6295aa7834d0a24381
     .agents/skills/trading-via-tradingview/scripts/tv_cancel_order.py: sha256:c10b6d97eeb36c5ce6efd1598529a537854e536770eed22fec24030113959cf2
     .agents/skills/trading-via-tradingview/scripts/tv_get_orders.py: sha256:396d1b9958c5670d27d4c17dc70b66711393fdd20fa0d8dfef9e25e2093e63ef
     .agents/skills/trading-via-tradingview/scripts/tv_modify_order.py: sha256:d7de2270c50949b52c41439c9bcd0d5b1dbcf00f03133c5457d84c451d4c6d47
-    .agents/skills/trading-via-tradingview/scripts/tv_price_refresh.py: sha256:19baf1647e5f81a9709dc9f5f902a982d6a3176add03fcd46029048f17a01c31
     .agents/skills/trading-via-tradingview/scripts/tv_trades_import.py: sha256:f2f1b3f7133eebf07b5867578c549fcadc72bdd9657ccf712af34d9a93074d46
     .agents/skills/trading-via-tradingview/scripts/watchlist_manager.py: sha256:98e12c58a594c9cee185ead2b6a1c30a3d25e3c368840b9500e6fb9d0086d817
-    .agents/skills/trading-via-tradingview/tests/test_tv_price_refresh.py: sha256:86ddd1f109911c5af5cb3509f766498a8529d86a7517342b254092ef2ad82862
     .agents/skills/trading-via-tradingview/tests/test_tv_trades_import.py: sha256:9bfb6c0f9d34738a93b8e802eca5e986d921f285c7793dedcadeebd56e3fff4f
     .agents/skills/trading-via-tradingview/tests/test_watchlist_manager.py: sha256:2b2b4196c4328f3da7b15445b98639642ade32e1c0c50eb3ea71a955797c752e
   source: local
@@ -1042,7 +1038,7 @@ deployments:
   owners:
   - ./plugins/tradingview
   active_owner: ./plugins/tradingview
-  content_hash: sha256:7c5f84e8a13e6dc1ff7fb3b9265b537756f82f1f607be30c95e290be8223af4f
+  content_hash: sha256:bb8c21bebeb5f69efb9e487dd1e3cebf18895c1170dc0e5ef1c4bdb78771843e
 - kind: project-relative
   target: agent-skills
   value: .agents/skills/operating-tradingview-charts/references/modes/add-indicator.md
@@ -1447,7 +1443,7 @@ deployments:
   owners:
   - ./plugins/portfolio-advisor
   active_owner: ./plugins/portfolio-advisor
-  content_hash: sha256:055b9e0f6cf45a8428a8e5440a6c9fa3993ef240899159e0dc89ac5c0b68d55c
+  content_hash: sha256:89ae9bba9ec238434aa24e1de64b893686730ad2da0857e8ae33184845c8e3c9
 - kind: project-relative
   target: agent-skills
   value: .agents/skills/running-portfolio-reviews/references/modes/external-review.md
@@ -1474,7 +1470,7 @@ deployments:
   owners:
   - ./plugins/portfolio-advisor
   active_owner: ./plugins/portfolio-advisor
-  content_hash: sha256:4d67e3622238bb8e5465337873d89dd6f4aa5b665daabdc6e7981fd6265bf6e2
+  content_hash: sha256:ec8ad194b73b404953c76513a9268ec7e7a80a0881ef785ca8722312671f87b5
 - kind: project-relative
   target: agent-skills
   value: .agents/skills/running-portfolio-reviews/references/news-sweep-model-assessment.md
@@ -2068,7 +2064,7 @@ deployments:
   owners:
   - ./plugins/tradingview
   active_owner: ./plugins/tradingview
-  content_hash: sha256:13f31cee63968e2d092aa8c08d4e21f40b630601602575cb819894bf6709cc9e
+  content_hash: sha256:f0ae94ab5df90241250a8cdff552e9f6030ab264f8b9a69b5503c865311f4dfa
 - kind: project-relative
   target: agent-skills
   value: .agents/skills/trading-via-tradingview/evals/evals.json
@@ -2140,7 +2136,7 @@ deployments:
   owners:
   - ./plugins/tradingview
   active_owner: ./plugins/tradingview
-  content_hash: sha256:3a93dae0bc56dd034d6e0abec4e25d7916a2d6e88b1dd5d55245e7894b113db9
+  content_hash: sha256:370eaef5a4dc755a118e5e66ced0e5844b5c25bd8d7dfb6295aa7834d0a24381
 - kind: project-relative
   target: agent-skills
   value: .agents/skills/trading-via-tradingview/scripts/tv_cancel_order.py
@@ -2170,15 +2166,6 @@ deployments:
   content_hash: sha256:d7de2270c50949b52c41439c9bcd0d5b1dbcf00f03133c5457d84c451d4c6d47
 - kind: project-relative
   target: agent-skills
-  value: .agents/skills/trading-via-tradingview/scripts/tv_price_refresh.py
-  runtime: null
-  scope: project
-  owners:
-  - ./plugins/tradingview
-  active_owner: ./plugins/tradingview
-  content_hash: sha256:19baf1647e5f81a9709dc9f5f902a982d6a3176add03fcd46029048f17a01c31
-- kind: project-relative
-  target: agent-skills
   value: .agents/skills/trading-via-tradingview/scripts/tv_trades_import.py
   runtime: null
   scope: project
@@ -2195,15 +2182,6 @@ deployments:
   - ./plugins/tradingview
   active_owner: ./plugins/tradingview
   content_hash: sha256:98e12c58a594c9cee185ead2b6a1c30a3d25e3c368840b9500e6fb9d0086d817
-- kind: project-relative
-  target: agent-skills
-  value: .agents/skills/trading-via-tradingview/tests/test_tv_price_refresh.py
-  runtime: null
-  scope: project
-  owners:
-  - ./plugins/tradingview
-  active_owner: ./plugins/tradingview
-  content_hash: sha256:86ddd1f109911c5af5cb3509f766498a8529d86a7517342b254092ef2ad82862
 - kind: project-relative
   target: agent-skills
   value: .agents/skills/trading-via-tradingview/tests/test_tv_trades_import.py

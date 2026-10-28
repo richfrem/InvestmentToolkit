@@ -52,8 +52,8 @@ Paths starting with `scripts/` are relative to this skill's folder; the shared b
 
 ## Scripts
 
-- `scripts/`: `tv_get_orders`, `tv_modify_order`, `tv_cancel_order`, `tv_trades_import`, `tv_batch_quotes`, `tv_price_refresh`, `watchlist_manager`.
-- Shared engine (`py_services/`): `place_order.py` (also `--modify`, `--cancel`, `--list`), `fetch_broker_data.py`, `tv_account_coverage.py`, `tv_client.py`, `tv_health_check.py`.
+- `scripts/`: `tv_get_orders`, `tv_modify_order`, `tv_cancel_order`, `tv_trades_import`, `watchlist_manager`.
+- Shared engine (`py_services/`): `place_order.py` (also `--modify`, `--cancel`, `--list`), `fetch_broker_data.py`, `tv_account_coverage.py`, `tv_client.py`, `tv_health_check.py`, `tv_batch_quotes.py`, `tv_price_refresh.py` (the one price writer, shared with the app's Refresh button).
 - Tests: `tests/` (pass the path explicitly; pytest skips dot-directories).
 
 ## Verification
@@ -65,5 +65,6 @@ Paths starting with `scripts/` are relative to this skill's folder; the shared b
 
 ## References
 
+- [Reading and driving TradingView lists reliably](references/tradingview-ui-reading.md): visible-rows-only reads, hashed selectors, one copy per list, symbol spelling, validation order. Read before changing code that reads a list or positions table.
 - The `operating-tradingview-charts` skill: connection setup, indicators, alerts.
 - The `analyzing-charts` skill: technical-analysis sweeps and the red-team reviewer.

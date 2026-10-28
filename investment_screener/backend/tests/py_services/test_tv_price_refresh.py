@@ -9,10 +9,10 @@ Purpose:
     missing, and never fabricates a price.
 
 Layer:
-    Testing / Plugins / TradingView
+    Testing / Backend / Python Services
 
 Usage Examples:
-    pytest plugins/tradingview/.apm/skills/trading-via-tradingview/tests/test_tv_price_refresh.py
+    pytest investment_screener/backend/tests/py_services/test_tv_price_refresh.py
 
 Key Functions (Index):
     - test_scope_is_held_plus_watchlisted_and_skips_closed_and_cash()
@@ -21,14 +21,13 @@ Key Functions (Index):
     - test_aliases_are_normalised_before_fetching_and_writing()
 
 Key Input Dependencies:
-    - plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_price_refresh.py
+    - investment_screener/backend/py_services/tv_price_refresh.py
 """
 import sys
 from pathlib import Path
 
 REPO_ROOT = next(p for p in Path(__file__).resolve().parents if (p / "investment_screener").is_dir())
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
 from domain_model.account_repository import upsert_account  # noqa: E402

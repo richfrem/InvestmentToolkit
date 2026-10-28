@@ -26,7 +26,7 @@ python3 scripts/run_daily.py --scan
 ## Workflow
 0. **Readiness**, in this order:
    1. Positions and trades: `/tv-portfolio-sync`. Only if `python3 investment_screener/backend/py_services/broker_sources.py --json` lists `questrade`, ask whether to use TradingView (default) or Questrade.
-   2. Prices: `python3 plugins/tradingview/.apm/skills/trading-via-tradingview/scripts/tv_price_refresh.py` (also refreshes USD→CAD). On exit 1, fill the `stale` symbols with the `refresh-prices` mode of the `syncing-questrade-accounts` skill when Questrade is enabled; otherwise report them.
+   2. Prices: `python3 investment_screener/backend/py_services/tv_price_refresh.py` (also refreshes USD→CAD). On exit 1, fill the `stale` symbols with the `refresh-prices` mode of the `syncing-questrade-accounts` skill when Questrade is enabled; otherwise report them.
    3. Review cycle: `python3 investment_screener/backend/py_services/review_gate.py begin`, then work the whole queue, holdings first: `/update-stock-analysis` for HARD triggers, `review_gate.py mark --ticker T --reason "..."` for age-only ones.
    4. Price levels for every holding and watchlist name, from the latest valuation and today's chart (one batch download): `python3 investment_screener/backend/py_services/update_price_levels.py --followed --source combined --write`. The Stock Analysis page and the TradingView chart both show these stored tiers.
    5. Targets superseded by trades: `python3 investment_screener/backend/py_services/rebaseline_targets.py`, then `--write`. A fill newer than a target resets it to the post-trade weight (0% when sold out); the cash target absorbs the difference. Report positions skipped for missing prices.
