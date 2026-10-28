@@ -13,6 +13,7 @@
  */
 
 import { jest, describe, it, expect } from '@jest/globals';
+import { readFileSync } from 'fs';
 import {
   openWatchlist,
   getWatchlist,
@@ -177,6 +178,13 @@ describe('Watchlist Automation Core (CDP)', () => {
       const result = await deleteWatchlist(mockClient, 'IT_New');
       expect(result.success).toBe(true);
     }, 15000);
+  });
+
+  describe('row selectors', () => {
+    it('never match a symbol row by its hashed class suffix, which changes with every TradingView release', () => {
+      const src = readFileSync(new URL('../core/watchlist.js', import.meta.url), 'utf-8');
+      expect(src).not.toMatch(/\[class\*="symbol-[A-Za-z0-9_]{6,}"\]/);
+    });
   });
 
   describe('getWatchlist on a virtualized list', () => {
