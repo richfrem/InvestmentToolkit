@@ -74,4 +74,5 @@ Paths starting with `scripts/` or `assets/` are relative to this skill's folder;
 
 - [Pine Script overview](references/pinescript_overview.md), [Pine Script agent rules](references/PineScript_Agent_Skill_Rules.md), [Top TradingView indicators](references/Top_TradingView_Indicators_Reference.md), [chart types](references/chart-types-reference.md).
 - [Self-evolution profile](references/self-evolution-profile.md) and [evolution log](references/evolution-log.md); [playbooks](references/playbooks/README.md).
+- [Chart levels belong to a stock, not to the chart](references/chart-levels-per-symbol.md): why a chart can show another stock's levels, how to check, and the design options. Read before drawing or trusting levels.
 - Sibling skills: `trading-via-tradingview` (orders, sync, prices, watchlists) and `analyzing-charts` (technical analysis).
