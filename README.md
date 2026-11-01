@@ -22,20 +22,25 @@ An institutional-grade portfolio management and automated research suite built n
 | ![Live Stock Heatmap](screenshots/stock-heatmap.png) | ![Portfolio Summary](screenshots/portfolio-summary.png) |
 | *Real-time performance treemap across technology, power, compute, and sovereign finance sectors.* | *Strategy allocation donut, time-weighted returns, and cross-account KPI rollups.* |
 
-| **Portfolio: scope toggle, action chips and valuation ranges** | **Positions with target vs actual weights** |
+| **Portfolio: Scope Toggle, Action Chips & Valuation Ranges** | **Positions with Target vs Actual Weights** |
 | :---: | :---: |
 | ![Portfolio page](screenshots/screener-advisor.png) | ![Portfolio positions](screenshots/portfolio-table.png) |
-| *One page for holdings, watchlist and everything else: Holdings / Watchlist / All toggle, action chips, sector and strategy filters, valuation range bars (screenshots predate the merge).* | *Per-holding target vs actual weights, gain/loss metrics, and single-click staging.* |
+| *Unified portfolio intelligence view: Holdings / Watchlist / All toggle, action chips, and valuation range bars.* | *Per-holding target vs actual weights, gain/loss metrics, and single-click trade staging.* |
 
-| **Stock Analysis & Thesis Tiers (SNDK)** | **Interactive 5-Year DCF Modeler** |
+| **Stock Analysis & Thesis Tiers (NVDA)** | **Interactive 5-Year DCF Modeler (NVDA)** |
 | :---: | :---: |
 | ![Stock Analysis](screenshots/stock-analysis-overview.png) | ![DCF Modeler](screenshots/dcf-valuation-modeler.png) |
-| *AI Thesis Buy/Accumulate tiers, Trim targets, stop loss triggers, and financial scorecard.* | *Multi-scenario (Bear/Base/Bull) DCF projection modeler with real-time sensitivity matrix.* |
+| *AI Thesis Buy/Accumulate tiers, Trim targets, stop loss triggers, and core thesis parameters.* | *Multi-scenario (Bear/Base/Bull) DCF projection modeler with real-time sensitivity matrix.* |
 
-| **Daily Portfolio Brief & Morning Triage** | **Institutional 13F Filing Diff (SA LP)** |
+| **Daily Portfolio Brief: Morning Triage** | **Macro Regime & Binary Event Horizon** |
 | :---: | :---: |
-| ![Daily Brief](screenshots/daily-portfolio-brief.png) | ![13F Filing Diff](screenshots/13f-institutional-filings.png) |
-| *Morning macro regime check, binary earnings events, and ranked urgency triage cards.* | *Institutional quarter-over-quarter 13F diff tracker (Q2 2026 Long/Put barbell analysis).* |
+| ![Daily Brief](screenshots/daily-portfolio-brief.png) | ![Daily Brief Macro & Events](screenshots/daily-brief-macro-regime.png) |
+| *Ranked urgency triage cards, technical momentum indicators, and standing decision execution rationales.* | *Morning macro regime check (VIX, 200D SMA, HYG/LQD ratio) and imminent binary catalyst calendar.* |
+
+| **Institutional Technicals & Risk Bounds** | **Multi-Year Performance & Consensus Forecasts** |
+| :---: | :---: |
+| ![Stock Analysis Technicals](screenshots/stock-analysis-technicals.png) | ![Stock Analysis Performance](screenshots/stock-analysis-performance.png) |
+| *Dynamic pivot levels, ATR risk management stop thresholds, and staged take-profit ladder.* | *Historical actuals vs multi-year revenue, net income, and EPS consensus forecast curves.* |
 
 ---
 
