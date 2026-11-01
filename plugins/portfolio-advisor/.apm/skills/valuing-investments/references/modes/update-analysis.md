@@ -46,7 +46,7 @@ python3 investment_screener/backend/py_services/fetch_financials.py {TICKER} > t
    ```
 6. **Compile Research Report**:
    Write the Markdown deep dive, then publish with `persist_research.py --file REPORT.md --db /ABSOLUTE/MAIN_CHECKOUT/investment_screener/backend/data/intelligence.sqlite`. Dated reports are served from the ledger, so a file alone is insufficient. Read back with `query_ledger_research.py --get {TICKER}_{YYYY-MM-DD}.md`.
-7. **Price Levels (page and chart)**: `python3 investment_screener/backend/py_services/update_price_levels.py --ticker {TICKER} --source combined --write --draw` writes numbered buy/trim tiers and the stop from this valuation and today's chart (Fibonacci, volume shelves, 50/200-day EMAs) and redraws them on TradingView, so page and chart match. Quote levels only from these tiers.
+7. **Price Levels & Alerts (page, chart & audio)**: `python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --ticker {TICKER} --source combined --sync-alerts` writes numbered buy/trim tiers and the stop from this valuation and today's chart, redraws the per-symbol horizontal lines on TradingView, and synchronizes audible crossing alerts with those exact levels. Quote levels only from these tiers.
 8. **Mark Reviewed**: `python3 investment_screener/backend/py_services/review_gate.py mark --ticker {TICKER} --reason "Re-valued today: <one-line conclusion>"` (accepted because a valuation was saved today). The new valuation, not chat analysis, is what the app shows.
 9. **Closing Refresh**: Run `python3 investment_screener/backend/py_services/refresh_all.py --publish` so the Portfolio Advisor and Daily Brief pages reflect this session.
 
