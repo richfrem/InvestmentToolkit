@@ -1,57 +1,63 @@
 #!/usr/bin/env python3
 """
-batch_update_price_levels.py — Batch calculate and synchronize price levels for TradingView.
-=============================================================================================
+batch_update_price_levels.py — Batch update the buy, trim and stop lines on every TradingView chart.
+====================================================================================================
 
 Purpose:
-    Provides a unified utility to batch calculate, persist, and synchronize structured price
-    levels across all watchlist and portfolio investments in TradingView.
-    
-    Addresses the TradingView chart architecture where the AI TA Levels indicator runs on
-    a single chart canvas:
-      1. Batch recalculates fresh combined levels (DCF tiers + technical chart levels) in SQLite.
-      2. Offers --follow mode to automatically sync levels in real-time as the user clicks
-         tickers in their TradingView watchlist without triggering warning banners.
-      3. Offers --sweep mode to sequentially iterate through the watchlist in TradingView Desktop
-         and verify that every chart draws its levels cleanly.
+    Draws each stock's stored price levels (domain_model.sqlite) as horizontal lines on that
+    stock's own TradingView chart. TradingView keeps a drawing with the symbol it was drawn on,
+    so one batch run leaves every chart with its own levels; clicking through the watchlist
+    shows the right lines on each stock with no background process.
+
+    Indicator inputs cannot do this: they belong to the chart layout, so a batch that sets them
+    leaves the last ticker's levels on every chart. After drawing, this script blanks the
+    AI TA Levels indicator's level inputs so it neither draws a second set nor shows the
+    "Levels are for X, not Y" warning.
+
+    One run per ticker: switch the chart, remove the old level lines (only lines this tool drew,
+    labelled "AI-L:", unless --all-lines), draw one labelled line per stored level, check that
+    they are on the chart.
 
 Layer:
     Plugins / TradingView / Operating TradingView Charts / Scripts
 
 Usage Examples:
-    # Recalculate & persist fresh levels for all followed watchlist/portfolio names:
-    python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --recalculate
+    # Recalculate levels in SQLite, then redraw every chart (the full refresh):
+    python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --recalculate --sweep
 
-    # Launch real-time follower so clicking any stock in TradingView updates levels dynamically:
-    python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --follow
-
-    # Sequentially sweep through all watchlist charts in TradingView Desktop:
+    # Redraw every chart from the levels already stored:
     python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --sweep
 
-    # Single-ticker update and draw:
+    # See what would be removed and drawn, changing nothing:
+    python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --sweep --dry-run
+
+    # Also remove line drawings this tool did not draw (the owner's own lines):
+    python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --sweep --all-lines
+
+    # One ticker: recalculate, then redraw its chart:
     python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --ticker NFLX
 
 Key Functions:
-    - batch_recalculate_levels() — Persists fresh price levels in domain_model.sqlite
-    - batch_draw_watchlist()     — Sequentially switches and draws charts in TradingView Desktop
-    - get_followed_tickers()     — Reads active portfolio holdings and watchlisted symbols
-    - start_follower()           — Runs background follower daemon for live watchlist clicking
+    - get_followed_tickers()     — active holdings and watchlisted symbols
+    - batch_recalculate_levels() — recalculates and stores levels in domain_model.sqlite
+    - build_level_plan()         — {ticker: [{price, label, color}]} from the stored levels
+    - sync_chart_lines()         — draws the plan on every chart through the CDP engine
 
 Key Input Dependencies:
-    - investment_screener/backend/data/domain_model.sqlite (Projections & Watchlists)
-    - investment_screener/backend/py_services/update_price_levels.py (Tiers calculation engine)
-    - investment_screener/backend/py_services/pine_level_inputs.py (CDP indicator input manipulation)
+    - investment_screener/backend/data/domain_model.sqlite (price_level_set / price_level_tier, projections)
+    - investment_screener/backend/py_services/update_price_levels.py (level derivation)
+    - investment_screener/backend/py_services/pine_level_inputs.py (stored levels reader, indicator input titles)
+    - tradingview-cdp/core/level_lines.js (chart levelLines: switch, clear, draw, verify)
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 import sys
-import time
-from typing import Any, Dict, List, Optional
+import tempfile
+from typing import Any, Callable, Dict, List, Optional
 
 # Resolve project root and backend services directory
 SCRIPTS_DIR = Path(__file__).resolve().parent
@@ -63,8 +69,21 @@ if str(SCRIPTS_DIR) not in sys.path:
 if str(ENGINE_DIR) not in sys.path:
     sys.path.insert(0, str(ENGINE_DIR))
 
-from pine_level_inputs import draw_levels, follow
+from pine_level_inputs import INDICATOR_NAME, input_titles, known_symbol, level_inputs, ticker_input_title
 from update_price_levels import derive_and_write, derive_and_write_followed
+
+# (pine input name, line label, colour) — the order lines are drawn in
+LEVEL_LINES = (
+    ("target_trim3", "Trim 3", "#ab47bc"),
+    ("target_trim2", "Trim 2", "#fb8c00"),
+    ("target_trim1", "Trim 1", "#fdd835"),
+    ("target_fair", "DCF Fair Value", "#00bcd4"),
+    ("target_buy1", "Buy 1", "#26a69a"),
+    ("target_buy", "Buy 2", "#00e676"),
+    ("target_buy3", "Buy 3", "#2962ff"),
+    ("target_stop", "Stop", "#f44336"),
+)
+SWEEP_TIMEOUT_PER_TICKER = 15   # seconds: symbol switch, settle, clear, draw, verify
 
 
 def get_followed_tickers(db_path: str | Path | None = None) -> List[str]:
@@ -107,163 +126,147 @@ def batch_recalculate_levels(
     return derive_and_write_followed(source=source, dry_run=dry_run, db_path=dbp)
 
 
-def batch_draw_watchlist(
-    tickers: Optional[List[str]] = None,
-    delay: float = 1.5,
-    db_path: str | Path | None = None,
-) -> Dict[str, Any]:
-    """Sequentially switch TradingView Desktop charts and draw stored levels.
+def build_level_plan(tickers: List[str], db_path: str | Path | None = None) -> Dict[str, List[Dict[str, Any]]]:
+    """The lines to draw on each ticker's chart, read from its stored levels.
 
     Args:
-        tickers: Optional list of tickers. If None, reads followed tickers from database.
-        delay: Seconds to pause between charts to allow DOM and chart renderer to settle.
+        tickers: Ticker symbols.
         db_path: Optional path to domain_model.sqlite.
 
     Returns:
-        Dictionary summary with total, drawn, and failed tickers.
+        {ticker: [{price, label, color}]}. A ticker with no stored levels gets an empty list,
+        so its old level lines are still cleared.
     """
-    symbols = tickers if tickers is not None else get_followed_tickers(db_path)
-    drawn: List[str] = []
-    failed: List[Dict[str, str]] = []
-
-    print(f"Beginning sequential chart sweep for {len(symbols)} tickers (delay: {delay}s)...")
-    for symbol in symbols:
-        try:
-            res = draw_levels(symbol, db_path=db_path, switch=True)
-            if isinstance(res, dict) and res.get("success"):
-                drawn.append(symbol)
-                print(f"  ✓ {symbol}: levels set on '{res.get('study')}'")
-            else:
-                err_msg = res.get("error", str(res)) if isinstance(res, dict) else str(res)
-                failed.append({"ticker": symbol, "error": err_msg})
-                print(f"  ✗ {symbol}: {err_msg}", file=sys.stderr)
-        except Exception as exc:
-            failed.append({"ticker": symbol, "error": str(exc)})
-            print(f"  ✗ {symbol}: {type(exc).__name__}: {exc}", file=sys.stderr)
-        
-        if delay > 0:
-            time.sleep(delay)
-
-    return {"total": len(symbols), "drawn": drawn, "failed": failed}
+    plan: Dict[str, List[Dict[str, Any]]] = {}
+    for ticker in tickers:
+        sym = ticker.upper()
+        values = level_inputs(sym, db_path) if known_symbol(sym, db_path) else {}
+        plan[sym] = [
+            {"price": round(values[name], 2), "label": label, "color": color}
+            for name, label, color in LEVEL_LINES
+            if values.get(name, 0) > 0
+        ]
+    return plan
 
 
-def start_follower(interval: float = 1.5, db_path: str | Path | None = None) -> None:
-    """Launch the background symbol follower daemon.
+def _blank_indicator_values() -> Dict[str, Any]:
+    """Indicator input titles -> blank value, so the indicator draws no levels and shows no warning."""
+    values: Dict[str, Any] = {title: 0 for title in input_titles().values()}
+    tag = ticker_input_title()
+    if tag:
+        values[tag] = ""
+    return values
 
-    Polls the active chart symbol in TradingView Desktop via CDP port 9222 and
-    automatically sets and draws the stored levels whenever the user clicks or
-    changes tickers.
+
+def sync_chart_lines(
+    tickers: Optional[List[str]] = None,
+    db_path: str | Path | None = None,
+    dry_run: bool = False,
+    all_lines: bool = False,
+    call: Optional[Callable[..., Any]] = None,
+) -> Dict[str, Any]:
+    """Draw every ticker's stored levels as lines on its own TradingView chart.
 
     Args:
-        interval: Polling frequency in seconds.
+        tickers: Ticker symbols; defaults to every holding and watchlist name.
         db_path: Optional path to domain_model.sqlite.
+        dry_run: Report what would be removed and drawn; change nothing.
+        all_lines: Also remove line drawings this tool did not draw.
+        call: CDP CLI caller (defaults to tv_client.tv_call); injectable for tests.
+
+    Returns:
+        {success, total, synced: [tickers], failed: [{symbol, error}], indicator_blanked}.
     """
-    print("Starting TradingView live symbol follower daemon...")
-    print("Clicking any ticker in your TradingView watchlist will auto-update levels.")
-    print("Press Ctrl+C to terminate.")
-    follow(interval=interval, db_path=db_path)
+    if call is None:
+        from tv_client import tv_call as call
+    symbols = tickers if tickers is not None else get_followed_tickers(db_path)
+    plan = build_level_plan(symbols, db_path)
+
+    with tempfile.NamedTemporaryFile("w", suffix=".json", prefix="level_plan_", delete=False) as fh:
+        json.dump(plan, fh)
+        plan_path = fh.name
+    try:
+        args = ["chart", "levelLines", "--plan", plan_path]
+        if dry_run:
+            args.append("--dry-run")
+        if all_lines:
+            args.append("--all-lines")
+        res = call(*args, timeout=30 + SWEEP_TIMEOUT_PER_TICKER * len(plan),
+                   enable_retry=False, enable_cache_fallback=False)
+    finally:
+        Path(plan_path).unlink(missing_ok=True)
+
+    res = res if isinstance(res, dict) else {"success": False, "error": str(res)}
+    failed = res.get("failed")
+    if failed is None:   # the engine call itself failed: no ticker was confirmed drawn
+        failed = [{"symbol": s, "error": res.get("error", "levelLines call failed")} for s in plan]
+    out = {
+        "success": bool(res.get("success")) and not failed,
+        "total": len(plan),
+        "synced": res.get("synced", []),
+        "failed": failed,
+        "results": res.get("results", []),
+        "indicator_blanked": False,
+    }
+    if not dry_run:
+        blank = call("chart", "setInputs", "--name", INDICATOR_NAME, "--values", json.dumps(_blank_indicator_values()),
+                     timeout=30, enable_cache_fallback=False)
+        out["indicator_blanked"] = bool(isinstance(blank, dict) and blank.get("success"))
+    return out
+
+
+def _print_sync(res: Dict[str, Any], dry_run: bool) -> int:
+    if dry_run:
+        for r in res.get("results", []):
+            if r.get("success"):
+                print(f"  {r['symbol']}: would remove {r['wouldRemove']}, draw {r['wouldDraw']}"
+                      f" (other line drawings on chart: {r['otherLines']})")
+    print(f"\nChart lines {'checked' if dry_run else 'drawn'}: {len(res['synced'])}/{res['total']} tickers.")
+    if not dry_run:
+        print("AI TA Levels indicator inputs blanked." if res["indicator_blanked"]
+              else "Note: AI TA Levels indicator not blanked (not on the chart?); it may still show its own levels.")
+    if res["failed"]:
+        print(f"FAILED ({len(res['failed'])}):", file=sys.stderr)
+        for item in res["failed"]:
+            print(f"  ✗ {item['symbol']}: {item['error']}", file=sys.stderr)
+        return 1
+    return 0
 
 
 def main() -> int:
-    """CLI entry point for batch updating TradingView price levels."""
-    parser = argparse.ArgumentParser(
-        description="Batch calculate, persist, and synchronize TradingView price levels."
-    )
-    parser.add_argument(
-        "--recalculate",
-        action="store_true",
-        help="Batch recalculate and persist levels in SQLite for all followed names",
-    )
-    parser.add_argument(
-        "--sweep",
-        action="store_true",
-        help="Sequentially switch TradingView charts and draw levels for all watchlist names",
-    )
-    parser.add_argument(
-        "--follow",
-        action="store_true",
-        help="Run real-time background follower to auto-draw levels on watchlist clicks",
-    )
-    parser.add_argument(
-        "--ticker",
-        type=str,
-        help="Recalculate and draw levels for a specific ticker",
-    )
-    parser.add_argument(
-        "--source",
-        type=str,
-        default="combined",
-        choices=["combined", "dcf", "ta", "manual"],
-        help="Price level derivation source (default: combined)",
-    )
-    parser.add_argument(
-        "--delay",
-        type=float,
-        default=1.5,
-        help="Delay in seconds between charts during sequential sweep (default: 1.5)",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Calculate levels without committing to database or updating chart",
-    )
-    parser.add_argument(
-        "--db",
-        type=str,
-        default=None,
-        help="Path to domain_model.sqlite",
-    )
-
+    """CLI entry point for batch updating TradingView price level lines."""
+    parser = argparse.ArgumentParser(description="Batch update the buy, trim and stop lines on every TradingView chart.")
+    parser.add_argument("--recalculate", action="store_true", help="Recalculate and store levels in SQLite for all followed names")
+    parser.add_argument("--sweep", action="store_true", help="Redraw the stored levels as lines on every chart")
+    parser.add_argument("--ticker", type=str, help="Recalculate one ticker, then redraw its chart")
+    parser.add_argument("--all-lines", action="store_true", help="Also remove line drawings this tool did not draw")
+    parser.add_argument("--source", type=str, default="combined", choices=["combined", "dcf", "ta", "manual"],
+                        help="Price level derivation source (default: combined)")
+    parser.add_argument("--dry-run", action="store_true", help="Change neither the database nor the charts")
+    parser.add_argument("--db", type=str, default=None, help="Path to domain_model.sqlite")
     args = parser.parse_args()
+    dbp = Path(args.db) if args.db else None
 
-    # Case 1: Specific ticker
     if args.ticker:
         sym = args.ticker.upper()
         print(f"Recalculating price levels for {sym} (source={args.source}, dry_run={args.dry_run})...")
-        dbp = Path(args.db) if args.db else None
         res = derive_and_write(sym, source=args.source, dry_run=args.dry_run, db_path=dbp)
         print(json.dumps(res, indent=2))
-        if not args.dry_run:
-            print(f"Drawing levels for {sym} on active TradingView chart...")
-            drawn = draw_levels(sym, db_path=dbp, switch=True)
-            if isinstance(drawn, dict) and drawn.get("success"):
-                print(f"✓ Levels successfully drawn for {sym} on '{drawn.get('study')}'.")
-            else:
-                print(f"✗ Could not draw levels for {sym}: {drawn}", file=sys.stderr)
-                return 1
-        return 0
+        return _print_sync(sync_chart_lines([sym], db_path=dbp, dry_run=args.dry_run, all_lines=args.all_lines), args.dry_run)
 
-    # Case 2: Live follower daemon
-    if args.follow:
-        try:
-            start_follower(interval=args.delay, db_path=args.db)
-            return 0
-        except KeyboardInterrupt:
-            print("\nFollower stopped.")
-            return 0
-
-    # Case 3: Sequential sweep across charts
-    if args.sweep:
-        res = batch_draw_watchlist(delay=args.delay, db_path=args.db)
-        print(f"\nSweep completed: {len(res['drawn'])}/{res['total']} charts drawn successfully.")
-        if res["failed"]:
-            print(f"Failed charts ({len(res['failed'])}):", file=sys.stderr)
-            for item in res["failed"]:
-                print(f"  {item['ticker']}: {item['error']}", file=sys.stderr)
-            return 1
-        return 0
-
-    # Case 4: Default or explicit recalculate
-    print(f"Batch recalculating price levels for all followed tickers (source={args.source}, dry_run={args.dry_run})...")
-    res = batch_recalculate_levels(source=args.source, dry_run=args.dry_run, db_path=args.db)
-    print(
-        f"Completed: {len(res['updated'])} updated, {len(res['skipped'])} skipped, {len(res['failed'])} failed."
-    )
-    if res["failed"]:
+    rc = 0
+    if args.recalculate or not args.sweep:
+        print(f"Batch recalculating price levels for all followed tickers (source={args.source}, dry_run={args.dry_run})...")
+        res = batch_recalculate_levels(source=args.source, dry_run=args.dry_run, db_path=dbp)
+        print(f"Completed: {len(res['updated'])} updated, {len(res['skipped'])} skipped, {len(res['failed'])} failed.")
         for item in res["failed"]:
             print(f"  ✗ {item['ticker']}: {item['reason']}", file=sys.stderr)
-        return 1
-    return 0
+        rc = 1 if res["failed"] else 0
+
+    if args.sweep:
+        print("Drawing level lines on every chart...")
+        rc = max(rc, _print_sync(sync_chart_lines(db_path=dbp, dry_run=args.dry_run, all_lines=args.all_lines), args.dry_run))
+    return rc
 
 
 if __name__ == "__main__":

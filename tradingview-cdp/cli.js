@@ -293,6 +293,23 @@ register('chart', {
         return chart.setStudyInputs(client, opts.name, JSON.parse(opts.values));
       },
     }],
+    ['levelLines', {
+      description: 'Draw stored levels as lines on each symbol\'s own chart — e.g. chart levelLines --plan plan.json [--dry-run] [--all-lines]',
+      options: {
+        plan: { type: 'string', short: 'p', description: 'JSON file: {"SMCI": [{"price": 35.2, "label": "Buy 1", "color": "#26a69a"}], ...}' },
+        'dry-run': { type: 'boolean', description: 'Report what would be removed and drawn; change nothing' },
+        'all-lines': { type: 'boolean', description: 'Also remove line drawings this tool did not draw' },
+      },
+      handler: async (opts) => {
+        if (!opts.plan) throw new Error('--plan FILE is required');
+        const { readFileSync } = await import('fs');
+        const plan = JSON.parse(readFileSync(opts.plan, 'utf8'));
+        const { getClient } = await import('./connection.js');
+        const { syncLevelPlan } = await import('./core/level_lines.js');
+        const client = await getClient();
+        return syncLevelPlan(client, plan, { dryRun: !!opts['dry-run'], allLines: !!opts['all-lines'] });
+      },
+    }],
     ['indicators', {
       description: 'List indicators currently loaded on the chart',
       handler: async () => {
