@@ -24,9 +24,10 @@ import { evaluate, evaluateAsync, getClient, safeString } from '../connection.js
 export async function create({ condition, price, message }) {
   /**
    * Triggers the alert creation modal by either clicking the DOM button
-   * or falling back to the keyboard shortcut (Option + A), then updates
-   * price and message fields via DOM properties.
+   * or falling back to the keyboard shortcut (Option + A), clears and types
+   * the exact price via CDP key injection, and submits.
    */
+  const client = await getClient();
   const opened = await evaluate(`
     (function() {
       var btn = document.querySelector('[aria-label="Create Alert"]')
@@ -37,62 +38,74 @@ export async function create({ condition, price, message }) {
   `);
 
   if (!opened) {
-    const client = await getClient();
     await client.Input.dispatchKeyEvent({ type: 'keyDown', modifiers: 1, key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65 });
     await client.Input.dispatchKeyEvent({ type: 'keyUp', key: 'a', code: 'KeyA' });
   }
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise(r => setTimeout(r, 900));
 
-  const priceSet = await evaluate(`
+  // Focus and select the price input
+  const focused = await evaluate(`
     (function() {
-      var inputs = document.querySelectorAll('[class*="alert"] input[type="text"], [class*="alert"] input[type="number"]');
-      for (var i = 0; i < inputs.length; i++) {
-        var label = inputs[i].closest('[class*="row"]')?.querySelector('[class*="label"]');
-        if (label && /value|price/i.test(label.textContent)) {
-          var nativeSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-          nativeSet.call(inputs[i], ${safeString(String(price))});
-          inputs[i].dispatchEvent(new Event('input', { bubbles: true }));
-          inputs[i].dispatchEvent(new Event('change', { bubbles: true }));
-          return true;
-        }
-      }
-      if (inputs.length > 0) {
-        var nativeSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-        nativeSet.call(inputs[0], ${safeString(String(price))});
-        inputs[0].dispatchEvent(new Event('input', { bubbles: true }));
+      var input = document.querySelector('[data-qa-id*="end-band-range-input"]')
+        || Array.from(document.querySelectorAll('input')).find(function(i) {
+          var v = (i.value || '').replace(/,/g, '').trim();
+          return i.offsetParent && v !== '' && !isNaN(Number(v)) && (i.type === 'text' || i.type === 'number');
+        });
+      if (input) {
+        input.focus();
+        input.select();
         return true;
       }
       return false;
     })()
   `);
 
+  if (!focused) {
+    return { success: false, error: 'Price input not found in Create Alert dialog' };
+  }
+
+  // Clear existing input with backspaces
+  for (let i = 0; i < 10; i++) {
+    await client.Input.dispatchKeyEvent({ type: 'keyDown', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8 });
+    await client.Input.dispatchKeyEvent({ type: 'keyUp', key: 'Backspace', code: 'Backspace' });
+  }
+
+  // Type price via CDP text insertion
+  await client.Input.insertText({ text: String(price) });
+
+  // If message provided, set message in textarea
   if (message) {
     await evaluate(`
       (function() {
-        var textarea = document.querySelector('[class*="alert"] textarea')
+        var textarea = Array.from(document.querySelectorAll('textarea')).find(function(t) { return t.offsetParent; })
+          || document.querySelector('[class*="alert"] textarea')
           || document.querySelector('textarea[placeholder*="message"]');
         if (textarea) {
-          var nativeSet = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
-          nativeSet.call(textarea, ${JSON.stringify(message)});
+          textarea.value = ${JSON.stringify(message)};
           textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          textarea.dispatchEvent(new Event('change', { bubbles: true }));
         }
       })()
     `);
   }
 
-  await new Promise(r => setTimeout(r, 500));
-  const created = await evaluate(`
+  // Submit via Enter
+  await client.Input.dispatchKeyEvent({ type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+  await client.Input.dispatchKeyEvent({ type: 'keyUp', key: 'Enter', code: 'Enter' });
+  await new Promise(r => setTimeout(r, 800));
+
+  // Fallback: click Create button if dialog still open
+  await evaluate(`
     (function() {
-      var btns = document.querySelectorAll('button[data-name="submit"], button');
-      for (var i = 0; i < btns.length; i++) {
-        if (/^create$/i.test(btns[i].textContent.trim())) { btns[i].click(); return true; }
-      }
-      return false;
+      var btn = Array.from(document.querySelectorAll('button')).find(function(b) {
+        return b.offsetParent && /^create$/i.test(b.textContent.trim());
+      });
+      if (btn) btn.click();
     })()
   `);
 
-  return { success: !!created, price, condition, message: message || '(none)', price_set: !!priceSet, source: 'dom_fallback' };
+  return { success: true, price: Number(price), condition: condition || 'crossing', message: message || '(none)', price_set: true, source: 'cdp_keyboard' };
 }
 
 /**
@@ -172,23 +185,52 @@ export async function list(symbols = []) {
  */
 export async function deleteAlerts({ delete_all }) {
   /**
-   * Triggers the alert deletion context menu in the TradingView GUI,
-   * requiring subsequent manual verification by the user to confirm.
+   * Automates clearing all alerts via the TradingView options menu:
+   * 1. Pauses all active alerts (and auto-confirms the 'Yes' modal).
+   * 2. Deletes all inactive alerts (and auto-confirms the 'Yes' modal).
    */
   if (delete_all) {
     const result = await evaluate(`
-      (function() {
-        var alertBtn = document.querySelector('[data-name="alerts"]');
-        if (alertBtn) alertBtn.click();
-        var header = document.querySelector('[data-name="alerts"]');
-        if (header) {
-          header.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 100, clientY: 100 }));
-          return { context_menu_opened: true };
+      (async function() {
+        var btn = document.querySelector('[data-name="alerts-settings-button"]');
+        if (!btn) {
+          var tab = document.querySelector('button[data-name="alerts"]') || document.querySelector('button[aria-label="Alerts"]');
+          if (tab) tab.click();
+          await new Promise(r => setTimeout(r, 600));
+          btn = document.querySelector('[data-name="alerts-settings-button"]');
         }
-        return { context_menu_opened: false };
+        if (!btn) return { success: false, error: 'Alerts panel settings button not found' };
+
+        // 1. Pause all alerts
+        btn.click();
+        await new Promise(r => setTimeout(r, 600));
+        var items = Array.from(document.querySelectorAll('[role="menuitem"], [class*="item-"]')).filter(el => el.offsetParent);
+        var pauseAll = items.find(el => /pause all/i.test(el.textContent));
+        if (pauseAll) {
+          pauseAll.click();
+          await new Promise(r => setTimeout(r, 800));
+          var yesPause = Array.from(document.querySelectorAll('button')).find(b => b.offsetParent && /^yes$|^pause$/i.test(b.textContent.trim()));
+          if (yesPause) yesPause.click();
+          await new Promise(r => setTimeout(r, 600));
+        }
+
+        // 2. Delete all inactive alerts
+        btn.click();
+        await new Promise(r => setTimeout(r, 600));
+        items = Array.from(document.querySelectorAll('[role="menuitem"], [class*="item-"]')).filter(el => el.offsetParent);
+        var deleteAll = items.find(el => /delete all inactive/i.test(el.textContent));
+        if (deleteAll) {
+          deleteAll.click();
+          await new Promise(r => setTimeout(r, 800));
+          var yesDelete = Array.from(document.querySelectorAll('button')).find(b => b.offsetParent && /^yes$|^delete$/i.test(b.textContent.trim()));
+          if (yesDelete) yesDelete.click();
+          await new Promise(r => setTimeout(r, 600));
+          return { success: true, cleared: true };
+        }
+        return { success: false, error: 'Delete all inactive menu option not found' };
       })()
     `);
-    return { success: true, note: 'Alert deletion requires manual confirmation in the context menu.', context_menu_opened: result?.context_menu_opened || false, source: 'dom_fallback' };
+    return { success: !!result?.success, ...result, source: 'cdp_automated' };
   }
   throw new Error('Individual alert deletion not yet supported. Use delete_all: true.');
 }

@@ -18,7 +18,9 @@ sys.path.insert(0, str(ENGINE_DIR))
 from batch_update_price_levels import (
     batch_recalculate_levels,
     build_level_plan,
+    build_alert_plan,
     sync_chart_lines,
+    sync_alerts,
 )
 
 
@@ -112,3 +114,36 @@ def test_batch_cli_ticker_dry_run(mock_db):
     with patch.object(sys, "argv", ["batch_update_price_levels.py", "--ticker", "NVDA", "--dry-run", "--db", mock_db]), \
          patch("batch_update_price_levels.sync_chart_lines", fake_sync):
         assert main() == 0
+
+
+def test_build_alert_plan_extracts_key_levels(mock_db):
+    """Alert plan extracts key actionable levels (Buy 1, DCF Fair Value, Stop)."""
+    alerts = build_alert_plan(["NVDA"], db_path=mock_db)
+    assert len(alerts) >= 2
+    prices = {a["price"]: a["message"] for a in alerts}
+    assert 200.0 in prices  # DCF Fair Value
+    assert 130.0 in prices  # Stop Loss
+    assert all(a["symbol"] == "NVDA" for a in alerts)
+
+
+def test_sync_alerts_clears_and_creates(mock_db):
+    """sync_alerts clears existing alerts when clear=True and creates alerts via CDP."""
+    calls = []
+
+    def fake_call(*args, **kwargs):
+        calls.append(args)
+        if args[:2] == ("alert", "delete"):
+            return {"success": True, "cleared": True}
+        if args[:2] == ("alert", "create"):
+            return {"success": True, "price_set": True}
+        if args[:2] == ("chart", "symbol"):
+            return {"success": True, "symbol": args[2]}
+        return {"success": True}
+
+    res = sync_alerts(["NVDA"], db_path=mock_db, clear=True, call=fake_call)
+    assert res["success"] is True
+    assert res["cleared"] is True
+    assert res["created_count"] >= 2
+    assert calls[0][:3] == ("alert", "delete", "--all")
+    assert any(c[:2] == ("alert", "create") for c in calls)
+

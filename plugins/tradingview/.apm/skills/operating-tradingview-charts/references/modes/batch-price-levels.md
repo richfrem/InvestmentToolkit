@@ -20,16 +20,19 @@ To solve this permanently across the entire watchlist without running background
 # 1. Recalculate SQLite levels and sweep all charts (clear old AI-L lines + draw fresh lines + blank indicator):
 python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --recalculate --sweep
 
-# 2. Redraw lines on all charts from currently stored SQLite levels:
-python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --sweep
+# 2. Redraw lines on all charts AND synchronize matching audible price alerts:
+python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --sweep --sync-alerts
 
-# 3. Dry run: verify what would be removed and drawn across all charts without modifying them:
+# 3. Clean foundation: wipe all existing alerts first, draw lines, and set fresh matching alerts:
+python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --sweep --sync-alerts --clear-alerts
+
+# 4. Dry run: verify what would be removed and drawn across all charts without modifying them:
 python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --sweep --dry-run
 
-# 4. Single ticker: recalculate and draw on one chart (e.g. SOFI):
-python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --ticker SOFI
+# 5. Single ticker: recalculate, draw lines, and sync alerts for one stock (e.g. SOFI):
+python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --ticker SOFI --sync-alerts
 
-# 5. Full reset: clear ALL lines (including non-AI drawings) on every chart and reapply from SQLite:
+# 6. Full reset: clear ALL lines (including non-AI drawings) on every chart and reapply from SQLite:
 python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --sweep --all-lines
 ```
 

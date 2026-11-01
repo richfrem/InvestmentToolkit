@@ -83,6 +83,12 @@ LEVEL_LINES = (
     ("target_buy3", "Buy 3", "#2962ff"),
     ("target_stop", "Stop", "#f44336"),
 )
+ALERT_TIERS = (
+    ("target_buy1", "Buy 1"),
+    ("target_trim1", "Trim 1"),
+    ("target_fair", "DCF Fair Value"),
+    ("target_stop", "Stop"),
+)
 SWEEP_TIMEOUT_PER_TICKER = 15   # seconds: symbol switch, settle, clear, draw, verify
 
 
@@ -147,6 +153,108 @@ def build_level_plan(tickers: List[str], db_path: str | Path | None = None) -> D
             if values.get(name, 0) > 0
         ]
     return plan
+
+
+def build_alert_plan(tickers: List[str], db_path: str | Path | None = None) -> List[Dict[str, Any]]:
+    """Build alert creation tasks for key actionable levels across tickers.
+
+    Args:
+        tickers: Ticker symbols.
+        db_path: Optional path to domain_model.sqlite.
+
+    Returns:
+        List of dicts: [{"symbol": sym, "price": price, "message": f"{sym}: {label} ${price:.2f}"}]
+    """
+    alerts: List[Dict[str, Any]] = []
+    for ticker in tickers:
+        sym = ticker.upper()
+        values = level_inputs(sym, db_path) if known_symbol(sym, db_path) else {}
+        for name, label in ALERT_TIERS:
+            price = values.get(name, 0.0)
+            if price > 0:
+                p_round = round(price, 2)
+                alerts.append({
+                    "symbol": sym,
+                    "price": p_round,
+                    "message": f"{sym}: {label} ${p_round:.2f}",
+                })
+    return alerts
+
+
+def sync_alerts(
+    tickers: Optional[List[str]] = None,
+    db_path: str | Path | None = None,
+    dry_run: bool = False,
+    clear: bool = False,
+    call: Optional[Callable[..., Any]] = None,
+) -> Dict[str, Any]:
+    """Synchronize audible price alerts in TradingView Desktop with visual chart lines.
+
+    Args:
+        tickers: Ticker symbols to alert on.
+        db_path: Optional path to domain_model.sqlite.
+        dry_run: Report what alerts would be created without submitting them.
+        clear: When True, deletes existing alerts via CDP before recreating.
+        call: CDP CLI caller (injectable for testing).
+
+    Returns:
+        Summary dict containing success, cleared, created_count, and failed list.
+    """
+    if call is None:
+        from tv_client import tv_call as call
+
+    cleared = False
+    if clear and not dry_run:
+        del_res = call("alert", "delete", "--all", timeout=20, enable_retry=False, enable_cache_fallback=False)
+        cleared = bool(isinstance(del_res, dict) and del_res.get("success"))
+
+    symbols = tickers if tickers is not None else get_followed_tickers(db_path)
+    alerts = build_alert_plan(symbols, db_path)
+
+    created: List[Dict[str, Any]] = []
+    failed: List[Dict[str, Any]] = []
+
+    if dry_run:
+        return {
+            "success": True,
+            "dry_run": True,
+            "cleared": clear,
+            "total_alerts": len(alerts),
+            "alerts": alerts,
+            "created_count": 0,
+            "failed": [],
+        }
+
+    # Group alerts by symbol to minimize chart switches
+    by_symbol: Dict[str, List[Dict[str, Any]]] = {}
+    for a in alerts:
+        by_symbol.setdefault(a["symbol"], []).append(a)
+
+    for sym, sym_alerts in by_symbol.items():
+        switch_target = f"TSX:{sym.replace('.TO', '')}" if sym.endswith(".TO") else sym
+        call("chart", "symbol", switch_target, timeout=15, enable_retry=False, enable_cache_fallback=False)
+
+        for item in sym_alerts:
+            res = call(
+                "alert", "create",
+                "--price", f"{item['price']:.2f}",
+                "--condition", "crossing",
+                "--message", item["message"],
+                timeout=15, enable_retry=False, enable_cache_fallback=False,
+            )
+            if isinstance(res, dict) and res.get("success"):
+                created.append(item)
+            else:
+                err = res.get("error", str(res)) if isinstance(res, dict) else str(res)
+                failed.append({"symbol": sym, "price": item["price"], "error": err})
+
+    return {
+        "success": len(failed) == 0,
+        "cleared": cleared,
+        "total_alerts": len(alerts),
+        "created_count": len(created),
+        "failed": failed,
+    }
 
 
 def _blank_indicator_values() -> Dict[str, Any]:
@@ -238,6 +346,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Batch update the buy, trim and stop lines on every TradingView chart.")
     parser.add_argument("--recalculate", action="store_true", help="Recalculate and store levels in SQLite for all followed names")
     parser.add_argument("--sweep", action="store_true", help="Redraw the stored levels as lines on every chart")
+    parser.add_argument("--sync-alerts", action="store_true", help="Synchronize audible crossing alerts with visual chart lines")
+    parser.add_argument("--clear-alerts", action="store_true", help="Clear all existing TradingView alerts before creating fresh ones")
     parser.add_argument("--ticker", type=str, help="Recalculate one ticker, then redraw its chart")
     parser.add_argument("--all-lines", action="store_true", help="Also remove line drawings this tool did not draw")
     parser.add_argument("--source", type=str, default="combined", choices=["combined", "dcf", "ta", "manual"],
@@ -252,10 +362,24 @@ def main() -> int:
         print(f"Recalculating price levels for {sym} (source={args.source}, dry_run={args.dry_run})...")
         res = derive_and_write(sym, source=args.source, dry_run=args.dry_run, db_path=dbp)
         print(json.dumps(res, indent=2))
-        return _print_sync(sync_chart_lines([sym], db_path=dbp, dry_run=args.dry_run, all_lines=args.all_lines), args.dry_run)
+        rc = _print_sync(sync_chart_lines([sym], db_path=dbp, dry_run=args.dry_run, all_lines=args.all_lines), args.dry_run)
+        if args.sync_alerts:
+            print(f"Synchronizing price alerts for {sym}...")
+            ares = sync_alerts([sym], db_path=dbp, dry_run=args.dry_run, clear=args.clear_alerts)
+            print(f"Alerts created: {ares['created_count']}/{ares['total_alerts']} (cleared: {ares['cleared']}).")
+            if ares["failed"]:
+                for f in ares["failed"]:
+                    print(f"  ✗ {f['symbol']} ${f['price']}: {f['error']}", file=sys.stderr)
+        return rc
 
     rc = 0
-    if args.recalculate or not args.sweep:
+    if args.clear_alerts and not args.sync_alerts and not args.dry_run:
+        print("Clearing all TradingView alerts...")
+        from tv_client import tv_call
+        tv_call("alert", "delete", "--all", timeout=20, enable_retry=False, enable_cache_fallback=False)
+        print("✓ All alerts cleared.")
+
+    if args.recalculate or (not args.sweep and not args.sync_alerts):
         print(f"Batch recalculating price levels for all followed tickers (source={args.source}, dry_run={args.dry_run})...")
         res = batch_recalculate_levels(source=args.source, dry_run=args.dry_run, db_path=dbp)
         print(f"Completed: {len(res['updated'])} updated, {len(res['skipped'])} skipped, {len(res['failed'])} failed.")
@@ -266,6 +390,15 @@ def main() -> int:
     if args.sweep:
         print("Drawing level lines on every chart...")
         rc = max(rc, _print_sync(sync_chart_lines(db_path=dbp, dry_run=args.dry_run, all_lines=args.all_lines), args.dry_run))
+
+    if args.sync_alerts:
+        print("Synchronizing audible price alerts with chart lines...")
+        ares = sync_alerts(db_path=dbp, dry_run=args.dry_run, clear=args.clear_alerts)
+        print(f"Alerts created: {ares['created_count']}/{ares['total_alerts']} (cleared: {ares['cleared']}).")
+        if ares["failed"]:
+            for f in ares["failed"]:
+                print(f"  ✗ {f['symbol']} ${f['price']}: {f['error']}", file=sys.stderr)
+            rc = max(rc, 1)
     return rc
 
 
