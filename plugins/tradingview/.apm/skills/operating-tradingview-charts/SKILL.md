@@ -1,7 +1,7 @@
 ---
 name: operating-tradingview-charts
 plugin: tradingview
-description: Drives TradingView Desktop through its remote debugging port. Covers connection setup and diagnostics, chart control (symbol, chart type, workspace layout, screenshots, drawings), indicator management, Pine Script authoring, injection, saving and the thesis overlay, and price alerts (list, reconcile against SQLite targets, create at DCF scenario levels). Trigger on /tv-setup, /tv-onboarding, /tv-change-symbol, /tv-change-type, /tv-chart-setup, /tv-snapshot, /tv-draw, /tv-add-indicator, /tv-indicators, /tv-save-indicator, /tv-pine-inject, /tv-author-pine-script, /tv-thesis-overlay, /tv-alert-list, /tv-alert-reconcile, /tv-alert-sync, "connect tradingview", "switch chart to [TICKER]", "add indicator [NAME]", "author pine script", "inject pine script", "inject thesis overlay", "list tradingview alerts", "reconcile alerts" or "sync tradingview alerts".
+description: Drives TradingView Desktop through its remote debugging port. Covers connection setup and diagnostics, chart control (symbol, chart type, workspace layout, screenshots, drawings), indicator management, Pine Script authoring, injection, saving, batch price levels and the thesis overlay, and price alerts (list, reconcile against SQLite targets, create at DCF scenario levels). Trigger on /tv-setup, /tv-onboarding, /tv-change-symbol, /tv-change-type, /tv-chart-setup, /tv-snapshot, /tv-draw, /tv-add-indicator, /tv-indicators, /tv-save-indicator, /tv-pine-inject, /tv-author-pine-script, /tv-thesis-overlay, /tv-batch-levels, /tv-alert-list, /tv-alert-reconcile, /tv-alert-sync, "connect tradingview", "switch chart to [TICKER]", "batch update price levels", "update every chart", "add indicator [NAME]", "author pine script", "inject pine script", "inject thesis overlay", "list tradingview alerts", "reconcile alerts" or "sync tradingview alerts".
 allowed-tools: Bash, Read, Write
 ---
 
@@ -54,13 +54,14 @@ Paths starting with `scripts/` or `assets/` are relative to this skill's folder;
 | [pine-inject](references/modes/pine-inject.md) | `/tv-pine-inject` | Inject Pine v6 into the editor with compile checking |
 | [author-pine-script](references/modes/author-pine-script.md) | `/tv-author-pine-script` | Research, write and lint a Pine v6 indicator |
 | [thesis-overlay](references/modes/thesis-overlay.md) | `/tv-thesis-overlay` | Fair value, entry, breaker and DCF levels from SQLite as an overlay |
+| [batch-price-levels](references/modes/batch-price-levels.md) | `/tv-batch-levels` | Batch recalculate levels, sweep watchlist charts, or run live auto-follower |
 | [alert-list](references/modes/alert-list.md) | `/tv-alert-list` | List active alerts and cache them in SQLite |
 | [alert-reconcile](references/modes/alert-reconcile.md) | `/tv-alert-reconcile` | Flag missing or drifted alerts against SQLite levels |
 | [alert-sync](references/modes/alert-sync.md) | `/tv-alert-sync` | Create alerts at DCF bear/base/bull levels |
 
 ## Scripts
 
-- `scripts/`: `tv_draw`, `tv_manage_indicators`, `tv_pine_inject`, `tv_pine_manager`, `pine_linter`, `pine_source_reader`, `tv_thesis_overlay`, `tv_create_alerts`, `tv_list_alerts`, `tv_quote`.
+- `scripts/`: `batch_update_price_levels`, `tv_draw`, `tv_manage_indicators`, `tv_pine_inject`, `tv_pine_manager`, `pine_linter`, `pine_source_reader`, `tv_thesis_overlay`, `tv_create_alerts`, `tv_list_alerts`, `tv_quote`.
 - Shared engine (backend `py_services/`): `tv_client`, `tv_launch`, `tv_health_check` and the broker/order modules used by `trading-via-tradingview`.
 - `assets/pinescript-indicators/`: the indicators (`ai-ta-levels.pine`, `ai-thesis-overlay.pine`, community references, versions). Tests: `tests/` (pass the path explicitly; pytest skips dot-directories).
 

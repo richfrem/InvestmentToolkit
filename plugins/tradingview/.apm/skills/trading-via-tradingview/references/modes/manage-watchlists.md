@@ -29,3 +29,11 @@ python3 scripts/watchlist_manager.py sync
 
 - Verify tickers appear in TradingView Desktop watchlist panel.
 - Validate routing cases against `evals/evals.json`.
+
+## Watchlist Browsing & Chart Price Levels
+
+When clicking through tickers in the TradingView watchlist, the chart indicator (`AI TA Levels`) retains the price levels of whichever stock was drawn last, displaying a red warning on any different ticker.
+To synchronize price levels automatically:
+- **Live auto-follower**: Run `python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --follow` in the background. It detects symbol clicks via CDP and updates chart levels in real time.
+- **Batch recalculation**: Run `python3 plugins/tradingview/.apm/skills/operating-tradingview-charts/scripts/batch_update_price_levels.py --recalculate` to batch derive and write fresh DCF/TA price levels for all watchlist names in `domain_model.sqlite`.
+- For full details, see the [`batch-price-levels` mode in `operating-tradingview-charts`](../../../operating-tradingview-charts/references/modes/batch-price-levels.md).
