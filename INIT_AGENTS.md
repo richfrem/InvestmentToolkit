@@ -115,13 +115,17 @@ Skills land in `~/.claude/skills/`, `~/.agents/skills/` (Copilot, Codex) and `~/
 
 If a machine was set up with the older `plugin-add` installer (it has `.agents/ownership/` and `plugin-sources.json`), remove that installation of a plugin before installing it with APM, or skill names are duplicated.
 
-**c. This repository's four plugins** (`portfolio-advisor`, `tradingview`, `toolkit-manager`, `questrade`). The root `apm.yml` lists them, so from the repository root:
+**c. This repository's four plugins** (`portfolio-advisor`, `tradingview`, `toolkit-manager`, `questrade`). The root `apm.yml` lists them.
+
+To install and deploy across all supported AI coding harnesses (**Copilot**, **Agy / Antigravity**, **Codex**, **Claude**, and the shared **Agent Skills** environment):
 
 ```bash
-apm install --target agent-skills
+apm install --target agent-skills,copilot,agy,codex,claude
 ```
 
-This deploys the skill hubs into `.agents/skills/` and writes `apm.lock.yaml`; commit the lockfile with any change and use `apm install --frozen` to reproduce it exactly. `.agents/` and `apm_modules/` are gitignored. Never edit the deployed copies: change the plugin source under `plugins/<plugin>/.apm/` and reinstall. To remove one, run `apm uninstall ./plugins/<plugin>`. APM prints that questrade's MCP server cannot be configured for the `agent-skills` target; the skills still install, and `/questrade-setup` connects the server.
+*(See [`INSTALL.md`](INSTALL.md) for quick copy-paste commands, single-harness flags, dry runs, and frozen installs).*
+
+This deploys skills into `.agents/skills/`, `.claude/skills/`, `.claude/agents/`, and configures MCP servers into `.github/mcp.json` and `.claude/settings.json`. It writes `apm.lock.yaml`; commit the lockfile with any change and use `apm install --frozen --target agent-skills,copilot,agy,codex,claude` to reproduce it exactly. `.agents/` and `apm_modules/` are gitignored. Never edit the deployed copies: change the plugin source under `plugins/<plugin>/.apm/` and reinstall. To remove one, run `apm uninstall ./plugins/<plugin>`.
 
 > The files `plugin-sources.json` and `plugin-retention.json` belong to the legacy `plugin-syncer` and cover only library plugins still deployed that way. They go away once every library plugin is installed with APM.
 
@@ -141,9 +145,15 @@ python3 ~/.agents/skills/setting-up-agentic-os/scripts/init_agentic_os.py \
 
 The approval signing key is created by **you** in your own terminal (the skill's `signing-setup` mode walks you through it); an agent never creates or enrolls keys.
 
-### 4. Claude Code
+### 4. Harness Deployments (Claude Code, Copilot, Antigravity, Codex)
 
-The project's skills deploy to `.agents/skills/`, which `AGENTS.md` points every agent to. The old Claude Code marketplace (`investment-toolkit-plugins`) is retired: its catalog is empty and the `/plugin install ...@investment-toolkit-plugins` commands no longer apply. If you want the skills in `.claude/skills/` as well, install with `--target claude` instead of `agent-skills`. Use one target, not both, or skills are listed twice.
+The project's skills deploy to `.agents/skills/` as well as harness-native directories (`.claude/`, `.github/`, `.codex/`) via APM's multi-target support. The old Claude Code marketplace (`investment-toolkit-plugins`) is retired: its catalog is empty and the `/plugin install ...@investment-toolkit-plugins` commands no longer apply. Deploy to all active environments with:
+
+```bash
+apm install --target agent-skills,copilot,agy,codex,claude
+```
+
+For full options and single-target deployments, see [`INSTALL.md`](INSTALL.md).
 
 > [!IMPORTANT]
 > **Single Instruction File (`AGENTS.md`) & Handling `.bak` Files**:

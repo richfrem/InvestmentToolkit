@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "questrade": {
+      "type": "http",
+      "url": "https://mcp.questrade.com/v1/brokerage/mcp",
+      "tools": [
+        "*"
+      ],
+      "id": ""
+    }
+  }
+}
