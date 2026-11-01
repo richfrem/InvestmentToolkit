@@ -201,9 +201,15 @@ export async function deleteAlerts({ delete_all }) {
         }
         if (!btn) return { success: false, error: 'Alerts panel settings button not found' };
 
+        async function openMenu() {
+          if (btn.getAttribute('aria-expanded') !== 'true') {
+            btn.click();
+            await new Promise(r => setTimeout(r, 600));
+          }
+        }
+
         // 1. Pause all alerts
-        btn.click();
-        await new Promise(r => setTimeout(r, 600));
+        await openMenu();
         var items = Array.from(document.querySelectorAll('[role="menuitem"], [class*="item-"]')).filter(el => el.offsetParent);
         var pauseAll = items.find(el => /pause all/i.test(el.textContent));
         if (pauseAll) {
@@ -211,12 +217,11 @@ export async function deleteAlerts({ delete_all }) {
           await new Promise(r => setTimeout(r, 800));
           var yesPause = Array.from(document.querySelectorAll('button')).find(b => b.offsetParent && /^yes$|^pause$/i.test(b.textContent.trim()));
           if (yesPause) yesPause.click();
-          await new Promise(r => setTimeout(r, 600));
+          await new Promise(r => setTimeout(r, 800));
         }
 
         // 2. Delete all inactive alerts
-        btn.click();
-        await new Promise(r => setTimeout(r, 600));
+        await openMenu();
         items = Array.from(document.querySelectorAll('[role="menuitem"], [class*="item-"]')).filter(el => el.offsetParent);
         var deleteAll = items.find(el => /delete all inactive/i.test(el.textContent));
         if (deleteAll) {
@@ -224,7 +229,7 @@ export async function deleteAlerts({ delete_all }) {
           await new Promise(r => setTimeout(r, 800));
           var yesDelete = Array.from(document.querySelectorAll('button')).find(b => b.offsetParent && /^yes$|^delete$/i.test(b.textContent.trim()));
           if (yesDelete) yesDelete.click();
-          await new Promise(r => setTimeout(r, 600));
+          await new Promise(r => setTimeout(r, 800));
           return { success: true, cleared: true };
         }
         return { success: false, error: 'Delete all inactive menu option not found' };

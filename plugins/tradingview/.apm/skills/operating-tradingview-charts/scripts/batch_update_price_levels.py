@@ -230,9 +230,12 @@ def sync_alerts(
     for a in alerts:
         by_symbol.setdefault(a["symbol"], []).append(a)
 
-    for sym, sym_alerts in by_symbol.items():
+    total_syms = len(by_symbol)
+    print(f"Creating {len(alerts)} alerts across {total_syms} symbols...", flush=True)
+    for idx, (sym, sym_alerts) in enumerate(by_symbol.items(), start=1):
         switch_target = f"TSX:{sym.replace('.TO', '')}" if sym.endswith(".TO") else sym
         call("chart", "symbol", switch_target, timeout=15, enable_retry=False, enable_cache_fallback=False)
+        sym_created = 0
 
         for item in sym_alerts:
             res = call(
@@ -244,9 +247,11 @@ def sync_alerts(
             )
             if isinstance(res, dict) and res.get("success"):
                 created.append(item)
+                sym_created += 1
             else:
                 err = res.get("error", str(res)) if isinstance(res, dict) else str(res)
                 failed.append({"symbol": sym, "price": item["price"], "error": err})
+        print(f"  ✓ [{idx}/{total_syms}] {sym}: {sym_created}/{len(sym_alerts)} alerts created", flush=True)
 
     return {
         "success": len(failed) == 0,
