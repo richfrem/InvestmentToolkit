@@ -12,15 +12,30 @@
  *   None (returns active CDP client connection object)
  */
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import CDP from 'chrome-remote-interface';
+
+function loadDotEnvPort() {
+  if (process.env.TV_CDP_PORT) return process.env.TV_CDP_PORT;
+  try {
+    const envPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.env');
+    if (fs.existsSync(envPath)) {
+      const m = fs.readFileSync(envPath, 'utf8').match(/^TV_CDP_PORT=(\d+)/m);
+      if (m) return m[1];
+    }
+  } catch {}
+  return '9333';
+}
 
 let client = null;
 let targetInfo = null;
 const CDP_HOST = 'localhost';
-// Read port from env var so the port can be randomized without editing source.
+// Read port from env var (or repo-root .env) so the port can be changed without editing source.
 // Launch TradingView with a non-standard port: TV_CDP_PORT=9333 python3 run_investment_toolkit.py
 // connection.js and the launch scripts both honour this variable.
-const CDP_PORT = parseInt(process.env.TV_CDP_PORT || '9222', 10);
+const CDP_PORT = parseInt(loadDotEnvPort(), 10);
 const MAX_RETRIES = 5;
 const BASE_DELAY = 500;
 

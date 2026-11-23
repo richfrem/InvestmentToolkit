@@ -53,7 +53,7 @@ DATA      = BACKEND / "data"
 DB_PATH   = DATA / "domain_model.sqlite"
 SCRIPTS   = REPO_ROOT / "investment_screener/backend/py_services"
 RUNTIME   = REPO_ROOT / ".runtime"
-TV_CDP_PORT = int(os.environ.get("TV_CDP_PORT", "9222"))
+TV_CDP_PORT = int(os.environ.get("TV_CDP_PORT", "9333"))
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 

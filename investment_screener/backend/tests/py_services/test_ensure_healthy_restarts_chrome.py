@@ -83,8 +83,9 @@ def test_ensure_healthy_kills_chrome_process():
                     with patch("time.sleep"):
                         result = ensure_healthy(max_wait_seconds=30)
 
-                        # Should call kill_chrome_process_on_port with port 9222
-                        mock_kill.assert_called_with(9222)
+                        # Should call kill_chrome_process_on_port with configured TV_CDP_PORT
+                        from tv_cdp_health import TV_CDP_PORT
+                        mock_kill.assert_called_with(TV_CDP_PORT)
                         assert result["recovered"] is True
 
 
@@ -149,8 +150,9 @@ def test_ensure_healthy_waits_for_port_ready():
                     with patch("time.sleep"):
                         result = ensure_healthy(max_wait_seconds=30)
 
-                        # Should call _wait_for_port_ready with correct port and timeout
-                        mock_wait.assert_called_with(9222, max_wait_seconds=30)
+                        # Should call _wait_for_port_ready with configured TV_CDP_PORT and timeout
+                        from tv_cdp_health import TV_CDP_PORT
+                        mock_wait.assert_called_with(TV_CDP_PORT, max_wait_seconds=30)
                         assert result["recovered"] is True
 
 

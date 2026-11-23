@@ -104,13 +104,13 @@ def run_checks() -> dict:
             "All checks passed — TradingView Desktop is connected and workspace is fully configured."
             if all_ok
             else (
-                "TradingView Desktop not detected on port 9222."
+                f"TradingView Desktop not detected on port {TV_PORT}."
                 if not port_ok
                 else f"Readiness issue: {cli_message if not cli_ok else (npm_message if not npm_ok else (pine_message if not pine_ok else db_message))}"
             )
         ),
         "details": {
-            "port_9222": "reachable" if port_ok else "not reachable",
+            f"port_{TV_PORT}": "reachable" if port_ok else "not reachable",
             "cli_status": cli_message if cli_message else ("ok" if cli_ok else "no response"),
             "npm_modules": npm_message,
             "pine_library": pine_message,
@@ -144,7 +144,7 @@ def main():
         def icon(ok: bool) -> str:
             return "[PASS]" if ok else "[FAIL]"
 
-        print(f"  {icon(checks['port'])}  Port {TV_PORT} reachable   — {checks['details']['port_9222']}")
+        print(f"  {icon(checks['port'])}  Port {TV_PORT} reachable   — {checks['details'][f'port_{TV_PORT}']}")
         print(f"  {icon(checks['cli'])}  CLI status command  — {checks['details']['cli_status']}")
         print(f"  {icon(checks['npm'])}  npm node_modules    — {checks['details']['npm_modules']}")
         print(f"  {icon(checks['pine'])}  Pine indicator suite— {checks['details']['pine_library']}")
@@ -162,7 +162,7 @@ def main():
                 "  Launch TradingView Desktop with debugging enabled:\n"
                 "    python3 investment_screener/backend/py_services/tv_launch.py\n"
                 "  Or manually:\n"
-                "    open -a TradingView --args --remote-debugging-port=9222\n"
+                f"    open -a TradingView --args --remote-debugging-port={TV_PORT}\n"
             )
 
     sys.exit(0 if checks["status"] == "ok" else 1)

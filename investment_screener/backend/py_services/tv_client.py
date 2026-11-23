@@ -77,7 +77,24 @@ except FileNotFoundError as e:
     REPO_ROOT = Path(".")
     _CDP_MISSING_MSG = str(e)
 
-TV_PORT = int(os.environ.get("TV_CDP_PORT", "9222"))
+def _read_dotenv_port(repo_root: Path) -> str:
+    env_val = os.environ.get("TV_CDP_PORT")
+    if env_val:
+        return env_val
+    env_file = repo_root / ".env"
+    if env_file.exists():
+        try:
+            for line in env_file.read_text(encoding="utf-8").splitlines():
+                stripped = line.strip()
+                if stripped.startswith("TV_CDP_PORT="):
+                    val = stripped.split("=", 1)[1].strip().strip('"').strip("'")
+                    if val.isdigit():
+                        return val
+        except OSError:
+            pass
+    return "9333"
+
+TV_PORT = int(_read_dotenv_port(REPO_ROOT))
 
 # Options for CLI commands that change chart/editor state (e.g. "pine inject":
 # edit, save, add to chart). Retrying re-applies the mutation and a cached

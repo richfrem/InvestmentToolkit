@@ -33,7 +33,7 @@ const FETCH_BROKER_PY   = path.join(PY_SERVICES_DIR, 'fetch_broker_data.py');
 
 const REAL_ACCOUNTS = new Set(['TFSA', 'RRSP', 'CASH']);
 
-function isTVReachable(port = 9222): Promise<boolean> {
+function isTVReachable(port = parseInt(process.env.TV_CDP_PORT || '9333', 10)): Promise<boolean> {
     return new Promise((resolve) => {
         const socket = new net.Socket();
         socket.setTimeout(400);

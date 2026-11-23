@@ -355,7 +355,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                             {!isBrokerReady && (
                                 <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
                                     <AlertTriangle size={13} className="text-amber-400 mt-0.5 shrink-0" />
-                                    <p className="text-amber-300 text-xs">TradingView not connected — open TV Desktop with <code className="bg-slate-800 px-1 rounded">--remote-debugging-port=9222</code> and ensure Broker is connected.</p>
+                                    <p className="text-amber-300 text-xs">TradingView not connected — open TV Desktop with <code className="bg-slate-800 px-1 rounded">--remote-debugging-port=9333</code> and ensure Broker is connected.</p>
                                 </div>
                             )}
                             {isDataStale && (

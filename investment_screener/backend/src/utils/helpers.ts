@@ -85,7 +85,7 @@ export async function getLiveUsdCadRate(fallback: number, dbPath: string = DOMAI
  * @param {number} tvPort - TCP port to connect to
  * @returns {Promise<boolean>} True if the TCP port accepts connections
  */
-export function isTradingViewConnected(tvPort = parseInt(process.env.TV_CDP_PORT || '9222', 10)): Promise<boolean> {
+export function isTradingViewConnected(tvPort = parseInt(process.env.TV_CDP_PORT || '9333', 10)): Promise<boolean> {
     /**
      * Instantiates a net.Socket, attempts to connect to localhost:tvPort with 300ms timeout,
      * and resolves true on successful connection.

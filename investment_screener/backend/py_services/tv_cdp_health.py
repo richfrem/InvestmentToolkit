@@ -74,6 +74,25 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict, Optional, Dict, Any, Callable, Union, List
 
+def _get_tv_cdp_port() -> int:
+    val = os.environ.get("TV_CDP_PORT")
+    if val and val.isdigit():
+        return int(val)
+    env_file = Path(__file__).resolve().parents[3] / ".env"
+    if env_file.exists():
+        try:
+            for line in env_file.read_text(encoding="utf-8").splitlines():
+                s = line.strip()
+                if s.startswith("TV_CDP_PORT="):
+                    p = s.split("=", 1)[1].strip().strip('"').strip("'")
+                    if p.isdigit():
+                        return int(p)
+        except OSError:
+            pass
+    return 9333
+
+TV_CDP_PORT = _get_tv_cdp_port()
+
 from pydantic import BaseModel, ValidationError
 
 # Configure logging for health checks
@@ -125,9 +144,9 @@ def health_check(timeout: int = 5) -> HealthCheckResult:
         "last_error": None,
     }
 
-    # Step 1: Check port 9222 is open
+    # Step 1: Check TV_CDP_PORT is open
     try:
-        result["port_open"] = _check_port_open(9222, timeout=timeout)
+        result["port_open"] = _check_port_open(TV_CDP_PORT, timeout=timeout)
     except Exception as e:
         error_msg = str(e)
         result["last_error"] = error_msg
@@ -135,7 +154,7 @@ def health_check(timeout: int = 5) -> HealthCheckResult:
         return result
 
     if not result["port_open"]:
-        result["last_error"] = "Port 9222 is not responding"
+        result["last_error"] = f"Port {TV_CDP_PORT} is not responding"
         return result
 
     # Step 2: Try to detect Chrome version from CDP
@@ -197,7 +216,7 @@ def _get_chrome_version(timeout: int = 5) -> Optional[str]:
         Exception: If version check fails
     """
     try:
-        url = "http://localhost:9222/json/version"
+        url = f"http://localhost:{TV_CDP_PORT}/json/version"
         req = urllib.request.urlopen(url, timeout=timeout)
         data = json.loads(req.read())
 
@@ -301,7 +320,7 @@ def run_tv_cdp_subprocess() -> bool:
         raise Exception(error_msg)
 
 
-def _kill_chrome_process_on_port(port: int = 9222) -> bool:
+def _kill_chrome_process_on_port(port: int = TV_CDP_PORT) -> bool:
     """
     Kill Chrome process holding the given port.
 
@@ -391,7 +410,7 @@ def _kill_chrome_process_on_port(port: int = 9222) -> bool:
         return False
 
 
-def _wait_for_port_ready(port: int = 9222, max_wait_seconds: int = 30) -> bool:
+def _wait_for_port_ready(port: int = TV_CDP_PORT, max_wait_seconds: int = 30) -> bool:
     """
     Poll port until it's reachable or timeout expires.
 
@@ -464,9 +483,9 @@ def ensure_healthy(max_wait_seconds: int = 30) -> Dict:
 
     logger.warning(f"Chrome session is unhealthy: {initial_health}")
 
-    # Step 2: Kill Chrome process on port 9222
-    logger.info("Killing stale Chrome process on port 9222...")
-    kill_result = _kill_chrome_process_on_port(9222)
+    # Step 2: Kill stale process on TV_CDP_PORT
+    logger.info(f"Killing stale Chrome process on port {TV_CDP_PORT}...")
+    kill_result = _kill_chrome_process_on_port(TV_CDP_PORT)
     if not kill_result:
         logger.error("Failed to kill Chrome process")
 
@@ -482,11 +501,11 @@ def ensure_healthy(max_wait_seconds: int = 30) -> Dict:
         raise Exception(error_msg)
 
     # Step 4: Wait for port to be ready
-    logger.info(f"Waiting up to {max_wait_seconds}s for port 9222 to be ready...")
-    port_ready = _wait_for_port_ready(9222, max_wait_seconds=max_wait_seconds)
+    logger.info(f"Waiting up to {max_wait_seconds}s for port {TV_CDP_PORT} to be ready...")
+    port_ready = _wait_for_port_ready(TV_CDP_PORT, max_wait_seconds=max_wait_seconds)
 
     if not port_ready:
-        error_msg = f"Port 9222 did not become ready within {max_wait_seconds}s"
+        error_msg = f"Port {TV_CDP_PORT} did not become ready within {max_wait_seconds}s"
         logger.error(error_msg)
         raise Exception(error_msg)
 
