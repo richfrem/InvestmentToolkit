@@ -71,7 +71,7 @@ export default function Settings() {
                             <p className="text-xs text-slate-500 leading-relaxed">
                                 Launch TradingView Desktop with remote debugging enabled:
                                 <code className="ml-1 px-1.5 py-0.5 bg-slate-800 rounded text-slate-300 font-mono text-[11px]">
-                                    --remote-debugging-port=9222
+                                    --remote-debugging-port=9333
                                 </code>
                             </p>
                         </div>

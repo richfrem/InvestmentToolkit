@@ -57,8 +57,11 @@ def _run(*extra_args: str, env_overrides: dict | None = None) -> subprocess.Comp
 
 def _tv_reachable() -> bool:
     import socket
+    if not (REPO_ROOT / "tradingview-cdp" / "node_modules").exists():
+        return False
+    port = int(os.environ.get("TV_CDP_PORT", "9333"))
     try:
-        s = socket.create_connection(("localhost", 9222), timeout=0.5)
+        s = socket.create_connection(("localhost", port), timeout=0.5)
         s.close()
         return True
     except OSError:

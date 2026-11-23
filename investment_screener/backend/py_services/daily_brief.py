@@ -117,10 +117,12 @@ def _load_latest_ta_sweep_count(db_path: str | None = None) -> int | None:
 
 
 def _tv_running() -> bool:
-    """Return True if TradingView CDP is accessible on port 9222."""
+    """Return True if TradingView CDP is accessible on TV_CDP_PORT (default 9333)."""
     try:
+        import os
         import urllib.request
-        with urllib.request.urlopen("http://localhost:9222/json/version", timeout=2) as r:
+        port = int(os.environ.get("TV_CDP_PORT", "9333"))
+        with urllib.request.urlopen(f"http://localhost:{port}/json/version", timeout=2) as r:
             return r.status == 200
     except Exception:
         return False

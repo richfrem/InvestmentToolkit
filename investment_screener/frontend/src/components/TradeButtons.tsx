@@ -24,7 +24,7 @@ export function TradeButtons({ ticker, shares = 1, size = 'md', rating, classNam
     const cls = sm
         ? 'px-2 py-0.5 text-[10px] font-bold rounded'
         : 'px-3.5 py-1.5 text-xs font-bold rounded-lg';
-    const offlineTip = 'TradingView not connected — open TV Desktop with --remote-debugging-port=9222';
+    const offlineTip = 'TradingView not connected — open TV Desktop with --remote-debugging-port=9333';
 
     // When a DCF signal is present, emphasize the signal-aligned button and ghost the other.
     const buyPrimary = !rating || ['BUY', 'HOLD', 'INITIATE', 'ACCUMULATE', 'MAINTAIN'].includes(rating);
