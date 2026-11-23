@@ -14,7 +14,7 @@
  *   Cells:      <td class="ka-cell"> — use td-only (not [class*="cell"], which doubles nested divs)
  *   Pos cols:   9 td — Symbol|Side|Qty|AvgFillPrice|Profit|UpdateTime|BorrowRate|UUID|empty
  *   Acct cols:  6 td — label|CAD|USD|CAD-combined|USD-combined|hidden
- *   Acct btn:   [class*="dropdownButton"] — button text is doubled (visual+aria); use [class*="accountName"] span
+ *   Acct btn:   [class*="dropdownButton" i] — button text is doubled (visual+aria); use [class*="accountName"] span
  *   Dropdown:   Items appear as <span class=""> — MUST use MutationObserver to capture before blur closes popup
  * 
  * Key Input Dependencies:
@@ -82,9 +82,9 @@ async function _getAccountsOnce() {
    */
   // Open dropdown
   await evaluate(`(function() {
-    var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
+    var btn = [...document.querySelectorAll('[class*="dropdownButton" i]')].find(function(b) {
       return /TFSA|RRSP|Cash|Margin|Individual|\\d{6,}/i.test(b.textContent);
-    }) || document.querySelector('[class*="dropdownButton"]');
+    }) || document.querySelector('[class*="dropdownButton" i]');
     if (btn) {
       ['mousedown', 'mouseup', 'click'].forEach(function(t) {
         btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
@@ -147,7 +147,7 @@ async function dropdownIsOpen() {
     var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
     return [...document.querySelectorAll('span')].some(function(s) {
       if (!((s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim()))) return false;
-      if (s.closest('[class*="dropdownButton"]')) return false;
+      if (s.closest('[class*="dropdownButton" i]')) return false;
       var r = s.getBoundingClientRect();
       return r.width > 0 && r.height > 0;
     });
@@ -157,9 +157,9 @@ async function dropdownIsOpen() {
 /** Click the account dropdown button with the full mouse event sequence. */
 async function toggleDropdown() {
   await evaluate(`(function() {
-    var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
+    var btn = [...document.querySelectorAll('[class*="dropdownButton" i]')].find(function(b) {
       return /TFSA|RRSP|Cash|Margin|Individual|\\d{6,}/i.test(b.textContent);
-    }) || document.querySelector('[class*="dropdownButton"]');
+    }) || document.querySelector('[class*="dropdownButton" i]');
     if (btn) {
       ['mousedown', 'mouseup', 'click'].forEach(function(t) {
         btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));

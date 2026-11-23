@@ -31,9 +31,9 @@ async function main() {
     // First let's click the dropdown button to open the menu, so the spans are loaded in DOM
     console.log("Opening dropdown...");
     const opened = await evaluate(`(function() {
-      var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
+      var btn = [...document.querySelectorAll('[class*="dropdownButton" i]')].find(function(b) {
         return /TFSA|RRSP|Margin|Individual|Cash/i.test(b.textContent);
-      }) || document.querySelector('[class*="dropdownButton"]');
+      }) || document.querySelector('[class*="dropdownButton" i]');
       if (!btn) return 'Dropdown button not found';
       ['mousedown', 'mouseup', 'click'].forEach(function(t) {
         btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
@@ -72,9 +72,9 @@ async function main() {
 
     // Close dropdown
     await evaluate(`(function() {
-      var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
+      var btn = [...document.querySelectorAll('[class*="dropdownButton" i]')].find(function(b) {
         return /TFSA|RRSP|Margin|Individual|Cash/i.test(b.textContent);
-      }) || document.querySelector('[class*="dropdownButton"]');
+      }) || document.querySelector('[class*="dropdownButton" i]');
       if (btn) {
         ['mousedown', 'mouseup', 'click'].forEach(function(t) {
           btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));

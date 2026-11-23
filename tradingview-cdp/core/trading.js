@@ -137,7 +137,7 @@ export async function getBrokerStatus() {
     var usdBP = usdMatch ? parseFloat(usdMatch[1].replace(/,/g,'')) : null;
 
     // Account dropdown — find the one showing TFSA/RRSP/Cash (not the broker dropdown)
-    var accountBtn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
+    var accountBtn = [...document.querySelectorAll('[class*="dropdownButton" i]')].find(function(b) {
       return /TFSA|RRSP|Margin|Individual|Cash/i.test(b.textContent);
     });
     var accountText = accountBtn ? accountBtn.textContent.trim() : null;
@@ -170,9 +170,9 @@ export async function selectAccount(targetType) {
   // Click the account dropdown button — must be the one showing TFSA/RRSP/Cash,
   // not the broker selector. Use same heuristic as getBrokerStatus.
   const opened = await evaluate(`(function() {
-    var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
+    var btn = [...document.querySelectorAll('[class*="dropdownButton" i]')].find(function(b) {
       return /TFSA|RRSP|Margin|Individual|Cash/i.test(b.textContent);
-    }) || document.querySelector('[class*="dropdownButton"]');
+    }) || document.querySelector('[class*="dropdownButton" i]');
     if (!btn) return JSON.stringify({ error: 'Account dropdown not found' });
     ['mousedown', 'mouseup', 'click'].forEach(function(t) {
       btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
@@ -198,7 +198,7 @@ export async function selectAccount(targetType) {
     });
     if (!match) {
       // Try closing dropdown and check if already on the right account
-      document.querySelector('[class*="dropdownButton"]')?.click();
+      document.querySelector('[class*="dropdownButton" i]')?.click();
       return JSON.stringify({ error: 'Account type not found: ' + target });
     }
     // Dispatch full MouseEvent sequence for both match and parentElement

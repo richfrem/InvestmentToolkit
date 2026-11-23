@@ -170,17 +170,20 @@ try {
 
 def fetch_tv_snapshot() -> dict:
     js = """
+import { disconnect } from './connection.js';
 import { getPortfolio } from './core/broker_data.js';
 try {
     const data = await getPortfolio();
     process.stdout.write(JSON.stringify(data) + '\\n');
+    await disconnect();
     process.exit(0);
 } catch(e) {
     process.stdout.write(JSON.stringify({ error: e.message }) + '\\n');
+    await disconnect();
     process.exit(1);
 }
 """
-    return run_node_module(js, timeout=30)
+    return run_node_module(js, timeout=60)
 
 
 def fetch_complete_tv_snapshot(db_path: Optional[str] = None) -> tuple:

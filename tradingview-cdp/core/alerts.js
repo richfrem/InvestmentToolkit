@@ -30,7 +30,7 @@ export async function create({ condition, price, message }) {
   const client = await getClient();
   const opened = await evaluate(`
     (function() {
-      var btn = document.querySelector('[aria-label="Create Alert"]')
+      var btn = document.querySelector('[aria-label="Create Alert" i]')
         || document.querySelector('[data-name="alerts"]');
       if (btn) { btn.click(); return true; }
       return false;

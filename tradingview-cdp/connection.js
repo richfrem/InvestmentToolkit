@@ -110,10 +110,10 @@ export async function connect() {
       client = await CDP({ host: CDP_HOST, port: CDP_PORT, target: target.id });
 
       await client.Runtime.enable();
-      await client.Page.enable();
-      await client.DOM.enable();
+      // Skip Page.enable() and DOM.enable(): unused for Runtime.evaluate and their event subscriptions destabilize Electron 45 / Chromium 136+ renderers across multiple CDP sessions.
 
       if (target.url && target.url.includes('new-tab')) {
+        await client.Page.enable();
         await client.Page.navigate({ url: 'https://www.tradingview.com/chart/' });
         await new Promise(r => setTimeout(r, 4000));
       }
